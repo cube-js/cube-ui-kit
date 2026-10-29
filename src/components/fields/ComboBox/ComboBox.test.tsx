@@ -502,12 +502,13 @@ describe('<ComboBox />', () => {
     const renderForm = (
       props: Record<string, unknown> = {},
       defaultValues: Record<string, unknown> = { color: 'red' },
+      options = colors,
     ) => {
       const onSubmit = vi.fn();
       const view = renderWithForm(
         <>
           <ComboBox name="color" label="Color" {...props}>
-            {colors.map((item) => (
+            {options.map((item) => (
               <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
             ))}
           </ComboBox>
@@ -614,7 +615,66 @@ describe('<ComboBox />', () => {
         expect(formInstance.getFieldValue('color')).toBe('green'),
       );
       expect(combobox).toHaveValue('Green');
+      // Form calls `onSubmit` a moment later, but marks the submit at once.
+      expect(formInstance.isSubmitting).toBe(false);
       expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('closes an open list with no option to pick and submits the selection', async () => {
+      const { combobox, onSubmit } = renderForm({
+        disabledKeys: ['green', 'grey'],
+      });
+
+      await userEvent.clear(combobox);
+      await userEvent.type(combobox, 'Gr');
+      expect(combobox).toHaveAttribute('aria-expanded', 'true');
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() =>
+        expect(onSubmit).toHaveBeenCalledWith({ color: 'red' }),
+      );
+      expect(combobox).toHaveValue('Red');
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    // The arrow keys open the list with every option on text that matches
+    // none, but the text still names none of them.
+    describe('text that matches no option, with the list showing every option', () => {
+      const renderApple = () =>
+        renderForm({}, {}, [{ key: 'apple', children: 'Apple' }]);
+
+      const typeAndShowAll = async (combobox: HTMLElement) => {
+        await userEvent.type(combobox, 'xyz');
+        await act(async () => {
+          await userEvent.keyboard('{ArrowDown}');
+        });
+        expect(combobox).toHaveAttribute('aria-expanded', 'true');
+        await act(async () => {
+          await userEvent.keyboard('{Escape}');
+        });
+      };
+
+      it('clears on Enter without submitting', async () => {
+        const { combobox, formInstance, onSubmit } = renderApple();
+
+        await typeAndShowAll(combobox);
+        await userEvent.keyboard('{Enter}');
+
+        expect(combobox).toHaveValue('');
+        expect(formInstance.getFieldValue('color')).toBeFalsy();
+        expect(formInstance.isSubmitting).toBe(false);
+        expect(onSubmit).not.toHaveBeenCalled();
+      });
+
+      it('does not select the only option on blur', async () => {
+        const { combobox, formInstance } = renderApple();
+
+        await typeAndShowAll(combobox);
+        await userEvent.tab();
+
+        expect(formInstance.getFieldValue('color')).toBeFalsy();
+        expect(combobox).toHaveValue('');
+      });
     });
   });
 
@@ -2759,6 +2819,8 @@ describe('<ComboBox />', () => {
       expect(formInstance.getFieldValue('fruit')).toBe('cherry'),
     );
     expect(combobox).toHaveValue('Cherry');
+    // Form calls `onSubmit` a moment later, but marks the submit at once.
+    expect(formInstance.isSubmitting).toBe(false);
     expect(onSubmit).not.toHaveBeenCalled();
   });
 

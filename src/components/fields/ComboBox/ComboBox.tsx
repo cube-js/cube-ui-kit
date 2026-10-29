@@ -153,7 +153,7 @@ export interface CubeComboBoxProps<T>
    * nothing when no option is selected.
    */
   shouldCommitOnBlur?: boolean;
-  /** Whether to clear selection and input on blur when the text names no selectable item (default: false, only applies to non-custom-value mode) */
+  /** Whether to clear selection and input on blur, or on Enter with the list closed, when the text names no selectable item (default: false, only applies to non-custom-value mode) */
   clearOnBlur?: boolean;
   /** Whether the combobox is clearable using ESC key or clear button */
   isClearable?: boolean;
@@ -373,6 +373,8 @@ interface UseComboBoxFilteringProps {
 
 interface UseComboBoxFilteringReturn {
   filterFn: (nodes: Iterable<any>) => Iterable<any>;
+  /** The nodes the typed text matches, whether or not the list is filtered. */
+  matchTypedText: (nodes: Iterable<any>) => Iterable<any>;
   /** Whether the typed text is an option's label, compared like the filter. */
   isSameText: (textValue: string, text: string) => boolean;
   isFilterActive: boolean;
@@ -396,20 +398,16 @@ function useComboBoxFiltering({
   const textFilterFn: FilterFn =
     filter === false ? () => true : filter || contains;
 
-  // Create a filter function for collection nodes
-  const filterFn = (nodes: Iterable<any>) => {
-    const term = effectiveInputValue.trim();
+  const matchTypedText = (nodes: Iterable<any>) =>
+    filterCollectionNodes(nodes, effectiveInputValue.trim(), textFilterFn);
 
-    // Don't filter if not active or no search term
-    if (!isFilterActive || !term) {
-      return nodes;
-    }
-
-    return filterCollectionNodes(nodes, term, textFilterFn);
-  };
+  // The list follows the typed text only while the filter is on.
+  const filterFn = (nodes: Iterable<any>) =>
+    isFilterActive ? matchTypedText(nodes) : nodes;
 
   return {
     filterFn,
+    matchTypedText,
     isSameText,
     isFilterActive,
     setIsFilterActive,
@@ -424,7 +422,8 @@ interface UseComboBoxKeyboardProps {
   isListShown: boolean;
   isReadOnly?: boolean;
   listStateRef: RefObject<any>;
-  hasResults: boolean;
+  /** Whether the typed text matches an option, even one the list hides. */
+  hasTypedMatch: () => boolean;
   allowsCustomValue?: boolean;
   effectiveInputValue: string;
   selectedKey: Key | null;
@@ -453,7 +452,7 @@ function useComboBoxKeyboard({
   isListShown,
   isReadOnly,
   listStateRef,
-  hasResults,
+  hasTypedMatch,
   allowsCustomValue,
   effectiveInputValue,
   selectedKey,
@@ -527,13 +526,14 @@ function useComboBoxKeyboard({
       inputRef.current?.focus();
     } else if (allowsCustomValue) {
       commitTypedText(e);
-    } else if (!hasResults || !effectiveInputValue.trim()) {
+    } else if (!effectiveInputValue.trim() || !hasTypedMatch()) {
       // Text that names nothing, or none, clears the selection.
       e.preventDefault();
       onSelectionChange(null);
     } else {
       // Nothing is highlighted, as when the list is closed: the text settles
       // as it would on blur, and Enter goes on to submit the settled value.
+      onCloseList();
       onSettleTypedText();
     }
   };
@@ -933,16 +933,25 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     : (internalInputValue ?? selectedLabel);
 
   // Filtering hook
-  const { filterFn, isSameText, isFilterActive, setIsFilterActive } =
-    useComboBoxFiltering({
-      effectiveInputValue,
-      filter,
-    });
+  const {
+    filterFn,
+    matchTypedText,
+    isSameText,
+    isFilterActive,
+    setIsFilterActive,
+  } = useComboBoxFiltering({
+    effectiveInputValue,
+    filter,
+  });
 
   // The options the typed text leaves in the list.
   const filteredOptions = collectOptions(
     filterFn(localCollectionState.collection),
   );
+  // The options the typed text matches, also while the list shows every
+  // option, as after the arrow keys open it on text that matches none.
+  const getTypedOptions = () =>
+    collectOptions(matchTypedText(localCollectionState.collection));
   const hasResults = filteredOptions.length > 0;
   const shouldShowPopover = isPopoverOpen && hasResults;
 
@@ -1009,12 +1018,13 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   };
 
   // In non-custom-value mode, on blur and on an Enter that has no option to
-  // pick: auto-select the exact match, or the only filtered result, unless it
-  // is disabled; keep a selected item even when it is disabled; clear invalid
-  // input (no selectable match) when clearOnBlur is set or the input is empty.
+  // pick: auto-select the exact match, or the only option the text matches,
+  // unless it is disabled; keep a selected item even when it is disabled;
+  // clear invalid input (no selectable match) when clearOnBlur is set or the
+  // input is empty.
   const settleTypedOption = () => {
     const matchKey = findTypedOption(
-      filteredOptions,
+      getTypedOptions(),
       effectiveInputValue,
       effectiveSelectedKey,
       localCollectionState.disabledKeys,
@@ -1049,7 +1059,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
 
     onBlur?.();
-    // Only now: the match above needs the filter still active.
     setIsFilterActive(false);
   });
 
@@ -1242,7 +1251,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     isListShown: shouldShowPopover,
     isReadOnly,
     listStateRef,
-    hasResults,
+    hasTypedMatch: () => getTypedOptions().length > 0,
     allowsCustomValue,
     effectiveInputValue,
     selectedKey: effectiveSelectedKey,

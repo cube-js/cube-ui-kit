@@ -35,7 +35,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`defaultSelectedKey`** `string` — The key of the initially selected item (uncontrolled)
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether the combo box allows custom values to be entered
 - **`shouldCommitOnBlur`** `boolean` (default: `true`) — Whether to commit custom value on blur in allowsCustomValue mode. When `false`, blur discards the uncommitted text
-- **`clearOnBlur`** `boolean` (default: `false`) — Whether to clear selection and input on blur when the text names no selectable item (only applies to non-custom-value mode)
+- **`clearOnBlur`** `boolean` (default: `false`) — Whether to clear selection and input on blur, or on `Enter` with the popover closed, when the text names no selectable item (only applies to non-custom-value mode)
 - **`isClearable`** `boolean` (default: `false`) — Whether the combo box is clearable using ESC keyboard button or clear button inside the input
 - **`sortSelectedToTop`** `boolean` (default: `true when items provided, false otherwise`) — Whether to sort selected item to the top when popover opens (only works with items prop)
 - **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — When the list opens on its own, see **popoverTrigger** below
@@ -63,7 +63,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 
 #### Notable Properties
 
-**onKeyDown** - Runs before ComboBox's own key handling, listed under [Keyboard Navigation](#keyboard-navigation). Calling `e.preventDefault()` takes the key over: ComboBox skips its handling for that event, so a prevented `ArrowDown` does not open the popover or move focus, and a prevented `Enter` does not select the focused option or commit a custom value. Without `preventDefault()` the built-in handling runs as usual after your handler. The event is React Aria's keyboard event (`KeyboardEvent` from `@react-types/shared`). `Escape` and `Tab` go on to ancestors, so a surrounding `Dialog` still closes on `Escape` and moves focus on `Tab`, unless ComboBox acts on them or you prevent them: `Escape` that closes the list or clears the value stops at the input, and so does an `Escape` or `Tab` you prevent. Other keys stop at the input unless you call `e.continuePropagation()`.
+**onKeyDown** - Runs before ComboBox's own key handling, listed under [Keyboard Navigation](#keyboard-navigation). Calling `e.preventDefault()` takes the key over: ComboBox skips its handling for that event, so a prevented `ArrowDown` does not open the popover or move focus, and a prevented `Enter` does not select the focused option, settle the typed text or commit a custom value. Without `preventDefault()` the built-in handling runs as usual after your handler. The event is React Aria's keyboard event (`KeyboardEvent` from `@react-types/shared`). `Escape` and `Tab` go on to ancestors, so a surrounding `Dialog` still closes on `Escape` and moves focus on `Tab`, unless ComboBox acts on them or you prevent them: `Escape` that closes the list or clears the value stops at the input, and so does an `Escape` or `Tab` you prevent. Other keys stop at the input unless you call `e.continuePropagation()`.
 
 ```jsx
 <ComboBox
@@ -83,7 +83,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 </ComboBox>
 ```
 
-**Enter inside a form.** `preventDefault()` stops the browser's form submission and ComboBox's own handling together; it cannot stop just one. With `allowsCustomValue` and the popover closed, the built-in `Enter` commits the typed value and lets the event through, so the surrounding form submits. A handler that prevents that `Enter` stops both: the form does not submit, and the value is not committed until the input loses focus (when `shouldCommitOnBlur` is on, the default). In earlier versions such a handler stopped only the submit, and the value was still committed on `Enter`. To keep that behavior, commit the value in your handler:
+**Enter inside a form.** `preventDefault()` stops the browser's form submission and ComboBox's own handling together; it cannot stop just one. With `allowsCustomValue` and the popover closed, the built-in `Enter` commits the typed value and lets the event through, so the surrounding form submits. Without it, the built-in `Enter` on a closed popover settles the typed text as blur does and lets the event through the same way, so a handler that prevents it leaves the text unsettled until blur. A handler that prevents that `Enter` stops both: the form does not submit, and the value is not committed until the input loses focus (when `shouldCommitOnBlur` is on, the default). In earlier versions such a handler stopped only the submit, and the value was still committed on `Enter`. To keep that behavior, commit the value in your handler:
 
 ```jsx
 const [selectedKey, setSelectedKey] = useState(null);
@@ -119,7 +119,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 
 **isReadOnly** - The list doesn't open, from the chevron, the arrow keys, a press in the input or focus, and neither keys nor blur change the value or the text. The clear button is hidden.
 
-**clearOnBlur** - When `true`, text that names no selectable item clears both the selection and the input when the input loses focus. When `false` (default), the input reverts to showing the current selection, and empty text still clears it. Only applies to non-custom-value mode. Useful for search-like scenarios where you want to reset after each interaction.
+**clearOnBlur** - When `true`, text that names no selectable item clears both the selection and the input when the input loses focus, or on `Enter` with the popover closed. When `false` (default), the input reverts to showing the current selection, and empty text still clears it. Only applies to non-custom-value mode. Useful for search-like scenarios where you want to reset after each interaction.
 
 **Blur** - Without `allowsCustomValue`, leaving the input selects the item the text names exactly, or else the only item it still matches, unless that item is in `disabledKeys`. The exact match follows the filter's rules for case, accents and locale. Among items sharing the label, the selected one wins, then the first enabled one. Empty text clears the selection. Other text reverts to the selection, or clears with `clearOnBlur`; a disabled item that is already selected stays selected. Blur reports only what it changes: leaving a field without editing it calls neither `onSelectionChange` nor `onInputChange`.
 
@@ -629,7 +629,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 - `Tab` - Moves focus to/from the combobox input and closes the popover. The chevron and clear buttons are not Tab stops
 - `ArrowDown` - Opens popover (if closed) or moves focus to next option
 - `ArrowUp` - Opens popover (if closed) or moves focus to previous option
-- `Enter` - Selects the focused option and closes popover. Pressed right after typing, it picks the first match. With the popover closed and without `allowsCustomValue`, settles the typed text as leaving the input does (see **Blur**) and lets a surrounding form submit the result; text that matches no option, or no text, clears the selection instead and does not submit. With `allowsCustomValue` and the popover closed, commits the typed text. Ignored while an input method (IME) is composing text
+- `Enter` - Selects the focused option and closes popover. With the popover open, pressed right after typing, it picks the first match. With the popover closed and without `allowsCustomValue`, settles the typed text as leaving the input does (see **Blur**) and lets a surrounding form submit the result; text that matches no option, or no text, clears the selection instead and does not submit. With `allowsCustomValue` and the popover closed, commits the typed text. Ignored while an input method (IME) is composing text
 - `Escape` - Closes popover (if open) or clears input (if clearable and popover closed); otherwise it goes on, so a surrounding dialog closes
 - `Home` - Moves focus to the first option (when popover is open)
 - `End` - Moves focus to the last option (when popover is open)
