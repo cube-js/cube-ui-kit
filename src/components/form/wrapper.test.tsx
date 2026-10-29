@@ -771,6 +771,7 @@ describe('field layout style props', () => {
     DateInput: 'wrapperStyles',
     DatePicker: 'wrapperStyles',
     DateRangePicker: 'wrapperStyles',
+    DateRangeSeparatedPicker: 'wrapperStyles',
     FileInput: 'inputStyles',
     MonthPicker: 'wrapperStyles',
     PeriodPicker: 'wrapperStyles',
