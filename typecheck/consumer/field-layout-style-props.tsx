@@ -25,7 +25,13 @@ export function FieldLayoutStyleExamples() {
   return (
     <>
       <TextInput label="Name" {...layout} />
-      <TextInput label="Name" width="40x" styles={{ width: '20x' }} />
+      <TextInput
+        label="Name"
+        labelPosition="side"
+        width="40x"
+        controlWidth="20x"
+      />
+      <TextInput label="Name" controlWidth={false} />
       <ListBox label="Options" height="30x" gridArea="list">
         <ListBox.Item key="a">Alpha</ListBox.Item>
       </ListBox>

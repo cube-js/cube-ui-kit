@@ -11,7 +11,6 @@ import { useTimeFieldState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
@@ -67,12 +66,14 @@ function TimeInput<T extends TimeValue>(
   });
   props = Object.assign({}, DEFAULT_TIME_PROPS, props);
 
-  const { styles, field } = splitFieldLayout(props);
+  // `wrapperStyles` styles the same box as `styles` and wins over it.
+  const { styles, field } = splitFieldLayout(props, {
+    overStyles: props.wrapperStyles,
+  });
 
   let {
     qa,
     inputStyles,
-    wrapperStyles,
     autoFocus,
     isDisabled,
     isReadOnly,
@@ -110,7 +111,7 @@ function TimeInput<T extends TimeValue>(
       isReadOnly={isReadOnly}
       autoFocus={autoFocus}
       inputStyles={inputStyles}
-      styles={mergeStyleLayers(styles, wrapperStyles)}
+      styles={styles}
       isInvalid={isInvalid}
       isValid={isValid}
     >

@@ -12,7 +12,6 @@ import { useDateFieldState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
@@ -66,7 +65,10 @@ function DateInput<T extends DateValue>(
     useLocale: useLocaleProp,
   } = props;
 
-  const { styles, field } = splitFieldLayout(props);
+  // `wrapperStyles` styles the same box as `styles` and wins over it.
+  const { styles, field } = splitFieldLayout(props, {
+    overStyles: wrapperStyles,
+  });
 
   let domRef = useRef<HTMLDivElement>(null);
 
@@ -98,7 +100,7 @@ function DateInput<T extends DateValue>(
       autoFocus={autoFocus}
       isInvalid={state.isInvalid}
       isValid={isValid}
-      styles={mergeStyleLayers(styles, wrapperStyles)}
+      styles={styles}
       inputStyles={inputStyles}
     >
       {state.segments.map((segment, i) => (

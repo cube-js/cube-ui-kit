@@ -747,6 +747,56 @@ describe('field layout style props', () => {
     expect(getComputedStyle(control).inlineSize).toBe('auto');
   });
 
+  it('leaves the width alone with controlWidth={false}', () => {
+    // What `cond && size` gives when `cond` is false.
+    render(
+      <>
+        <TextInput aria-label="Bare" width="37x" controlWidth={false} />
+        <TextInput
+          label="Labelled"
+          styles={{ width: '37x' }}
+          controlWidth={false}
+        />
+      </>,
+    );
+
+    expect(sized().map((element) => element.dataset.qa)).toEqual([
+      'InputWrapper',
+      'InputWrapper',
+    ]);
+  });
+
+  // The inputs with a prop that styles the control over `styles`.
+  const overStyles: Record<string, string> = {
+    DateInput: 'wrapperStyles',
+    DatePicker: 'wrapperStyles',
+    DateRangePicker: 'wrapperStyles',
+    FileInput: 'inputStyles',
+    MonthPicker: 'wrapperStyles',
+    PeriodPicker: 'wrapperStyles',
+    QuarterPicker: 'wrapperStyles',
+    TimeInput: 'wrapperStyles',
+    WeekPicker: 'wrapperStyles',
+    YearPicker: 'wrapperStyles',
+  };
+
+  it.each(inputs.filter(([name]) => name in overStyles))(
+    '%s puts controlWidth over the styles above styles',
+    (name, element) => {
+      renderWithRoot(
+        cloneElement(element, {
+          controlWidth: '37x',
+          [overStyles[name]]: { width: '10x' },
+        }),
+      );
+
+      const [control, ...others] = sized();
+
+      expect(others).toHaveLength(0);
+      expect(screen.getByTestId('Field')).toContainElement(control);
+    },
+  );
+
   it('sizes a grouped Checkbox itself, never its group', () => {
     render(
       <Checkbox.Group label="Group">
