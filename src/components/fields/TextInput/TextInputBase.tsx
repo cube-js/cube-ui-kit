@@ -380,6 +380,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     form,
     resize,
     tooltip,
+    children,
     ...otherProps
   } = props;
 
@@ -552,6 +553,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
           maxLength={maxLength ?? inputProps.maxLength}
           minLength={minLength ?? inputProps.minLength}
         />
+        {/* Content that takes no room in the box, such as `NumberInput`'s hidden form value. */}
+        {children}
         {showValidationIndicator || suffix || actions ? (
           <div data-element="Suffix">
             {suffixPosition === 'before' ? suffix : null}

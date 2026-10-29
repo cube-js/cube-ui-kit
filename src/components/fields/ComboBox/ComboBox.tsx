@@ -1369,6 +1369,17 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         }}
         isInvalid={isInvalid}
       />
+      {/* The input shows the label, so a native `<form>` submits the key from here. */}
+      {props.name ? (
+        <input
+          type="hidden"
+          // `useFieldProps` has turned a tuple path into its key; `props`
+          // keeps its declared type.
+          name={props.name as string}
+          value={effectiveSelectedKey ?? ''}
+          disabled={isDisabled}
+        />
+      ) : null}
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
         {isLoading ? <LoadingIcon data-element="InputIcon" /> : validationIcon}

@@ -222,6 +222,8 @@ A unit sits between the number and the steppers. Pass `suffixPosition="after"` t
 
 This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form.
 
+In a native `<form>` without a Form instance, `name` submits the number through a hidden input: `1234.5`, not the formatted `1,234.5` the input shows. An empty field submits an empty string, and a disabled NumberInput submits nothing.
+
 ## Suggested Improvements
 
 - Provide `maxValue`/`minValue` indicator with value range

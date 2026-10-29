@@ -2758,4 +2758,105 @@ describe('<ComboBox />', () => {
 
     expect(getAllByRole('option')[0]).toHaveAttribute('data-size', 'large');
   });
+
+  describe('in a native form', () => {
+    const formValue = (container: HTMLElement, name: string) =>
+      new FormData(container.querySelector('form')!).get(name);
+    const submitHandler = () =>
+      vi.fn((event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        return new FormData(event.currentTarget).get('color');
+      });
+
+    it('submits the selected key under its name, not the label', () => {
+      const { container, getByRole } = renderWithRoot(
+        <form>
+          <ComboBox name="color" label="Color" defaultSelectedKey="red">
+            {colorItems}
+          </ComboBox>
+        </form>,
+      );
+
+      expect(getByRole('combobox')).toHaveValue('Red');
+      expect(formValue(container, 'color')).toBe('red');
+    });
+
+    it('submits an empty string while nothing is selected', () => {
+      const { container } = renderWithRoot(
+        <form>
+          <ComboBox name="color" label="Color">
+            {colorItems}
+          </ComboBox>
+        </form>,
+      );
+
+      expect(formValue(container, 'color')).toBe('');
+    });
+
+    it('submits the option picked with Enter when the next Enter submits the form', async () => {
+      const onSubmit = submitHandler();
+      const { getByRole } = renderWithRoot(
+        <form onSubmit={onSubmit}>
+          <ComboBox name="color" label="Color">
+            {colorItems}
+          </ComboBox>
+          <button type="submit">Save</button>
+        </form>,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'Gre');
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSubmit).not.toHaveBeenCalled();
+
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSubmit).toHaveReturnedWith('green');
+    });
+
+    it('submits the typed text with allowsCustomValue when Enter submits the form', async () => {
+      const onSubmit = submitHandler();
+      const { getByRole } = renderWithRoot(
+        <form onSubmit={onSubmit}>
+          <ComboBox allowsCustomValue name="color" label="Color">
+            {colorItems}
+          </ComboBox>
+          <button type="submit">Save</button>
+        </form>,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'Teal');
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+      expect(onSubmit).toHaveReturnedWith('Teal');
+    });
+
+    it('submits nothing while disabled', () => {
+      const { container } = renderWithRoot(
+        <form>
+          <ComboBox isDisabled name="color" label="Color" selectedKey="red">
+            {colorItems}
+          </ComboBox>
+        </form>,
+      );
+
+      expect(formValue(container, 'color')).toBeNull();
+    });
+
+    it('renders no hidden input without a name', () => {
+      const { container } = renderWithRoot(
+        <form>
+          <ComboBox label="Color" selectedKey="red">
+            {colorItems}
+          </ComboBox>
+        </form>,
+      );
+
+      expect(
+        container.querySelector('input[type="hidden"]'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });
