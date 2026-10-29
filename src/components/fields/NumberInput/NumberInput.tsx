@@ -227,7 +227,17 @@ function NumberInput(
           suffix
         )
       }
-    />
+    >
+      {/* `useNumberField` keeps `name` off the input, whose text is formatted, so a native `<form>` submits the number from here. */}
+      {props.name ? (
+        <input
+          type="hidden"
+          name={props.name}
+          value={isNaN(state.numberValue) ? '' : state.numberValue}
+          disabled={props.isDisabled}
+        />
+      ) : null}
+    </StyledTextInputBase>
   );
 }
 

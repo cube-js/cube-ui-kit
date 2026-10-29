@@ -622,4 +622,72 @@ describe('<NumberInput />', () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  describe('in a native form', () => {
+    const formValue = (container: HTMLElement, name: string) =>
+      new FormData(container.querySelector('form')!).get(name);
+
+    it('submits the number under its name, not the formatted text', () => {
+      const { container, getByRole } = render(
+        <form>
+          <NumberInput name="qty" label="Quantity" defaultValue={1234.5} />
+        </form>,
+      );
+
+      expect(getByRole('textbox')).toHaveValue('1,234.5');
+      expect(formValue(container, 'qty')).toBe('1234.5');
+    });
+
+    it('submits an empty string while empty', () => {
+      const { container } = render(
+        <form>
+          <NumberInput name="qty" label="Quantity" />
+        </form>,
+      );
+
+      expect(formValue(container, 'qty')).toBe('');
+    });
+
+    it('submits the typed number when Enter submits the form', async () => {
+      const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        return new FormData(event.currentTarget).get('qty');
+      });
+      const { getByRole } = render(
+        <form onSubmit={onSubmit}>
+          <NumberInput name="qty" label="Quantity" />
+          <button type="submit">Save</button>
+        </form>,
+      );
+
+      await userEvent.type(getByRole('textbox', { name: 'Quantity' }), '42');
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+      expect(onSubmit).toHaveReturnedWith('42');
+    });
+
+    it('submits nothing while disabled', () => {
+      const { container } = render(
+        <form>
+          <NumberInput isDisabled name="qty" label="Quantity" value={3} />
+        </form>,
+      );
+
+      expect(formValue(container, 'qty')).toBeNull();
+    });
+
+    it('renders no hidden input without a name', () => {
+      const { container } = render(
+        <form>
+          <NumberInput label="Quantity" value={3} />
+        </form>,
+      );
+
+      expect(
+        container.querySelector('input[type="hidden"]'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });
