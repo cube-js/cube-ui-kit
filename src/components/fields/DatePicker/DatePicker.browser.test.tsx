@@ -1,4 +1,5 @@
 import { CalendarDate } from '@internationalized/date';
+import { userEvent } from 'vitest/browser';
 
 import { cleanup, renderWithRoot, screen, within } from '../../../test';
 
@@ -324,5 +325,104 @@ describe('<DateRangePicker /> in a narrow container', () => {
     for (const element of [start, end, dash, button]) {
       expectInside(element, box);
     }
+  });
+});
+
+/**
+ * All three pickers declare `inputStyles`, and none passed it on, so a preset
+ * meant for the dates did nothing.
+ */
+describe.each([
+  ['DatePicker', DatePicker],
+  ['DateRangePicker', DateRangePicker],
+  ['DateRangeSeparatedPicker', DateRangeSeparatedPicker],
+] as const)('<%s /> inputStyles', (name, Component) => {
+  const Field = Component as any;
+
+  it('applies a preset to the dates', () => {
+    renderWithRoot(
+      <Field
+        aria-label={name}
+        qa="DateControl"
+        inputStyles={{ preset: 't4n' }}
+      />,
+    );
+
+    for (const segment of screen.getAllByRole('spinbutton')) {
+      expect(getComputedStyle(segment).fontSize).toBe('12px');
+    }
+  });
+});
+
+describe('<DateRangePicker hideTrigger />', () => {
+  afterEach(() => userEvent.keyboard('{Escape}'));
+
+  it('opens the calendar under the field from a press, and keeps focus there', async () => {
+    renderWithRoot(
+      <DateRangePicker
+        hideTrigger
+        aria-label="Range"
+        qa="Range"
+        defaultValue={RANGE}
+      />,
+    );
+
+    const box = screen.getByTestId('Range');
+    const [, segment] = screen.getAllByRole('spinbutton');
+
+    await userEvent.click(segment);
+
+    const calendar = await screen.findByTestId('CalendarPopover');
+
+    expect(document.activeElement).toBe(segment);
+    expect(rect(calendar).top).toBeGreaterThanOrEqual(rect(box).bottom);
+  });
+
+  // Cloud's band row gives a range about 190px: a small range takes about
+  // 230px with the button, and 181px without it in a 12px preset.
+  it('takes the button off the row, and a smaller preset shortens it more', () => {
+    const measure = (props: Record<string, unknown>) => {
+      renderWithRoot(
+        <DateRangePicker
+          isBare
+          aria-label="Range"
+          qa="Range"
+          size="small"
+          styles={{ width: 'max-content' }}
+          defaultValue={RANGE}
+          {...props}
+        />,
+      );
+
+      const box = screen.getByTestId('Range');
+      const button = within(box).queryByRole('button');
+      const start = screen.getByTestId('DateRangeStart');
+      const end = screen.getByTestId('DateRangeEnd');
+
+      expect(rect(end).top).toBeCloseTo(rect(start).top, 0);
+
+      const widths = {
+        box: rect(box).width,
+        button: button ? rect(button).width : 0,
+      };
+
+      cleanup();
+
+      return widths;
+    };
+
+    const withButton = measure({});
+    const withoutButton = measure({ hideTrigger: true });
+    const smaller = measure({
+      hideTrigger: true,
+      inputStyles: { preset: 't4n' },
+    });
+
+    expect(withButton.button).toBeGreaterThan(0);
+    expect(withoutButton.button).toBe(0);
+    expect(withoutButton.box).toBeLessThanOrEqual(
+      withButton.box - withButton.button,
+    );
+    expect(smaller.box).toBeLessThan(withoutButton.box);
   });
 });

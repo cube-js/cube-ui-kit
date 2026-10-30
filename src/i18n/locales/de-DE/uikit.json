@@ -86,7 +86,8 @@
     "selectWeek": "Woche auswählen",
     "selectMonth": "Monat auswählen",
     "selectQuarter": "Quartal auswählen",
-    "selectYear": "Jahr auswählen"
+    "selectYear": "Jahr auswählen",
+    "calendarHint": "Drücken Sie Alt+Pfeil nach unten, um den Kalender zu öffnen."
   },
   "calendar": {
     "previousYear": "Vorheriges Jahr",

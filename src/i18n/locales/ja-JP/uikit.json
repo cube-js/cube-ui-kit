@@ -86,7 +86,8 @@
     "selectWeek": "週を選択",
     "selectMonth": "月を選択",
     "selectQuarter": "四半期を選択",
-    "selectYear": "年を選択"
+    "selectYear": "年を選択",
+    "calendarHint": "Alt+下矢印キーでカレンダーを開きます。"
   },
   "calendar": {
     "previousYear": "前年",

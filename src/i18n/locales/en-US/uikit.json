@@ -86,7 +86,8 @@
     "selectWeek": "Select week",
     "selectMonth": "Select month",
     "selectQuarter": "Select quarter",
-    "selectYear": "Select year"
+    "selectYear": "Select year",
+    "calendarHint": "Press Alt+Down Arrow to open the calendar."
   },
   "calendar": {
     "previousYear": "Previous year",
