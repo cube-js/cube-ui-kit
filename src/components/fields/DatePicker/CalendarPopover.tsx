@@ -1,4 +1,5 @@
 import { getFocusableTreeWalker } from '@react-aria/focus';
+import { isFocusable } from '@react-aria/utils';
 import { useControlledState } from '@react-stately/utils';
 import { FocusableRefValue } from '@react-types/shared';
 import { tasty } from '@tenphi/tasty';
@@ -151,9 +152,12 @@ export function useFieldCalendar(options: FieldCalendarOptions) {
 
       let next = e.relatedTarget;
 
+      // Focus that goes nowhere, to another window or a press on the page,
+      // leaves it open: a press outside closes it on its own.
       if (
-        next instanceof Node &&
-        (fieldRef.current?.contains(next) || popoverRef.current?.contains(next))
+        !(next instanceof Node) ||
+        fieldRef.current?.contains(next) ||
+        popoverRef.current?.contains(next)
       ) {
         return;
       }
@@ -243,6 +247,20 @@ export function CalendarPopover(props: CalendarPopoverProps) {
     return true;
   };
 
+  // A press on a part of the calendar that takes no focus keeps focus where it
+  // is: in the date being typed, or on the calendar's focused day.
+  let onMouseDown = (e: MouseEvent) => {
+    for (
+      let element = e.target as Element | null;
+      element && element !== e.currentTarget;
+      element = element.parentElement
+    ) {
+      if (isFocusable(element)) return;
+    }
+
+    e.preventDefault();
+  };
+
   // Tab off either end of the calendar goes back to the field.
   let onKeyDown = (e: KeyboardEvent) => {
     let popover = popoverRef.current;
@@ -275,7 +293,11 @@ export function CalendarPopover(props: CalendarPopoverProps) {
       onClose={close}
     >
       <FocusScope>
-        <CalendarPopoverElement {...dialogProps} onKeyDown={onKeyDown}>
+        <CalendarPopoverElement
+          {...dialogProps}
+          onMouseDown={onMouseDown}
+          onKeyDown={onKeyDown}
+        >
           {children}
           <DismissButton onDismiss={close} />
         </CalendarPopoverElement>

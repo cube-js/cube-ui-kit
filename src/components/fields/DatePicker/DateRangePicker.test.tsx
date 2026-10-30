@@ -26,6 +26,7 @@ describe('<DateRangePicker hideTrigger />', () => {
           {...props}
         />
         <button>After</button>
+        <p>Outside</p>
       </>,
     );
     const field = result.getByTestId('Range');
@@ -90,6 +91,18 @@ describe('<DateRangePicker hideTrigger />', () => {
     expect(segments[0]).toHaveTextContent('2');
   });
 
+  it('opens from Up Arrow in a date, which changes it', async () => {
+    const { segments, calendar } = renderPicker();
+
+    await user.tab();
+    await user.tab();
+    await user.keyboard('{ArrowUp}');
+    await expectOpen(calendar);
+
+    expect(document.activeElement).toBe(segments[0]);
+    expect(segments[0]).toHaveTextContent('2026');
+  });
+
   it('does not open when focus tabs into the field', async () => {
     const { segments, calendar } = renderPicker();
 
@@ -100,7 +113,22 @@ describe('<DateRangePicker hideTrigger />', () => {
     expect(calendar()).toBeNull();
   });
 
-  it('opens with Alt+Down and moves focus into the calendar', async () => {
+  it.each(['ArrowDown', 'ArrowUp'])(
+    'opens with Alt+%s and moves focus into the calendar',
+    async (key) => {
+      const { calendar } = renderPicker();
+
+      await user.tab();
+      await user.tab();
+      await user.keyboard(`{Alt>}{${key}}{/Alt}`);
+
+      await waitFor(() =>
+        expect(calendar()?.contains(document.activeElement)).toBe(true),
+      );
+    },
+  );
+
+  it('moves focus into a calendar already open with Alt+Down', async () => {
     const { segments, calendar } = renderPicker();
 
     await user.click(segments[0]);
@@ -155,6 +183,40 @@ describe('<DateRangePicker hideTrigger />', () => {
       end: new CalendarDate(2025, 6, 15),
     });
     expect(segments).toContain(document.activeElement);
+  });
+
+  it('closes on a press outside', async () => {
+    const { segments, calendar, getByText } = renderPicker();
+
+    await user.click(segments[1]);
+    await expectOpen(calendar);
+    await user.click(getByText('Outside'));
+    await expectClosed(calendar);
+  });
+
+  it('stays open on a press where the calendar takes no focus, and keeps focus where it was', async () => {
+    const { segments, calendar } = renderPicker();
+
+    await user.click(segments[1]);
+    await expectOpen(calendar);
+
+    // A weekday heading, then the popover's own padding.
+    await user.click(calendar()!.querySelector('th')!);
+    await user.click(calendar()!);
+
+    expect(calendar()).toBeTruthy();
+    expect(document.activeElement).toBe(segments[1]);
+
+    await user.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    await waitFor(() =>
+      expect(calendar()?.contains(document.activeElement)).toBe(true),
+    );
+
+    const day = document.activeElement;
+
+    await user.click(calendar()!.querySelector('th')!);
+
+    expect(document.activeElement).toBe(day);
   });
 
   it('closes when focus tabs out of the field, which reports its blur', async () => {
@@ -218,6 +280,12 @@ describe('<DateRangePicker hideTrigger />', () => {
       expect(calendar()).toBeNull();
     },
   );
+
+  it('keeps the validation indicator', () => {
+    const { field } = renderPicker({ isInvalid: true });
+
+    expect(field.querySelector('[data-element="State"]')).toBeTruthy();
+  });
 
   it('keeps the calendar button without hideTrigger', () => {
     const { field } = renderPicker({ hideTrigger: false });

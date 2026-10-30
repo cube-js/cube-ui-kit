@@ -1,5 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, RefObject, useId, useRef, useState } from 'react';
 import {
   AriaDateRangePickerProps,
@@ -13,6 +13,7 @@ import { useDateRangePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
@@ -103,9 +104,11 @@ export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
   useLocale?: boolean;
   /**
    * Renders no calendar button, so the field fits a narrower row. The calendar
-   * opens from the field instead: a press in it, an edit of a date, or
-   * Alt+Down, which also moves focus into the calendar. Tabbing into the field
-   * doesn't open it, and while the dates are typed focus stays in the field.
+   * opens from the field instead: a press in it, an edit of a date (typing,
+   * or Up and Down Arrow), or Alt+Down or Alt+Up, which also move focus into
+   * the calendar. Tabbing into the field doesn't open it, and while the dates
+   * are typed focus stays in the field. Escape, a press outside, picking a
+   * range without times, or focus leaving the field and the calendar closes it.
    * @default false
    */
   hideTrigger?: boolean;
@@ -183,7 +186,13 @@ function DateRangePicker<T extends DateValue>(
     buttonProps,
     dialogProps,
     calendarProps,
-  } = useDateRangePicker(props, state, targetRef);
+  } = useDateRangePicker(
+    props,
+    state,
+    // Without the button, React Aria's group is the whole field, so a press
+    // on its padding focuses its last date rather than whatever precedes it.
+    hideTrigger ? domRef : targetRef,
+  );
 
   // The date typed last, which the open calendar turns to.
   let [typedDate, setTypedDate] = useState<DateValue | null>(null);
@@ -281,7 +290,7 @@ function DateRangePicker<T extends DateValue>(
       inputType="daterangepicker"
       autoFocus={autoFocus}
       styles={styles}
-      inputStyles={mergeStyles(INPUT_STYLES, props.inputStyles)}
+      inputStyles={mergeStyleLayers(INPUT_STYLES, props.inputStyles)}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
       isReadOnly={props.isReadOnly}

@@ -1,7 +1,13 @@
 import { CalendarDate } from '@internationalized/date';
 import { userEvent } from 'vitest/browser';
 
-import { cleanup, renderWithRoot, screen, within } from '../../../test';
+import {
+  cleanup,
+  renderWithRoot,
+  screen,
+  waitFor,
+  within,
+} from '../../../test';
 
 import { DatePicker } from './DatePicker';
 import { DateRangePicker } from './DateRangePicker';
@@ -352,6 +358,22 @@ describe.each([
       expect(getComputedStyle(segment).fontSize).toBe('12px');
     }
   });
+
+  it("passes a reset on to the dates' row, over the picker's own styles", () => {
+    renderWithRoot(
+      <Field
+        aria-label={name}
+        qa="DateControl"
+        inputStyles={{ padding: null }}
+      />,
+    );
+
+    for (const segment of screen.getAllByRole('spinbutton')) {
+      const row = segment.closest('[data-element="Contents"] > *')!;
+
+      expect(getComputedStyle(row).paddingLeft).toBe('0px');
+    }
+  });
 });
 
 describe('<DateRangePicker hideTrigger />', () => {
@@ -376,6 +398,39 @@ describe('<DateRangePicker hideTrigger />', () => {
 
     expect(document.activeElement).toBe(segment);
     expect(rect(calendar).top).toBeGreaterThanOrEqual(rect(box).bottom);
+  });
+
+  it('focuses the last date on a press beside the dates', async () => {
+    renderWithRoot(
+      <>
+        <button>Before</button>
+        <div style={{ width: 400 }}>
+          <DateRangePicker
+            hideTrigger
+            aria-label="Range"
+            qa="Range"
+            defaultValue={RANGE}
+          />
+        </div>
+      </>,
+    );
+
+    const box = screen.getByTestId('Range');
+    const last = screen.getAllByRole('spinbutton').at(-1)!;
+    const { width, height } = rect(box);
+
+    // The field fills its container, so there is room right of the dates.
+    expect(rect(box).right - rect(last).right).toBeGreaterThan(20);
+
+    await userEvent.click(box, { position: { x: width - 8, y: height / 2 } });
+    await screen.findByTestId('CalendarPopover');
+
+    expect(document.activeElement).toBe(last);
+
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(screen.queryByTestId('CalendarPopover')).toBeNull(),
+    );
   });
 
   // Cloud's band row gives a range about 190px: a small range takes about
