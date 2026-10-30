@@ -1,6 +1,7 @@
 import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
+import { Footer } from '../../content/Footer';
 import { Header } from '../../content/Header';
 import { Title } from '../../content/Title';
 import { TextInput } from '../../fields/TextInput/TextInput';
@@ -357,6 +358,165 @@ describe('confirmDismiss', () => {
 
     await expectClosed();
     await waitFor(() => expect(question()).not.toBeInTheDocument());
+  });
+
+  describe('a modern Form in a hand-built dialog', () => {
+    // The controller lives in the dialog's content, below the dialog's owner,
+    // as in a dialog the owner opens from another file.
+    function ProfileForm({
+      onSave = async () => {},
+    }: {
+      onSave?: () => Promise<void>;
+    }) {
+      const form = Form.useController<Values>({
+        defaultValues: { name: 'Initial' },
+      });
+
+      return (
+        <Form form={form} onSubmit={onSave}>
+          <Content>
+            <TextInput name="name" label="Name" />
+            <Button onPress={() => form.setValue('name', 'From the server')}>
+              Load
+            </Button>
+          </Content>
+          <Footer>
+            <Form.Submit>Save</Form.Submit>
+          </Footer>
+        </Form>
+      );
+    }
+
+    function HandBuiltDialog({
+      onSave,
+      ...triggerProps
+    }: Partial<Omit<CubeDialogTriggerProps, 'children'>> & {
+      onSave?: () => Promise<void>;
+    }) {
+      return (
+        <DialogTrigger {...triggerProps}>
+          <Button>Open</Button>
+          <Dialog>
+            <Header>
+              <Title>Profile</Title>
+            </Header>
+            <ProfileForm onSave={onSave} />
+          </Dialog>
+        </DialogTrigger>
+      );
+    }
+
+    it('asks before Escape discards what the user typed', async () => {
+      renderWithRoot(<HandBuiltDialog />);
+
+      await edit();
+      await userEvent.keyboard('{Escape}');
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Discard' }),
+      );
+
+      await expectClosed();
+    });
+
+    it('closes at once without edits, or with a value set from code', async () => {
+      renderWithRoot(<HandBuiltDialog />);
+
+      const input = await open();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Load' }));
+      expect(input).toHaveValue('From the server');
+      await userEvent.keyboard('{Escape}');
+
+      await expectClosed();
+      expect(question()).not.toBeInTheDocument();
+    });
+
+    it('stops asking once a submit saved the edits, until the user types again', async () => {
+      const onSave = vi.fn(async () => {});
+
+      renderWithRoot(<HandBuiltDialog onSave={onSave} />);
+
+      const input = await edit();
+      const save = async (times: number) => {
+        await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+        await waitFor(() => expect(onSave).toHaveBeenCalledTimes(times));
+        await userEvent.click(input);
+      };
+
+      // The dialog stays open after saving, as one that shows a created key.
+      await save(1);
+      await userEvent.type(input, ' again');
+      await userEvent.keyboard('{Escape}');
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Keep editing' }),
+      );
+      await waitFor(() => expect(question()).not.toBeInTheDocument());
+
+      await save(2);
+      await userEvent.keyboard('{Escape}');
+
+      await expectClosed();
+      expect(question()).not.toBeInTheDocument();
+    });
+
+    it('keeps asking after a failed submit', async () => {
+      const onSave = vi.fn(async () => {
+        throw new Error('offline');
+      });
+
+      renderWithRoot(<HandBuiltDialog onSave={onSave} />);
+
+      await edit();
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+      await userEvent.keyboard('{Escape}');
+
+      expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+    });
+
+    it.each([
+      ['confirmDismiss={false} on the trigger', { confirmDismiss: false }],
+      ['a popover', { type: 'popover' as const }],
+    ])('closes with edits at once for %s', async (_, props) => {
+      renderWithRoot(<HandBuiltDialog {...props} />);
+
+      await edit();
+      await userEvent.keyboard('{Escape}');
+
+      await expectClosed();
+      expect(question()).not.toBeInTheDocument();
+    });
+
+    it('asks in a DialogContainer while any of its forms holds edits', async () => {
+      const onDismiss = vi.fn();
+      const second = controller();
+
+      renderWithRoot(
+        <DialogContainer onDismiss={onDismiss}>
+          <Dialog>
+            <Header>
+              <Title>Profile</Title>
+            </Header>
+            <ProfileForm />
+            <Form form={second}>
+              <TextInput name="name" label="Nickname" />
+            </Form>
+          </Dialog>
+        </DialogContainer>,
+      );
+
+      const input = await screen.findByRole('textbox', { name: 'Name' });
+
+      // The first of two forms holds the edit.
+      await userEvent.clear(input);
+      await userEvent.type(input, 'Edited');
+      await userEvent.keyboard('{Escape}');
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Discard' }),
+      );
+
+      expect(onDismiss).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('legacy DialogForm', () => {

@@ -1,11 +1,12 @@
 import { CONTAINER_STYLES, filterBaseProps } from '@tenphi/tasty';
-import { forwardRef, useMemo, useRef } from 'react';
+import { forwardRef, useEffect, useMemo, useRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { Provider, useProviderProps } from '../../../provider';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { extractStyles } from '../../../utils/styles';
+import { useDialogContext } from '../../overlays/Dialog/context';
 import { useValidationProps } from '../validation/use-validation-props';
 
 import {
@@ -45,9 +46,14 @@ export interface ModernFormProps<
 
 const EMPTY_LEGACY_CONTEXT = {};
 
-/** Wrapper lifecycle hook, intentionally absent from the public Form props. */
+/** Wrapper hooks, intentionally absent from the public Form props. */
 interface InternalModernFormProps<T extends object> extends ModernFormProps<T> {
   onSubmitted?: () => void;
+  /**
+   * What the form reports to its dialog instead of its own unsaved edits:
+   * `DialogForm`'s `confirmDismiss`, or `false` for its `preserve`.
+   */
+  confirmDismiss?: boolean;
 }
 
 function ModernFormRoot<T extends object>(
@@ -78,6 +84,7 @@ function ModernFormRoot<T extends object>(
     onSubmitFailed,
     onValuesChange,
     submitValues = 'active',
+    confirmDismiss,
     ...otherProps
   } = resolved;
   const labelPosition =
@@ -114,6 +121,22 @@ function ModernFormRoot<T extends object>(
       ...(onValuesChange === undefined ? {} : { onValuesChange }),
     });
   });
+  // Inside a dialog, Escape, an outside click and the close button ask before
+  // they discard what the user typed: fields they edited away from their
+  // defaults. A value set from code is not an edit, and a successful submit
+  // saves what it carried. The dialog's owner decides whether to ask at all.
+  const { registerUnsavedChanges } = useDialogContext();
+  useEffect(
+    () =>
+      registerUnsavedChanges?.(
+        () =>
+          confirmDismiss ??
+          // A controller from an older copy of the kit can't tell; it never asks.
+          store.hasUserEdits?.() ??
+          false,
+      ),
+    [registerUnsavedChanges, store, confirmDismiss],
+  );
   const handleSubmit = useEvent((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();

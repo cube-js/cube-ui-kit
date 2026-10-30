@@ -19,10 +19,10 @@ interface Answer extends PendingDismissal {
  * The owner side of `confirmDismiss`, for `DialogTrigger` and
  * `DialogContainer`. A passive dismissal (Escape, an outside click, the close
  * button) goes through `requestDismiss`, which asks "Discard changes?" first
- * while `confirmDismiss` is `true`, or, when it is unset, while a `DialogForm`
- * inside reports unsaved edits (or its own `confirmDismiss`) through
- * `registerUnsavedChanges`. Explicit actions (submit, Cancel, a `close` the
- * consumer calls) bypass it.
+ * while `confirmDismiss` is `true`, or, when it is unset, while a form inside
+ * (a modern `Form` root, or a legacy `DialogForm`) reports unsaved edits, or
+ * its own `confirmDismiss`, through `registerUnsavedChanges`. Explicit actions
+ * (submit, Cancel, a `close` the consumer calls) bypass it.
  *
  * The owner renders the question while `confirmationProps` is set:
  * `<DialogContainer {...confirmationProps}><DiscardChangesDialog /></DialogContainer>`.
@@ -34,7 +34,9 @@ export function useDismissConfirmation(
   const [pending, setPending] = useState<PendingDismissal | null>(null);
   // Mounted on the first question and kept, so it can play its exit.
   const [hasAsked, setHasAsked] = useState(false);
-  const hasUnsavedChanges = useRef<(() => boolean) | null>(null);
+  // Every form in the dialog reports its own: tabs or a wizard step can hold
+  // more than one, and any of them with edits makes the dialog ask.
+  const unsavedChecks = useRef(new Set<() => boolean>());
   const answer = useRef<Answer | null>(null);
   const lastFocused = useRef<Element | null>(null);
   const canAsk = isDialogOpen && confirmDismiss !== false;
@@ -67,7 +69,7 @@ export function useDismissConfirmation(
   function requestDismiss(dismiss: () => void) {
     if (pending) return;
 
-    if (!(confirmDismiss ?? hasUnsavedChanges.current?.() ?? false)) {
+    if (!(confirmDismiss ?? hasUnsavedChanges())) {
       dismiss();
 
       return;
@@ -83,11 +85,21 @@ export function useDismissConfirmation(
     setHasAsked(true);
   }
 
+  function hasUnsavedChanges() {
+    for (const check of unsavedChecks.current) {
+      if (check()) return true;
+    }
+
+    return false;
+  }
+
   function registerUnsavedChanges(check: () => boolean) {
-    hasUnsavedChanges.current = check;
+    const checks = unsavedChecks.current;
+
+    checks.add(check);
 
     return () => {
-      if (hasUnsavedChanges.current === check) hasUnsavedChanges.current = null;
+      checks.delete(check);
     };
   }
 

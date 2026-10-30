@@ -33,9 +33,9 @@ export interface CubeDialogContainerProps extends WithCloseBehavior {
   isKeyboardDismissDisabled?: boolean;
   /**
    * Whether Escape, an outside click and the close button ask "Discard
-   * changes?" before they close the dialog. Unset, they ask while a
-   * `DialogForm` inside has unsaved edits. Explicit actions (submit, Cancel,
-   * closing it from code) never ask.
+   * changes?" before they close the dialog. Unset, they ask while a form
+   * inside (a `DialogForm`, or a modern `Form`) has unsaved edits. Explicit
+   * actions (submit, Cancel, closing it from code) never ask.
    */
   confirmDismiss?: boolean;
 }

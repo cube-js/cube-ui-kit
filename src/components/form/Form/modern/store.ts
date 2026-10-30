@@ -62,6 +62,8 @@ interface FieldRecord<ErrorValue> {
   touched: boolean;
   /** A user write changed it; a blur, `touch()` or a programmatic set never does. */
   edited: boolean;
+  /** Counts user writes, so a submit can tell one that came after its payload. */
+  userWrites: number;
   errors: readonly ErrorValue[];
   status: FieldState['status'];
   validationRevision: number;
@@ -218,6 +220,7 @@ export function createFormStore<
         registrations: new Set(),
         touched: false,
         edited: false,
+        userWrites: 0,
         errors: EMPTY_ERRORS,
         status: 'unvalidated',
         validationRevision: 0,
@@ -487,7 +490,10 @@ export function createFormStore<
       invalidateRelated(record.path, previous, config);
     }
     if (config.touch ?? config.source === 'user') record.touched = true;
-    if (config.source === 'user') record.edited = true;
+    if (config.source === 'user') {
+      record.edited = true;
+      record.userWrites++;
+    }
     if (changed && (config.notify ?? config.source === 'user')) {
       event([record.name], 'set', config.source);
     }
@@ -791,6 +797,34 @@ export function createFormStore<
   function spendCleanEdits() {
     for (const record of records.values()) {
       if (record.edited && !dirty(record)) record.edited = false;
+    }
+  }
+
+  // What a submit carried, and how many user writes each field had then.
+  function snapshotSubmission(include: 'active' | 'all') {
+    return {
+      payload: include === 'all' ? values : activeValues(),
+      userWrites: new Map(
+        Array.from(records.values(), (record) => [record, record.userWrites]),
+      ),
+    };
+  }
+
+  // A successful submit saved what it carried, so those fields hold no unsaved
+  // edits until the user changes them again. A field the user changed while
+  // the request ran, or one the payload left out, keeps its edit. A value the
+  // code wrote meanwhile (a normalized one, say) is not the user's.
+  function spendSubmittedEdits({
+    payload,
+    userWrites,
+  }: ReturnType<typeof snapshotSubmission>) {
+    for (const record of records.values()) {
+      if (
+        record.edited &&
+        hasPath(payload, record.path) &&
+        userWrites.get(record) === record.userWrites
+      )
+        record.edited = false;
     }
   }
 
@@ -1136,11 +1170,12 @@ export function createFormStore<
           }
           return;
         }
+        const submitted = snapshotSubmission(include);
         try {
-          await callbacks.onSubmit?.(
-            (include === 'all' ? values : activeValues()) as FormValues<T>,
-            { include, signal: token.signal },
-          );
+          await callbacks.onSubmit?.(submitted.payload as FormValues<T>, {
+            include,
+            signal: token.signal,
+          });
           result = { status: 'submitted' };
         } catch (error) {
           if (settled) return;
@@ -1156,6 +1191,7 @@ export function createFormStore<
           result = { status: 'failed', error };
         }
         if (!settled) {
+          if (result.status === 'submitted') spendSubmittedEdits(submitted);
           token.complete(
             result.status === 'failed' ? { error: result.error } : undefined,
           );

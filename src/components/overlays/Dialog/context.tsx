@@ -27,8 +27,10 @@ export interface DialogContextValue extends HTMLAttributes<HTMLElement> {
    */
   requestDismiss?: (dismiss: () => void) => void;
   /**
-   * How a `DialogForm` reports unsaved edits to its trigger or container.
-   * Returns the unregister.
+   * How a form inside reports unsaved edits to its trigger or container: a
+   * modern `Form` root, or a legacy `DialogForm`. Each form registers its own
+   * check, and the dialog asks while any returns `true`. Returns the
+   * unregister.
    */
   registerUnsavedChanges?: (hasUnsavedChanges: () => boolean) => () => void;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
@@ -80,7 +80,7 @@ export function ModernDialogForm<T extends object>(
     ...dialogProps
   } = props;
   const { t } = useI18n();
-  const { onClose, isOpen, registerUnsavedChanges } = useDialogContext();
+  const { onClose, isOpen } = useDialogContext();
   const internals = getControllerInternals(form, '<DialogForm>');
   const transition = useOpenTransitionContext();
   const isClosing =
@@ -112,22 +112,6 @@ export function ModernDialogForm<T extends object>(
     if (!isClosing && !current.wasOpen) current.ended = false;
     current.wasOpen = !isClosing;
   });
-
-  // Escape, an outside click and the close button ask before they discard
-  // what the user typed: fields they edited away from their defaults. A value
-  // set from code, even in a field the user then visited, is not an edit.
-  // `preserve` keeps the values anyway.
-  useEffect(
-    () =>
-      registerUnsavedChanges?.(() => {
-        if (confirmDismiss !== undefined) return confirmDismiss;
-        if (preserve) return false;
-
-        // A controller from an older copy of the kit can't tell; it never asks.
-        return internals.store.hasUserEdits?.() ?? false;
-      }),
-    [registerUnsavedChanges, internals, preserve, confirmDismiss],
-  );
 
   // Portals may relocate (remounting this component) and Strict Mode reconnects
   // effects. A replacement root owns the same session; only a detached
@@ -169,6 +153,9 @@ export function ModernDialogForm<T extends object>(
         defaultValues={defaultValues}
         onSubmit={onSubmit}
         onSubmitted={submitted}
+        // The root reports the user's edits to the dialog. `preserve` keeps
+        // them anyway, so it never asks.
+        confirmDismiss={confirmDismiss ?? (preserve ? false : undefined)}
         onSubmitFailed={onSubmitFailed}
         onValuesChange={onValuesChange}
         onReset={onReset}
