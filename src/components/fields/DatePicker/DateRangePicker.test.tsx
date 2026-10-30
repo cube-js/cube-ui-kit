@@ -1,6 +1,12 @@
 import { CalendarDate } from '@internationalized/date';
 
-import { renderWithRoot, userEvent, waitFor, within } from '../../../test';
+import {
+  fireEvent,
+  renderWithRoot,
+  userEvent,
+  waitFor,
+  within,
+} from '../../../test';
 
 import { DateRangePicker } from './DateRangePicker';
 
@@ -217,6 +223,19 @@ describe('<DateRangePicker hideTrigger />', () => {
     await user.click(calendar()!.querySelector('th')!);
 
     expect(document.activeElement).toBe(day);
+  });
+
+  // As when the window loses focus, or a screen reader moves its cursor.
+  it('stays open when focus leaves the field for no element', async () => {
+    const onOpenChange = vi.fn();
+    const { segments, calendar } = renderPicker({ onOpenChange });
+
+    await user.click(segments[1]);
+    await expectOpen(calendar);
+
+    fireEvent.focusOut(segments[1], { relatedTarget: null });
+
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
   });
 
   it('closes when focus tabs out of the field, which reports its blur', async () => {

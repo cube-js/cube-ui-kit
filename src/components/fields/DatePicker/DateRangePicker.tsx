@@ -108,7 +108,7 @@ export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
    * or Up and Down Arrow), or Alt+Down or Alt+Up, which also move focus into
    * the calendar. Tabbing into the field doesn't open it, and while the dates
    * are typed focus stays in the field. Escape, a press outside, picking a
-   * range without times, or focus leaving the field and the calendar closes it.
+   * range without times, or focus moving on to another element closes it.
    * @default false
    */
   hideTrigger?: boolean;
