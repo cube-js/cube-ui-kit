@@ -794,6 +794,20 @@ export function createFormStore<
     }
   }
 
+  // A successful submit saved what it carried, so those fields hold no unsaved
+  // edits until the user changes them again. A field the user changed while
+  // the request ran, or one the payload left out, keeps its edit.
+  function spendSubmittedEdits(carried: object) {
+    for (const record of records.values()) {
+      if (
+        record.edited &&
+        hasPath(carried, record.path) &&
+        !pathValueChanged(carried, values, record.path)
+      )
+        record.edited = false;
+    }
+  }
+
   function reset(config: { values?: Partial<T> } = {}) {
     batch(() => {
       if (Object.hasOwn(config, 'values')) replaceDefaults(config.values ?? {});
@@ -1136,11 +1150,12 @@ export function createFormStore<
           }
           return;
         }
+        const payload = include === 'all' ? values : activeValues();
         try {
-          await callbacks.onSubmit?.(
-            (include === 'all' ? values : activeValues()) as FormValues<T>,
-            { include, signal: token.signal },
-          );
+          await callbacks.onSubmit?.(payload as FormValues<T>, {
+            include,
+            signal: token.signal,
+          });
           result = { status: 'submitted' };
         } catch (error) {
           if (settled) return;
@@ -1156,6 +1171,7 @@ export function createFormStore<
           result = { status: 'failed', error };
         }
         if (!settled) {
+          if (result.status === 'submitted') spendSubmittedEdits(payload);
           token.complete(
             result.status === 'failed' ? { error: result.error } : undefined,
           );

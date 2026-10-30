@@ -364,6 +364,51 @@ describe('modern callback ownership and submission', () => {
     expect(later).not.toHaveBeenCalled();
   });
 
+  it('spends the user edits a successful submit saved, not a failed one', async () => {
+    const onSubmit = vi.fn(async () => {});
+    const store = createFormStore({ defaultValues: { a: '' }, onSubmit });
+    store.register('a');
+    store.setValue('a', 'saved', { source: 'user' });
+    onSubmit.mockRejectedValueOnce(new Error('offline'));
+    expect(await store.submit()).toMatchObject({ status: 'failed' });
+    expect(store.hasUserEdits()).toBe(true);
+    expect(await store.submit()).toEqual({ status: 'submitted' });
+    expect(store.hasUserEdits()).toBe(false);
+    store.setValue('a', 'edited again', { source: 'user' });
+    expect(store.hasUserEdits()).toBe(true);
+  });
+
+  it('keeps a user edit typed while the request ran', async () => {
+    const store = createFormStore({
+      defaultValues: { a: '', b: '' },
+      onSubmit: () => {
+        store.setValue('b', 'typed meanwhile', { source: 'user' });
+      },
+    });
+    store.register('a');
+    store.register('b');
+    store.setValue('a', 'saved', { source: 'user' });
+    expect(await store.submit()).toEqual({ status: 'submitted' });
+    expect(store.hasUserEdits()).toBe(true);
+    // Typed back to its default, `b` stops counting: `a` was spent.
+    store.setValue('b', '', { source: 'user' });
+    expect(store.hasUserEdits()).toBe(false);
+  });
+
+  it('keeps a user edit the active payload left out', async () => {
+    const store = createFormStore({ defaultValues: { a: '', b: '' } });
+    store.register('a');
+    store.setValue('a', 'saved', { source: 'user' });
+    // A draft whose input is gone: `submit()` carries active values only.
+    store.setValue('b', 'draft', { source: 'user' });
+    expect(await store.submit()).toEqual({ status: 'submitted' });
+    expect(store.hasUserEdits()).toBe(true);
+    expect(await store.submit({ include: 'all' })).toEqual({
+      status: 'submitted',
+    });
+    expect(store.hasUserEdits()).toBe(false);
+  });
+
   it('rejects a result invalidated by a synchronous completion subscriber', async () => {
     const onSubmit = vi.fn();
     const store = createFormStore({ onSubmit });
