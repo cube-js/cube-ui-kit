@@ -431,6 +431,42 @@ describe('Toast collapse on pointer movement', () => {
     });
   });
 
+  it('rests below `$overlay-inset-top` and still collapses to the viewport top', async () => {
+    const INSET = 48;
+
+    function Shows() {
+      useProgressToast({ title: 'Saved below the bar', isLoading: true });
+
+      return null;
+    }
+
+    document.documentElement.style.setProperty(
+      '--overlay-inset-top',
+      `${INSET}px`,
+    );
+
+    try {
+      renderWithRoot(<Shows />);
+      const toast = await screen.findByTestId('Toast');
+
+      await act(() =>
+        realInput.hover(document.body, { position: { x: 1, y: 1 } }),
+      );
+      await waitFor(() => {
+        expect(toast.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+          16 + INSET,
+        );
+      });
+
+      await act(() => realInput.hover(toast.parentElement!));
+      await waitFor(() => {
+        expect(toast.getBoundingClientRect().bottom).toBeLessThanOrEqual(11);
+      });
+    } finally {
+      document.documentElement.style.removeProperty('--overlay-inset-top');
+    }
+  });
+
   it.each(['actionable toast', 'notification'] as const)(
     'keeps %s expanded when the pointer moves over it',
     async (kind) => {

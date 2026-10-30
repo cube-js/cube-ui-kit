@@ -34,7 +34,8 @@ const DEFAULT_ITEM_HEIGHT = 56;
 const OverlayContainerElement = tasty({
   styles: {
     position: 'fixed',
-    top: '2x',
+    // `$overlay-inset-top` lets an app keep the stack below a fixed bar of its own.
+    top: '(2x + ($overlay-inset-top, 0px))',
     left: '50%',
     transform: 'translateX(-50%)',
     zIndex: 100,
@@ -47,7 +48,11 @@ const OverlayContainerElement = tasty({
 const OverlayItemWrapper = tasty({
   styles: {
     position: 'absolute',
-    top: '$item-top',
+    // A collapsed stack still peeks from the viewport's top edge, above any inset.
+    top: {
+      '': '$item-top',
+      isCollapsed: '($item-top - ($overlay-inset-top, 0px))',
+    },
     left: '50%',
     zIndex: {
       '': 'auto',
