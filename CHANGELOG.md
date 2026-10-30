@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.205.0
+
+### Minor Changes
+
+- [#1605](https://github.com/cube-js/cube-ui-kit/pull/1605) [`e6aa81c4b`](https://github.com/cube-js/cube-ui-kit/commit/e6aa81c4b1fc73e335a7ef11618531580133517d) Thanks [@tenphi](https://github.com/tenphi)! - **DateRangePicker:** a new `hideTrigger` prop drops the calendar button, so the field fits a narrower row. The calendar opens from the field instead: a press in it or an edit of a date (typing, or Up and Down Arrow) opens it and leaves focus in the date being typed, and Alt+Down or Alt+Up opens it and moves focus into it. Tabbing into the field doesn't open it. Escape, a press outside, picking a range without times, or focus moving on to another element on the page closes it.
+
+  **DatePicker, DateRangePicker, DateRangeSeparatedPicker:** `inputStyles` now reaches the date input. It was declared on all three and applied on none, so `inputStyles={{ preset: 't4n' }}` can now make the dates smaller.
+
+- [#1606](https://github.com/cube-js/cube-ui-kit/pull/1606) [`7fb41cac2`](https://github.com/cube-js/cube-ui-kit/commit/7fb41cac20013401226f5c09a18f34868d272d00) Thanks [@tenphi](https://github.com/tenphi)! - A modern `Form` inside a `Dialog` you lay out yourself now asks "Discard changes?" before Escape, a click outside or the close button discards what the user typed, as `DialogForm` does: the form reports its edits to the dialog's `DialogTrigger` or `DialogContainer` with no wiring. A successful submit saves the edits it carried, so a dialog that stays open after saving closes at once until the user types again. The dialog asks while any of its forms has unsaved edits. Set `confirmDismiss={false}` on the trigger or container where backing out loses nothing.
+
+- [#1603](https://github.com/cube-js/cube-ui-kit/pull/1603) [`206ac6c2d`](https://github.com/cube-js/cube-ui-kit/commit/206ac6c2dbbd8fd7fcda88849472087a2f136b47) Thanks [@tenphi](https://github.com/tenphi)! - Add the `$overlay-inset-top` custom property to keep the toast and notification stack below an app's own fixed top bar.
+
+### Patch Changes
+
+- [#1602](https://github.com/cube-js/cube-ui-kit/pull/1602) [`ea54cb1a3`](https://github.com/cube-js/cube-ui-kit/commit/ea54cb1a3ca1bb4f52395df842361e2cf1bd390a) Thanks [@tenphi](https://github.com/tenphi)! - `DateRangePicker` and `DateRangeSeparatedPicker` no longer overflow a container too narrow for one row: the end date wraps onto a second row under the start date. `DateRangeSeparatedPicker` moves its end box to the new row, keeping the dash after the start box. `DateRangePicker` grows its box by one row, with the dash and the calendar button on the first row. Neither field gets narrower than its widest row. With room for one row, nothing changes.
+
 ## 0.204.0
 
 ### Minor Changes
