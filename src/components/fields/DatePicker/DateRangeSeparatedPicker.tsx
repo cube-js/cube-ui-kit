@@ -42,6 +42,15 @@ const DateRangeDash = tasty({
   },
 });
 
+// The start box and its dash wrap as one, so a row never starts with the dash.
+const DateRangeStart = tasty({
+  qa: 'DateRangeStart',
+  styles: {
+    display: 'flex',
+    placeItems: 'center',
+  },
+});
+
 export interface CubeDateRangeSeparatedPickerProps<
   T extends DateValue = DateValue,
 >
@@ -222,76 +231,78 @@ function DateRangeSeparatedPicker<T extends DateValue>(
       qa={qa || 'DateRangeSeparatedPicker'}
       data-input-type="daterangeseparatedpicker"
     >
-      <DateInputBase
-        autoFocus={autoFocus}
-        disableFocusRing={startFocusProps.isFocused}
-        isDisabled={isDisabled}
-        isReadOnly={props.isReadOnly}
-        isInvalid={isInvalid}
-        isValid={isValid}
-        size={size}
-        {...startFocusRingProps.focusProps}
-        suffix={
-          <DialogTrigger
-            hideArrow
-            type="popover"
-            placement={props.placement ?? 'bottom right'}
-            targetRef={props.targetRef ?? targetRef}
-            isOpen={startState.isOpen}
-            shouldFlip={props.shouldFlip}
-            onOpenChange={startState.setOpen}
-          >
-            <DatePickerButton
-              size={size}
-              {...mergeProps(
-                startProps.buttonProps,
-                startFocusProps.focusProps,
-              )}
-              // After React Aria's props, whose "Calendar" would replace it:
-              // the two buttons need different names.
-              aria-label={t(
-                'datePicker.showStartCalendar',
-                'Show calendar for the start date',
-              )}
-              isDisabled={isDisabled}
-            />
-            <Dialog
-              {...startProps.dialogProps}
-              width="max-content"
-              overflow="auto"
+      <DateRangeStart>
+        <DateInputBase
+          autoFocus={autoFocus}
+          disableFocusRing={startFocusProps.isFocused}
+          isDisabled={isDisabled}
+          isReadOnly={props.isReadOnly}
+          isInvalid={isInvalid}
+          isValid={isValid}
+          size={size}
+          {...startFocusRingProps.focusProps}
+          suffix={
+            <DialogTrigger
+              hideArrow
+              type="popover"
+              placement={props.placement ?? 'bottom right'}
+              targetRef={props.targetRef ?? targetRef}
+              isOpen={startState.isOpen}
+              shouldFlip={props.shouldFlip}
+              onOpenChange={startState.setOpen}
             >
-              <Calendar
-                {...startProps.calendarProps}
-                defaultFocusedValue={
-                  state.value?.start || state.value?.end || undefined
-                }
-                selectedRange={
-                  state.value?.start && state.value?.end
-                    ? { start: state.value.start, end: state.value.end }
-                    : undefined
-                }
-                onChange={(value: DateValue) => onChange(value, 'start')}
+              <DatePickerButton
+                size={size}
+                {...mergeProps(
+                  startProps.buttonProps,
+                  startFocusProps.focusProps,
+                )}
+                // After React Aria's props, whose "Calendar" would replace it:
+                // the two buttons need different names.
+                aria-label={t(
+                  'datePicker.showStartCalendar',
+                  'Show calendar for the start date',
+                )}
+                isDisabled={isDisabled}
               />
-              {showTimeField && (
-                <TimeInput
-                  label={t('datePicker.time', 'Time')}
-                  value={startState.timeValue}
-                  placeholderValue={timePlaceholder}
-                  granularity={timeGranularity}
-                  minValue={timeMinValue}
-                  maxValue={timeMaxValue}
-                  hourCycle={props.hourCycle}
-                  hideTimeZone={props.hideTimeZone}
-                  onChange={startState.setTimeValue}
+              <Dialog
+                {...startProps.dialogProps}
+                width="max-content"
+                overflow="auto"
+              >
+                <Calendar
+                  {...startProps.calendarProps}
+                  defaultFocusedValue={
+                    state.value?.start || state.value?.end || undefined
+                  }
+                  selectedRange={
+                    state.value?.start && state.value?.end
+                      ? { start: state.value.start, end: state.value.end }
+                      : undefined
+                  }
+                  onChange={(value: DateValue) => onChange(value, 'start')}
                 />
-              )}
-            </Dialog>
-          </DialogTrigger>
-        }
-      >
-        <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
-      </DateInputBase>
-      <DateRangeDash />
+                {showTimeField && (
+                  <TimeInput
+                    label={t('datePicker.time', 'Time')}
+                    value={startState.timeValue}
+                    placeholderValue={timePlaceholder}
+                    granularity={timeGranularity}
+                    minValue={timeMinValue}
+                    maxValue={timeMaxValue}
+                    hourCycle={props.hourCycle}
+                    hideTimeZone={props.hideTimeZone}
+                    onChange={startState.setTimeValue}
+                  />
+                )}
+              </Dialog>
+            </DialogTrigger>
+          }
+        >
+          <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
+        </DateInputBase>
+        <DateRangeDash />
+      </DateRangeStart>
       <DateInputBase
         disableFocusRing={endFocusProps.isFocused}
         isDisabled={isDisabled}

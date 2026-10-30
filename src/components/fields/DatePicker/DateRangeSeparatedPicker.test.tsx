@@ -41,6 +41,31 @@ describe('<DateRangeSeparatedPicker />', () => {
     ).toBeInTheDocument();
   });
 
+  // Both buttons sit inside the picker the calendars anchor to, so a press on
+  // the open calendar's own button closes it rather than reopening it.
+  it.each([
+    ['start', 0],
+    ['end', 1],
+  ] as const)(
+    'closes the %s calendar from its own button',
+    async (_, index) => {
+      const { baseElement } = renderWithRoot(
+        <DateRangeSeparatedPicker aria-label="Range" />,
+      );
+
+      await openCalendar(baseElement, index);
+      await user.click(
+        baseElement.querySelectorAll('[data-popover-trigger]')[
+          index
+        ] as HTMLElement,
+      );
+
+      await waitFor(() =>
+        expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
+      );
+    },
+  );
+
   it('renders both endpoints from an uncontrolled default range', async () => {
     const { baseElement, getAllByRole } = renderWithRoot(
       <DateRangeSeparatedPicker

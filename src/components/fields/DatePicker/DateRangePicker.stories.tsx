@@ -16,6 +16,12 @@ export default {
     controls: {
       exclude: baseProps,
     },
+    docs: {
+      description: {
+        component:
+          'In a container too narrow for one row, the end date wraps onto a second row inside the same box, which grows by one row. The dash and the calendar button stay on the first row. The dates never shrink, and the field is never narrower than its widest row.',
+      },
+    },
   },
   argTypes: {
     ...ICON_ARG,
@@ -68,6 +74,13 @@ export const Validation: StoryFn<CubeDateRangePickerProps> = (props) => (
     <DateRangePicker {...props} isInvalid aria-label="Invalid range" />
   </Space>
 );
+
+// Too narrow for one row, so the end date wraps onto a second row.
+export const Narrow = Template.bind({});
+Narrow.args = {
+  ...WithDefaultValue.args,
+  width: '180px',
+};
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };

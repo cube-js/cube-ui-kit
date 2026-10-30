@@ -1,4 +1,6 @@
-import { renderWithRoot, screen } from '../../../test';
+import { CalendarDate } from '@internationalized/date';
+
+import { cleanup, renderWithRoot, screen, within } from '../../../test';
 
 import { DatePicker } from './DatePicker';
 import { DateRangePicker } from './DateRangePicker';
@@ -126,4 +128,201 @@ describe.each([
       expect(root.getBoundingClientRect().width).toBeCloseTo(200, 0);
     },
   );
+});
+
+const RANGE = {
+  start: new CalendarDate(2020, 9, 10),
+  end: new CalendarDate(2021, 4, 1),
+};
+
+function rect(element: Element) {
+  return element.getBoundingClientRect();
+}
+
+function expectInside(inner: Element, outer: Element) {
+  const box = rect(outer);
+  const { left, top, right, bottom } = rect(inner);
+
+  expect(left).toBeGreaterThanOrEqual(box.left - 0.5);
+  expect(top).toBeGreaterThanOrEqual(box.top - 0.5);
+  expect(right).toBeLessThanOrEqual(box.right + 0.5);
+  expect(bottom).toBeLessThanOrEqual(box.bottom + 0.5);
+}
+
+/**
+ * A range laid out on one row ran out of any container narrower than that
+ * row: the inputs keep their width, and nothing else gave. Too narrow for one
+ * row, the end date now wraps under the start date, and the dash stays at the
+ * end of the first row.
+ */
+describe('<DateRangeSeparatedPicker /> in a narrow container', () => {
+  function renderPicker(width: number, props: Record<string, unknown> = {}) {
+    renderWithRoot(
+      <div style={{ width }}>
+        <DateRangeSeparatedPicker
+          isBare
+          aria-label="Range"
+          qa="Range"
+          defaultValue={RANGE}
+          {...props}
+        />
+      </div>,
+    );
+
+    const picker = screen.getByTestId('Range');
+    const [start, end] = screen.getAllByTestId('DateTimeInput');
+
+    return { picker, start, end, dash: screen.getByTestId('DateRangeDash') };
+  }
+
+  it('keeps one row when there is room for it', () => {
+    const { picker, start, end, dash } = renderPicker(400);
+
+    expect(rect(end).top).toBeCloseTo(rect(start).top, 0);
+    expect(rect(dash).left).toBeCloseTo(rect(start).right, 0);
+    expect(rect(end).left).toBeCloseTo(rect(dash).right, 0);
+    expect(rect(picker).height).toBeCloseTo(rect(start).height, 0);
+  });
+
+  it('wraps the end box under the start box', () => {
+    const { picker, start, end, dash } = renderPicker(200);
+
+    expect(rect(picker).width).toBeCloseTo(200, 0);
+    expect(rect(end).top).toBeGreaterThan(rect(start).bottom);
+    expect(rect(end).left).toBeCloseTo(rect(start).left, 0);
+    expect(rect(end).width).toBeCloseTo(rect(start).width, 0);
+    // The dash ends the first row.
+    expect(rect(dash).left).toBeCloseTo(rect(start).right, 0);
+    expect(rect(dash).bottom).toBeLessThanOrEqual(rect(start).bottom);
+
+    for (const element of [
+      start,
+      end,
+      dash,
+      ...screen.getAllByRole('button'),
+    ]) {
+      expectInside(element, picker);
+    }
+  });
+
+  it.each([
+    ['its own width', {}],
+    ['a consumer width', { wrapperStyles: { width: '100%' } }],
+  ])('is never narrower than its widest row with %s', (_, props) => {
+    const { picker, start, end, dash } = renderPicker(100, props);
+
+    expect(rect(picker).width).toBeCloseTo(
+      rect(dash).right - rect(start).left,
+      0,
+    );
+
+    for (const element of [start, end, dash]) expectInside(element, picker);
+  });
+
+  // Cloud's dashboard filter stretches the picker and spreads its boxes.
+  it('spreads a stretched picker on one row', () => {
+    const { picker, start, end, dash } = renderPicker(320, {
+      wrapperStyles: { width: '100%', placeContent: 'space-between' },
+    });
+
+    expect(rect(end).top).toBeCloseTo(rect(start).top, 0);
+    expect(rect(start).left).toBeCloseTo(rect(picker).left, 0);
+    expect(rect(dash).left).toBeCloseTo(rect(start).right, 0);
+    expect(rect(end).right).toBeCloseTo(rect(picker).right, 0);
+  });
+
+  it('starts both rows of a stretched picker at its start', () => {
+    const { picker, start, end, dash } = renderPicker(250, {
+      wrapperStyles: { width: '100%', placeContent: 'space-between' },
+    });
+
+    expect(rect(end).top).toBeGreaterThan(rect(start).bottom);
+    expect(rect(start).left).toBeCloseTo(rect(picker).left, 0);
+    expect(rect(end).left).toBeCloseTo(rect(picker).left, 0);
+    // Not pushed to the far edge of the first row.
+    expect(rect(dash).left).toBeCloseTo(rect(start).right, 0);
+  });
+});
+
+describe('<DateRangePicker /> in a narrow container', () => {
+  function renderPicker(width: number, props: Record<string, unknown> = {}) {
+    renderWithRoot(
+      <div style={{ width }}>
+        <DateRangePicker
+          isBare
+          aria-label="Range"
+          qa="Range"
+          defaultValue={RANGE}
+          {...props}
+        />
+      </div>,
+    );
+
+    const box = screen.getByTestId('Range');
+    // The date fields themselves, without the dash beside the start date.
+    const start = screen.getByTestId('DateRangeStart').firstElementChild!;
+    const end = screen.getByTestId('DateRangeEnd').firstElementChild!;
+
+    return {
+      box,
+      start,
+      end,
+      dash: screen.getByTestId('DateRangeDash'),
+      button: within(box).getByRole('button'),
+    };
+  }
+
+  it.each(['small', 'medium', 'large'])(
+    'grows a %s box by one row for the end date',
+    (size) => {
+      const oneRow = renderPicker(400, { size });
+      const oneRowHeight = rect(oneRow.box).height;
+
+      expect(rect(oneRow.end).top).toBeCloseTo(rect(oneRow.start).top, 0);
+
+      cleanup();
+
+      const { box, start, end, dash, button } = renderPicker(180, { size });
+      const rowHeight = oneRowHeight - 2;
+
+      expect(rect(box).width).toBeCloseTo(180, 0);
+      expect(rect(box).height).toBeCloseTo(oneRowHeight + rowHeight, 0);
+      expect(rect(end).top).toBeGreaterThanOrEqual(rect(start).bottom);
+      expect(rect(end).left).toBeCloseTo(rect(start).left, 0);
+      // The dash ends the first row, and the button stays on it.
+      expect(rect(dash).left).toBeCloseTo(rect(start).right, 0);
+      expect(rect(button).bottom).toBeLessThanOrEqual(
+        rect(box).top + oneRowHeight,
+      );
+
+      for (const element of [start, end, dash, button]) {
+        expectInside(element, box);
+      }
+    },
+  );
+
+  it('keeps the validation indicator on the first row', () => {
+    const { box, button } = renderPicker(180, { isInvalid: true });
+    const firstRow = screen.getByTestId('DateRangeStart');
+    const indicator = box.querySelector('[data-element="State"]')!;
+
+    expectInside(indicator, box);
+    expect(rect(indicator).right).toBeLessThanOrEqual(rect(button).left + 0.5);
+    expect(rect(indicator).bottom).toBeLessThanOrEqual(
+      rect(firstRow).bottom + 0.5,
+    );
+  });
+
+  it.each([
+    ['its own width', {}],
+    ['a consumer width', { styles: { width: '100%' } }],
+  ])('is never narrower than its widest row with %s', (_, props) => {
+    const { box, start, end, dash, button } = renderPicker(100, props);
+
+    expect(rect(box).width).toBeGreaterThan(100);
+
+    for (const element of [start, end, dash, button]) {
+      expectInside(element, box);
+    }
+  });
 });

@@ -15,7 +15,7 @@
     "label-title-only": 2,
     "nested-interactive": 9,
     "scrollable-region-focusable": 15,
-    "target-size": 333
+    "target-size": 341
   },
   "stories": {
     "actions-banner--stacked": { "color-contrast": 2 },
@@ -225,6 +225,7 @@
     },
     "forms-datepicker--with-locale": { "color-contrast": 3, "target-size": 2 },
     "forms-daterangepicker--default": { "color-contrast": 6, "target-size": 4 },
+    "forms-daterangepicker--narrow": { "target-size": 4 },
     "forms-daterangepicker--small": { "color-contrast": 6, "target-size": 4 },
     "forms-daterangepicker--validation": {
       "color-contrast": 12,
@@ -241,6 +242,7 @@
       "color-contrast": 6,
       "target-size": 4
     },
+    "forms-daterangeseparatedpicker--narrow": { "target-size": 4 },
     "forms-daterangeseparatedpicker--small": {
       "color-contrast": 6,
       "target-size": 4
