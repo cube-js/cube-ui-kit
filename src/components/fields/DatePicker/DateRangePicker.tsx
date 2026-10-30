@@ -42,6 +42,32 @@ const DateRangeDash = tasty({
   },
 });
 
+// One row of the box: the start date with its dash, or the end date. Too narrow
+// for one row, the end date's row wraps under the start date's.
+const DateRangeRow = tasty({
+  role: 'presentation',
+  styles: {
+    display: 'flex',
+    placeItems: 'center start',
+    height: '($size - 2bw)',
+  },
+});
+
+// The box grows by a row for a wrapped end date, its suffix stays on the first
+// row, and it is never narrower than its widest row.
+const WRAPPER_STYLES: Styles = {
+  minWidth: 'min-content',
+  height: 'min $size',
+  Suffix: {
+    height: '($size - 2bw)',
+  },
+};
+
+const INPUT_STYLES: Styles = {
+  flow: 'row wrap',
+  height: 'auto',
+};
+
 export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
   extends
     Omit<
@@ -89,6 +115,7 @@ function DateRangePicker<T extends DateValue>(
 
   // `wrapperStyles` styles the same box as `styles` and wins over it.
   const fieldLayout = splitFieldLayout(props, {
+    defaultStyles: WRAPPER_STYLES,
     overStyles: props.wrapperStyles,
   });
   const styles = fieldLayout.styles;
@@ -164,6 +191,7 @@ function DateRangePicker<T extends DateValue>(
       inputType="daterangepicker"
       autoFocus={autoFocus}
       styles={styles}
+      inputStyles={INPUT_STYLES}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
       isReadOnly={props.isReadOnly}
@@ -222,9 +250,13 @@ function DateRangePicker<T extends DateValue>(
         </DialogTrigger>
       }
     >
-      <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
-      <DateRangeDash />
-      <DatePickerInput useLocale={useLocaleProp} {...endFieldProps} />
+      <DateRangeRow qa="DateRangeStart">
+        <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
+        <DateRangeDash />
+      </DateRangeRow>
+      <DateRangeRow qa="DateRangeEnd">
+        <DatePickerInput useLocale={useLocaleProp} {...endFieldProps} />
+      </DateRangeRow>
     </DateInputBase>
   );
 
