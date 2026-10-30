@@ -1,5 +1,5 @@
 import { StoryFn } from '@storybook/react-vite';
-import { userEvent, within } from 'storybook/test';
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test';
 
 import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -80,6 +80,30 @@ export const Narrow = Template.bind({});
 Narrow.args = {
   ...WithDefaultValue.args,
   width: '180px',
+};
+
+// Opened from a press in the month, so the snapshot shows the calendar.
+export const HideTrigger = Template.bind({});
+HideTrigger.args = {
+  ...WithDefaultValue.args,
+  hideTrigger: true,
+};
+HideTrigger.parameters = {
+  docs: {
+    description: {
+      story:
+        "Without the calendar button, the field takes less room. The calendar opens from the field: a press in it, or an edit of a date (typing, or Up and Down Arrow), opens it next to the field and leaves focus in the date being typed. Alt+Down or Alt+Up opens it and moves focus into it, which each date also tells screen readers. Tabbing into the field does not open it. Escape, a press outside, picking a range without times, or focus moving on to another element on the page closes it. Closed from inside the calendar, it returns focus to the date it came from. For a narrow row, a smaller preset shortens the dates further: `inputStyles={{ preset: 't4n' }}`.",
+    },
+  },
+};
+HideTrigger.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const [, month] = canvas.getAllByRole('spinbutton');
+
+  await userEvent.click(month);
+  await waitFor(() =>
+    expect(screen.getByTestId('CalendarPopover')).toBeVisible(),
+  );
 };
 
 export const Disabled = Template.bind({});

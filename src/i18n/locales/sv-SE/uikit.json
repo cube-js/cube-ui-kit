@@ -86,7 +86,8 @@
     "selectWeek": "Välj vecka",
     "selectMonth": "Välj månad",
     "selectQuarter": "Välj kvartal",
-    "selectYear": "Välj år"
+    "selectYear": "Välj år",
+    "calendarHint": "Tryck på Alt+Nedåtpil för att öppna kalendern."
   },
   "calendar": {
     "previousYear": "Föregående år",

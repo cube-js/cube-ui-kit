@@ -86,7 +86,8 @@
     "selectWeek": "Velg uke",
     "selectMonth": "Velg måned",
     "selectQuarter": "Velg kvartal",
-    "selectYear": "Velg år"
+    "selectYear": "Velg år",
+    "calendarHint": "Trykk på Alt+Pil ned for å åpne kalenderen."
   },
   "calendar": {
     "previousYear": "Forrige år",

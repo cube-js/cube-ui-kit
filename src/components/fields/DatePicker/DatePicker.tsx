@@ -149,6 +149,7 @@ function DatePicker<T extends DateValue>(
       inputType="datepicker"
       autoFocus={autoFocus}
       styles={styles}
+      inputStyles={props.inputStyles}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
       isReadOnly={props.isReadOnly}

@@ -1,6 +1,6 @@
 import { FocusableRef } from '@react-types/shared';
 import { BaseProps, Styles, tasty } from '@tenphi/tasty';
-import { forwardRef, RefObject, useRef } from 'react';
+import { forwardRef, RefObject, useId, useRef, useState } from 'react';
 import {
   AriaDateRangePickerProps,
   DateValue,
@@ -13,6 +13,7 @@ import { useDateRangePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
@@ -23,6 +24,7 @@ import { RangeCalendar } from '../../other/Calendar/RangeCalendar';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
+import { CalendarPopover, useFieldCalendar } from './CalendarPopover';
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
 import { DatePickerInput } from './DatePickerInput';
@@ -100,6 +102,16 @@ export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
    */
   placement?: Placement;
   useLocale?: boolean;
+  /**
+   * Renders no calendar button, so the field fits a narrower row. The calendar
+   * opens from the field instead: a press in it, an edit of a date (typing,
+   * or Up and Down Arrow), or Alt+Down or Alt+Up, which also move focus into
+   * the calendar. Tabbing into the field doesn't open it, and while the dates
+   * are typed focus stays in the field. Escape, a press outside, picking a
+   * range without times, or focus moving on to another element closes it.
+   * @default false
+   */
+  hideTrigger?: boolean;
 }
 
 function DateRangePicker<T extends DateValue>(
@@ -132,10 +144,19 @@ function DateRangePicker<T extends DateValue>(
     isValid,
     useLocale: useLocaleProp,
     autoFocus,
+    hideTrigger,
   } = props;
   let targetRef = useRef<HTMLDivElement>(null);
   let state = useDateRangePickerState({
     ...props,
+    // Without the button, the field owns the calendar's open state. React
+    // Aria's stays closed: open, it would stop the field reporting focus and
+    // blur while the dates are typed.
+    ...(hideTrigger && {
+      isOpen: false,
+      defaultOpen: false,
+      onOpenChange: undefined,
+    }),
     shouldCloseOnSelect: () => !state.hasTime,
   });
   let { isOpen, setOpen } = state;
@@ -165,7 +186,58 @@ function DateRangePicker<T extends DateValue>(
     buttonProps,
     dialogProps,
     calendarProps,
-  } = useDateRangePicker(props, state, targetRef);
+  } = useDateRangePicker(
+    props,
+    state,
+    // Without the button, React Aria's group is the whole field, so a press
+    // on its padding focuses its last date rather than whatever precedes it.
+    hideTrigger ? domRef : targetRef,
+  );
+
+  // The date typed last, which the open calendar turns to.
+  let [typedDate, setTypedDate] = useState<DateValue | null>(null);
+  let hintId = useId();
+
+  let {
+    isOpen: isCalendarOpen,
+    shouldFocusCalendar,
+    close: closeCalendar,
+    fieldProps: calendarFieldProps,
+    popoverRef,
+    calendarRef,
+  } = useFieldCalendar({
+    fieldRef: domRef,
+    isDisabled,
+    isReadOnly: props.isReadOnly,
+    isOpen: props.isOpen,
+    defaultOpen: props.defaultOpen,
+    onOpenChange(open) {
+      if (!open) {
+        setTypedDate(null);
+        // Commits a range picked without its times, as closing does.
+        setOpen(false);
+      }
+
+      props.onOpenChange?.(open);
+    },
+  });
+
+  // Without the button, each date names the key that opens the calendar, and
+  // a typed date turns the calendar to it.
+  let withCalendarFromField = (fieldProps: typeof startFieldProps) =>
+    hideTrigger
+      ? {
+          ...fieldProps,
+          'aria-describedby': [fieldProps['aria-describedby'], hintId]
+            .filter(Boolean)
+            .join(' '),
+          onChange(value: DateValue | null) {
+            fieldProps.onChange?.(value);
+
+            if (value) setTypedDate(value);
+          },
+        }
+      : fieldProps;
 
   let placeholder: DateValue | undefined = placeholderValue ?? undefined;
   let timePlaceholder =
@@ -183,7 +255,34 @@ function DateRangePicker<T extends DateValue>(
   let showTimeField = !!timeGranularity;
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
-  const component = (
+  const timeFields = showTimeField && (
+    <Space>
+      <TimeInput
+        label={t('datePicker.startTime', 'Start time')}
+        value={state.timeRange?.start || null}
+        placeholderValue={timePlaceholder}
+        granularity={timeGranularity}
+        minValue={timeMinValue}
+        maxValue={timeMaxValue}
+        hourCycle={props.hourCycle}
+        hideTimeZone={props.hideTimeZone}
+        onChange={(v) => state.setTime('start', v)}
+      />
+      <TimeInput
+        label={t('datePicker.endTime', 'End time')}
+        value={state.timeRange?.end || null}
+        placeholderValue={timePlaceholder}
+        granularity={timeGranularity}
+        minValue={timeMinValue}
+        maxValue={timeMaxValue}
+        hourCycle={props.hourCycle}
+        hideTimeZone={props.hideTimeZone}
+        onChange={(v) => state.setTime('end', v)}
+      />
+    </Space>
+  );
+
+  const field = (
     <DateInputBase
       ref={targetRef}
       wrapperRef={domRef}
@@ -191,73 +290,107 @@ function DateRangePicker<T extends DateValue>(
       inputType="daterangepicker"
       autoFocus={autoFocus}
       styles={styles}
-      inputStyles={INPUT_STYLES}
+      inputStyles={mergeStyleLayers(INPUT_STYLES, props.inputStyles)}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
       isReadOnly={props.isReadOnly}
       isInvalid={isInvalid}
       isValid={isValid}
       size={size}
-      fieldProps={groupProps}
+      fieldProps={
+        hideTrigger ? mergeProps(groupProps, calendarFieldProps) : groupProps
+      }
       {...focusProps}
       suffix={
-        <DialogTrigger
-          hideArrow
-          type="popover"
-          placement={placement}
-          targetRef={targetRefProp ?? targetRef}
-          isOpen={isOpen}
-          shouldFlip={shouldFlip}
-          onOpenChange={setOpen}
-        >
-          <DatePickerButton
-            size={size}
-            {...mergeProps(buttonProps, focusPropsButton)}
-            isDisabled={isDisabled}
-          />
-          <Dialog {...dialogProps} width="max-content" overflow="auto">
-            <RangeCalendar
-              {...calendarProps}
-              isDateUnavailable={props.isDateUnavailable}
+        hideTrigger ? null : (
+          <DialogTrigger
+            hideArrow
+            type="popover"
+            placement={placement}
+            targetRef={targetRefProp ?? targetRef}
+            isOpen={isOpen}
+            shouldFlip={shouldFlip}
+            onOpenChange={setOpen}
+          >
+            <DatePickerButton
+              size={size}
+              {...mergeProps(buttonProps, focusPropsButton)}
+              isDisabled={isDisabled}
             />
-            {showTimeField && (
-              <Space>
-                <TimeInput
-                  label={t('datePicker.startTime', 'Start time')}
-                  value={state.timeRange?.start || null}
-                  placeholderValue={timePlaceholder}
-                  granularity={timeGranularity}
-                  minValue={timeMinValue}
-                  maxValue={timeMaxValue}
-                  hourCycle={props.hourCycle}
-                  hideTimeZone={props.hideTimeZone}
-                  onChange={(v) => state.setTime('start', v)}
-                />
-                <TimeInput
-                  label={t('datePicker.endTime', 'End time')}
-                  value={state.timeRange?.end || null}
-                  placeholderValue={timePlaceholder}
-                  granularity={timeGranularity}
-                  minValue={timeMinValue}
-                  maxValue={timeMaxValue}
-                  hourCycle={props.hourCycle}
-                  hideTimeZone={props.hideTimeZone}
-                  onChange={(v) => state.setTime('end', v)}
-                />
-              </Space>
-            )}
-          </Dialog>
-        </DialogTrigger>
+            <Dialog {...dialogProps} width="max-content" overflow="auto">
+              <RangeCalendar
+                {...calendarProps}
+                isDateUnavailable={props.isDateUnavailable}
+              />
+              {timeFields}
+            </Dialog>
+          </DialogTrigger>
+        )
       }
     >
       <DateRangeRow qa="DateRangeStart">
-        <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
+        <DatePickerInput
+          useLocale={useLocaleProp}
+          {...withCalendarFromField(startFieldProps)}
+        />
         <DateRangeDash />
       </DateRangeRow>
       <DateRangeRow qa="DateRangeEnd">
-        <DatePickerInput useLocale={useLocaleProp} {...endFieldProps} />
+        <DatePickerInput
+          useLocale={useLocaleProp}
+          {...withCalendarFromField(endFieldProps)}
+        />
       </DateRangeRow>
     </DateInputBase>
+  );
+
+  // The popover is the field's sibling, so its keys and presses never reach
+  // the field's handlers.
+  const component = hideTrigger ? (
+    <>
+      {field}
+      <span hidden id={hintId}>
+        {t(
+          'datePicker.calendarHint',
+          'Press Alt+Down Arrow to open the calendar.',
+        )}
+      </span>
+      <CalendarPopover
+        isOpen={isCalendarOpen}
+        fieldRef={domRef}
+        popoverRef={popoverRef}
+        anchorRef={targetRefProp ?? targetRef}
+        placement={placement}
+        shouldFlip={shouldFlip}
+        dialogProps={{
+          ...dialogProps,
+          // No button here, so the field alone names the calendar.
+          'aria-labelledby': dialogProps['aria-labelledby']?.replace(
+            `${buttonProps.id} `,
+            '',
+          ),
+        }}
+        onClose={closeCalendar}
+      >
+        <RangeCalendar
+          // Remounted on a typed date, so it turns to that date's month.
+          key={typedDate?.toString()}
+          ref={calendarRef}
+          {...calendarProps}
+          autoFocus={shouldFocusCalendar}
+          defaultFocusedValue={typedDate ?? calendarProps.defaultFocusedValue}
+          isDateUnavailable={props.isDateUnavailable}
+          onChange={(range) => {
+            calendarProps.onChange?.(range);
+
+            if (!state.hasTime) closeCalendar();
+          }}
+        />
+        {timeFields}
+      </CalendarPopover>
+    </>
+  ) : (
+    field
   );
 
   return wrapWithField(component, {

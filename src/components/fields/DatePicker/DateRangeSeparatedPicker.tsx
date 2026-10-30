@@ -234,6 +234,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
       <DateRangeStart>
         <DateInputBase
           autoFocus={autoFocus}
+          inputStyles={props.inputStyles}
           disableFocusRing={startFocusProps.isFocused}
           isDisabled={isDisabled}
           isReadOnly={props.isReadOnly}
@@ -304,6 +305,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
         <DateRangeDash />
       </DateRangeStart>
       <DateInputBase
+        inputStyles={props.inputStyles}
         disableFocusRing={endFocusProps.isFocused}
         isDisabled={isDisabled}
         isReadOnly={props.isReadOnly}

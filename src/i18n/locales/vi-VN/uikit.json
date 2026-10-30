@@ -86,7 +86,8 @@
     "selectWeek": "Chọn tuần",
     "selectMonth": "Chọn tháng",
     "selectQuarter": "Chọn quý",
-    "selectYear": "Chọn năm"
+    "selectYear": "Chọn năm",
+    "calendarHint": "Nhấn Alt+Mũi tên xuống để mở lịch."
   },
   "calendar": {
     "previousYear": "Năm trước",
