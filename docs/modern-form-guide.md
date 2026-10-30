@@ -287,4 +287,8 @@ function EditProfileDialog({ initialProfile, save }) {
 }
 ```
 
-The dialog closes only after successful submission, including `form.submit()` and controller-configured callbacks. Validation or save errors keep it open. Closing cancels pending submission; late responses cannot close a reopened session. By default, ending the session resets values. Use `preserve` to retain the draft in a controller owned outside the dialog. `preserve` does not keep an unmounted controller alive. See the [DialogForm reference](https://cube-ui-kit.vercel.app/?path=/docs/overlays-dialogform--docs) for custom actions, container lifecycle, and legacy behavior.
+The dialog closes only after successful submission, including `form.submit()` and controller-configured callbacks. Validation or save errors keep it open. Closing cancels pending submission; late responses cannot close a reopened session. By default, ending the session resets values. Use `preserve` to retain the draft in a controller owned outside the dialog. `preserve` does not keep an unmounted controller alive.
+
+While a field the user edited differs from its default, Escape, a click outside and the close button ask "Discard changes?" first. That holds for a `<Form>` you place in a `Dialog` yourself too: the root reports its edits to the `DialogTrigger` or `DialogContainer` that owns the dialog, with no wiring. A value set from code is not an edit, and a successful submit saves what it carried, so a dialog that stays open after saving (to show a created key, say) closes at once until the user types again. Set `confirmDismiss={false}` on the trigger or container when backing out loses nothing. See [Unsaved edits](https://cube-ui-kit.vercel.app/?path=/docs/overlays-dialogtrigger--docs#unsaved-edits).
+
+See the [DialogForm reference](https://cube-ui-kit.vercel.app/?path=/docs/overlays-dialogform--docs) for custom actions, container lifecycle, and legacy behavior.
