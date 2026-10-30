@@ -78,10 +78,10 @@ export interface CubeDialogTriggerProps
   isKeyboardDismissDisabled?: boolean;
   /**
    * Whether Escape, an outside click and the close button ask "Discard
-   * changes?" before they close the dialog. Unset, they ask while a
-   * `DialogForm` inside has unsaved edits. Explicit actions (submit, Cancel,
-   * the `close` function) never ask, and a popover never does: it closes on
-   * its own in more ways than these.
+   * changes?" before they close the dialog. Unset, they ask while a form
+   * inside (a `DialogForm`, or a modern `Form`) has unsaved edits. Explicit
+   * actions (submit, Cancel, the `close` function) never ask, and a popover
+   * never does: it closes on its own in more ways than these.
    */
   confirmDismiss?: boolean;
   /** The screen breakpoint for the mobile type */

@@ -69,11 +69,7 @@ export function useDismissConfirmation(
   function requestDismiss(dismiss: () => void) {
     if (pending) return;
 
-    const hasUnsavedChanges = Array.from(unsavedChecks.current).some((check) =>
-      check(),
-    );
-
-    if (!(confirmDismiss ?? hasUnsavedChanges)) {
+    if (!(confirmDismiss ?? hasUnsavedChanges())) {
       dismiss();
 
       return;
@@ -87,6 +83,14 @@ export function useDismissConfirmation(
         focused && focused !== document.body ? focused : lastFocused.current,
     });
     setHasAsked(true);
+  }
+
+  function hasUnsavedChanges() {
+    for (const check of unsavedChecks.current) {
+      if (check()) return true;
+    }
+
+    return false;
   }
 
   function registerUnsavedChanges(check: () => boolean) {

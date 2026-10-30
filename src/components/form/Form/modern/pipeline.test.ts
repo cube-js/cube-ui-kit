@@ -395,6 +395,20 @@ describe('modern callback ownership and submission', () => {
     expect(store.hasUserEdits()).toBe(false);
   });
 
+  it('spends an edit the code rewrote while the request ran', async () => {
+    const store = createFormStore({
+      defaultValues: { a: '' },
+      onSubmit: (values: { a?: string }) => {
+        // The saved value, normalized by the server.
+        store.setValue('a', values.a?.trim());
+      },
+    });
+    store.register('a');
+    store.setValue('a', ' saved ', { source: 'user' });
+    expect(await store.submit()).toEqual({ status: 'submitted' });
+    expect(store.hasUserEdits()).toBe(false);
+  });
+
   it('keeps a user edit the active payload left out', async () => {
     const store = createFormStore({ defaultValues: { a: '', b: '' } });
     store.register('a');

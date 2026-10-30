@@ -171,6 +171,8 @@ A thrown/rejected save error appears through `Form.SubmitError`. Validation erro
 
 A `Form` placed directly in a `Dialog`, wrapping its `Content` and `Footer`, lays itself out as the dialog's slot column: a flex column that grows into the dialog, lets `Content` scroll, and adds no space between the slots. That is the form's own `@in-dialog` state, so `styles` on the form still override it property by property. You can also name the state to change only the in-dialog case: `<Form styles={{ gap: { '': '2x', '@in-dialog': '1x' } }}>`. A form nested inside `Content` is an ordinary form.
 
+A modern `Form` anywhere in a dialog reports the user's unsaved edits to the dialog's `DialogTrigger` or `DialogContainer`, as `DialogForm` does, so Escape, a click outside and the close button ask "Discard changes?" first. A value set from code is not an edit, and a successful submit saves what it carried. Set `confirmDismiss={false}` on the trigger or container where backing out loses nothing. See [Unsaved edits](/docs/overlays-dialogtrigger--docs#unsaved-edits).
+
 ## React Compiler
 
 The modern controller, subscriptions, input binding, and dialog workflows are tested with React Compiler on React 19.3. The published library is compiled using React’s native compiler runtime; consumers do not need to enable Compiler. Consumer render code must use `Form.useValue`, `Form.useFieldState`, or selectors to subscribe; imperative getters do not subscribe. This does not make legacy mutable instance reads Compiler-safe.

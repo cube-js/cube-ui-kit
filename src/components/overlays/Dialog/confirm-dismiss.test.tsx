@@ -366,7 +366,7 @@ describe('confirmDismiss', () => {
     function ProfileForm({
       onSave = async () => {},
     }: {
-      onSave?: (values: Values) => Promise<void>;
+      onSave?: () => Promise<void>;
     }) {
       const form = Form.useController<Values>({
         defaultValues: { name: 'Initial' },
@@ -391,7 +391,7 @@ describe('confirmDismiss', () => {
       onSave,
       ...triggerProps
     }: Partial<Omit<CubeDialogTriggerProps, 'children'>> & {
-      onSave?: (values: Values) => Promise<void>;
+      onSave?: () => Promise<void>;
     }) {
       return (
         <DialogTrigger {...triggerProps}>
@@ -432,28 +432,35 @@ describe('confirmDismiss', () => {
     });
 
     it('stops asking once a submit saved the edits, until the user types again', async () => {
-      const onSave = vi.fn(async (_values: Values) => {});
+      const onSave = vi.fn(async () => {});
 
       renderWithRoot(<HandBuiltDialog onSave={onSave} />);
 
       const input = await edit();
+      const save = async (times: number) => {
+        await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+        await waitFor(() => expect(onSave).toHaveBeenCalledTimes(times));
+        await userEvent.click(input);
+      };
 
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-      await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
-      await userEvent.click(input);
+      // The dialog stays open after saving, as one that shows a created key.
+      await save(1);
+      await userEvent.type(input, ' again');
+      await userEvent.keyboard('{Escape}');
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Keep editing' }),
+      );
+      await waitFor(() => expect(question()).not.toBeInTheDocument());
+
+      await save(2);
       await userEvent.keyboard('{Escape}');
 
       await expectClosed();
       expect(question()).not.toBeInTheDocument();
-
-      await userEvent.type(await open(), ' again');
-      await userEvent.keyboard('{Escape}');
-
-      expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
     });
 
     it('keeps asking after a failed submit', async () => {
-      const onSave = vi.fn(async (_values: Values) => {
+      const onSave = vi.fn(async () => {
         throw new Error('offline');
       });
 
