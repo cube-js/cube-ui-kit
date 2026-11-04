@@ -94,6 +94,30 @@ describe('PrismCode component', () => {
     expect(codeElement?.querySelector('.token.string')).toBeInTheDocument();
   });
 
+  test('highlights every SQL date unit as a keyword', () => {
+    const units = [
+      'second',
+      'minute',
+      'hour',
+      'day',
+      'week',
+      'month',
+      'quarter',
+      'year',
+    ];
+    const code = units
+      .map((unit) => `DATEDIFF(${unit}, created_at, completed_at)`)
+      .join('\n');
+
+    const { container } = render(<PrismCode code={code} language="sql" />);
+
+    const keywords = Array.from(
+      container.querySelectorAll('.token.keyword'),
+      (token) => token.textContent,
+    );
+    expect(keywords).toEqual(units);
+  });
+
   test('sets the wrapped mod only when isWrapped is passed', () => {
     const code = 'a very long single-line error message';
 
