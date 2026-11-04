@@ -1,5 +1,10 @@
-import { renderWithRoot, screen, waitFor } from '../../test';
+import { useState } from 'react';
+
+import { renderWithRoot, screen, userEvent, waitFor } from '../../test';
 import { Select } from '../fields/Select/Select';
+
+import { ItemActionsWrapper } from './ItemActionsWrapper';
+import { ItemButton } from './ItemButton/ItemButton';
 
 /**
  * The run's width is measured, not laid out: the run is a SIBLING of the row's
@@ -10,19 +15,23 @@ import { Select } from '../fields/Select/Select';
  * real browser can observe: jsdom reports every width as 0.
  */
 
+function AgentSelect() {
+  return (
+    <Select aria-label="Agent" defaultSelectedKey="one" width="200px">
+      <Select.Item key="one">A rather long agent name</Select.Item>
+      <Select.Item key="two">Another agent</Select.Item>
+    </Select>
+  );
+}
+
 /**
- * The container is shown and hidden through the DOM, not a render: the bug is a
- * row whose own props do not change when its container opens. A render of the
- * row would hand the wrapper a new `actions` element and re-measure it anyway,
- * which is not what a closed panel elsewhere in the tree does.
+ * The container is shown and hidden through the DOM, not a render: a closed
+ * panel elsewhere in the tree opens without the row's own props changing.
  */
 function renderPanel({ isShown = false } = {}) {
   renderWithRoot(
     <div data-qa="Panel" hidden={!isShown}>
-      <Select aria-label="Agent" defaultSelectedKey="one" width="200px">
-        <Select.Item key="one">A rather long agent name</Select.Item>
-        <Select.Item key="two">Another agent</Select.Item>
-      </Select>
+      <AgentSelect />
     </div>,
   );
 
@@ -35,27 +44,82 @@ function renderPanel({ isShown = false } = {}) {
   };
 }
 
-/** Two frames: the observers' notifications, then whatever they caused. */
-async function settle() {
-  for (let i = 0; i < 2; i++) {
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-  }
+/** The other way a panel opens: a render that shows it and the row together. */
+function StatefulPanel() {
+  const [isShown, setIsShown] = useState(false);
+
+  return (
+    <>
+      <button type="button" data-qa="Show" onClick={() => setIsShown(true)}>
+        show
+      </button>
+      <div hidden={!isShown}>
+        <AgentSelect />
+      </div>
+    </>
+  );
 }
 
-function getParts() {
-  const trigger = screen.getByRole('button', { name: /Agent/, hidden: true });
+function getParts(name: RegExp = /Agent/) {
+  const trigger = screen.getByRole('button', { name, hidden: true });
   const wrapper = trigger.parentElement!;
   // Scoped to a DIRECT child: `Item` keeps its own placeholder column under the
   // same element name inside the button.
   const run = wrapper.querySelector<HTMLElement>(
     ':scope > [data-element="Actions"]',
   )!;
+  const column = trigger.querySelector<HTMLElement>(
+    '[data-element="Actions"]',
+  )!;
 
-  return { trigger, wrapper, run };
+  return { trigger, wrapper, run, column };
 }
 
 function publishedWidth(wrapper: HTMLElement) {
   return wrapper.style.getPropertyValue('--actions-width');
+}
+
+/**
+ * What the first frame with a visible run shows: the published width and the
+ * row's laid-out placeholder column.
+ *
+ * Observers are notified in the order they were created, all before the frame
+ * is painted. This one is created after the wrapper's, so what it reads is what
+ * that frame shows. Reading the column's width resolves any transition at its
+ * current point, so a column sliding open reads near 0 here.
+ */
+function watchFirstFrame({
+  wrapper,
+  run,
+  column,
+}: ReturnType<typeof getParts>) {
+  const frames: { published: string; column: number }[] = [];
+  const observer = new ResizeObserver(([entry]) => {
+    if (entry.contentRect.width > 0) {
+      frames.push({
+        published: publishedWidth(wrapper),
+        column: column.offsetWidth,
+      });
+    }
+  });
+
+  observer.observe(run);
+
+  return {
+    async first() {
+      await waitFor(() => expect(frames.length).toBeGreaterThan(0));
+      observer.disconnect();
+
+      return frames[0];
+    },
+  };
+}
+
+/** Two frames: the observers' notifications, then whatever they caused. */
+async function settle() {
+  for (let i = 0; i < 2; i++) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
 }
 
 describe('ItemActionsWrapper in a hidden container', () => {
@@ -81,46 +145,102 @@ describe('ItemActionsWrapper in a hidden container', () => {
     );
   });
 
-  it('reserves it before the first frame the row is painted in', async () => {
+  it('starts at the full width in the first frame it is painted in', async () => {
     const panel = renderPanel();
-    const { wrapper, run } = getParts();
-    const seen: string[] = [];
+    const parts = getParts();
+    const watch = watchFirstFrame(parts);
 
-    // Observers are notified in the order they were created, and all of them
-    // before the frame is painted. This one is created after the wrapper's, so
-    // what it reads is what that frame shows.
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry.contentRect.width > 0) seen.push(publishedWidth(wrapper));
-    });
+    panel.setShown(true);
 
-    observer.observe(run);
+    const frame = await watch.first();
 
-    try {
-      panel.setShown(true);
-
-      await waitFor(() => expect(seen.length).toBeGreaterThan(0));
-
-      expect(seen[0]).toBe(`${run.offsetWidth}px`);
-    } finally {
-      observer.disconnect();
-    }
+    expect(frame.published).toBe(`${parts.run.offsetWidth}px`);
+    // Jumps, rather than sliding open over the label.
+    expect(frame.column).toBe(parts.run.offsetWidth);
   });
 
-  it('keeps the measured width while the container is hidden again', async () => {
+  it('starts at the full width when a render shows the container', async () => {
+    renderWithRoot(<StatefulPanel />);
+
+    const parts = getParts();
+    const watch = watchFirstFrame(parts);
+
+    // The row re-renders in the commit that shows it, so the wrapper measures
+    // in its own effect rather than in the observer.
+    await userEvent.click(screen.getByTestId('Show'));
+
+    const frame = await watch.first();
+
+    expect(frame.published).toBe(`${parts.run.offsetWidth}px`);
+    expect(frame.column).toBe(parts.run.offsetWidth);
+  });
+
+  it('follows the run when a prop change replaces it while hidden', async () => {
+    // The wrapper itself: no component in the kit flips `preserveActionsSpace`
+    // on a mounted row, but a direct consumer can.
+    const renderRow = (preserveActionsSpace: boolean) => (
+      <div data-qa="Panel" hidden>
+        <ItemActionsWrapper
+          autoHideActions
+          preserveActionsSpace={preserveActionsSpace}
+          actions={<ItemButton.Action aria-label="Pin" />}
+        >
+          {() => <div data-qa="Row">Row</div>}
+        </ItemActionsWrapper>
+      </div>
+    );
+    const { rerender } = renderWithRoot(renderRow(false));
+
+    // `preserveActionsSpace` swaps the transitioned run for a plain one, and
+    // keeps its width published while the actions are hidden.
+    rerender(renderRow(true));
+
+    const wrapper = screen.getByTestId('Row').parentElement!;
+    const run = wrapper.querySelector<HTMLElement>(
+      ':scope > [data-element="Actions"]',
+    )!;
+
+    expect(publishedWidth(wrapper)).toBe('0px');
+
+    screen.getByTestId('Panel').hidden = false;
+
+    await waitFor(() => {
+      expect(run.offsetWidth).toBeGreaterThan(0);
+      expect(publishedWidth(wrapper)).toBe(`${run.offsetWidth}px`);
+    });
+  });
+
+  it('leaves a measured row alone while its container closes and reopens', async () => {
     const panel = renderPanel({ isShown: true });
-    const { wrapper, run } = getParts();
+    const { trigger, wrapper, run } = getParts();
     const width = `${run.offsetWidth}px`;
 
     expect(run.offsetWidth).toBeGreaterThan(0);
     expect(publishedWidth(wrapper)).toBe(width);
 
-    panel.setShown(false);
+    const changes: MutationRecord[] = [];
+    const mutations = new MutationObserver((records) => {
+      changes.push(...records);
+    });
 
-    // A hidden run reads 0 wide. Publishing that would re-render every row in
-    // the container each time it closes, and again each time it opens.
+    mutations.observe(wrapper, { attributes: true });
+    mutations.observe(trigger, { attributes: true });
+
+    // A hidden run reads 0 wide, and a reopened one reads what it read before.
+    // Neither is a change: acting on them would re-render every row in the
+    // container each time it closes, and again each time it opens.
+    panel.setShown(false);
     await settle();
 
     expect(run.getClientRects()).toHaveLength(0);
     expect(publishedWidth(wrapper)).toBe(width);
+
+    panel.setShown(true);
+    await settle();
+
+    mutations.disconnect();
+
+    expect(publishedWidth(wrapper)).toBe(width);
+    expect(changes).toEqual([]);
   });
 });
