@@ -279,8 +279,7 @@ export const TableElement = tasty({
         // the table still fades, it just does not move. A loading state can
         // last a long time, and this one would otherwise animate continuously
         // beside the data with no way to stop it.
-        '@media(prefers-reduced-motion)':
-          'linear-gradient(90deg, #black 0%, #black 100%)',
+        '@reduced-motion': 'linear-gradient(90deg, #black 0%, #black 100%)',
       },
       // Three times the width, so the band is a third of the table and there is
       // an opaque stretch either side of it. The default `repeat` tiles
@@ -299,7 +298,7 @@ export const TableElement = tasty({
       // already uses.
       animationPlayState: {
         '': 'running',
-        '@media(prefers-reduced-motion)': 'paused',
+        '@reduced-motion': 'paused',
       },
       transition: 'opacity',
       // `fixed` makes `<colgroup>` authoritative, so the header and the body

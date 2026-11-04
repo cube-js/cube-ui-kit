@@ -482,7 +482,7 @@ export const runtimeNames = {
     '$topbar-height',
     '$transition',
   ],
-  states: ['@dark', '@hc'],
+  states: ['@dark', '@hc', '@reduced-motion'],
   presets: [
     'c1',
     'c2',

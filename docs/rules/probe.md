@@ -2,7 +2,7 @@
 
 Detail behind the summary in [`AGENTS.md`](../../AGENTS.md#inspecting-rendered-html--css--pnpm-probe). Read that first — it carries the rule you must follow. This file covers the modes, the two tiers, and what each can and cannot answer.
 
-Answering "what CSS does this actually produce?" used to mean hand-writing a throwaway vitest spec, running it, reading the output and deleting the file. `pnpm probe` does it in one call, with the real config loaded — the `configure()` (units, recipes) and `setGlobalPredefinedStates()` (`@dark` / `@hc`) from `src/components/Root.tsx`, plus the live Glaze palette. That is exactly what a bare `@tenphi/tasty` import misses.
+Answering "what CSS does this actually produce?" used to mean hand-writing a throwaway vitest spec, running it, reading the output and deleting the file. `pnpm probe` does it in one call, with the real config loaded — the `configure()` (units, recipes) and `setGlobalPredefinedStates()` (`@dark`, `@hc`, `@reduced-motion`) from `src/components/Root.tsx`, plus the live Glaze palette. That is exactly what a bare `@tenphi/tasty` import misses.
 
 ```bash
 pnpm probe styles '{"fill":"#purple","padding":"2x","preset":"t3"}'

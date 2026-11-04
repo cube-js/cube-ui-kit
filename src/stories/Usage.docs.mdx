@@ -152,6 +152,21 @@ Both follow the attribute opt-in first and the media query second, exactly as th
 
 Root-level only — there is no element-scoped or generic state reader, on purpose. Tasty's state vocabulary mixes element-local states (`hovered`, `pressed`, `disabled`) with ambient ones (`@media(…)`, `@root(…)`), and only the ambient half is answerable without an element.
 
+### Reduced Motion
+
+`<Root>` also registers `@reduced-motion`, which matches `@media (prefers-reduced-motion: reduce)`. Use it to stop or shorten motion for users who ask for less:
+
+```tsx
+const Spinner = tasty({
+  styles: {
+    animation: 'spin 1s linear infinite',
+    animationPlayState: { '': 'running', '@reduced-motion': 'paused' },
+  },
+});
+```
+
+It follows the system preference alone, with no attribute opt-in.
+
 ### Surface & Text Vocabulary
 
 The neutral palette uses a `surface` / `surface-text` model. Each surface depth has its own AAA text color, plus a soft (AA) variant for secondary copy:
@@ -451,7 +466,7 @@ An intended override takes a disable comment with its reason on the line before 
 
 With this rule on, `tasty/no-styles-prop` can stay off, so the primitives keep their `styles`.
 
-The same `extends` gives the plugin's other rules the names UI Kit defines: its tokens, presets and recipes, and the `@dark` and `@hc` state aliases. `tasty/valid-color-token`, `tasty/valid-custom-property`, `tasty/valid-preset`, `tasty/valid-recipe`, `tasty/valid-state-key` and `tasty/no-unknown-state-alias` then report only names that don't exist. List what your app defines itself, in its own `configure()` or `tokens`, in its own config, which adds to the lists it extends:
+The same `extends` gives the plugin's other rules the names UI Kit defines: its tokens, presets and recipes, and the `@dark`, `@hc` and `@reduced-motion` state aliases. `tasty/valid-color-token`, `tasty/valid-custom-property`, `tasty/valid-preset`, `tasty/valid-recipe`, `tasty/valid-state-key` and `tasty/no-unknown-state-alias` then report only names that don't exist. List what your app defines itself, in its own `configure()` or `tokens`, in its own config, which adds to the lists it extends:
 
 ```ts
 // tasty.config.ts
