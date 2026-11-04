@@ -35,7 +35,8 @@
     "docs/tasty",
     "docs/glaze",
     "docs/*.md",
-    "tasty.config.ts"
+    "tasty.config.ts",
+    "tasty.config.generated.ts"
   ],
   "scripts": {
     "start": "pnpm storybook",
@@ -79,6 +80,7 @@
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix",
     "audit-docs": "node scripts/audit-docs.mjs",
     "audit-defaults": "UPDATE_DEFAULTS=1 vitest run src/eslint-plugin/defaults.test.ts && prettier --write src/eslint-plugin/defaults.generated.ts",
+    "generate:tasty-config": "UPDATE_TASTY_CONFIG=1 vitest run src/tokens/tasty-config.test.ts && prettier --write tasty.config.generated.ts",
     "diagnostics:compiler": "node scripts/compiler/report.mjs",
     "diagnostics:form": "node scripts/form-diagnostics.mjs",
     "diagnostics:complexity": "node scripts/complexity-report.mjs",
