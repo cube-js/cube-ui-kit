@@ -465,6 +465,11 @@ describe.each([true, false])(
 
       await user.click(screen.getByTestId('Settings'));
       await screen.findByRole('dialog', { name: 'Settings' });
+      // Past the refocus `useDialog` runs half a second after the modal
+      // mounts, which takes focus if it finds it on `<body>`. A popover that
+      // unmounts leaves it there for a frame before its `FocusScope` restores
+      // it, so a close landing on that refocus lost focus to the modal.
+      await new Promise((resolve) => setTimeout(resolve, 500));
       const opener = screen.getByTestId('Opener');
 
       for (let cycle = 0; cycle < 2; cycle++) {

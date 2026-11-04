@@ -3,11 +3,14 @@ import { mergeStyles, Mods, Styles, tasty } from '@tenphi/tasty';
 import {
   HTMLAttributes,
   ReactNode,
+  RefObject,
+  useEffectEvent,
   useLayoutEffect,
   useRef,
   useState,
 } from 'react';
 import { useFocusWithin, useHover } from 'react-aria';
+import { flushSync } from 'react-dom';
 
 import {
   ITEM_RESTING_COLOR_VARIANTS,
@@ -185,6 +188,102 @@ export function ItemActionIcon(props: { children: ReactNode }) {
   return <div data-element="ActionIcon">{props.children}</div>;
 }
 
+/**
+ * The width the row reserves for the run, or `null` while the run has no box.
+ *
+ * `isFirst` says the width is where the row STARTS rather than a change to it:
+ * the first one since the run last had no box — on mount, or once a closed
+ * container opens — or since it was last observed (an `<Activity>` hide, a run
+ * swapped for another element). The ref carries that across measurements.
+ */
+function measureActionsWidth(
+  el: HTMLElement,
+  isUnmeasuredRef: RefObject<boolean>,
+): { width: number; isFirst: boolean } | null {
+  const width = el.offsetWidth;
+
+  // Under a `display: none` ancestor — a closed panel or tray — the run reads 0
+  // wide. That is not its width, and publishing it would only have to be undone
+  // when the container opens. `offsetWidth` is checked first so a test setup
+  // that mocks it still measures: jsdom has no client rects at all.
+  if (!width && !el.getClientRects().length) {
+    isUnmeasuredRef.current = true;
+
+    return null;
+  }
+
+  const isFirst = isUnmeasuredRef.current;
+
+  isUnmeasuredRef.current = false;
+
+  // An empty run still has the container's side padding, which would reserve
+  // space inside the row for nothing. Nothing rendered means nothing to
+  // reserve.
+  return { width: el.childElementCount ? width : 0, isFirst };
+}
+
+/**
+ * Measures one run, and returns what publishing the new width takes, if
+ * anything changed.
+ */
+type MeasureRun = () => (() => void) | undefined;
+
+/**
+ * One observer for every run on the page, so runs that resize together arrive
+ * in one delivery. A closed panel full of rows that opens is then measured in
+ * one layout and published in one commit, not a forced layout and a commit per
+ * row. It exists only while something is observed, so a test that swaps the
+ * global `ResizeObserver` between cases gets its own.
+ */
+let runObserver: ResizeObserver | null = null;
+const measureRunByElement = new Map<Element, MeasureRun>();
+
+function publishRunWidths(entries: ResizeObserverEntry[]) {
+  // Every run is read before any is published: a publish writes to the DOM,
+  // and the next read would have to lay the page out again.
+  const publishes: (() => void)[] = [];
+
+  for (const entry of entries) {
+    const publish = measureRunByElement.get(entry.target)?.();
+
+    if (publish) publishes.push(publish);
+  }
+
+  if (!publishes.length) return;
+
+  // Synchronous, because observers run just before paint: a scheduled render
+  // would paint one frame with the actions over the label. When that commit
+  // resizes another observed element no deeper than the run (an auto-width tab
+  // grows by its actions, or a run holding another row's run grows once the
+  // inner one publishes), the browser delivers that one a frame late and
+  // reports "ResizeObserver loop completed with undelivered notifications".
+  // That is benign, and error trackers such as Sentry drop it by default. The
+  // outer run of such a pair is corrected in this same commit, by its layout
+  // effect, so the first frame still shows its final width.
+  flushSync(() => {
+    for (const publish of publishes) publish();
+  });
+}
+
+/** Starts observing a run, and returns what stops it. */
+function observeRun(el: HTMLElement, measure: MeasureRun) {
+  runObserver ??= new ResizeObserver(publishRunWidths);
+  measureRunByElement.set(el, measure);
+  // `offsetWidth` is the border box, so the run's padding counts too.
+  runObserver.observe(el, { box: 'border-box' });
+
+  return () => {
+    measureRunByElement.delete(el);
+
+    if (measureRunByElement.size) {
+      runObserver?.unobserve(el);
+    } else {
+      runObserver?.disconnect();
+      runObserver = null;
+    }
+  };
+}
+
 export interface ItemActionsWrapperProps {
   /**
    * The row or trigger the actions are laid over. Receives the resolved
@@ -197,9 +296,10 @@ export interface ItemActionsWrapperProps {
     skipActionsWidthTransition: boolean;
   }) => ReactNode;
   /**
-   * The run's content. Rendering the wrapper with an empty run is supported and
-   * costs nothing — the measured width is 0 — which is how a trigger keeps its
-   * markup stable across states that do and do not have trailing controls.
+   * The run's content. Rendering the wrapper with an empty run is supported —
+   * it publishes a width of 0 and costs one entry in a shared size observer —
+   * which is how a trigger keeps its markup stable across states that do and
+   * do not have trailing controls.
    */
   actions?: ReactNode;
   type?: string;
@@ -257,35 +357,66 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
   const [actionsWidth, setActionsWidth] = useState(0);
   const [areActionsVisible, setAreActionsVisible] = useState(false);
   const [skipWidthTransition, setSkipWidthTransition] = useState(false);
-  const isMountPassRef = useRef(true);
+  const isUnmeasuredRef = useRef(true);
+  // `DisplayTransition` renders the run as a different element from the plain
+  // branch, so this is what the observer below follows.
+  const isTransitionedRun = autoHideActions && !preserveActionsSpace;
 
   useLayoutEffect(() => {
     const el = actionsRef.current;
-    const isMountPass = isMountPassRef.current;
-
-    isMountPassRef.current = false;
 
     if (!el) return;
 
-    // An empty run still has the container's side padding, which would reserve
-    // space inside the row for nothing. Nothing rendered means nothing to
-    // reserve.
-    const width = el.childElementCount ? Math.round(el.offsetWidth) : 0;
+    const measured = measureActionsWidth(el, isUnmeasuredRef);
 
-    if (width !== actionsWidth) {
-      // The width a run reports on mount is where the row starts, not a change
-      // to it. The `offsetWidth` read has already resolved the row at 0px, so
-      // publishing with the transition on made every trigger grow by its caret
-      // after mounting — and a click in that window sized FilterPicker's popover
-      // from a half-grown trigger. A run revealed later still slides open.
-      if (isMountPass) setSkipWidthTransition(true);
-      setActionsWidth(width);
+    if (measured && measured.width !== actionsWidth) {
+      // A first width is where the row starts, not a change to it. The
+      // `offsetWidth` read has already resolved the row at 0px, so publishing
+      // with the transition on made every trigger grow by its caret as it
+      // appeared — and a click in that window sized FilterPicker's popover from
+      // a half-grown trigger. A run that changes later still slides.
+      if (measured.isFirst) setSkipWidthTransition(true);
+      setActionsWidth(measured.width);
     } else if (skipWidthTransition) {
       // This pass's read resolved the row at its final width with the
       // transition off, so turning it back on animates nothing.
       setSkipWidthTransition(false);
     }
   }, [actions, areActionsVisible, actionsWidth, skipWidthTransition]);
+
+  // The effect above measures when the wrapper renders. A run can change size
+  // without that: most often a row mounted inside a closed panel, whose run had
+  // no box until the panel opened. The observer catches those, and publishes
+  // them with every other run that resized alongside (`publishRunWidths`).
+  const onActionsResize = useEffectEvent((el: HTMLElement) => {
+    const measured = measureActionsWidth(el, isUnmeasuredRef);
+
+    if (!measured || measured.width === actionsWidth) return;
+
+    return () => {
+      if (measured.isFirst) setSkipWidthTransition(true);
+      setActionsWidth(measured.width);
+    };
+  });
+
+  useLayoutEffect(() => {
+    const el = actionsRef.current;
+
+    // Skipped where there is none, as the kit's other guarded observers are.
+    // Test setups stub it regardless: `Item`'s auto-tooltip needs one.
+    if (!el || typeof ResizeObserver === 'undefined') return;
+
+    const stopObserving = observeRun(el, () => onActionsResize(el));
+
+    return () => {
+      stopObserving();
+      // The next width is a fresh start. An `<Activity>` that hides this row
+      // stops observing it before the run can be seen losing its box, so what
+      // the run does next goes unseen; a swapped run is a new element, so it
+      // starts afresh even on a visible row.
+      isUnmeasuredRef.current = true;
+    };
+  }, [isTransitionedRun]);
 
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const [hasPressed, setHasPressed] = useState(false);
@@ -372,7 +503,7 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
           disableActionsFocus={disableActionsFocus}
           isDisabled={isDisabled}
         >
-          {autoHideActions && !preserveActionsSpace ? (
+          {isTransitionedRun ? (
             <DisplayTransition
               exposeUnmounted
               isShown={shouldShowActions}

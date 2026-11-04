@@ -451,6 +451,17 @@ An intended override takes a disable comment with its reason on the line before 
 
 With this rule on, `tasty/no-styles-prop` can stay off, so the primitives keep their `styles`.
 
+The same `extends` gives the plugin's other rules the names UI Kit defines: its tokens, presets and recipes, and the `@dark`, `@hc` and `@reduced-motion` state aliases. `tasty/valid-color-token`, `tasty/valid-custom-property`, `tasty/valid-preset`, `tasty/valid-recipe`, `tasty/valid-state-key` and `tasty/no-unknown-state-alias` then report only names that don't exist. List what your app defines itself, in its own `configure()` or `tokens`, in its own config, which adds to the lists it extends:
+
+```ts
+// tasty.config.ts
+export default {
+  extends: '@cube-dev/ui-kit',
+  states: ['@mobile'],
+  tokens: ['#brand'],
+};
+```
+
 ## Recipes
 
 Reusable style presets applied via the `recipe` style property. Defined in `src/components/Root.tsx`.
@@ -502,6 +513,21 @@ fill: {
   '!disabled': '...',          // negated
 }
 ```
+
+### Reduced Motion
+
+`<Root>` registers a global `@reduced-motion` state beside [`@dark` and `@hc`](#color-schemes). It matches `@media (prefers-reduced-motion: reduce)`. Use it to stop or shorten motion for users who ask for less:
+
+```tsx
+const Spinner = tasty({
+  styles: {
+    animation: 'spin 1s linear infinite',
+    animationPlayState: { '': 'running', '@reduced-motion': 'paused' },
+  },
+});
+```
+
+It follows the system preference alone, with no attribute opt-in.
 
 ## Icons
 

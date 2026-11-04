@@ -34,7 +34,7 @@ const CubeElement = tasty({
     animationTimingFunction: 'cubic-bezier(0.5, 0.05, 0.3, 0.95)',
     animationPlayState: {
       '': 'running',
-      '@media(prefers-reduced-motion)': 'paused',
+      '@reduced-motion': 'paused',
     },
 
     '&::before': {

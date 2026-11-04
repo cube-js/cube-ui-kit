@@ -60,8 +60,8 @@ describe('row state matrix', () => {
     const weightOf = (rule: Rule) =>
       rule.body.match(/--row-overlay-weight:\s*([^;]+)/)?.[1].trim();
 
-    const compound = rules.find((rule) => weightOf(rule) === '12%');
-    const selected = rules.find((rule) => weightOf(rule) === '9%');
+    const compound = rules.find((rule) => weightOf(rule) === '0.12');
+    const selected = rules.find((rule) => weightOf(rule) === '0.09');
 
     expect(compound).toBeDefined();
     expect(selected).toBeDefined();

@@ -2,6 +2,7 @@ import { createRef } from 'react';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { SlotProvider } from '../../../utils/react/Slots';
+import { Text } from '../Text';
 
 import { TextItem, TextItemWithNativeLink } from './TextItem';
 
@@ -132,4 +133,48 @@ describe('TextItem appearance and overflow', () => {
       );
     },
   );
+
+  /**
+   * Cloud's build list colours the commit hash apart from its message, so the
+   * label is elements rather than text (CUB-7286). A tooltip with a title of
+   * its own shows it only while the line is cut off, and follows the width.
+   */
+  it('shows its own title for an element label only while it is cut off', async () => {
+    const title = 'abc12345: Fix the flaky deployment status check';
+    const content = (width: string) => (
+      <TextItem
+        as="button"
+        styles={{ width }}
+        tooltip={{ title, auto: true, isOpen: true }}
+      >
+        <Text color="#dark">abc12345:</Text> Fix the flaky deployment status
+        check
+      </TextItem>
+    );
+    const settle = () =>
+      act(
+        () =>
+          new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          ),
+      );
+    const { rerender } = renderWithRoot(content('600px'));
+    await settle();
+    const button = screen.getByRole('button');
+    expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+
+    rerender(content('80px'));
+    await waitFor(() =>
+      expect(screen.getByRole('tooltip').textContent).toBe(title),
+    );
+    expect(screen.getByRole('button').scrollWidth).toBeGreaterThan(
+      screen.getByRole('button').clientWidth,
+    );
+
+    rerender(content('600px'));
+    await waitFor(() =>
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument(),
+    );
+  });
 });

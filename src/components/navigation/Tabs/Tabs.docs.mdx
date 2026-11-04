@@ -94,6 +94,7 @@ These properties allow direct style application without using the `styles` prop:
 The `mods` property accepts the following modifiers:
 
 - **`type`** `'default' \| 'narrow' \| 'file' \| 'radio'` — Current tab type
+- **`segmented`** `boolean` — True for the `radio` type, the segmented control it shares with `Radio.Tabs`
 - **`placement`** `'top' \| 'bottom' \| 'left' \| 'right'` — Current bar placement
 - **`deletable`** `boolean` — True when onDelete callback is provided
 - **`scrolling`** `boolean` — True when tabs are being scrolled
@@ -104,6 +105,7 @@ The `mods` property accepts the following modifiers:
 For individual tabs:
 
 - **`type`** `'default' \| 'narrow' \| 'file' \| 'radio'` — Current tab type
+- **`segmented`** `boolean` — True for a `radio` tab, a segment of the shared segmented control
 - **`active`** `boolean` — True when the tab is selected
 - **`deletable`** `boolean` — True when delete button is visible
 - **`disabled`** `boolean` — True when tab is disabled
@@ -170,7 +172,7 @@ A navigation strip with no panels, themed with your own tokens:
 - `default` - Standard tabs with selection indicator below (default)
 - `narrow` - Same as default but with collapsed horizontal label padding for compact layouts
 - `file` - File-style tabs with border bottom highlight on selection, delimiter between tabs
-- `radio` - Radio button style for tab selection. This is the right choice for a compact switcher that is _not_ a form field — a view toolbar, a segmented control over page content. [`Radio.Tabs`](/docs/forms-radiogroup--docs) looks the same but is a form control, so keep it for choices inside a `Form`
+- `radio` - Radio button style for tab selection. This is the right choice for a compact switcher that is _not_ a form field — a view toolbar, a segmented control over page content. [`Radio.Tabs`](/docs/forms-radiogroup--docs) takes the same segmented look from one shared style definition (only the layout differs: its options size to their labels, while tabs share the track equally), but it is a form control, so keep it for choices inside a `Form`
 
 <Story of={TabsStories.DefaultType} />
 
@@ -181,11 +183,11 @@ A navigation strip with no panels, themed with your own tokens:
 ### Sizes
 
 - `xsmall` - Extra small size with t4 typography
-- `small` - Small size with t3m typography (default)
+- `small` - Small size with t3m typography
 - `medium` - Default size with t3m typography
 - `large` - Larger tabs with t3m typography
 
-**Note:** Radio type supports `large` (default, 40px total) and `medium` (32px total) sizes, mapped to Item button sizes `medium` (32px) and `xsmall` (24px) respectively. A radio tab given less room than its title (an explicit `width`, say) truncates the title and shows it in a tooltip.
+**Note:** Radio type supports `medium` (default, 32px total) and `large` (40px total) sizes, mapped to Item button sizes `xsmall` (24px, t4 text) and `medium` (32px, t3m text) respectively. `Radio.Tabs` maps its sizes the same way. A radio tab given less room than its title (an explicit `width`, say) truncates the title and shows it in a tooltip.
 
 <Story of={TabsStories.LargeSize} />
 

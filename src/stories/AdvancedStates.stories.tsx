@@ -113,7 +113,7 @@ export const PredefinedStates: StoryObj = {
     docs: {
       description: {
         story: `
-Define global predefined states once, use them everywhere. UI Kit's \`<Root>\` registers \`@dark\` and \`@hc\` this way, and the box above uses \`@dark\`:
+Define global predefined states once, use them everywhere. UI Kit's \`<Root>\` registers \`@dark\`, \`@hc\` and \`@reduced-motion\` this way, and the box above uses \`@dark\`:
 
 \`\`\`tsx
 const Box = tasty({

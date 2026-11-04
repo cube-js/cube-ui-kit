@@ -1,5 +1,5 @@
 import { getActiveElement, useObjectRef } from '@react-aria/utils';
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import { AriaRadioGroupProps, useFocusRing, useRadioGroup } from 'react-aria';
 import { RadioGroupState, useRadioGroupState } from 'react-stately';
@@ -17,6 +17,10 @@ import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import {
+  SEGMENTED_LIST_STYLES,
+  SEGMENTED_TRACK_STYLES,
+} from '../../navigation/Tabs/segmented-styles';
 
 import { RadioContext } from './context';
 
@@ -41,54 +45,54 @@ export interface CubeRadioGroupProps
   type?: 'radio' | 'button' | 'tabs';
 }
 
+// In tabs mode the group is the track of the segmented control `Tabs
+// type="radio"` shares (`segmented-styles.ts`), merged in after its own styles.
 const RadioGroupElement = tasty({
   qa: 'RadioGroup',
-  styles: {
-    display: 'flex',
-    placeItems: 'stretch',
-    placeContent: 'stretch',
-    flow: {
-      '': 'column',
-      horizontal: 'row wrap',
-      'horizontal & tabs': 'row',
+  styles: mergeStyles(
+    {
+      display: 'flex',
+      placeItems: 'stretch',
+      placeContent: 'stretch',
+      flow: {
+        '': 'column',
+        horizontal: 'row wrap',
+        'horizontal & tabs': 'row',
+      },
+      padding: '0',
+      // The tabs layout is the only one with padding, and a caller that gives the
+      // group an explicit width (`width: 100%` inside a popover, say) means the
+      // box it can see. Without this the padding is added on top and the group
+      // overhangs its container by `1x`.
+      boxSizing: 'border-box',
+      radius: true,
+      fill: {
+        '': '#clear',
+        disabled: '#surface-4',
+      },
+      width: {
+        '': 'max-content max-content initial',
+        // In a field its style props size, the group fills the field as every
+        // other input does.
+        'fill-width': 'auto',
+      },
+      flexShrink: 0,
+      gap: {
+        '': '1x',
+        button: 0,
+      },
+      whiteSpace: 'nowrap',
+      // Keyboard focus ring on the group, shown only for the button layout,
+      // where the items merge into one control. A classic radio shows a ring
+      // on its circle, and a tabs segment one of its own, as a tab does.
+      outline: {
+        '': '$ring-width #primary-text.0 / $outline-offset',
+        'focused & button': '$ring-width #primary-text / $outline-offset',
+      },
     },
-    padding: {
-      '': '0',
-      tabs: '.5x',
-    },
-    // The tabs layout is the only one with padding, and a caller that gives the
-    // group an explicit width (`width: 100%` inside a popover, say) means the
-    // box it can see. Without this the padding is added on top and the group
-    // overhangs its container by `1x`.
-    boxSizing: 'border-box',
-    radius: true,
-    fill: {
-      '': '#clear',
-      'tabs | disabled': '#surface-4',
-    },
-    width: {
-      '': 'max-content max-content initial',
-      // In a field its style props size, the group fills the field as every
-      // other input does.
-      'fill-width': 'auto',
-    },
-    flexShrink: 0,
-    gap: {
-      '': '1x',
-      button: 0,
-      tabs: '.5x',
-    },
-    whiteSpace: 'nowrap',
-    // Keyboard focus ring on the group, shown only for button/tabs layouts
-    // where individual items are visually merged (button-group) or share a
-    // single chrome (tabs) — the classic vertical radio list already shows
-    // a per-item focus ring on the radio circle.
-    outline: {
-      '': '$ring-width #primary-text.0 / $outline-offset',
-      'focused & (button | tabs)':
-        '$ring-width #primary-text / $outline-offset',
-    },
-  },
+    SEGMENTED_TRACK_STYLES,
+    SEGMENTED_LIST_STYLES,
+  ),
 });
 
 /**
@@ -175,7 +179,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     isArrowKeyRef.current = false;
   };
 
-  // Keyboard-only focus ring on the group container (button/tabs layouts).
+  // Keyboard-only focus ring on the group container (button layout).
   // `within: true` tracks focus on any descendant radio. We read
   // `isFocusVisible` (not `isFocused`), which is keyboard-gated — mouse
   // clicks on a radio focus the input but leave `isFocusVisible` false.
@@ -202,6 +206,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
         'side-label': labelPosition === 'side',
         button: type === 'button',
         tabs: type === 'tabs',
+        segmented: type === 'tabs',
         focused: isFocusWithinVisible,
         'fill-width': fieldLayout.fillWidth,
       }}

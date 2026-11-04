@@ -33,6 +33,8 @@ import type { i18n as I18nInstance } from 'i18next';
 //   <html data-scheme="dark">    → forces the dark scheme
 //   <html data-contrast="high">  → forces the high-contrast scheme
 // Otherwise falls back to the user's `prefers-color-scheme` / `prefers-contrast`.
+// `@reduced-motion`, registered beside them, follows `prefers-reduced-motion:
+// reduce` alone.
 //
 // The strings live in `useScheme.ts`, which also reads the same two conditions
 // from JS (`useScheme()` / `useHighContrast()`) — one definition, so the CSS and
