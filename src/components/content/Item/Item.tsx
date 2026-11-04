@@ -129,7 +129,8 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   /**
    * When true and insideWrapper is true, the width reserved for the actions
    * run changes without animating. The wrapper sets it while it publishes the
-   * first width it measures: on mount, or once a closed container opens.
+   * first width it measures: on mount, once a closed container opens, or
+   * after its run is replaced.
    * @default false
    */
   skipActionsWidthTransition?: boolean;

@@ -193,7 +193,9 @@ export function ItemActionIcon(props: { children: ReactNode }) {
  *
  * `isFirst` says the width is where the row STARTS rather than a change to it:
  * the first one since the run last had no box — on mount, or once a closed
- * container opens. The ref carries that across measurements.
+ * container opens — or since its observer was torn down (an `<Activity>` hide,
+ * a run swapped for another element). The ref carries that across
+ * measurements.
  */
 function measureActionsWidth(
   el: HTMLElement,
@@ -355,9 +357,10 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
 
     return () => {
       observer.disconnect();
-      // Whatever the run does from here goes unseen — an `<Activity>` that
-      // hides this row tears the observer down before it can report the run
-      // losing its box — so the next width it measures is a fresh start.
+      // The next width is a fresh start. An `<Activity>` that hides this row
+      // tears the observer down before it can report the run losing its box,
+      // so what the run does next goes unseen; a swapped run is a new element,
+      // so it starts afresh even on a visible row.
       isUnmeasuredRef.current = true;
     };
   }, [isTransitionedRun]);

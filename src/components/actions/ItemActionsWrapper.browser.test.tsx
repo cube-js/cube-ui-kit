@@ -266,6 +266,10 @@ describe('ItemActionsWrapper in a hidden container', () => {
     rerender(renderRow('hidden', 2));
     await waitFor(() => expect(parts.run.childElementCount).toBe(2));
 
+    // Unlike the other cases, the wrapper's observer is created again AFTER
+    // this recorder, on reveal. The reveal measures in the wrapper's layout
+    // effect, before any observer is notified, so the first frame is still
+    // what this records.
     const watch = watchFirstFrame(parts);
 
     rerender(renderRow('visible', 2));
