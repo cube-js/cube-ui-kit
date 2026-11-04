@@ -43,3 +43,51 @@ it('permits only the explicit release-PR skip policy', () => {
   ).toThrow();
   expect(() => checkRequiredJobs({}, 'feature')).toThrow('missing');
 });
+
+describe('the job plan', () => {
+  const planned = (result, outputs) => ({
+    ...results('success'),
+    plan: { result, outputs },
+    tests: { result: 'skipped' },
+  });
+
+  it('accepts a skip the plan made', () => {
+    expect(() =>
+      checkRequiredJobs(planned('success', { tests: 'false' }), 'feature'),
+    ).not.toThrow();
+  });
+
+  it('accepts a job the plan let off that ran and passed', () => {
+    expect(() =>
+      checkRequiredJobs(
+        {
+          ...results('success'),
+          plan: { result: 'success', outputs: { tests: 'false' } },
+        },
+        'feature',
+      ),
+    ).not.toThrow();
+  });
+
+  it('still rejects a failure in a job the plan let off', () => {
+    expect(() =>
+      checkRequiredJobs(
+        {
+          ...planned('success', { tests: 'false' }),
+          tests: { result: 'failure' },
+        },
+        'feature',
+      ),
+    ).toThrow('tests');
+  });
+
+  it.each([
+    ['said the job runs', 'success', { tests: 'true' }],
+    ['gave no answer for the job', 'success', {}],
+    ['failed', 'failure', { tests: 'false' }],
+  ])('rejects a skip when the plan %s', (_, result, outputs) => {
+    expect(() =>
+      checkRequiredJobs(planned(result, outputs), 'feature'),
+    ).toThrow('tests: expected success, got skipped');
+  });
+});
