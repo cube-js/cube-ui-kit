@@ -97,8 +97,8 @@ type OmittedItemProps =
 export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
   /**
    * Tab size. Supports 'xsmall', 'small', 'medium', 'large'.
-   * Radio type supports 'large' (default, 40px) and 'medium' (32px),
-   * mapped to Item button sizes medium (32px) and xsmall (24px).
+   * Radio type supports 'medium' (default, 32px) and 'large' (40px),
+   * mapped to Item button sizes xsmall (24px) and medium (32px).
    */
   size?: TabSize;
   /** Whether to show actions only on hover. */
@@ -137,8 +137,8 @@ export interface CubeTabsProps
   placement?: TabPlacement;
   /**
    * Tab size. Supports 'xsmall', 'small', 'medium', 'large'.
-   * Radio type supports 'large' (default, 40px) and 'medium' (32px),
-   * mapped to Item button sizes medium (32px) and xsmall (24px).
+   * Radio type supports 'medium' (default, 32px) and 'large' (40px),
+   * mapped to Item button sizes xsmall (24px) and medium (32px).
    * @default 'medium'
    */
   size?: TabSize;

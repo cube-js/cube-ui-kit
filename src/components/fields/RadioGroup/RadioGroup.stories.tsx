@@ -389,7 +389,7 @@ export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
 export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
   <Space flow="column">
     <Space flow="column">
-      <Title level={6}>Large (default, 40px)</Title>
+      <Title level={6}>Large (40px)</Title>
       <Radio.Tabs
         fieldStyles={{ width: '0 max-content 100%' }}
         size="large"
@@ -402,7 +402,7 @@ export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
       </Radio.Tabs>
     </Space>
     <Space flow="column">
-      <Title level={6}>Medium (32px)</Title>
+      <Title level={6}>Medium (default, 32px)</Title>
       <Radio.Tabs
         fieldStyles={{ width: '0 max-content 100%' }}
         size="medium"

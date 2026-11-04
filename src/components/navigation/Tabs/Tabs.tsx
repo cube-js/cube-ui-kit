@@ -653,6 +653,8 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   const mods = useMemo(
     () => ({
       type: effectiveType,
+      // The radio type is the segmented control (`segmented-styles.ts`).
+      segmented: effectiveType === 'radio',
       size,
       placement,
       deletable: !!onDelete,

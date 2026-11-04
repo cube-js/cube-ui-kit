@@ -1,6 +1,12 @@
-import { tasty } from '@tenphi/tasty';
+import { mergeStyles, tasty } from '@tenphi/tasty';
 
 import { Item } from '../../content/Item';
+
+import {
+  SEGMENTED_LIST_STYLES,
+  SEGMENTED_SEGMENT_STYLES,
+  SEGMENTED_TRACK_STYLES,
+} from './segmented-styles';
 
 // =============================================================================
 // Main Tabs Container — flex wrapper holding the tab Bar and the panels.
@@ -30,76 +36,71 @@ export const TabsElement = tasty({
     overflow: 'visible',
 
     // ============================================
-    // Bar — the tab strip (Prefix + ScrollWrapper + Suffix).
+    // Bar — the tab strip (Prefix + ScrollWrapper + Suffix). For the radio
+    // type it is the segmented control's track (`segmented-styles.ts`).
     // ============================================
-    Bar: {
-      $: '>',
-      display: 'flex',
-      flow: {
-        '': 'row',
-        'placement=left | placement=right': 'column',
-      },
-      placeItems: {
-        '': 'end stretch',
-        'placement=bottom': 'start stretch',
-        'placement=left': 'stretch end',
-        'placement=right': 'stretch start',
-        'type=radio | type=file': 'stretch',
-      },
-      overflow: 'visible',
-      border: {
-        '': 0,
-        '(type=default | type=file | type=narrow) & has-panels': 'bottom',
-        '(type=default | type=file | type=narrow) & has-panels & placement=bottom':
-          'top',
-        '(type=default | type=file | type=narrow) & has-panels & placement=left':
-          'right',
-        '(type=default | type=file | type=narrow) & has-panels & placement=right':
-          'left',
-      },
-      // Bar sizing — always follow the outer wrapper along the main axis so
-      // `width` / `height` props on `<Tabs>` apply to the strip as they did
-      // before the wrapper was introduced.
-      // - horizontal placements: main-axis = wrapper width  (100%), cross-axis intrinsic (auto)
-      // - vertical   placements: main-axis = wrapper height (100%), cross-axis intrinsic (auto / max-content for radio)
-      // `border-box` keeps the radio padding inside that 100%. Without a global
-      // border-box reset in the app, the pill would otherwise paint `1x` past
-      // the wrapper and into the gap before its sibling.
-      boxSizing: 'border-box',
-      width: {
-        '': '100%',
-        'placement=left | placement=right': 'auto',
-        'type=radio & (placement=left | placement=right)': 'max-content',
-      },
-      height: {
-        '': 'auto',
-        'placement=left | placement=right': '100%',
-        'type=radio & (placement=left | placement=right)': 'max-content',
-      },
-      padding: {
-        '': 0,
-        'type=radio': '.5x',
-      },
-      radius: {
-        '': 0,
-        'type=radio': '1cr',
-      },
-      fill: {
-        '': '#clear',
-        'type=radio': '#surface-4',
-      },
-      // Never let the Bar shrink/grow within the outer wrapper — this is what
-      // gives the wrapper its effective "tablist-size minimum" on the main axis.
-      flexShrink: 0,
-      flexGrow: 0,
+    Bar: mergeStyles(
+      {
+        $: '>',
+        display: 'flex',
+        flow: {
+          '': 'row',
+          'placement=left | placement=right': 'column',
+        },
+        placeItems: {
+          '': 'end stretch',
+          'placement=bottom': 'start stretch',
+          'placement=left': 'stretch end',
+          'placement=right': 'stretch start',
+          'type=radio | type=file': 'stretch',
+        },
+        overflow: 'visible',
+        border: {
+          '': 0,
+          '(type=default | type=file | type=narrow) & has-panels': 'bottom',
+          '(type=default | type=file | type=narrow) & has-panels & placement=bottom':
+            'top',
+          '(type=default | type=file | type=narrow) & has-panels & placement=left':
+            'right',
+          '(type=default | type=file | type=narrow) & has-panels & placement=right':
+            'left',
+        },
+        // Bar sizing — always follow the outer wrapper along the main axis so
+        // `width` / `height` props on `<Tabs>` apply to the strip as they did
+        // before the wrapper was introduced.
+        // - horizontal placements: main-axis = wrapper width  (100%), cross-axis intrinsic (auto)
+        // - vertical   placements: main-axis = wrapper height (100%), cross-axis intrinsic (auto / max-content for radio)
+        // `border-box` keeps the radio padding inside that 100%. Without a global
+        // border-box reset in the app, the pill would otherwise paint `1x` past
+        // the wrapper and into the gap before its sibling.
+        boxSizing: 'border-box',
+        width: {
+          '': '100%',
+          'placement=left | placement=right': 'auto',
+          'type=radio & (placement=left | placement=right)': 'max-content',
+        },
+        height: {
+          '': 'auto',
+          'placement=left | placement=right': '100%',
+          'type=radio & (placement=left | placement=right)': 'max-content',
+        },
+        padding: 0,
+        radius: 0,
+        fill: '#clear',
+        // Never let the Bar shrink/grow within the outer wrapper — this is what
+        // gives the wrapper its effective "tablist-size minimum" on the main axis.
+        flexShrink: 0,
+        flexGrow: 0,
 
-      $transition: '$tab-transition',
-      // The indicator line's thickness, in device pixels.
-      '$tab-indicator-size': {
-        '': '2px',
-        'size=large': '1ow',
+        $transition: '$tab-transition',
+        // The indicator line's thickness, in device pixels.
+        '$tab-indicator-size': {
+          '': '2px',
+          'size=large': '1ow',
+        },
       },
-    },
+      SEGMENTED_TRACK_STYLES,
+    ),
 
     // ============================================
     // Prefix — slot before the scroll area.
@@ -217,73 +218,75 @@ export const TabsElement = tasty({
       },
     },
 
-    TabList: {
-      $: '> Bar > ScrollWrapper > Scroll >',
-      position: 'relative',
-      display: 'grid',
-      // `border-box` is required because we set `width: 100%` for vertical
-      // placements AND apply padding. With the default `content-box`, the
-      // TabList's outer box would be `100% + padding × 2` and overflow Scroll
-      // horizontally — and the side selection indicator (positioned at
-      // `right: 0` / `left: 0` of TabList) would land in that overflow region
-      // and get clipped by Scroll's `overflow-x: hidden`.
-      boxSizing: 'border-box',
-      flow: {
-        '': 'column',
-        'placement=left | placement=right': 'row',
-      },
-      gridAutoColumns: {
-        '': 'auto',
-        'type=radio': '1fr',
-      },
-      gridAutoRows: {
-        '': 'auto',
-        'type=radio & (placement=left | placement=right)': '1fr',
-      },
-      gap: {
-        '': 0,
-        'type=default': '1x',
-        'type=narrow': '2x',
-        'type=radio': '.5x',
-        // Tabs stack vertically — collapse the gap so the strip reads as a
-        // single column. `narrow` is coerced to `default` in vertical, but we
-        // keep the rule defensive in case the styled element is consumed
-        // directly with a `type=narrow` mod set.
-        '(type=default | type=narrow) & (placement=left | placement=right)':
-          '$item-gap',
-      },
-      placeContent: 'start',
-      overflow: 'visible',
-      width: {
-        '': 'max-content',
-        'type=radio': '100%',
-        'placement=left | placement=right': '100%',
-      },
-      height: {
-        '': 'auto',
-        'placement=left | placement=right': 'max-content',
-      },
-      // For vertical default/narrow we apply `$tablist-padding` on ALL sides
-      // (instead of only the parallel axis) so the breathing room around the
-      // tabs and the selection indicator can be tuned via the `tabListPadding`
-      // prop — the same prop that controls horizontal start/end padding.
-      padding: {
-        '': '0 $tablist-padding',
-        'placement=left | placement=right': '$tablist-padding 0',
-        '(type=default | type=narrow) & (placement=left | placement=right)':
-          '$tablist-padding',
-      },
+    TabList: mergeStyles(
+      {
+        $: '> Bar > ScrollWrapper > Scroll >',
+        position: 'relative',
+        display: 'grid',
+        // `border-box` is required because we set `width: 100%` for vertical
+        // placements AND apply padding. With the default `content-box`, the
+        // TabList's outer box would be `100% + padding × 2` and overflow Scroll
+        // horizontally — and the side selection indicator (positioned at
+        // `right: 0` / `left: 0` of TabList) would land in that overflow region
+        // and get clipped by Scroll's `overflow-x: hidden`.
+        boxSizing: 'border-box',
+        flow: {
+          '': 'column',
+          'placement=left | placement=right': 'row',
+        },
+        gridAutoColumns: {
+          '': 'auto',
+          'type=radio': '1fr',
+        },
+        gridAutoRows: {
+          '': 'auto',
+          'type=radio & (placement=left | placement=right)': '1fr',
+        },
+        gap: {
+          '': 0,
+          'type=default': '1x',
+          'type=narrow': '2x',
+          // Tabs stack vertically — collapse the gap so the strip reads as a
+          // single column. `narrow` is coerced to `default` in vertical, but we
+          // keep the rule defensive in case the styled element is consumed
+          // directly with a `type=narrow` mod set.
+          '(type=default | type=narrow) & (placement=left | placement=right)':
+            '$item-gap',
+        },
+        placeContent: 'start',
+        overflow: 'visible',
+        width: {
+          '': 'max-content',
+          'type=radio': '100%',
+          'placement=left | placement=right': '100%',
+        },
+        height: {
+          '': 'auto',
+          'placement=left | placement=right': 'max-content',
+        },
+        // For vertical default/narrow we apply `$tablist-padding` on ALL sides
+        // (instead of only the parallel axis) so the breathing room around the
+        // tabs and the selection indicator can be tuned via the `tabListPadding`
+        // prop — the same prop that controls horizontal start/end padding.
+        padding: {
+          '': '0 $tablist-padding',
+          'placement=left | placement=right': '$tablist-padding 0',
+          '(type=default | type=narrow) & (placement=left | placement=right)':
+            '$tablist-padding',
+        },
 
-      // Default `$tablist-padding` per type. Vertical default/narrow gets the
-      // smaller `.5x` default since it applies to all four sides; the
-      // `tabListPadding` prop overrides this via inline CSS variable.
-      '$tablist-padding': {
-        '': '0',
-        'type=default | type=narrow': '1x',
-        '(type=default | type=narrow) & (placement=left | placement=right)':
-          '.5x',
+        // Default `$tablist-padding` per type. Vertical default/narrow gets the
+        // smaller `.5x` default since it applies to all four sides; the
+        // `tabListPadding` prop overrides this via inline CSS variable.
+        '$tablist-padding': {
+          '': '0',
+          'type=default | type=narrow': '1x',
+          '(type=default | type=narrow) & (placement=left | placement=right)':
+            '.5x',
+        },
       },
-    },
+      SEGMENTED_LIST_STYLES,
+    ),
 
     // Size variable for actions (if ItemAction is used instead of TabsAction)
     $size: {
@@ -343,107 +346,106 @@ export const TabsElement = tasty({
 // Tab Button (extends Item)
 // =============================================================================
 
+// A radio tab is a segment of the control `Radio.Tabs` shares: its look comes
+// from `segmented-styles.ts`, merged in after the tab's own styles.
 export const TabElement = tasty(Item, {
   as: 'button',
-  styles: {
-    radius: {
-      '': false,
-      'type=radio | type=default': true,
-      'type=narrow': 'top',
-      'type=narrow & placement=bottom': 'bottom',
-      'type=narrow & placement=left': 'left',
-      'type=narrow & placement=right': 'right',
-    },
-    // Tab colors read current tokens, not the legacy aliases that point at them
-    // (`#dark-02`, `#primary-text`, `#primary`). Root resolves an alias once, on
-    // the page root, so a caller re-declaring the current token on `Tabs` would
-    // never reach it. The contract is under "Theming" in `Tabs.docs.mdx`.
-    color: {
-      '': '#surface-text-soft',
-      'type=narrow & (hovered & !selected)': '#primary-accent-text',
-      '(type=default | type=narrow) & selected': '#primary-accent-text',
-      disabled: '#disabled-surface-text',
-    },
-    fill: {
-      '': '#clear',
-      'hovered & !type=narrow': '#surface-text.03',
-      'type=file': '#surface-3',
-      'type=file & hovered': '#surface-3.5',
-      'type=radio & hovered': '#surface.5',
-      '(type=file | type=radio) & selected': '#surface',
-      // Spring-load hint: a widget is hovering this tab and it is about to open.
-      'drop-pending': '#primary-accent-surface.10',
-    },
-    border: {
-      '': '#clear',
-      'type=file': '0 #clear',
-    },
-    preset: {
-      '': 't3m',
-      'size=xsmall': 't4',
-    },
-    shadow: {
-      '': '$selection-shadow',
-      'focused & focus-visible':
-        'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
-      editing:
-        'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
-      'type=radio & selected': '$item-shadow',
-      'type=radio & selected & focused & focus-visible':
-        '$item-shadow, inset 0 0 0 $ring-width #primary-accent-text',
-    },
-    outline: 'none',
-    placeContent: {
-      // extend
-      'type=radio': 'center',
-    },
-    gridTemplate: {
-      // extend
-      // Sized by content like a radio button, but the label column keeps a
-      // zero minimum (as `Item`'s `1sf` does), so a tab given less room than
-      // its title truncates it — and gets the auto tooltip — instead of
-      // spilling the title out of the tab.
-      'type=radio':
-        '"icon prefix label suffix rightIcon actions" auto / max-content max-content minmax(0, max-content) max-content max-content max-content',
-    },
-    // File-type selection indicator: an inset shadow on the edge that faces
-    // the panel area. Flips with placement so the highlight always sits on
-    // the edge adjacent to the content.
-    '$selection-shadow': {
-      '': 'inset 0 0 0 0 #primary-accent-surface',
-      'type=file & selected':
-        'inset 0 (-1 * $tab-indicator-size) 0 0 #primary-accent-surface',
-      'type=file & selected & placement=bottom':
-        'inset 0 $tab-indicator-size 0 0 #primary-accent-surface',
-      'type=file & selected & placement=left':
-        'inset (-1 * $tab-indicator-size) 0 0 0 #primary-accent-surface',
-      'type=file & selected & placement=right':
-        'inset $tab-indicator-size 0 0 0 #primary-accent-surface',
-      '!type=file': 'inset 0 0 0 0 #primary-accent-surface.0',
-    },
-    // Collapse horizontal padding for narrow type
-    '$label-padding-left': {
-      '': '$inline-padding',
-      'has-start-content': 0,
-      'type=narrow': 0,
-    },
-    '$label-padding-right': {
-      '': '$inline-padding',
-      'has-end-content': 0,
-      'type=narrow': 0,
-    },
-    Label: {
-      placeSelf: {
-        '': 'center start',
-        'type=radio': 'center start',
-        'type=radio & !has-prefix & !has-suffix & !has-icon & !has-right-icon':
-          'center',
+  styles: mergeStyles(
+    {
+      radius: {
+        '': false,
+        'type=default': true,
+        'type=narrow': 'top',
+        'type=narrow & placement=bottom': 'bottom',
+        'type=narrow & placement=left': 'left',
+        'type=narrow & placement=right': 'right',
+      },
+      // Tab colors read current tokens, not the legacy aliases that point at them
+      // (`#dark-02`, `#primary-text`, `#primary`). Root resolves an alias once, on
+      // the page root, so a caller re-declaring the current token on `Tabs` would
+      // never reach it. The contract is under "Theming" in `Tabs.docs.mdx`.
+      color: {
+        '': '#surface-text-soft',
+        'type=narrow & (hovered & !selected)': '#primary-accent-text',
+        '(type=default | type=narrow) & selected': '#primary-accent-text',
+        disabled: '#disabled-surface-text',
+      },
+      fill: {
+        '': '#clear',
+        'hovered & !type=narrow': '#surface-text.03',
+        'type=file': '#surface-3',
+        'type=file & hovered': '#surface-3.5',
+        'type=file & selected': '#surface',
+        // Spring-load hint: a widget is hovering this tab and it is about to open.
+        'drop-pending': '#primary-accent-surface.10',
+      },
+      border: {
+        '': '#clear',
+        'type=file': '0 #clear',
+      },
+      preset: {
+        '': 't3m',
+        'size=xsmall': 't4',
+      },
+      shadow: {
+        '': '$selection-shadow',
+        'focused & focus-visible':
+          'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
+        editing:
+          'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
+      },
+      outline: 'none',
+      // oxlint-disable-next-line tasty/require-default-state -- extends Item's own gridTemplate map
+      gridTemplate: {
+        // Sized by content like a radio button, but the label column keeps a
+        // zero minimum (as `Item`'s `1sf` does), so a tab given less room than
+        // its title truncates it — and gets the auto tooltip — instead of
+        // spilling the title out of the tab.
+        'type=radio':
+          '"icon prefix label suffix rightIcon actions" auto / max-content max-content minmax(0, max-content) max-content max-content max-content',
+      },
+      // File-type selection indicator: an inset shadow on the edge that faces
+      // the panel area. Flips with placement so the highlight always sits on
+      // the edge adjacent to the content.
+      '$selection-shadow': {
+        '': 'inset 0 0 0 0 #primary-accent-surface',
+        'type=file & selected':
+          'inset 0 (-1 * $tab-indicator-size) 0 0 #primary-accent-surface',
+        'type=file & selected & placement=bottom':
+          'inset 0 $tab-indicator-size 0 0 #primary-accent-surface',
+        'type=file & selected & placement=left':
+          'inset (-1 * $tab-indicator-size) 0 0 0 #primary-accent-surface',
+        'type=file & selected & placement=right':
+          'inset $tab-indicator-size 0 0 0 #primary-accent-surface',
+        '!type=file': 'inset 0 0 0 0 #primary-accent-surface.0',
+      },
+      // Collapse horizontal padding for narrow type
+      '$label-padding-left': {
+        '': '$inline-padding',
+        'has-start-content': 0,
+        'type=narrow': 0,
+      },
+      '$label-padding-right': {
+        '': '$inline-padding',
+        'has-end-content': 0,
+        'type=narrow': 0,
+      },
+      Label: {
+        placeSelf: {
+          '': 'center start',
+          'type=radio': 'center start',
+          'type=radio & !has-prefix & !has-suffix & !has-icon & !has-right-icon':
+            'center',
+        },
+      },
+      Actions: {
+        transition: false,
       },
     },
-    Actions: {
-      transition: false,
-    },
-  },
+    SEGMENTED_SEGMENT_STYLES,
+    // The spring-load hint stays above the segment's own fill.
+    { fill: { 'drop-pending': '@inherit' } },
+  ),
 });
 
 // =============================================================================
