@@ -16,7 +16,7 @@
  * `../../components/Root` is imported for its module side effects as much as for
  * `<Root>` itself: its body calls tasty's `configure()` (units `x`/`r`/`cr`, the
  * `reset` / `button` / `input` recipes) and `setGlobalPredefinedStates()` (the
- * `@dark` / `@hc` states). `configure()` swaps the global StyleInjector and
+ * `@dark` / `@hc` / `@reduced-motion` states). `configure()` swaps the global StyleInjector and
  * turns into a silent no-op once any style has been generated — so if something
  * rendered a tasty element first, units and recipes would go unresolved AND
  * rules injected into the first injector would be invisible to

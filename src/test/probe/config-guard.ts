@@ -14,7 +14,7 @@ import { getGlobalPredefinedStates, renderStyles } from '@tenphi/tasty';
  *
  * `src/components/Root.tsx` does two things in its module body that everything
  * downstream depends on: `setGlobalPredefinedStates()` registers the `@dark` /
- * `@hc` states, and `configure()` registers the units (`x`, `r`, `cr`, `bw`,
+ * `@hc` / `@reduced-motion` states, and `configure()` registers the units (`x`, `r`, `cr`, `bw`,
  * `ow`) and the `reset` / `button` / `input` recipes. `configure()` swaps the
  * global StyleInjector and becomes a silent no-op once any style has been
  * generated, so if something renders a tasty element before `<Root>`'s module

@@ -43,12 +43,14 @@ const SCHEME_ATTR = `data-${SCHEME_KEY}`;
 const CONTRAST_ATTR = `data-${CONTRAST_KEY}`;
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 const HIGH_CONTRAST_QUERY = '(prefers-contrast: more)';
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 /**
- * The `@dark` / `@hc` state aliases, in tasty's DSL — registered globally by
- * `<Root>` via `setGlobalPredefinedStates()`.
+ * The `@dark` / `@hc` / `@reduced-motion` state aliases, in tasty's DSL —
+ * registered globally by `<Root>` via `setGlobalPredefinedStates()`.
  *
- * The attribute opt-in wins over the system preference, and the fallback is
+ * `@reduced-motion` follows the system preference alone. For the two schemes,
+ * the attribute opt-in wins over the system preference, and the fallback is
  * gated on the attribute being *absent* (`!@root(scheme)`) rather than on it
  * being some other value — so `<html data-scheme="light">` stays light inside a
  * dark OS, which is the whole point of an opt-in. {@link resolveScheme} and
@@ -57,6 +59,7 @@ const HIGH_CONTRAST_QUERY = '(prefers-contrast: more)';
 export const AMBIENT_PREDEFINED_STATES = {
   '@dark': `@root(${SCHEME_KEY}=dark) | (!@root(${SCHEME_KEY}) & @media${DARK_QUERY})`,
   '@hc': `@root(${CONTRAST_KEY}=high) | (!@root(${CONTRAST_KEY}) & @media${HIGH_CONTRAST_QUERY})`,
+  '@reduced-motion': `@media${REDUCED_MOTION_QUERY}`,
 } as const;
 
 /** The color scheme the document resolves to — the two arms of the `@dark` state. */
