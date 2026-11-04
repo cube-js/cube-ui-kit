@@ -1,3 +1,4 @@
+import { tasty } from '@tenphi/tasty';
 import { userEvent } from 'vitest/browser';
 
 import { BarChartIcon } from '../../../icons/BarChartIcon';
@@ -31,7 +32,8 @@ function visibleShadows(value: string) {
 
 /** An outline, or `none` when nothing of it shows. */
 function visibleOutline(style: CSSStyleDeclaration) {
-  let isTransparent = /\/ 0\)$|, 0\)$/.test(style.outlineColor);
+  // Zero alpha only: `rgba(…, 0)` or `color(… / 0)`, not `rgb(…, 0)`.
+  let isTransparent = /^rgba\(.*,\s*0\)$|\/\s*0\)$/.test(style.outlineColor);
 
   if (style.outlineStyle === 'none' || isTransparent) return 'none';
 
@@ -121,6 +123,12 @@ function renderBoth({
         />
         <Tab key="dashboard" title="Dashboard" isDisabled={isDisabled} />
         <Tab key="report" title="Report" isDisabled />
+        <Tab
+          key="chart"
+          icon={<BarChartIcon />}
+          aria-label="Chart"
+          isDisabled={isDisabled}
+        />
       </Tabs>
       <Radio.Tabs
         size={size}
@@ -137,6 +145,11 @@ function renderBoth({
         <Radio.Button isDisabled value="report">
           Report
         </Radio.Button>
+        <Radio.Button
+          value="chart"
+          icon={<BarChartIcon />}
+          aria-label="Chart"
+        />
       </Radio.Tabs>
     </>,
   );
@@ -156,13 +169,27 @@ function renderBoth({
   };
 }
 
-describe.each(['medium', 'large'] as const)(
-  'Segmented controls look the same (size %s)',
-  (size) => {
+const SCHEMES = ['light', 'dark'] as const;
+const SIZES = ['medium', 'large'] as const;
+const CASES = SCHEMES.flatMap((scheme) =>
+  SIZES.map((size) => ({ scheme, size })),
+);
+
+describe.each(CASES)(
+  'Segmented controls look the same ($scheme, size $size)',
+  ({ scheme, size }) => {
     // React Aria ignores a hover until a pointer move has set the
     // interaction modality, so move the pointer once before any hover.
     beforeAll(async () => {
       await userEvent.hover(document.body);
+    });
+
+    beforeEach(() => {
+      document.documentElement.setAttribute('data-scheme', scheme);
+    });
+
+    afterEach(() => {
+      document.documentElement.removeAttribute('data-scheme');
     });
 
     it('at rest: track, selected, idle and disabled segments', async () => {
@@ -257,3 +284,61 @@ describe.each(['medium', 'large'] as const)(
     });
   },
 );
+
+// What only `Radio.Tabs` has: a validated group tints its idle labels, as the
+// `danger` and `success` themes did, and keeps the selected label neutral.
+const DangerSoft = tasty({ styles: { color: '#danger-accent-text-soft' } });
+const SuccessSoft = tasty({ styles: { color: '#success-accent-text-soft' } });
+
+describe.each(SCHEMES)('Radio.Tabs validation (%s)', (scheme) => {
+  beforeEach(() => {
+    document.documentElement.setAttribute('data-scheme', scheme);
+  });
+
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-scheme');
+  });
+
+  it.each([
+    { state: 'invalid', isInvalid: true, isValid: false },
+    { state: 'valid', isInvalid: false, isValid: true },
+  ])('tints idle labels when $state', async ({ isInvalid, isValid }) => {
+    renderWithRoot(
+      <>
+        <DangerSoft qa="DangerSoft">Danger</DangerSoft>
+        <SuccessSoft qa="SuccessSoft">Success</SuccessSoft>
+        <Tabs type="radio" label="View" defaultActiveKey="workbook">
+          <Tab key="workbook" title="Workbook" />
+          <Tab key="dashboard" title="Dashboard" />
+          <Tab key="report" title="Report" isDisabled />
+        </Tabs>
+        <Radio.Tabs
+          aria-label="View"
+          defaultValue="workbook"
+          isBare
+          isInvalid={isInvalid}
+          isValid={isValid}
+        >
+          <Radio.Button value="workbook">Workbook</Radio.Button>
+          <Radio.Button value="dashboard">Dashboard</Radio.Button>
+          <Radio.Button isDisabled value="report">
+            Report
+          </Radio.Button>
+        </Radio.Tabs>
+      </>,
+    );
+
+    await settle();
+
+    let tabs = screen.getAllByRole('tab');
+    let radios = screen.getAllByTestId('RadioButton');
+    let tint = getComputedStyle(
+      screen.getByTestId(isInvalid ? 'DangerSoft' : 'SuccessSoft'),
+    ).color;
+
+    expect(tint).not.toBe(segmentLook(tabs[1]).color);
+    expect(segmentLook(radios[1]).color).toBe(tint);
+    expect(segmentLook(radios[0]).color).toBe(segmentLook(tabs[0]).color);
+    expect(segmentLook(radios[2]).color).toBe(segmentLook(tabs[2]).color);
+  });
+});
