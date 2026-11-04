@@ -1,15 +1,16 @@
 name: Pull Request
+# No `paths-ignore`: a workflow skipped by a path filter leaves its required
+# checks pending, so a PR of changesets alone could never merge. `plan` below
+# skips the jobs such a PR does not need instead.
 on:
   pull_request:
-    paths-ignore:
-      - '.changeset/**'
-      - '.husky/**'
 
 concurrency:
   group: ci-pull-request=${{github.ref}}-1
   cancel-in-progress: true
 
 permissions:
+  actions: read # `plan` lists this PR's pass markers, which are cache entries
   contents: read
   issues: write
   pull-requests: write
@@ -25,7 +26,43 @@ permissions:
 # `skip-chromatic` reports the required `UI Tests` and `UI Review` statuses.
 # `Build & canary release` (publish.yml) still builds the tree about to ship.
 
+# Every job but the lint first asks `plan` whether this run needs it
+# (scripts/ci/plan-jobs.mjs, which explains each decision in the run summary).
+# A job is skipped when the PR changes no file it reads, or when it already
+# passed on exactly these inputs in an earlier run of this PR. `Tests & lint`
+# accepts only the skips the plan made. The jobs use `!cancelled()` rather
+# than the implicit `success()`, so when the planner itself fails, they run.
+
 jobs:
+  # A few seconds: the runner's own Node, no install. The checkout is the
+  # merge commit and its first parent (the base branch tip), whose difference
+  # is what this PR changes.
+  plan:
+    name: 'Plan the jobs this change affects'
+    runs-on: ubuntu-latest
+    outputs:
+      tests: ${{ steps.plan.outputs.tests }}
+      compiled-tests: ${{ steps.plan.outputs.compiled-tests }}
+      form-react: ${{ steps.plan.outputs.form-react }}
+      browser-tests: ${{ steps.plan.outputs.browser-tests }}
+      a11y: ${{ steps.plan.outputs.a11y }}
+      chromatic: ${{ steps.plan.outputs.chromatic }}
+      marker-tests: ${{ steps.plan.outputs.marker-tests }}
+      marker-compiled-tests: ${{ steps.plan.outputs.marker-compiled-tests }}
+      marker-form-react: ${{ steps.plan.outputs.marker-form-react }}
+      marker-browser-tests: ${{ steps.plan.outputs.marker-browser-tests }}
+      marker-a11y: ${{ steps.plan.outputs.marker-a11y }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Plan the jobs
+        id: plan
+        run: node scripts/ci/plan-jobs.mjs tests compiled-tests form-react browser-tests a11y chromatic
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
   # The suites are split into shards because each one alone used to set the
   # length of the whole run: the jsdom suite took ~6.5 minutes and every
   # other check queued behind it in one job. Shards also make a flaky rerun
@@ -33,7 +70,8 @@ jobs:
   # so the shards are only roughly even.
   tests:
     name: 'Source tests (${{ matrix.shard }}/3)'
-    if: github.head_ref != 'changeset-release/main'
+    needs: plan
+    if: ${{ !cancelled() && github.head_ref != 'changeset-release/main' && needs.plan.outputs.tests != 'false' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -93,7 +131,8 @@ jobs:
 
   form-react:
     name: 'React Compiler / Form & package'
-    if: github.head_ref != 'changeset-release/main'
+    needs: plan
+    if: ${{ !cancelled() && github.head_ref != 'changeset-release/main' && needs.plan.outputs.form-react != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -133,7 +172,8 @@ jobs:
   # `tests` above (~8 minutes in one job).
   compiled-tests:
     name: 'React Compiler / All components (${{ matrix.shard }}/3)'
-    if: github.head_ref != 'changeset-release/main'
+    needs: plan
+    if: ${{ !cancelled() && github.head_ref != 'changeset-release/main' && needs.plan.outputs.compiled-tests != 'false' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -153,7 +193,8 @@ jobs:
 
   browser-tests:
     name: 'Browser tests / Compiler ${{ matrix.compiler }} (${{ matrix.shard }}/2)'
-    if: github.head_ref != 'changeset-release/main'
+    needs: plan
+    if: ${{ !cancelled() && github.head_ref != 'changeset-release/main' && needs.plan.outputs.browser-tests != 'false' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -194,7 +235,8 @@ jobs:
   # waiting for one build to be handed over.
   a11y:
     name: 'Accessibility (axe) (${{ matrix.shard }}/3)'
-    if: github.head_ref != 'changeset-release/main'
+    needs: plan
+    if: ${{ !cancelled() && github.head_ref != 'changeset-release/main' && needs.plan.outputs.a11y != 'false' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -236,20 +278,75 @@ jobs:
   required-tests:
     name: 'Tests & lint'
     needs:
-      [tests, static-checks, form-react, compiled-tests, browser-tests, a11y]
+      [
+        plan,
+        tests,
+        static-checks,
+        form-react,
+        compiled-tests,
+        browser-tests,
+        a11y,
+      ]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+
+      # Pass markers: for each job that passed, an empty cache entry named
+      # after the hash of its inputs, so a later push that leaves them alone
+      # skips the job. Saved here rather than in the jobs, because only this
+      # job sees a matrix job's result across all of its shards. A marker is
+      # an optimisation: one that fails to save costs a rerun, never a check.
+      - name: Prepare the pass marker
+        run: touch .ci-pass
+      - name: Record that the source tests passed on these inputs
+        if: needs.tests.result == 'success' && needs.plan.outputs.marker-tests != ''
+        continue-on-error: true
+        uses: actions/cache/save@v6
+        with:
+          path: .ci-pass
+          key: ${{ needs.plan.outputs.marker-tests }}
+      - name: Record that the compiled tests passed on these inputs
+        if: needs.compiled-tests.result == 'success' && needs.plan.outputs.marker-compiled-tests != ''
+        continue-on-error: true
+        uses: actions/cache/save@v6
+        with:
+          path: .ci-pass
+          key: ${{ needs.plan.outputs.marker-compiled-tests }}
+      - name: Record that the Form & package checks passed on these inputs
+        if: needs.form-react.result == 'success' && needs.plan.outputs.marker-form-react != ''
+        continue-on-error: true
+        uses: actions/cache/save@v6
+        with:
+          path: .ci-pass
+          key: ${{ needs.plan.outputs.marker-form-react }}
+      - name: Record that the browser tests passed on these inputs
+        if: needs.browser-tests.result == 'success' && needs.plan.outputs.marker-browser-tests != ''
+        continue-on-error: true
+        uses: actions/cache/save@v6
+        with:
+          path: .ci-pass
+          key: ${{ needs.plan.outputs.marker-browser-tests }}
+      - name: Record that the accessibility check passed on these inputs
+        if: needs.a11y.result == 'success' && needs.plan.outputs.marker-a11y != ''
+        continue-on-error: true
+        uses: actions/cache/save@v6
+        with:
+          path: .ci-pass
+          key: ${{ needs.plan.outputs.marker-a11y }}
+
       - name: Require every supported execution and consumer mode
         run: node scripts/ci/check-required-jobs.cjs
         env:
           REQUIRED_JOB_RESULTS: ${{ toJSON(needs) }}
           PR_BRANCH: ${{ github.head_ref }}
 
+  # Planned by the PR's files only, never by a pass marker: see
+  # `skip-chromatic` below.
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'
-    if: github.head_ref != 'changeset-release/main'
+    needs: plan
+    if: ${{ !cancelled() && github.head_ref != 'changeset-release/main' && needs.plan.outputs.chromatic != 'false' }}
     runs-on: ubuntu-latest
     environment:
       name: Chromatic staging
@@ -335,14 +432,25 @@ jobs:
             })
 
   # Chromatic's own statuses, `UI Tests` and `UI Review`, are required checks,
-  # so the Version Packages PR cannot simply go without a build: `skip` records
-  # the commit as passing instead. A real build there is pure cost. Nobody
-  # reviews it, the build that follows the release on main photographs the
-  # same tree, and it has run with TurboSnap disabled, snapshotting all ~1100
-  # stories.
+  # so a PR cannot simply go without a build: `skip` records the commit as
+  # passing instead. Two kinds of PR take it:
+  #
+  # - The Version Packages PR. A real build there is pure cost. Nobody
+  #   reviews it, the build that follows the release on main photographs the
+  #   same tree, and it has run with TurboSnap disabled, snapshotting all ~1100
+  #   stories.
+  # - A PR that changes nothing Storybook shows (specs, scripts' baselines,
+  #   repository notes). TurboSnap would still re-capture every story `main`
+  #   changed since its last release build, and bill a fifth of a snapshot
+  #   for each of the rest.
+  #
+  # Only the PR's files decide this. Skipping a later push of a PR because it
+  # left Storybook's inputs alone would pass visual changes an earlier push
+  # left unreviewed.
   skip-chromatic:
-    name: 'Skip Storybook review for the release PR'
-    if: github.head_ref == 'changeset-release/main'
+    name: 'Skip Storybook review'
+    needs: plan
+    if: ${{ !cancelled() && (github.head_ref == 'changeset-release/main' || needs.plan.outputs.chromatic == 'false') }}
     runs-on: ubuntu-latest
     steps:
       # Full history, as for a real build: Chromatic reads the PR head commit's
