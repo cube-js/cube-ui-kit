@@ -1,6 +1,12 @@
 import { useState } from 'react';
 
-import { act, renderWithRoot, userEvent, waitFor } from '../../test/index';
+import {
+  act,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../test/index';
 
 import { ItemAction } from './ItemAction/ItemAction';
 import { ItemButton } from './ItemButton/ItemButton';
@@ -141,6 +147,100 @@ describe('<ItemActionsWrapper />', () => {
         '[data-element="Actions"]',
       ),
     ).toBeNull();
+  });
+
+  describe('size observer', () => {
+    /** Records which elements each observer watches and whether it let go. */
+    class RecordingObserver {
+      static all: RecordingObserver[] = [];
+      targets = new Set<Element>();
+      isDisconnected = false;
+
+      constructor() {
+        RecordingObserver.all.push(this);
+      }
+
+      observe(el: Element) {
+        this.targets.add(el);
+      }
+
+      unobserve(el: Element) {
+        this.targets.delete(el);
+      }
+
+      disconnect() {
+        this.targets.clear();
+        this.isDisconnected = true;
+      }
+    }
+
+    function getRun(qa: string) {
+      return screen
+        .getByTestId(qa)
+        .parentElement!.querySelector(':scope > [data-element="Actions"]')!;
+    }
+
+    function watching(el: Element) {
+      return RecordingObserver.all.filter((o) => o.targets.has(el));
+    }
+
+    afterEach(() => {
+      RecordingObserver.all = [];
+      vi.unstubAllGlobals();
+    });
+
+    function renderRows({ isSecondAutoHidden = true, hasSecond = true } = {}) {
+      return (
+        <>
+          <ItemButton qa="First" actions={<ItemButton.Action />}>
+            First
+          </ItemButton>
+          {hasSecond ? (
+            <ItemButton
+              qa="Second"
+              autoHideActions={isSecondAutoHidden}
+              actions={<ItemButton.Action />}
+            >
+              Second
+            </ItemButton>
+          ) : null}
+        </>
+      );
+    }
+
+    it('watches every run with one observer, and follows each run', () => {
+      vi.stubGlobal('ResizeObserver', RecordingObserver);
+
+      const { rerender, unmount } = renderWithRoot(renderRows());
+      const first = getRun('First');
+      const second = getRun('Second');
+
+      // One observer, so runs that resize together are published together.
+      // (`Item`'s auto-tooltip keeps observers of its own.)
+      const [observer] = watching(first);
+
+      expect(watching(first)).toHaveLength(1);
+      expect(watching(second)).toEqual([observer]);
+      expect([...observer.targets]).toEqual([first, second]);
+
+      // Dropping `autoHideActions` renders the run as a different element.
+      rerender(renderRows({ isSecondAutoHidden: false }));
+
+      const swapped = getRun('Second');
+
+      expect(swapped).not.toBe(second);
+      expect([...observer.targets]).toEqual([first, swapped]);
+
+      rerender(renderRows({ isSecondAutoHidden: false, hasSecond: false }));
+
+      expect([...observer.targets]).toEqual([first]);
+      expect(observer.isDisconnected).toBe(false);
+
+      // Nothing left to watch: the observer is let go, not kept for later.
+      unmount();
+
+      expect(observer.isDisconnected).toBe(true);
+    });
   });
 
   it('renders the actions outside the button', () => {
