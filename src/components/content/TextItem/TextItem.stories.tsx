@@ -44,7 +44,7 @@ const meta = {
     tooltip: {
       control: 'text',
       description:
-        'Tooltip configuration. Use true for auto tooltip on overflow, string for custom tooltip text.',
+        'Tooltip configuration. `true` enables auto tooltip on overflow for string children, a string shows fixed tooltip text, an object supports advanced configuration. `{ title, auto: true }` shows `title` only on overflow, for any children.',
       table: {
         type: { summary: 'string | boolean | TooltipProviderProps' },
         defaultValue: { summary: 'true' },
