@@ -74,8 +74,8 @@ const CELL_STYLES: Styles = {
    * column colour and merges it in through `styles.Cell` / `styles.HeaderCell`.
    *
    * The tint is pre-composed into the BASE rather than mixed in as a second
-   * overlay, because `fill` mixes exactly two colors and the interaction paint
-   * is the other one. That is what keeps hover, focus, selection and
+   * overlay, because the cell's fill is one `color-mix()` of two colors and the
+   * interaction paint is the other one. That is what keeps hover, focus, selection and
    * drop-target working over a tinted column instead of being displaced by it —
    * and it is why the row band has to reach the cell (`data-odd` is mirrored onto
    * body cells) rather than staying on the `<tr>`.
