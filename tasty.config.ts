@@ -1,21 +1,20 @@
 /**
- * Tasty Extension Configuration
+ * Tasty lint configuration
  *
- * This file configures the tasty VSCode extension for the @cube-dev/ui-kit project.
- * It provides token names, presets, recipes and state aliases for validation and autocomplete.
- * For `@tenphi/eslint-plugin-tasty`, it also lists the components consumers
- * customize through their props rather than by restyling them
- * (`protectedComponents`).
+ * `@tenphi/eslint-plugin-tasty` reads this file. It lists the token names,
+ * presets, recipes and state aliases UI Kit defines, which a project's styles
+ * are checked against, and the components consumers customize through their
+ * props rather than by restyling them (`protectedComponents`). The plugin
+ * loads it with jiti, which follows the import of `tasty.config.generated.ts`;
+ * a loader that only parses the object literal gets none of the spread lists.
  *
  * Projects using @cube-dev/ui-kit can extend this config:
  * ```typescript
  * export default {
  *   extends: '@cube-dev/ui-kit',
- *   // Add project-specific tokens, presets, etc.
+ *   // Add project-specific tokens, states, presets, etc.
  * };
  * ```
- *
- * @see https://github.com/tenphi/tasty-vscode-extension for extension documentation
  */
 
 import { runtimeNames } from './tasty.config.generated';

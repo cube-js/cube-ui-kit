@@ -22,7 +22,8 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(import.meta.dirname, '..');
 // Environment variables that change what the suite checks, through Vitest
 // (CI, NODE_ENV), the runtime (locale, time zone, NODE_OPTIONS) or a test
-// (UPDATE_DEFAULTS). A test that starts reading another one adds it here.
+// (UPDATE_DEFAULTS, UPDATE_TASTY_CONFIG). A test that starts reading another
+// one adds it here.
 // Vitest also enters CI mode on a provider's variable (JENKINS_URL, …), which
 // only rejects a committed `.only`; that is left to CI.
 const KEYED_ENV = [
@@ -34,6 +35,7 @@ const KEYED_ENV = [
   'NODE_OPTIONS',
   'TZ',
   'UPDATE_DEFAULTS',
+  'UPDATE_TASTY_CONFIG',
 ];
 const DELETED = /^0+$/;
 // `<local ref> <local sha> <remote ref> <remote sha>`, read from the end: the
