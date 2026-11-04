@@ -108,8 +108,8 @@ const RadioButtonElement = tasty(Item, {
         '': 0,
         '!tabs & !:first-child': '-1bw left',
       },
-      // oxlint-disable-next-line tasty/require-default-state -- extends Item's own zIndex
       zIndex: {
+        '': 'auto',
         '!tabs & selected': 1,
       },
 
@@ -540,9 +540,13 @@ function Radio(props: CubeRadioProps, ref) {
     readonly: isReadOnly,
     hovered: isHovered,
     button: isButton,
-    // `useFocus(true)` reports keyboard focus only, so it is both.
+    // `useFocus(true)` reports keyboard focus only, so it is both. A
+    // `type="button"` radio never gets the focus props (below), so it never
+    // sets these; a classic radio's circle and a segment draw a ring from them.
     focused: isFocused,
     'focus-visible': isFocused,
+    // `segmented` keys the shared segmented look (`segmented-styles.ts`);
+    // `tabs` keys this component's own tabs-mode layout. Same value.
     tabs: isSegmented,
     segmented: isSegmented,
   };
