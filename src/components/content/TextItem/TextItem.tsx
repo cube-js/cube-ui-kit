@@ -57,8 +57,11 @@ export interface CubeTextItemProps extends Omit<
   /**
    * Tooltip content and configuration:
    * - string: simple tooltip text
-   * - true: auto tooltip on overflow (shows children as tooltip when truncated)
-   * - object: advanced configuration with optional auto property
+   * - true: auto tooltip on overflow (shows children as tooltip when truncated;
+   *   string children only)
+   * - object: advanced configuration with optional auto property;
+   *   `{ title, auto: true }` shows `title` only on overflow, for any children
+   *   (an element label included)
    * @default true
    */
   tooltip?: AutoTooltipValue;
