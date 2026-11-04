@@ -61,24 +61,34 @@ export const GLASS_TOKENS: Styles = {
   /** Glass edge for neutral surfaces */
   '$glass-shadow': '$glass-shade, $glass-tint',
 
+  // In dark mode the fill already stands out against the page, so the side
+  // shade goes away and the edge is the glow alone. It stays transparent
+  // rather than dropping the layers, so the shadow keeps its layer count and
+  // still animates.
   '#glass-accent-shade': {
     '': 'rgb(0 0 0 / .3)',
     '@hc': 'rgb(0 0 0 / .6)',
+    '@dark': 'rgb(0 0 0 / 0)',
   },
   // A saturated fill swallows a faint highlight, so the accent glow is
-  // stronger and softer than the neutral one, and it barely fades in dark mode:
-  // the fill it sits on is the same color there.
+  // stronger than the neutral one, and it barely fades in dark mode: the fill
+  // it sits on is the same color there.
   '#glass-accent-tint': {
     '': 'rgb(255 255 255 / .5)',
     '@dark': 'rgb(255 255 255 / .35)',
   },
   '$glass-accent-shade':
     '.5px 0 .5px #glass-accent-shade inset, -.5px 0 .5px #glass-accent-shade inset',
-  // The negative spread pushes the blur ramp past the left and right edges,
-  // so the glow stays on the top and bottom instead of creeping down the
-  // sides (a plain `0 1px 2px` would glow on every edge).
-  '$glass-accent-tint':
-    '0 2px 2px -1px #glass-accent-tint inset, 0 -2px 2px -1px #glass-accent-tint inset',
+  // Light mode: a wider, softer glow. The negative spread pushes the blur ramp
+  // past the left and right edges, so the glow stays on the top and bottom
+  // instead of creeping down the sides (a plain `0 1px 2px` would glow on
+  // every edge).
+  // Dark mode: a thin glow with the neutral `$glass-tint` geometry.
+  '$glass-accent-tint': {
+    '': '0 2px 2px -1px #glass-accent-tint inset, 0 -2px 2px -1px #glass-accent-tint inset',
+    '@dark':
+      '0 1px 1px #glass-accent-tint inset, 0 -1px 1px #glass-accent-tint inset',
+  },
   /** Glass edge for brand (accent) fills */
   '$glass-accent-shadow': '$glass-accent-shade, $glass-accent-tint',
 };
