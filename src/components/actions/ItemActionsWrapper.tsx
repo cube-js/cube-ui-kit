@@ -3,11 +3,13 @@ import { mergeStyles, Mods, Styles, tasty } from '@tenphi/tasty';
 import {
   HTMLAttributes,
   ReactNode,
+  useEffectEvent,
   useLayoutEffect,
   useRef,
   useState,
 } from 'react';
 import { useFocusWithin, useHover } from 'react-aria';
+import { flushSync } from 'react-dom';
 
 import {
   ITEM_RESTING_COLOR_VARIANTS,
@@ -185,6 +187,23 @@ export function ItemActionIcon(props: { children: ReactNode }) {
   return <div data-element="ActionIcon">{props.children}</div>;
 }
 
+/**
+ * The width the row reserves for the run, or `null` while the run has no box.
+ */
+function measureActionsWidth(el: HTMLElement): number | null {
+  // An empty run still has the container's side padding, which would reserve
+  // space inside the row for nothing. Nothing rendered means nothing to
+  // reserve.
+  if (!el.childElementCount) return 0;
+
+  // Under a `display: none` ancestor — a closed panel or tray — the run reads 0
+  // wide. That is not its width, and publishing it would only have to be undone
+  // when the container opens.
+  if (!el.getClientRects().length) return null;
+
+  return Math.round(el.offsetWidth);
+}
+
 export interface ItemActionsWrapperProps {
   /**
    * The row or trigger the actions are laid over. Receives the resolved
@@ -267,12 +286,9 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
 
     if (!el) return;
 
-    // An empty run still has the container's side padding, which would reserve
-    // space inside the row for nothing. Nothing rendered means nothing to
-    // reserve.
-    const width = el.childElementCount ? Math.round(el.offsetWidth) : 0;
+    const width = measureActionsWidth(el);
 
-    if (width !== actionsWidth) {
+    if (width !== null && width !== actionsWidth) {
       // The width a run reports on mount is where the row starts, not a change
       // to it. The `offsetWidth` read has already resolved the row at 0px, so
       // publishing with the transition on made every trigger grow by its caret
@@ -286,6 +302,40 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
       setSkipWidthTransition(false);
     }
   }, [actions, areActionsVisible, actionsWidth, skipWidthTransition]);
+
+  // The effect above measures when the wrapper renders. A run can change size
+  // without that: most often a row mounted inside a closed panel, whose run had
+  // no box until the panel opened. The observer catches those.
+  const onActionsResize = useEffectEvent((el: HTMLElement) => {
+    const width = measureActionsWidth(el);
+
+    if (width === null || width === actionsWidth) return;
+
+    // Like the mount pass, this is where the row starts rather than a change to
+    // it, so it jumps instead of sliding open. Synchronous, because observers
+    // run just before paint: a scheduled render would paint one frame with the
+    // actions over the label.
+    flushSync(() => {
+      setSkipWidthTransition(true);
+      setActionsWidth(width);
+    });
+  });
+
+  // Keyed on the two props that pick the branch below: each branch renders the
+  // run as a different element.
+  useLayoutEffect(() => {
+    const el = actionsRef.current;
+
+    // jsdom has none, and a consumer's test setup may not stub it.
+    if (!el || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => onActionsResize(el));
+
+    // `offsetWidth` is the border box, so the run's padding counts too.
+    observer.observe(el, { box: 'border-box' });
+
+    return () => observer.disconnect();
+  }, [autoHideActions, preserveActionsSpace]);
 
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const [hasPressed, setHasPressed] = useState(false);
