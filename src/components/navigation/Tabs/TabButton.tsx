@@ -509,6 +509,7 @@ export function TabButton({
 
   const mods = {
     type: effectiveType,
+    segmented: effectiveType === 'radio',
     placement,
     active: isActive,
     deletable: isDeletable,
