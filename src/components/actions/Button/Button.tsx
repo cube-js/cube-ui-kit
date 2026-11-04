@@ -339,8 +339,8 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
 /**
  * Glass edge (prototype, ported from tenphi.me): outline and primary buttons
  * draw their edge with inset glass layers instead of a solid border, and sit
- * on a small drop shadow that collapses while pressed, so the button reads as
- * lowered onto the page.
+ * in a soft outer shadow (`$glass-halo`) that collapses while pressed, so the
+ * button reads as lowered onto the page.
  *
  * The border can't simply go away: every size here assumes it (`$size - 2bw`,
  * the inline padding, ButtonSplit's `-1bw` overlap). It can't just turn
@@ -363,7 +363,7 @@ function glassEdge(glassShadow: string): Styles {
       valid: '#success-accent-text',
     },
     shadow: {
-      '': '0 .125x .25x #shadow-sm.3',
+      '': '$glass-halo',
       // Same layer count, so the shadow animates instead of snapping.
       'pressed | disabled': '0 0 0 #clear',
     },

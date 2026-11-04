@@ -295,6 +295,7 @@ export const runtimeNames = {
     '$glass-accent-shade',
     '$glass-accent-shadow',
     '$glass-accent-tint',
+    '$glass-halo',
     '$glass-shade',
     '$glass-shadow',
     '$glass-tint',
