@@ -352,10 +352,11 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
  *
  * Brand fills take the accent layers (the same split as tenphi.me's badges):
  * their color is fixed across schemes, so the neutral edge would glare in
- * light mode and outline them in black in dark mode. The same goes for any
- * button on the fixed `#special-surface`.
+ * light mode and outline them in black in dark mode. Their outer shadow
+ * (`$glass-accent-halo`) is denser in dark mode, so the fill stands out from
+ * the page. The same goes for any button on the fixed `#special-surface`.
  */
-function glassEdge(glassShadow: string): Styles {
+function glassEdge(glassShadow: string, glassHalo: string): Styles {
   return {
     border: {
       '': '#clear',
@@ -363,7 +364,7 @@ function glassEdge(glassShadow: string): Styles {
       valid: '#success-accent-text',
     },
     shadow: {
-      '': '$glass-halo',
+      '': glassHalo,
       // Same layer count, so the shadow animates instead of snapping.
       'pressed | disabled': '0 0 0 #clear',
     },
@@ -379,8 +380,11 @@ function glassEdge(glassShadow: string): Styles {
   };
 }
 
-const GLASS_EDGE_STYLES = glassEdge('$glass-shadow');
-const GLASS_ACCENT_EDGE_STYLES = glassEdge('$glass-accent-shadow');
+const GLASS_EDGE_STYLES = glassEdge('$glass-shadow', '$glass-halo');
+const GLASS_ACCENT_EDGE_STYLES = glassEdge(
+  '$glass-accent-shadow',
+  '$glass-accent-halo',
+);
 
 const withGlass = (styles: Styles) => mergeStyles(styles, GLASS_EDGE_STYLES);
 const withAccentGlass = (styles: Styles) =>

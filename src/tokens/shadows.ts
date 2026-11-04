@@ -93,13 +93,21 @@ export const GLASS_TOKENS: Styles = {
   '$glass-accent-shadow': '$glass-accent-shade, $glass-accent-tint',
 
   /**
-   * Soft outer shadow around a glass surface, neutral or brand. It takes over
-   * from the solid border it replaces: in light mode it has the border's
-   * color, and in dark mode it's a near-black shadow that sets the surface
-   * apart from the page.
+   * Soft outer shadow around a neutral glass surface. It takes over from the
+   * solid border the glass edge replaces: in light mode it has the border's
+   * color, and in dark mode it's a very faint black.
    */
   '$glass-halo': {
     '': '0 0 .75x #border',
-    '@dark': '0 0 .75x #black.8',
+    '@dark': '0 0 .75x #black.2',
+  },
+  /**
+   * Soft outer shadow around a brand (accent) fill. The same as `$glass-halo`
+   * in light mode; in dark mode it's a denser black, so the fill stands out
+   * from the page.
+   */
+  '$glass-accent-halo': {
+    '': '0 0 .75x #border',
+    '@dark': '0 0 .75x #black.5',
   },
 };

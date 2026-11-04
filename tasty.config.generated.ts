@@ -292,6 +292,7 @@ export const runtimeNames = {
     '$fade-transition',
     '$font-size',
     '$gap',
+    '$glass-accent-halo',
     '$glass-accent-shade',
     '$glass-accent-shadow',
     '$glass-accent-tint',
