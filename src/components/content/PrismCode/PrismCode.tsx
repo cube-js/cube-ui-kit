@@ -8,7 +8,11 @@ import {
 import { Highlight } from 'prism-react-renderer';
 import { forwardRef } from 'react';
 
-import { ensureYamlSqlExtensions, Prism } from './prismSetup';
+import {
+  ensureSqlDateUnitKeywords,
+  ensureYamlSqlExtensions,
+  Prism,
+} from './prismSetup';
 
 import 'prismjs/components/prism-markup.js';
 import 'prismjs/components/prism-javascript.js';
@@ -122,6 +126,8 @@ function PrismCode(props: CubePrismCodeProps, ref) {
   if (isDiff && !Prism.languages[grammarLang]) {
     Prism.languages[grammarLang] = Prism.languages.diff;
   }
+
+  ensureSqlDateUnitKeywords();
 
   // Ensure YAML SQL extensions are applied for YAML content
   if (language === 'yaml' || grammarLang === 'diff-yaml') {

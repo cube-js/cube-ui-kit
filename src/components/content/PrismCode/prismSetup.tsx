@@ -183,6 +183,23 @@ import { Prism as RendererPrism } from 'prism-react-renderer';
   });
 })(RendererPrism);
 
+// Prism's stock SQL keywords list DAY, HOUR, MONTH and YEAR but not WEEK or
+// QUARTER, so `DATEDIFF(week, …)` stays plain next to a highlighted `day`.
+// Applied lazily: `prism-sql.js` is imported after this module and replaces
+// `languages.sql` wholesale, so a patch made here at load time would be lost.
+var SQL_DATE_UNIT_KEYWORDS = /\b(?:QUARTER|WEEK)\b/i;
+
+function ensureSqlDateUnitKeywords() {
+  var sql = RendererPrism.languages.sql;
+
+  if (!sql || [].concat(sql.keyword).includes(SQL_DATE_UNIT_KEYWORDS)) {
+    return;
+  }
+
+  // Mutate in place so grammars embedding `languages.sql` (YAML) see it too.
+  sql.keyword = [].concat(sql.keyword, SQL_DATE_UNIT_KEYWORDS);
+}
+
 // Function to ensure YAML SQL extensions are applied
 function ensureYamlSqlExtensions() {
   // Check if extensions are already applied
@@ -237,4 +254,4 @@ function ensureYamlSqlExtensions() {
 }
 
 export { RendererPrism as Prism };
-export { ensureYamlSqlExtensions };
+export { ensureSqlDateUnitKeywords, ensureYamlSqlExtensions };
