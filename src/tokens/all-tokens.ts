@@ -5,7 +5,7 @@ import { getColorTokens } from './colors';
 import { LAYOUT_TOKENS } from './layout';
 import { lazyStyles } from './lazy-styles';
 import { getPaletteVersion } from './palette-config';
-import { SHADOW_TOKENS } from './shadows';
+import { GLASS_TOKENS, SHADOW_TOKENS } from './shadows';
 import { SIZE_TOKENS } from './sizes';
 import { SPACE_TOKENS } from './spacing';
 import { TYPOGRAPHY_PRESETS } from './typography';
@@ -26,6 +26,7 @@ import type { Styles } from '@tenphi/tasty';
  * - Space tokens ($space-xs, $space-sm, etc.)
  * - Size tokens ($size-xs, $size-sm, etc.)
  * - Shadow tokens ($shadow, $item-shadow, etc.)
+ * - Glass edge tokens ($glass-shadow, $glass-accent-shadow)
  * - Layout tokens ($max-content-width, $topbar-height, etc.)
  * - Typography tokens ($h1-font-size, $t3-line-height, etc.)
  * - Color tokens ($purple-color, $danger-color, etc.)
@@ -42,6 +43,7 @@ export function getTokens(): Styles {
       ...SPACE_TOKENS,
       ...SIZE_TOKENS,
       ...SHADOW_TOKENS,
+      ...GLASS_TOKENS,
       ...LAYOUT_TOKENS,
       ...generateTypographyTokens(TYPOGRAPHY_PRESETS),
       ...getColorTokens(),

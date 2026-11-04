@@ -22,3 +22,60 @@ export const SHADOW_TOKENS: Styles = {
   /** Elevated dialog shadow */
   '$dialog-shadow': '0 1x 4x #shadow-lg',
 };
+
+/**
+ * Glass edge tokens: a dark shade along the sides and a light tint along the
+ * top and bottom, both drawn as inset shadows. Together they make a surface's
+ * edge read like a pane of glass.
+ *
+ * - `$glass-shadow` is for neutral surfaces. It follows the page scheme, and
+ *   high contrast strengthens whichever layer is faint in that scheme (the
+ *   shade in light, the tint in dark).
+ * - `$glass-accent-shadow` is for brand fills such as a primary button. Those
+ *   keep the same color in both schemes, so their edge can't follow the page:
+ *   the light-scheme tint would glare on them, and the dark-scheme shade would
+ *   outline them in black.
+ *
+ * The accent layers need tokens of their own: `$glass-shadow` resolves its
+ * colors where it is declared (the body), so overriding `#glass-shade` on an
+ * element would not reach it.
+ *
+ * Kept apart from {@link SHADOW_TOKENS}, which a themed region re-declares as
+ * flat values (`renderColorTokens`). These are state maps on the ambient
+ * `@dark` / `@hc` schemes.
+ */
+export const GLASS_TOKENS: Styles = {
+  '#glass-shade': {
+    '': 'rgb(0 0 0 / .1)',
+    '@hc': 'rgb(0 0 0 / .4)',
+    '@dark': 'rgb(0 0 0 / .8)',
+  },
+  '#glass-tint': {
+    '': 'rgb(255 255 255 / .8)',
+    '@dark': 'rgb(255 255 255 / .1)',
+    '@dark & @hc': 'rgb(255 255 255 / .4)',
+  },
+  '$glass-shade':
+    '.5px 0 .5px #glass-shade inset, -.5px 0 .5px #glass-shade inset',
+  '$glass-tint': '0 1px 1px #glass-tint inset, 0 -1px 1px #glass-tint inset',
+  /** Glass edge for neutral surfaces */
+  '$glass-shadow': '$glass-shade, $glass-tint',
+
+  '#glass-accent-shade': {
+    '': 'rgb(0 0 0 / .3)',
+    '@hc': 'rgb(0 0 0 / .6)',
+  },
+  // A saturated fill swallows a faint highlight, so the accent glow is
+  // stronger and softer than the neutral one, and it barely fades in dark mode:
+  // the fill it sits on is the same color there.
+  '#glass-accent-tint': {
+    '': 'rgb(255 255 255 / .5)',
+    '@dark': 'rgb(255 255 255 / .35)',
+  },
+  '$glass-accent-shade':
+    '.5px 0 .5px #glass-accent-shade inset, -.5px 0 .5px #glass-accent-shade inset',
+  '$glass-accent-tint':
+    '0 1px 2px #glass-accent-tint inset, 0 -1px 2px #glass-accent-tint inset',
+  /** Glass edge for brand (accent) fills */
+  '$glass-accent-shadow': '$glass-accent-shade, $glass-accent-tint',
+};

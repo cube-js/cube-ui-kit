@@ -418,6 +418,10 @@ export default {
     '#shadow-sm',
     '#shadow-md',
     '#shadow-lg',
+    '#glass-shade',
+    '#glass-tint',
+    '#glass-accent-shade',
+    '#glass-accent-tint',
     '#overlay',
     '#focus',
     '#placeholder',
@@ -511,6 +515,8 @@ export default {
     '$item-shadow',
     '$card-shadow',
     '$dialog-shadow',
+    '$glass-shadow',
+    '$glass-accent-shadow',
 
     // Layout Tokens
     '$max-content-width',

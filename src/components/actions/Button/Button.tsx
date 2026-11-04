@@ -336,55 +336,106 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
 } as const;
 
+/**
+ * Glass edge (prototype, ported from tenphi.me): outline and primary buttons
+ * draw their edge with inset glass layers instead of a solid border, and sit
+ * on a small drop shadow that collapses while pressed, so the button reads as
+ * lowered onto the page.
+ *
+ * The border can't simply go away: every size here assumes it (`$size - 2bw`,
+ * the inline padding, ButtonSplit's `-1bw` overlap). It can't just turn
+ * transparent either, because an inset shadow paints inside the padding box,
+ * so the rim would sit 1bw in from the edge. So the border stays as a
+ * transparent 1bw (the fill already paints under it), and the glass is drawn
+ * on a `::before` overlay that reaches over the border to the outer edge. The
+ * layout doesn't change at all.
+ *
+ * Brand fills take the accent layers (the same split as tenphi.me's badges):
+ * their color is fixed across schemes, so the neutral edge would glare in
+ * light mode and outline them in black in dark mode. The same goes for any
+ * button on the fixed `#special-surface`.
+ */
+function glassEdge(glassShadow: string): Styles {
+  return {
+    border: {
+      '': '#clear',
+      invalid: '#danger-accent-text',
+      valid: '#success-accent-text',
+    },
+    shadow: {
+      '': '0 .125x .25x #shadow-sm.3',
+      // Same layer count, so the shadow animates instead of snapping.
+      'pressed | disabled': '0 0 0 #clear',
+    },
+    Glass: {
+      $: '&::before',
+      content: '""',
+      position: 'absolute',
+      inset: '-1bw',
+      radius: 'inherit',
+      pointerEvents: 'none',
+      shadow: glassShadow,
+    },
+  };
+}
+
+const GLASS_EDGE_STYLES = glassEdge('$glass-shadow');
+const GLASS_ACCENT_EDGE_STYLES = glassEdge('$glass-accent-shadow');
+
+const withGlass = (styles: Styles) => mergeStyles(styles, GLASS_EDGE_STYLES);
+const withAccentGlass = (styles: Styles) =>
+  mergeStyles(styles, GLASS_ACCENT_EDGE_STYLES);
+
 const ButtonElement = tasty({
   qa: 'Button',
   styles: DEFAULT_BUTTON_STYLES,
   variants: {
     // Current theme — colors mixed from the inherited `currentcolor`
-    'current.primary': CURRENT_PRIMARY_STYLES,
-    'current.outline': CURRENT_OUTLINE_STYLES,
-    'current.outline-2': CURRENT_OUTLINE_2_STYLES,
+    'current.primary': withAccentGlass(CURRENT_PRIMARY_STYLES),
+    'current.outline': withGlass(CURRENT_OUTLINE_STYLES),
+    'current.outline-2': withGlass(CURRENT_OUTLINE_2_STYLES),
     'current.clear': CURRENT_CLEAR_STYLES,
     'current.link': CURRENT_LINK_STYLES,
 
     // Default theme
-    'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.outline': DEFAULT_OUTLINE_STYLES,
-    'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
+    'default.primary': withAccentGlass(DEFAULT_PRIMARY_STYLES),
+    'default.outline': withGlass(DEFAULT_OUTLINE_STYLES),
+    'default.outline-2': withGlass(DEFAULT_OUTLINE_2_STYLES),
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
 
     // Danger theme
-    'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.outline': DANGER_OUTLINE_STYLES,
-    'danger.outline-2': DANGER_OUTLINE_2_STYLES,
+    'danger.primary': withAccentGlass(DANGER_PRIMARY_STYLES),
+    'danger.outline': withGlass(DANGER_OUTLINE_STYLES),
+    'danger.outline-2': withGlass(DANGER_OUTLINE_2_STYLES),
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
 
     // Success theme
-    'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.outline': SUCCESS_OUTLINE_STYLES,
-    'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
+    'success.primary': withAccentGlass(SUCCESS_PRIMARY_STYLES),
+    'success.outline': withGlass(SUCCESS_OUTLINE_STYLES),
+    'success.outline-2': withGlass(SUCCESS_OUTLINE_2_STYLES),
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
 
     // Warning theme
-    'warning.primary': WARNING_PRIMARY_STYLES,
-    'warning.outline': WARNING_OUTLINE_STYLES,
-    'warning.outline-2': WARNING_OUTLINE_2_STYLES,
+    'warning.primary': withAccentGlass(WARNING_PRIMARY_STYLES),
+    'warning.outline': withGlass(WARNING_OUTLINE_STYLES),
+    'warning.outline-2': withGlass(WARNING_OUTLINE_2_STYLES),
     'warning.clear': WARNING_CLEAR_STYLES,
     'warning.link': WARNING_LINK_STYLES,
 
     // Note theme
-    'note.primary': NOTE_PRIMARY_STYLES,
-    'note.outline': NOTE_OUTLINE_STYLES,
-    'note.outline-2': NOTE_OUTLINE_2_STYLES,
+    'note.primary': withAccentGlass(NOTE_PRIMARY_STYLES),
+    'note.outline': withGlass(NOTE_OUTLINE_STYLES),
+    'note.outline-2': withGlass(NOTE_OUTLINE_2_STYLES),
     'note.clear': NOTE_CLEAR_STYLES,
     'note.link': NOTE_LINK_STYLES,
 
-    // Special theme
-    'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.outline': SPECIAL_OUTLINE_STYLES,
+    // Special theme — its outline sits on the fixed `#special-surface`, which
+    // doesn't follow the page scheme either, so it takes the accent glass too.
+    'special.primary': withAccentGlass(SPECIAL_PRIMARY_STYLES),
+    'special.outline': withAccentGlass(SPECIAL_OUTLINE_STYLES),
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
   },
