@@ -4,6 +4,7 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   filterBaseProps,
+  mergeStyles,
   OUTER_STYLES,
   tasty,
 } from '@tenphi/tasty';
@@ -27,6 +28,7 @@ import {
   useFieldProps,
 } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
+import { SEGMENTED_SEGMENT_STYLES } from '../../navigation/Tabs/segmented-styles';
 import { RADIO_SIZE_MAP } from '../../navigation/Tabs/types';
 import {
   mergeTooltipFocusProps,
@@ -64,66 +66,72 @@ const RADIO_BUTTON_COLUMNS =
 const RADIO_BUTTON_BLOCK_COLUMNS =
   'max-content max-content max-content max-content max-content max-content';
 
+// In tabs mode a radio button is a segment of the control `Tabs type="radio"`
+// shares: its look comes from `segmented-styles.ts`, merged in after the
+// button's own styles.
 const RadioButtonElement = tasty(Item, {
   qa: 'RadioButton',
   as: 'label',
-  styles: {
-    preset: 't3m',
-    lineHeight: '1em',
-    flexGrow: 1,
-    // Same areas as `Item`. The `description` rows have to be repeated here
-    // because a plain string would replace `Item`'s whole state map and leave
-    // the description without a grid area to land in.
-    gridTemplate: {
-      '': `"icon prefix label suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
-      'description=inline': `"icon prefix description suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
-      'description=inline & has-label': `"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
-      'description=block': `"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / ${RADIO_BUTTON_BLOCK_COLUMNS}`,
-    },
-    placeContent: 'center',
-    shadow: {
-      '': false,
-      'tabs & selected': '$item-shadow',
-      'tabs & selected & disabled': false,
-    },
-    fill: {
-      'selected & tabs': '#surface',
-      'selected & tabs & disabled': '#surface.6',
-    },
-    color: {
-      'selected & tabs': '#dark',
-      'selected & tabs & disabled': '#dark.3',
-    },
+  styles: mergeStyles(
+    {
+      preset: 't3m / tight',
+      flexGrow: 1,
+      // Same areas as `Item`. The `description` rows have to be repeated here
+      // because a plain string would replace `Item`'s whole state map and leave
+      // the description without a grid area to land in.
+      gridTemplate: {
+        '': `"icon prefix label suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
+        'description=inline': `"icon prefix description suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
+        'description=inline & has-label': `"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
+        'description=block': `"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / ${RADIO_BUTTON_BLOCK_COLUMNS}`,
+      },
+      placeContent: 'center',
+      shadow: {
+        '': false,
+      },
 
-    // Mirror the ButtonSplit grouping: the corner radius is shared so the
-    // first/last items keep only their outer-side radius and middle items go
-    // square; a -1bw left margin overlaps adjacent borders into a single
-    // continuous edge. The selected button is bumped above its siblings so its
-    // brand-tinted border is visible from all four sides — without the bump
-    // the right edge of an adjacent sibling would paint over the selected
-    // button's left edge (and vice-versa). Hover / focus-visible bump higher
-    // still so they always read on top of the selected highlight.
-    radius: {
-      '': true,
-      '!tabs & !:last-child': '1r left',
-      '!tabs & !:first-child': '1r right',
-      '!tabs & !:first-child & !:last-child': 0,
-    },
-    margin: {
-      '': 0,
-      '!tabs & !:first-child': '-1bw left',
-    },
-    zIndex: {
-      '!tabs & selected': 1,
-    },
+      // Mirror the ButtonSplit grouping: the corner radius is shared so the
+      // first/last items keep only their outer-side radius and middle items go
+      // square; a -1bw left margin overlaps adjacent borders into a single
+      // continuous edge. The selected button is bumped above its siblings so its
+      // brand-tinted border is visible from all four sides — without the bump
+      // the right edge of an adjacent sibling would paint over the selected
+      // button's left edge (and vice-versa). Hover / focus-visible bump higher
+      // still so they always read on top of the selected highlight.
+      radius: {
+        '': true,
+        '!tabs & !:last-child': '1r left',
+        '!tabs & !:first-child': '1r right',
+        '!tabs & !:first-child & !:last-child': 0,
+      },
+      margin: {
+        '': 0,
+        '!tabs & !:first-child': '-1bw left',
+      },
+      // oxlint-disable-next-line tasty/require-default-state -- extends Item's own zIndex
+      zIndex: {
+        '!tabs & selected': 1,
+      },
 
-    Label: {
-      placeSelf: {
-        '': 'center start',
-        '!has-prefix & !has-suffix & !has-icon & !has-right-icon': 'center',
+      Label: {
+        placeSelf: {
+          '': 'center start',
+          '!has-prefix & !has-suffix & !has-icon & !has-right-icon': 'center',
+        },
       },
     },
-  },
+    SEGMENTED_SEGMENT_STYLES,
+    // A validated group keeps tinting its idle labels, as the `danger` and
+    // `success` themes do; the selected chip's label stays neutral.
+    {
+      color: {
+        'segmented & invalid & !selected & !disabled':
+          '#danger-accent-text-soft',
+        'segmented & valid & !selected & !disabled':
+          '#success-accent-text-soft',
+      },
+    },
+  ),
 });
 
 const RadioWrapperElement = tasty({
@@ -390,6 +398,7 @@ function Radio(props: CubeRadioProps, ref) {
   // Determine effective type from props or context
   let effectiveType = type ?? contextType ?? 'radio';
   let isButton = effectiveType === 'button' || effectiveType === 'tabs';
+  let isSegmented = effectiveType === 'tabs';
 
   // A button radio *is* an `Item`, so it takes the same container style props an
   // `ItemButton` does. A classic radio only exposes the outer subset: the rest
@@ -405,9 +414,10 @@ function Radio(props: CubeRadioProps, ref) {
     contextSize ??
     'medium') as CubeItemProps['size'];
 
-  // Apply size mapping for tabs mode button radios.
-  // API sizes mapped to Item button sizes: large -> medium (40px), medium -> xsmall (32px).
-  if (effectiveType === 'tabs' && isButton) {
+  // Tabs mode sizes its segments as `Tabs type="radio"` does: the API size
+  // maps to a smaller `Item` size (`RADIO_SIZE_MAP`), since the track adds
+  // its own padding around them.
+  if (isSegmented) {
     effectiveSize =
       RADIO_SIZE_MAP[effectiveSize === 'large' ? 'large' : 'medium'];
   }
@@ -423,7 +433,7 @@ function Radio(props: CubeRadioProps, ref) {
   // (`accent-disabled-surface`), and faking `selected` on its siblings would
   // give them the outline variant of that same chip and erase the distinction.
   let forceSelectedMod = false;
-  if (effectiveType === 'tabs') {
+  if (isSegmented) {
     effectiveButtonType = 'clear';
   } else {
     const baseButtonType = buttonType ?? contextButtonType ?? 'outline';
@@ -530,9 +540,17 @@ function Radio(props: CubeRadioProps, ref) {
     readonly: isReadOnly,
     hovered: isHovered,
     button: isButton,
+    // `useFocus(true)` reports keyboard focus only, so it is both.
     focused: isFocused,
-    tabs: effectiveType === 'tabs',
+    'focus-visible': isFocused,
+    tabs: isSegmented,
+    segmented: isSegmented,
   };
+
+  // Keyboard focus lands on the hidden input. A segment draws its own ring
+  // from it, as a tab does; a `type="button"` radio leaves the ring to its
+  // group (`RadioGroup`), which merges the buttons into one control.
+  let segmentFocusProps = isSegmented ? focusProps : undefined;
 
   // Render button type using Item
   if (isButton) {
@@ -554,7 +572,7 @@ function Radio(props: CubeRadioProps, ref) {
           ...(forceSelectedMod && !isRadioDisabled ? { selected: true } : {}),
         }}
         styles={styles}
-        {...mergeProps(hoverProps, focusProps)}
+        {...hoverProps}
         // Outside the label, so `Item` sees the label alone: its auto tooltip
         // and `highlight` only work on a string label, and an input counted as
         // label content gave an icon-only radio an empty, padded `Label`.
@@ -572,7 +590,7 @@ function Radio(props: CubeRadioProps, ref) {
             // For a dialog kept mounted while closed, as on `Button`.
             {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
             {...mergeTooltipFocusProps(
-              getInputProps(isItemTooltipActive),
+              mergeProps(getInputProps(isItemTooltipActive), segmentFocusProps),
               tooltipFocusProps,
             )}
             ref={inputRef}

@@ -108,6 +108,7 @@ The `mods` property accepts the following modifiers you can override:
 
 - **`horizontal`** `boolean` — Whether the radio group is oriented horizontally
 - **`tabs`** `boolean` — Whether the radio group uses tabs styling
+- **`segmented`** `boolean` — Set with `tabs`: the segmented control look, shared with `Tabs type="radio"`, applies to it. Each `Radio` in the group carries it too
 - **`inside-form`** `boolean` — Whether the radio group is inside a form field
 - **`side-label`** `boolean` — Whether the label is positioned at the side
 - **`fill-width`** `boolean` — Set when the group's style props size its field's width (`width`, `inlineSize`, `flex*`); the group then fills it
@@ -120,7 +121,7 @@ Each `Radio` carries **`readonly`** while its group is `isReadOnly`. A classic r
 
 - `radio` - Traditional radio button appearance (default)
 - `button` - Button-style radio options with spacing
-- `tabs` - Connected tab-style buttons (compact, clear styling)
+- `tabs` - A segmented control. It renders exactly as [Tabs](/docs/navigation-tabs--docs) `type="radio"` does, from one shared style definition: the track, the white chip on the selected option, hover, the keyboard focus ring on the focused option, the disabled look (the selected chip stays, the labels fade) and the text size. Recolor it through the tokens [Tabs → Theming](/docs/navigation-tabs--docs#theming) lists. An invalid or valid group also tints its idle labels
 
 **Default Orientation:**
 
@@ -149,10 +150,10 @@ Controls the size of all radio buttons in the group:
 
 **Size Mapping in Tabs Mode:** When `type="tabs"`, sizes are automatically mapped to maintain visual consistency:
 
-- `large` → `medium`
-- every other size → `xsmall`
+- `large` → `medium` (a 40px control, t3m text)
+- every other size → `xsmall` (a 32px control, t4 text)
 
-Only `large` is carried through; `xsmall`, `small`, `medium` and `xlarge` all collapse to `xsmall`. This ensures tab groups remain compact and cohesive.
+Only `large` is carried through; `xsmall`, `small`, `medium` and `xlarge` all collapse to `xsmall`. These are the sizes `Tabs type="radio"` uses, so the two controls match at either size.
 
 ### Button Type
 
