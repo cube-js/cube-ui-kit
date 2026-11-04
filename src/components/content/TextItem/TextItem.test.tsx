@@ -12,6 +12,26 @@ import { AutoTooltipValue } from '../use-auto-tooltip';
 
 import { TextItem, TextItemWithNativeLink } from './TextItem';
 
+/** Hovers the button and expects the tooltip with `title`, or none for `null`. */
+async function expectTooltipOnHover(title: string | null) {
+  await hoverWithPointer(screen.getByRole('button'));
+  // Disabled/absent providers must stay absent past the open delay.
+  if (title === null) {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-describedby');
+  } else {
+    await waitFor(() => {
+      const tooltip = screen.getByRole('tooltip');
+      expect(tooltip.textContent).toBe(title);
+      expect(screen.getByRole('button')).toHaveAttribute(
+        'aria-describedby',
+        tooltip.id,
+      );
+    });
+  }
+}
+
 describe('<TextItem /> tooltip contracts', () => {
   let overflow: boolean;
 
@@ -64,40 +84,54 @@ describe('<TextItem /> tooltip contracts', () => {
         </TextItem>,
       );
     });
-    await hoverWithPointer(screen.getByRole('button'));
-    // Disabled/absent providers must stay absent past the open delay.
-    if (title === null) {
-      await new Promise((resolve) => setTimeout(resolve, 350));
-      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
-      expect(screen.getByRole('button')).not.toHaveAttribute(
-        'aria-describedby',
-      );
-    } else {
-      await waitFor(() => {
-        const tooltip = screen.getByRole('tooltip');
-        expect(tooltip.textContent).toBe(title);
-        expect(screen.getByRole('button')).toHaveAttribute(
-          'aria-describedby',
-          tooltip.id,
-        );
-      });
-    }
+    await expectTooltipOnHover(title);
   });
 
-  it('does not activate an auto title while text fits', async () => {
-    overflow = false;
-    renderWithRoot(
-      <TextItem
-        tooltip={{ title: 'Fixed', auto: true, isOpen: true }}
-        as="button"
-      >
-        Label
-      </TextItem>,
-    );
-    await hoverWithPointer(screen.getByRole('button'));
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  // An element label, such as a coloured commit hash before its message
+  // (CUB-7286). The automatic tooltip has no text to show for it, so it stays
+  // off; a title of its own still waits for the overflow.
+  it.each<{
+    name: string;
+    tooltip: AutoTooltipValue;
+    title: string | null;
+  }>([
+    { name: 'automatic', tooltip: true, title: null },
+    { name: 'automatic object', tooltip: {}, title: null },
+    { name: 'fixed string', tooltip: 'Fixed', title: 'Fixed' },
+    { name: 'fixed object', tooltip: { title: 'Fixed' }, title: 'Fixed' },
+    {
+      name: 'fixed title with auto',
+      tooltip: { title: 'Fixed', auto: true },
+      title: 'Fixed',
+    },
+  ])('resolves $name for an element label', async ({ tooltip, title }) => {
+    await act(async () => {
+      renderWithRoot(
+        <TextItem as="button" tooltip={tooltip}>
+          <b>abc12345:</b> Label
+        </TextItem>,
+      );
+    });
+    await expectTooltipOnHover(title);
   });
+
+  it.each(['text', 'element'] as const)(
+    'does not activate an auto title while the %s label fits',
+    async (kind) => {
+      overflow = false;
+      renderWithRoot(
+        <TextItem
+          tooltip={{ title: 'Fixed', auto: true, isOpen: true }}
+          as="button"
+        >
+          {kind === 'text' ? 'Label' : <b>Label</b>}
+        </TextItem>,
+      );
+      await hoverWithPointer(screen.getByRole('button'));
+      await new Promise((resolve) => setTimeout(resolve, 350));
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    },
+  );
 
   it.each([undefined, 't3'] as const)(
     'keeps %s preset automatic tooltip hover on a hidden native target without hiding its text',
