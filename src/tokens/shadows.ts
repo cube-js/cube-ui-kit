@@ -74,8 +74,11 @@ export const GLASS_TOKENS: Styles = {
   },
   '$glass-accent-shade':
     '.5px 0 .5px #glass-accent-shade inset, -.5px 0 .5px #glass-accent-shade inset',
+  // The negative spread pushes the blur ramp past the left and right edges,
+  // so the glow stays on the top and bottom instead of creeping down the
+  // sides (a plain `0 1px 2px` would glow on every edge).
   '$glass-accent-tint':
-    '0 1px 2px #glass-accent-tint inset, 0 -1px 2px #glass-accent-tint inset',
+    '0 2px 2px -1px #glass-accent-tint inset, 0 -2px 2px -1px #glass-accent-tint inset',
   /** Glass edge for brand (accent) fills */
   '$glass-accent-shadow': '$glass-accent-shade, $glass-accent-tint',
 };
