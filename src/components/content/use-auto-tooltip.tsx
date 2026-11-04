@@ -29,7 +29,8 @@ export interface UseAutoTooltipOptions {
   /**
    * Secondary text that truncates alongside the label, such as `Item`'s
    * description. A string description is measured with the label, and the auto
-   * tooltip shows whichever of the two is cut off.
+   * tooltip shows whichever of the two is cut off. With `{ title, auto: true }`
+   * any description is measured, and the tooltip shows that title.
    */
   description?: ReactNode;
   labelProps?: Props;
@@ -95,8 +96,7 @@ function queueOverflowCheck(check: () => void) {
 
 /**
  * Whether the tooltip value asks to detect overflow on its own. What it
- * measures is decided separately: overflow detection measures text, so only a
- * string label or description takes part.
+ * measures is decided separately (`isMeasured`).
  */
 function allowsAutoTooltip(tooltip: AutoTooltipValue | undefined): boolean {
   // Boolean true enables auto overflow detection
@@ -111,6 +111,42 @@ function allowsAutoTooltip(tooltip: AutoTooltipValue | undefined): boolean {
     return tooltip.auto !== undefined ? !!tooltip.auto : true;
   }
   return false;
+}
+
+/**
+ * The tooltip's own title when it still waits for overflow (`{ title, auto:
+ * true }`), or `undefined`.
+ */
+function getOwnAutoTitle(tooltip: AutoTooltipValue | undefined): ReactNode {
+  if (typeof tooltip !== 'object' || tooltip.auto !== true) return undefined;
+
+  return tooltip.title || undefined;
+}
+
+/**
+ * Whether a label or description takes part in overflow detection.
+ *
+ * Without a title of its own, the tooltip shows the text that is cut off, so
+ * only a string part is measured. With one, it never shows the part, so a part
+ * of any kind is measured: an element label, such as a coloured commit hash
+ * followed by its message, gets a tooltip that appears only when it is cut off.
+ * Only the part's own box is compared, so a child that cuts off its own text
+ * inside it does not count.
+ */
+function isMeasured(part: ReactNode, ownTitle: ReactNode): boolean {
+  return ownTitle ? part != null : typeof part === 'string';
+}
+
+/**
+ * What a measured part's re-check is keyed on. Text can change its overflow
+ * without resizing the observed box, so a string part is keyed by its text. Any
+ * other part is keyed by the tooltip's own title, which callers derive from the
+ * same text, rather than by an element that is new on every render.
+ */
+function getMeasureKey(part: ReactNode, ownTitle: ReactNode) {
+  if (typeof part === 'string') return part;
+
+  return typeof ownTitle === 'string' ? ownTitle : undefined;
 }
 
 /** Which measured parts are cut off. */
@@ -253,8 +289,9 @@ export function useAutoTooltip({
   descriptionRef: descriptionRefOption,
 }: UseAutoTooltipOptions) {
   const allowsAuto = allowsAutoTooltip(tooltip);
-  const isLabelMeasured = allowsAuto && typeof children === 'string';
-  const isDescriptionMeasured = allowsAuto && typeof description === 'string';
+  const ownTitle = getOwnAutoTitle(tooltip);
+  const isLabelMeasured = allowsAuto && isMeasured(children, ownTitle);
+  const isDescriptionMeasured = allowsAuto && isMeasured(description, ownTitle);
   const isAutoTooltipEnabled = isLabelMeasured || isDescriptionMeasured;
 
   // Track overflow for auto tooltip (only when enabled)
@@ -314,8 +351,12 @@ export function useAutoTooltip({
   }, [checkOverflow]);
 
   // Text can change its overflow without changing the observed box size.
-  const measuredLabel = isLabelMeasured ? children : undefined;
-  const measuredDescription = isDescriptionMeasured ? description : undefined;
+  const measuredLabel = isLabelMeasured
+    ? getMeasureKey(children, ownTitle)
+    : undefined;
+  const measuredDescription = isDescriptionMeasured
+    ? getMeasureKey(description, ownTitle)
+    : undefined;
 
   useEffect(() => {
     if (isAutoTooltipEnabled) {

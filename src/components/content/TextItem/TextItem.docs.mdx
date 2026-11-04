@@ -28,7 +28,7 @@ TextItem renders one line truncated with an ellipsis, so Text's `ellipsis` and `
 - **`highlight`** `string` — String to highlight within children (only works when children is a plain string)
 - **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
 - **`highlightStyles`** `Styles` — Custom styles for highlighted text portions
-- **`tooltip`** `string | boolean | TooltipProviderProps` (default: `true`) — Tooltip configuration. `true` enables auto tooltip on overflow, a string shows fixed tooltip text, an object supports advanced configuration.
+- **`tooltip`** `string | boolean | TooltipProviderProps` (default: `true`) — Tooltip configuration. `true` enables auto tooltip on overflow for string children, a string shows fixed tooltip text, an object supports advanced configuration. `{ title, auto: true }` shows `title` only on overflow, for any children (see [Overflow Tooltip for an Element Label](#overflow-tooltip-for-an-element-label)).
 - **`tooltipPlacement`** `Placement` (default: `top`) — Default tooltip placement
 - **`monospace`** `boolean` — Use monospace font
 - **`italic`** `string` — Font style (e.g. `'italic'`)
@@ -75,6 +75,18 @@ When text overflows its container, hovering reveals a tooltip with the full cont
 ```
 
 <Story of={TextItemStories.OverflowWithTooltip} />
+
+### Overflow Tooltip for an Element Label
+
+The automatic tooltip shows the text that is cut off, so it needs string children. When the label is built from elements, such as a commit hash coloured apart from its message, give the tooltip its own `title` with `auto: true`. It then shows only while the label is cut off:
+
+```jsx
+<TextItem tooltip={{ title: `${hash}: ${message}`, auto: true }}>
+  <Text color="#dark">{hash}:</Text> {message}
+</TextItem>
+```
+
+Only the label's own box is measured. A child that clips its own text, such as a nested `Text` with its own `ellipsis`, never makes the label overflow, so it shows no tooltip.
 
 ### Text Highlighting
 
