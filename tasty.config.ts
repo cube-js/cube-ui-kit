@@ -1,22 +1,24 @@
 /**
- * Tasty Extension Configuration
+ * Tasty lint configuration
  *
- * This file configures the tasty VSCode extension for the @cube-dev/ui-kit project.
- * It provides token names, units, presets, and state aliases for validation and autocomplete.
- * For `@tenphi/eslint-plugin-tasty`, it also lists the components consumers
- * customize through their props rather than by restyling them
- * (`protectedComponents`).
+ * `@tenphi/eslint-plugin-tasty` reads this file. It lists the token names,
+ * presets, recipes and state aliases UI Kit defines, which a project's styles
+ * are checked against, and the components consumers customize through their
+ * props rather than by restyling them (`protectedComponents`). The plugin
+ * loads it with jiti, which follows the import of `tasty.config.generated.ts`.
+ * A loader that only parses the object literal, such as the plugin's own
+ * fallback when jiti fails, can't evaluate the spreads and reads no config.
  *
  * Projects using @cube-dev/ui-kit can extend this config:
  * ```typescript
  * export default {
  *   extends: '@cube-dev/ui-kit',
- *   // Add project-specific tokens, presets, etc.
+ *   // Add project-specific tokens, states, presets, etc.
  * };
  * ```
- *
- * @see https://github.com/tenphi/tasty-vscode-extension for extension documentation
  */
+
+import { runtimeNames } from './tasty.config.generated';
 
 export default {
   extends: '@tenphi/tasty',
@@ -177,427 +179,32 @@ export default {
     },
   ],
 
+  /**
+   * The names UI Kit defines at runtime come from `tasty.config.generated.ts`,
+   * which `pnpm generate:tasty-config` writes: the tokens `getTokens()` emits,
+   * the state aliases and recipes `<Root>` registers, and the typography
+   * presets. Built-in units (x, r, cr, bw, ow, lh, sf) need no list.
+   */
   tokens: [
-    // Declared in src/tasty-augment.d.ts but previously absent here, so the
-    // ESLint plugin reported them as unknown once story files started being
-    // linted. Keep the two lists in sync.
-    '#accent-surface-border',
-    '#black',
-    '#danger-border',
-    '#draft',
-    '#light-grey',
-    '#note-border',
-    '#pink-01',
-    '#pink-02',
-    '#primary-border',
-    '#success-border',
-    '#warning-border',
-    '#white',
-    // ---- Glaze: neutral surface ramp (default theme) ----
-    '#surface',
-    '#surface-2',
-    '#surface-3',
-    '#surface-4',
-    '#surface-inverse',
-    '#surface-text',
-    '#surface-text-soft',
-    '#surface-text-soft-2',
-    '#surface-2-text',
-    '#surface-2-text-soft',
-    '#surface-3-text',
-    '#surface-3-text-soft',
-    // Fixed-mode tokens emitted by the special palette theme.
-    '#special-surface',
-    '#special-accent-disabled-surface',
-    '#special-accent-disabled-surface-text',
-    '#special-accent-surface',
-    '#special-accent-surface-2',
-    '#special-accent-surface-3',
-    '#special-accent-surface-border',
-    '#special-accent-surface-hover',
-    '#special-accent-surface-text',
-    '#special-accent-text',
+    ...runtimeNames.tokens,
 
-    // ---- Glaze: accent system (default theme) ----
-    '#accent-surface',
-    '#accent-surface-2',
-    '#accent-surface-3',
-    '#accent-surface-hover',
-    '#accent-surface-text',
-    '#accent-selected-fill',
-    '#accent-text',
-    '#accent-text-soft',
-    '#accent-icon',
-    '#accent-disabled-surface',
-    '#accent-disabled-surface-text',
-    '#accent-disabled-text',
+    // `<Root>` sets it for every element below it, through its `tokens`.
+    '$pointer',
 
-    // ---- Glaze: per-theme primary / purple (purple is alias of primary) ----
-    '#primary',
-    '#primary-bg',
-    '#primary-text',
-    '#primary-text-soft',
-    '#primary-icon',
-    '#primary-hover',
-    '#primary-disabled',
-    '#primary-desaturated',
-    '#primary-surface',
-    '#primary-surface-text',
-    '#primary-surface-text-soft',
-    '#primary-surface-text-soft-2',
-    '#primary-accent-surface',
-    '#primary-accent-surface-2',
-    '#primary-accent-surface-3',
-    '#primary-accent-surface-hover',
-    '#primary-accent-surface-text',
-    '#primary-accent-selected-fill',
-    '#primary-accent-surface-border',
-    '#primary-accent-text',
-    '#primary-accent-text-soft',
-    '#primary-accent-icon',
-    '#primary-accent-disabled-surface',
-    '#primary-accent-disabled-surface-text',
-    '#primary-accent-disabled-text',
-    '#purple',
-    '#purple-bg',
-    '#purple-border',
-    '#purple-text',
-    '#purple-text-soft',
-    '#purple-icon',
-    '#purple-hover',
-    '#purple-disabled',
-    '#purple-surface',
-    '#purple-surface-text',
-    '#purple-surface-text-soft',
-    '#purple-surface-text-soft-2',
-    '#purple-accent-surface',
-    '#purple-accent-surface-2',
-    '#purple-accent-surface-3',
-    '#purple-accent-surface-hover',
-    '#purple-accent-surface-text',
-    '#purple-accent-selected-fill',
-    '#purple-accent-surface-border',
-    '#purple-accent-text',
-    '#purple-accent-text-soft',
-    '#purple-accent-icon',
-    '#purple-accent-disabled-surface',
-    '#purple-accent-disabled-surface-text',
-    '#purple-accent-disabled-text',
-
-    // ---- Glaze: per-theme danger ----
-    '#danger',
-    '#danger-bg',
-    '#danger-text',
-    '#danger-text-soft',
-    '#danger-icon',
-    '#danger-hover',
-    '#danger-disabled',
-    '#danger-desaturated',
-    '#danger-surface',
-    '#danger-surface-text',
-    '#danger-surface-text-soft',
-    '#danger-surface-text-soft-2',
-    '#danger-alert-surface',
-    '#danger-alert-border',
-    '#danger-accent-surface',
-    '#danger-accent-surface-2',
-    '#danger-accent-surface-3',
-    '#danger-accent-surface-hover',
-    '#danger-accent-surface-text',
-    '#danger-accent-selected-fill',
-    '#danger-accent-surface-border',
-    '#danger-accent-text',
-    '#danger-accent-text-soft',
-    '#danger-accent-icon',
-    '#danger-accent-disabled-surface',
-    '#danger-accent-disabled-surface-text',
-    '#danger-accent-disabled-text',
-
-    // ---- Glaze: per-theme success ----
-    '#success',
-    '#success-bg',
-    '#success-text',
-    '#success-text-soft',
-    '#success-icon',
-    '#success-hover',
-    '#success-disabled',
-    '#success-desaturated',
-    '#success-surface',
-    '#success-surface-text',
-    '#success-surface-text-soft',
-    '#success-surface-text-soft-2',
-    '#success-alert-surface',
-    '#success-alert-border',
-    '#success-accent-surface',
-    '#success-accent-surface-2',
-    '#success-accent-surface-3',
-    '#success-accent-surface-hover',
-    '#success-accent-surface-text',
-    '#success-accent-selected-fill',
-    '#success-accent-surface-border',
-    '#success-accent-text',
-    '#success-accent-text-soft',
-    '#success-accent-icon',
-    '#success-accent-disabled-surface',
-    '#success-accent-disabled-surface-text',
-    '#success-accent-disabled-text',
-
-    // ---- Glaze: per-theme warning ----
-    '#warning',
-    '#warning-bg',
-    '#warning-text',
-    '#warning-text-soft',
-    '#warning-icon',
-    '#warning-hover',
-    '#warning-disabled',
-    '#warning-desaturated',
-    '#warning-surface',
-    '#warning-surface-text',
-    '#warning-surface-text-soft',
-    '#warning-surface-text-soft-2',
-    '#warning-alert-surface',
-    '#warning-alert-border',
-    '#warning-accent-surface',
-    '#warning-accent-surface-2',
-    '#warning-accent-surface-3',
-    '#warning-accent-surface-hover',
-    '#warning-accent-surface-text',
-    '#warning-accent-selected-fill',
-    '#warning-accent-surface-border',
-    '#warning-accent-text',
-    '#warning-accent-text-soft',
-    '#warning-accent-icon',
-    '#warning-accent-disabled-surface',
-    '#warning-accent-disabled-surface-text',
-    '#warning-accent-disabled-text',
-
-    // ---- Glaze: per-theme note ----
-    '#note',
-    '#note-bg',
-    '#note-text',
-    '#note-text-soft',
-    '#note-icon',
-    '#note-hover',
-    '#note-disabled',
-    '#note-desaturated',
-    '#note-surface',
-    '#note-surface-text',
-    '#note-surface-text-soft',
-    '#note-surface-text-soft-2',
-    '#note-alert-surface',
-    '#note-alert-border',
-    '#note-accent-surface',
-    '#note-accent-surface-2',
-    '#note-accent-surface-3',
-    '#note-accent-surface-hover',
-    '#note-accent-surface-text',
-    '#note-accent-selected-fill',
-    '#note-accent-surface-border',
-    '#note-accent-text',
-    '#note-accent-text-soft',
-    '#note-accent-icon',
-    '#note-accent-disabled-surface',
-    '#note-accent-disabled-surface-text',
-    '#note-accent-disabled-text',
-
-    // ---- Glaze: PrismCode syntax palette ----
-    '#code-comment',
-    '#code-punctuation',
-    '#code-keyword',
-    '#code-string',
-    '#code-number',
-    '#code-function',
-    '#code-attribute',
-
-    // ---- Glaze: LoadingAnimation cube faces (opaque) ----
-    '#loading-face-1',
-    '#loading-face-2',
-    '#loading-face-3',
-
-    // ---- Glaze: shadows / overlays / focus / placeholder ----
-    '#shadow-sm',
-    '#shadow-md',
-    '#shadow-lg',
-    '#overlay',
-    '#focus',
-    '#placeholder',
-
-    // ---- Legacy aliases (mapped in src/tokens/colors.ts) ----
-    '#pink',
-    '#text',
-    '#dark',
-    '#dark-bg',
-    '#dark-01',
-    '#dark-02',
-    '#dark-03',
-    '#dark-04',
-    '#dark-05',
-    '#purple-01',
-    '#purple-02',
-    '#purple-03',
-    '#purple-04',
-    '#light',
-    '#border',
-    '#clear',
-    '#shadow',
-    '#minor',
-    '#disabled',
-    '#disabled-surface-text',
-    '#disabled-surface',
-    '#disabled-opacity',
-    '#fixed-dark',
-    '#fixed-primary-text',
-
-    // ---- Context hooks (src/tokens/colors.ts) ----
-    '#current-fill',
-
-    // ---- Component-local custom tokens ----
-    '#scrollbar-thumb',
-    '#scrollbar-outline',
-    '#scrollbar-bg',
-    '#scrollbar-corner',
-    '#tabs-fade-left',
-    '#tabs-fade-right',
-    '#slider-thumb',
-    '#slider-thumb-hovered',
-    // ColorPicker: the color being edited, and the black/white that reads on
-    // top of it. Both are passed through the `tokens` prop per render.
+    // Component tokens, set in one file and read in another.
+    // ColorPanel, ColorSwatch, ColorSwatchGroup and HueSlider set these per
+    // render through `tokens`.
     '#color-picker',
     '#color-picker-contrast',
-    // ColorSwatchGroup: the color of an individual swatch, a `tokens` value per option.
     '#color-swatch',
-
-    // Custom Property Tokens (from src/tokens/base.ts)
+    '#slider-thumb',
+    '#slider-thumb-hovered',
+    // Tabs, and Layout's tiny scrollbar (`useTinyScrollbar`).
     '$tab-indicator-size',
-    '$font-size',
-    '$line-height',
-    '$input-font-size',
-    '$input-line-height',
-    '$input-letter-spacing',
-    '$disabled-opacity',
-    '$stroke-width',
-    '$outline-offset',
-    '$ring-width',
-    '$item-gap',
-    '$large-radius',
-    '$card-radius',
-    '$leaf-sharp-radius',
-    '$fade-width',
-    '$min-dialog-size',
-    '$disclosure-transition',
-    '$tab-transition',
-    '$fade-transition',
-    '$overlay-transition',
-    '$scrollbar-transition',
-    '$scrollbar-width',
-    '$scrollbar-outline-width',
-    '$scrollbar-radius',
-
-    // Spacing Tokens
-    '$space-xs',
-    '$space-sm',
-    '$space-md',
-    '$space-lg',
-    '$space-xl',
-
-    // Size Tokens
-    '$size-xs',
-    '$size-sm',
-    '$size-md',
-    '$size-lg',
-    '$size-xl',
-
-    // Shadow Tokens
-    '$item-shadow',
-    '$card-shadow',
-    '$dialog-shadow',
-
-    // Layout Tokens
-    '$max-content-width',
-    '$topbar-height',
-    '$devmodebar-height',
-    '$sidebar-width',
-    '$border-radius-base',
     '$scrollbar-h-left',
     '$scrollbar-h-width',
   ],
-
-  // Note: Built-in units (x, r, cr, bw, ow, fs, lh, sf) are always available.
-  // No need to list them here - they're automatically included by the extension.
-
-  /**
-   * Valid recipe names for the `recipe` style property.
-   * These are defined in src/components/Root.tsx via configure().
-   */
-  recipes: [
-    'reset',
-    'button',
-    'input',
-    'input-autofill',
-    'input-placeholder',
-    'input-search-cancel-button',
-  ],
-
-  /**
-   * State alias names for autocomplete.
-   * These are predefined responsive and theme states.
-   */
-  states: ['@mobile', '@compact', '@dark', '@hc'],
-
-  /**
-   * Valid preset names for the `preset` style property.
-   * These are defined in src/tokens/typography.ts.
-   *
-   * Note: Preset modifiers (strong, italic, icon, tight) are built-in
-   * and can be combined with any preset using `/` separator (e.g., 't1 / strong', 'h2 / italic').
-   */
-  presets: [
-    // Base text
-    'default',
-
-    // Headings (h1-h6)
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-
-    // Text styles (t1-t4, with medium weight variants, and t4n at normal weight)
-    't1',
-    't2',
-    't2m',
-    't3',
-    't3m',
-    't4',
-    't4m',
-    't4n',
-
-    // Markdown/prose styles (m1-m3)
-    'm1',
-    'm2',
-    'm3',
-
-    // Paragraph styles (p1-p4)
-    'p1',
-    'p2',
-    'p3',
-    'p4',
-
-    // Caption/uppercase styles (c1-c2)
-    'c1',
-    'c2',
-    'c3',
-
-    // Snippet / monospace styles (s2-s4)
-    's2',
-    's3',
-    's4',
-
-    // Tag typography
-    'tag',
-
-    // Inline semantic styles
-    'inline',
-  ],
+  states: runtimeNames.states,
+  presets: runtimeNames.presets,
+  recipes: runtimeNames.recipes,
 };

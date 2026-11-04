@@ -74,8 +74,9 @@ const CELL_STYLES: Styles = {
    * column colour and merges it in through `styles.Cell` / `styles.HeaderCell`.
    *
    * The tint is pre-composed into the BASE rather than mixed in as a second
-   * overlay, because `fill` mixes exactly two colors and the interaction paint
-   * is the other one. That is what keeps hover, focus, selection and
+   * overlay, because the cell's fill is one overlay over one base
+   * (`#cell-base+#row-overlay.$row-overlay-weight`) and the interaction paint is
+   * that overlay. That is what keeps hover, focus, selection and
    * drop-target working over a tinted column instead of being displaced by it —
    * and it is why the row band has to reach the cell (`data-odd` is mirrored onto
    * body cells) rather than staying on the `<tr>`.
@@ -83,8 +84,8 @@ const CELL_STYLES: Styles = {
   '#cell-base': '#row-base',
   '#cell-text': '#row-text',
   fill: {
-    '': '#row-overlay $row-overlay-weight, #cell-base',
-    '@own(cell-selected)': '#purple 10%, #cell-base',
+    '': '#cell-base+#row-overlay.$row-overlay-weight',
+    '@own(cell-selected)': '#cell-base+#purple.1',
   },
   color: '#cell-text',
   opacity: '$dim',
@@ -183,7 +184,7 @@ export const TableElement = tasty({
     // Neutral defaults so a cell rendered outside a row still paints sanely.
     '#row-base': '#surface',
     '#row-overlay': '#surface-text',
-    '$row-overlay-weight': '0%',
+    '$row-overlay-weight': 0,
     '#row-text': '#surface-text',
     // The cell-level pair defaults to the row's, and a tinted column overrides
     // its own — see `CELL_STYLES`. Declared here too so the chain has a root even
@@ -278,8 +279,7 @@ export const TableElement = tasty({
         // the table still fades, it just does not move. A loading state can
         // last a long time, and this one would otherwise animate continuously
         // beside the data with no way to stop it.
-        '@media(prefers-reduced-motion)':
-          'linear-gradient(90deg, #black 0%, #black 100%)',
+        '@reduced-motion': 'linear-gradient(90deg, #black 0%, #black 100%)',
       },
       // Three times the width, so the band is a third of the table and there is
       // an opaque stretch either side of it. The default `repeat` tiles
@@ -298,7 +298,7 @@ export const TableElement = tasty({
       // already uses.
       animationPlayState: {
         '': 'running',
-        '@media(prefers-reduced-motion)': 'paused',
+        '@reduced-motion': 'paused',
       },
       transition: 'opacity',
       // `fixed` makes `<colgroup>` authoritative, so the header and the body
@@ -327,7 +327,7 @@ export const TableElement = tasty({
       // Header rows never carry interaction paint; neutralise the inherited
       // tokens so nothing can leak in from a row above.
       '#row-base': '#surface-2',
-      '$row-overlay-weight': '0%',
+      '$row-overlay-weight': 0,
       '#row-text': '#dark-03',
       $dim: 1,
     },
@@ -365,9 +365,9 @@ export const TableElement = tasty({
       border: '1bw #border bottom, $column-divider #border right',
       zIndex: { '': 'auto', '@own(pin=start | pin=end)': 3 },
       fill: {
-        '': '#row-overlay $row-overlay-weight, #cell-base',
+        '': '#cell-base+#row-overlay.$row-overlay-weight',
         '(@own(sortable) & @own(:hover)) | @own(menu-open)':
-          '#surface-text 4%, #cell-base',
+          '#cell-base+#surface-text.04',
       },
       // `pointer` wins on a sortable header: sorting is the primary action, and a
       // native drag needs movement while a click does not, so both still work.
@@ -822,14 +822,13 @@ export const TableElement = tasty({
         '@own(disabled)': '#surface-text',
       },
       '$row-overlay-weight': {
-        '': '0%',
-        '@own(:hover)': '4%',
-        '@own(focused) | @own(:focus-visible)': '6%',
-        '@own(selected)': '9%',
-        '@own(selected) & (@own(:hover) | @own(focused) | @own(:focus-visible))':
-          '12%',
-        '@own(drop-target)': '10%',
-        '@own(disabled)': '2%',
+        '': 0,
+        '@own(:hover)': 0.04,
+        '@own(focused) | @own(:focus-visible)': 0.06,
+        '@own(selected)': 0.09,
+        '@own(selected) & (@own(:hover) | @own(focused) | @own(:focus-visible))': 0.12,
+        '@own(drop-target)': 0.1,
+        '@own(disabled)': 0.02,
       },
       '#row-text': {
         '': '#surface-text',
@@ -925,7 +924,7 @@ export const TableElement = tasty({
       boxSizing: 'border-box',
       height: '($row-height + 1bw)',
       padding: 0,
-      fill: '#row-overlay $row-overlay-weight, #row-base',
+      fill: '#row-base+#row-overlay.$row-overlay-weight',
       opacity: '$dim',
       border: {
         '': '1bw #border bottom',
@@ -1005,7 +1004,7 @@ export const TableElement = tasty({
       $: '> Scroller > Table > Foot >',
       position: 'relative',
       '#row-base': '#surface-2',
-      '$row-overlay-weight': '0%',
+      '$row-overlay-weight': 0,
       '#row-text': '#surface-text',
       $dim: 1,
     },
