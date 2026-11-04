@@ -254,9 +254,12 @@ function publishRunWidths(entries: ResizeObserverEntry[]) {
   // Synchronous, because observers run just before paint: a scheduled render
   // would paint one frame with the actions over the label. When that commit
   // resizes another observed element no deeper than the run (an auto-width tab
-  // grows by its actions), the browser delivers that one a frame late and
+  // grows by its actions, or a run holding another row's run grows once the
+  // inner one publishes), the browser delivers that one a frame late and
   // reports "ResizeObserver loop completed with undelivered notifications".
-  // That is benign, and error trackers such as Sentry drop it by default.
+  // That is benign, and error trackers such as Sentry drop it by default. The
+  // outer run of such a pair is corrected in this same commit, by its layout
+  // effect, so the first frame still shows its final width.
   flushSync(() => {
     for (const publish of publishes) publish();
   });

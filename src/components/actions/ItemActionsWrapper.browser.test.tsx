@@ -91,8 +91,8 @@ function publishedWidth(wrapper: HTMLElement) {
  *
  * Observers are notified in the order they were created, all before the frame
  * is painted. This one is created after the one that watches runs, so what it
- * reads is what that frame shows. Reading the column's width resolves any transition at its
- * current point, so a column sliding open reads near 0 here.
+ * reads is what that frame shows. Reading the column's width resolves any
+ * transition at its current point, so a column sliding open reads near 0 here.
  */
 function watchFirstFrame({
   wrapper,
