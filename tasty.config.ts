@@ -5,8 +5,9 @@
  * presets, recipes and state aliases UI Kit defines, which a project's styles
  * are checked against, and the components consumers customize through their
  * props rather than by restyling them (`protectedComponents`). The plugin
- * loads it with jiti, which follows the import of `tasty.config.generated.ts`;
- * a loader that only parses the object literal gets none of the spread lists.
+ * loads it with jiti, which follows the import of `tasty.config.generated.ts`.
+ * A loader that only parses the object literal, such as the plugin's own
+ * fallback when jiti fails, can't evaluate the spreads and reads no config.
  *
  * Projects using @cube-dev/ui-kit can extend this config:
  * ```typescript
