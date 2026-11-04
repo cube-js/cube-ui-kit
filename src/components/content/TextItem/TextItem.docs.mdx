@@ -86,7 +86,7 @@ The automatic tooltip shows the text that is cut off, so it needs string childre
 </TextItem>
 ```
 
-Only the label's own box is measured. A child that clips its own text, such as a nested `Text` with its own `ellipsis`, never makes the label overflow, so it shows no tooltip. The check reruns when the label resizes or the `title` changes, so derive the `title` from the same text as the label.
+Only the label's own box is measured. A child that clips its own text, such as a nested `Text` with its own `ellipsis`, never makes the label overflow, so it shows no tooltip. The check reruns when the label resizes or the `title` text changes, so derive a string `title` from the same text as the label.
 
 ### Text Highlighting
 

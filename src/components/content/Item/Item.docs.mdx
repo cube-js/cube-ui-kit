@@ -413,7 +413,7 @@ By default, Item shows an auto tooltip when content overflows. The label and a s
 - `string` - Shows tooltip with the specified text (always visible, not auto)
 - `object` - Advanced configuration:
   - `title?: string` - Custom tooltip text (when provided, always shows tooltip unless `auto: true`)
-  - `auto?: boolean` - Enable/disable auto overflow behavior (defaults to `true` when no `title` is provided). The automatic tooltip measures only a string label or description, because it shows the text that is cut off. With a `title`, `auto: true` measures a label or description of any kind, an element one included, and shows the `title` only while one of them is cut off. Only their own boxes are measured, so a child that clips its own text doesn't count. The check reruns when they resize or the `title` changes, so derive the `title` from the same text.
+  - `auto?: boolean` - Enable/disable auto overflow behavior (defaults to `true` when no `title` is provided). The automatic tooltip measures only a string label or description, because it shows the text that is cut off. With a `title`, `auto: true` measures a label or description of any kind, an element one included, and shows the `title` only while one of them is cut off. Only their own boxes are measured, so a child that clips its own text doesn't count. The check reruns when they resize or the `title` text changes, so derive a string `title` from the same text.
   - `placement?: string` - Tooltip position (top, bottom, left, right, etc.)
   - Plus other [TooltipProvider props](/docs/overlays-tooltip--docs)
 
