@@ -143,6 +143,81 @@ describe('<ItemActionsWrapper />', () => {
     ).toBeNull();
   });
 
+  describe('size observer', () => {
+    /** Records which elements each observer watches and whether it let go. */
+    class RecordingObserver {
+      static all: RecordingObserver[] = [];
+      targets: Element[] = [];
+      isDisconnected = false;
+
+      constructor() {
+        RecordingObserver.all.push(this);
+      }
+
+      observe(el: Element) {
+        this.targets.push(el);
+      }
+
+      unobserve() {}
+
+      disconnect() {
+        this.isDisconnected = true;
+      }
+    }
+
+    function getRun(row: HTMLElement) {
+      return row.parentElement!.querySelector(
+        ':scope > [data-element="Actions"]',
+      )!;
+    }
+
+    function watching(el: Element) {
+      return RecordingObserver.all.filter((o) => o.targets.includes(el));
+    }
+
+    afterEach(() => {
+      RecordingObserver.all = [];
+      vi.unstubAllGlobals();
+    });
+
+    function renderRow(autoHideActions: boolean) {
+      return (
+        <ItemButton
+          qa="Row"
+          autoHideActions={autoHideActions}
+          actions={<ItemButton.Action qa="Act" />}
+        >
+          Row
+        </ItemButton>
+      );
+    }
+
+    it('moves to the new run when a prop swaps it, and lets go on unmount', () => {
+      vi.stubGlobal('ResizeObserver', RecordingObserver);
+
+      const { getByTestId, rerender, unmount } = renderWithRoot(
+        renderRow(true),
+      );
+      const first = getRun(getByTestId('Row'));
+
+      expect(watching(first)).toHaveLength(1);
+
+      // Dropping `autoHideActions` renders the run as a different element.
+      rerender(renderRow(false));
+
+      const second = getRun(getByTestId('Row'));
+
+      expect(second).not.toBe(first);
+      expect(watching(first).every((o) => o.isDisconnected)).toBe(true);
+      expect(watching(second)).toHaveLength(1);
+      expect(watching(second)[0].isDisconnected).toBe(false);
+
+      unmount();
+
+      expect(watching(second)[0].isDisconnected).toBe(true);
+    });
+  });
+
   it('renders the actions outside the button', () => {
     const { getByTestId } = renderWithRoot(
       <ItemButton qa="Row" actions={<ItemButton.Action qa="Act" />}>

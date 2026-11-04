@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { Activity, useState } from 'react';
 
 import { renderWithRoot, screen, userEvent, waitFor } from '../../test';
 import { Select } from '../fields/Select/Select';
 
-import { ItemActionsWrapper } from './ItemActionsWrapper';
 import { ItemButton } from './ItemButton/ItemButton';
 
 /**
@@ -17,7 +16,7 @@ import { ItemButton } from './ItemButton/ItemButton';
 
 function AgentSelect() {
   return (
-    <Select aria-label="Agent" defaultSelectedKey="one" width="200px">
+    <Select aria-label="Agent" defaultSelectedKey="one" width="25x">
       <Select.Item key="one">A rather long agent name</Select.Item>
       <Select.Item key="two">Another agent</Select.Item>
     </Select>
@@ -44,7 +43,12 @@ function renderPanel({ isShown = false } = {}) {
   };
 }
 
-/** The other way a panel opens: a render that shows it and the row together. */
+/**
+ * The other way a panel opens: a render that shows it and re-renders the row
+ * with it. An `ItemButton` with inline actions, not the `Select`: compiled, the
+ * `Select` keeps its caret element across the render, so the wrapper would see
+ * no change and measure in its observer instead — the path the DOM show covers.
+ */
 function StatefulPanel() {
   const [isShown, setIsShown] = useState(false);
 
@@ -54,7 +58,9 @@ function StatefulPanel() {
         show
       </button>
       <div hidden={!isShown}>
-        <AgentSelect />
+        <ItemButton actions={<ItemButton.Action aria-label="Pin" />}>
+          Row
+        </ItemButton>
       </div>
     </>
   );
@@ -162,7 +168,7 @@ describe('ItemActionsWrapper in a hidden container', () => {
   it('starts at the full width when a render shows the container', async () => {
     renderWithRoot(<StatefulPanel />);
 
-    const parts = getParts();
+    const parts = getParts(/Row/);
     const watch = watchFirstFrame(parts);
 
     // The row re-renders in the commit that shows it, so the wrapper measures
@@ -176,29 +182,23 @@ describe('ItemActionsWrapper in a hidden container', () => {
   });
 
   it('follows the run when a prop change replaces it while hidden', async () => {
-    // The wrapper itself: no component in the kit flips `preserveActionsSpace`
-    // on a mounted row, but a direct consumer can.
-    const renderRow = (preserveActionsSpace: boolean) => (
+    const renderRow = (autoHideActions: boolean) => (
       <div data-qa="Panel" hidden>
-        <ItemActionsWrapper
-          autoHideActions
-          preserveActionsSpace={preserveActionsSpace}
+        <ItemButton
+          autoHideActions={autoHideActions}
           actions={<ItemButton.Action aria-label="Pin" />}
         >
-          {() => <div data-qa="Row">Row</div>}
-        </ItemActionsWrapper>
+          Row
+        </ItemButton>
       </div>
     );
-    const { rerender } = renderWithRoot(renderRow(false));
+    const { rerender } = renderWithRoot(renderRow(true));
 
-    // `preserveActionsSpace` swaps the transitioned run for a plain one, and
-    // keeps its width published while the actions are hidden.
-    rerender(renderRow(true));
+    // Dropping `autoHideActions` swaps the transitioned run for a plain one,
+    // whose width stays published.
+    rerender(renderRow(false));
 
-    const wrapper = screen.getByTestId('Row').parentElement!;
-    const run = wrapper.querySelector<HTMLElement>(
-      ':scope > [data-element="Actions"]',
-    )!;
+    const { wrapper, run } = getParts(/Row/);
 
     expect(publishedWidth(wrapper)).toBe('0px');
 
@@ -242,5 +242,38 @@ describe('ItemActionsWrapper in a hidden container', () => {
 
     expect(publishedWidth(wrapper)).toBe(width);
     expect(changes).toEqual([]);
+  });
+
+  it('starts at the full width when an Activity reveals a row it hid', async () => {
+    const renderRow = (mode: 'visible' | 'hidden', count: number) => (
+      <Activity mode={mode}>
+        <ItemButton
+          actions={Array.from({ length: count }, (_, i) => (
+            <ItemButton.Action key={i} aria-label={`Action ${i}`} />
+          ))}
+        >
+          Row
+        </ItemButton>
+      </Activity>
+    );
+    const { rerender } = renderWithRoot(renderRow('visible', 1));
+    const parts = getParts(/Row/);
+    const width = parts.run.offsetWidth;
+
+    // React hides this row itself, and tears its effects down — the observer
+    // with them — before the run loses its box. The run then grows unseen.
+    rerender(renderRow('hidden', 1));
+    rerender(renderRow('hidden', 2));
+    await waitFor(() => expect(parts.run.childElementCount).toBe(2));
+
+    const watch = watchFirstFrame(parts);
+
+    rerender(renderRow('visible', 2));
+
+    const frame = await watch.first();
+
+    expect(parts.run.offsetWidth).toBeGreaterThan(width);
+    expect(frame.published).toBe(`${parts.run.offsetWidth}px`);
+    expect(frame.column).toBe(parts.run.offsetWidth);
   });
 });

@@ -344,7 +344,8 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
   useLayoutEffect(() => {
     const el = actionsRef.current;
 
-    // jsdom has none, and a consumer's test setup may not stub it.
+    // Skipped where there is none, as the kit's other guarded observers are.
+    // Test setups stub it regardless: `Item`'s auto-tooltip needs one.
     if (!el || typeof ResizeObserver === 'undefined') return;
 
     const observer = new ResizeObserver(() => onActionsResize(el));
@@ -352,7 +353,13 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
     // `offsetWidth` is the border box, so the run's padding counts too.
     observer.observe(el, { box: 'border-box' });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      // Whatever the run does from here goes unseen — an `<Activity>` that
+      // hides this row tears the observer down before it can report the run
+      // losing its box — so the next width it measures is a fresh start.
+      isUnmeasuredRef.current = true;
+    };
   }, [isTransitionedRun]);
 
   const [isFocusWithin, setIsFocusWithin] = useState(false);
