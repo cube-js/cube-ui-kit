@@ -96,8 +96,7 @@ const RadioButtonElement = tasty(Item, {
       // continuous edge. The selected button is bumped above its siblings so its
       // brand-tinted border is visible from all four sides — without the bump
       // the right edge of an adjacent sibling would paint over the selected
-      // button's left edge (and vice-versa). Hover / focus-visible bump higher
-      // still so they always read on top of the selected highlight.
+      // button's left edge (and vice-versa).
       radius: {
         '': true,
         '!tabs & !:last-child': '1r left',
