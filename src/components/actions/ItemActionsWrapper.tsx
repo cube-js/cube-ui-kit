@@ -193,9 +193,8 @@ export function ItemActionIcon(props: { children: ReactNode }) {
  *
  * `isFirst` says the width is where the row STARTS rather than a change to it:
  * the first one since the run last had no box — on mount, or once a closed
- * container opens — or since its observer was torn down (an `<Activity>` hide,
- * a run swapped for another element). The ref carries that across
- * measurements.
+ * container opens — or since it was last observed (an `<Activity>` hide, a run
+ * swapped for another element). The ref carries that across measurements.
  */
 function measureActionsWidth(
   el: HTMLElement,
@@ -223,6 +222,65 @@ function measureActionsWidth(
   return { width: el.childElementCount ? width : 0, isFirst };
 }
 
+/**
+ * Measures one run, and returns what publishing the new width takes, if
+ * anything changed.
+ */
+type MeasureRun = () => (() => void) | undefined;
+
+/**
+ * One observer for every run on the page, so runs that resize together arrive
+ * in one delivery. A closed panel full of rows that opens is then measured in
+ * one layout and published in one commit, not a forced layout and a commit per
+ * row. It exists only while something is observed, so a test that swaps the
+ * global `ResizeObserver` between cases gets its own.
+ */
+let runObserver: ResizeObserver | null = null;
+const measureRunByElement = new Map<Element, MeasureRun>();
+
+function publishRunWidths(entries: ResizeObserverEntry[]) {
+  // Every run is read before any is published: a publish writes to the DOM,
+  // and the next read would have to lay the page out again.
+  const publishes: (() => void)[] = [];
+
+  for (const entry of entries) {
+    const publish = measureRunByElement.get(entry.target)?.();
+
+    if (publish) publishes.push(publish);
+  }
+
+  if (!publishes.length) return;
+
+  // Synchronous, because observers run just before paint: a scheduled render
+  // would paint one frame with the actions over the label. When that commit
+  // resizes another observed element no deeper than the run (an auto-width tab
+  // grows by its actions), the browser delivers that one a frame late and
+  // reports "ResizeObserver loop completed with undelivered notifications".
+  // That is benign, and error trackers such as Sentry drop it by default.
+  flushSync(() => {
+    for (const publish of publishes) publish();
+  });
+}
+
+/** Starts observing a run, and returns what stops it. */
+function observeRun(el: HTMLElement, measure: MeasureRun) {
+  runObserver ??= new ResizeObserver(publishRunWidths);
+  measureRunByElement.set(el, measure);
+  // `offsetWidth` is the border box, so the run's padding counts too.
+  runObserver.observe(el, { box: 'border-box' });
+
+  return () => {
+    measureRunByElement.delete(el);
+
+    if (measureRunByElement.size) {
+      runObserver?.unobserve(el);
+    } else {
+      runObserver?.disconnect();
+      runObserver = null;
+    }
+  };
+}
+
 export interface ItemActionsWrapperProps {
   /**
    * The row or trigger the actions are laid over. Receives the resolved
@@ -236,9 +294,9 @@ export interface ItemActionsWrapperProps {
   }) => ReactNode;
   /**
    * The run's content. Rendering the wrapper with an empty run is supported —
-   * it publishes a width of 0 and costs one size observer — which is how a
-   * trigger keeps its markup stable across states that do and do not have
-   * trailing controls.
+   * it publishes a width of 0 and costs one entry in a shared size observer —
+   * which is how a trigger keeps its markup stable across states that do and
+   * do not have trailing controls.
    */
   actions?: ReactNode;
   type?: string;
@@ -325,22 +383,17 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
 
   // The effect above measures when the wrapper renders. A run can change size
   // without that: most often a row mounted inside a closed panel, whose run had
-  // no box until the panel opened. The observer catches those.
+  // no box until the panel opened. The observer catches those, and publishes
+  // them with every other run that resized alongside (`publishRunWidths`).
   const onActionsResize = useEffectEvent((el: HTMLElement) => {
     const measured = measureActionsWidth(el, isUnmeasuredRef);
 
     if (!measured || measured.width === actionsWidth) return;
 
-    // Synchronous, because observers run just before paint: a scheduled render
-    // would paint one frame with the actions over the label. When that commit
-    // resizes another observed element no deeper than the run (an auto-width
-    // tab grows by its actions), the browser delivers that one a frame late and
-    // reports "ResizeObserver loop completed with undelivered notifications".
-    // That is benign, and error trackers such as Sentry drop it by default.
-    flushSync(() => {
+    return () => {
       if (measured.isFirst) setSkipWidthTransition(true);
       setActionsWidth(measured.width);
-    });
+    };
   });
 
   useLayoutEffect(() => {
@@ -350,17 +403,14 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
     // Test setups stub it regardless: `Item`'s auto-tooltip needs one.
     if (!el || typeof ResizeObserver === 'undefined') return;
 
-    const observer = new ResizeObserver(() => onActionsResize(el));
-
-    // `offsetWidth` is the border box, so the run's padding counts too.
-    observer.observe(el, { box: 'border-box' });
+    const stopObserving = observeRun(el, () => onActionsResize(el));
 
     return () => {
-      observer.disconnect();
+      stopObserving();
       // The next width is a fresh start. An `<Activity>` that hides this row
-      // tears the observer down before it can report the run losing its box,
-      // so what the run does next goes unseen; a swapped run is a new element,
-      // so it starts afresh even on a visible row.
+      // stops observing it before the run can be seen losing its box, so what
+      // the run does next goes unseen; a swapped run is a new element, so it
+      // starts afresh even on a visible row.
       isUnmeasuredRef.current = true;
     };
   }, [isTransitionedRun]);

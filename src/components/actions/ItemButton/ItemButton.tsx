@@ -125,8 +125,8 @@ const ItemButton = forwardRef(function ItemButton(
   // any running transition, and the element every ref in the tree is holding —
   // and a row whose actions come and go with a permission or a loading flag
   // would do that on every flip. The empty run reserves nothing: it publishes
-  // a width of 0, so the row keeps no space for it, and costs one size
-  // observer.
+  // a width of 0, so the row keeps no space for it, and costs one entry in a
+  // shared size observer.
   //
   // `null` is how a caller asks for the run up front — "there is a run here, it
   // just has nothing in it right now" — so a row that knows its actions are

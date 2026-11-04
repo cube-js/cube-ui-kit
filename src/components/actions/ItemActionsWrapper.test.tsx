@@ -1,6 +1,12 @@
 import { useState } from 'react';
 
-import { act, renderWithRoot, userEvent, waitFor } from '../../test/index';
+import {
+  act,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../test/index';
 
 import { ItemAction } from './ItemAction/ItemAction';
 import { ItemButton } from './ItemButton/ItemButton';
@@ -147,7 +153,7 @@ describe('<ItemActionsWrapper />', () => {
     /** Records which elements each observer watches and whether it let go. */
     class RecordingObserver {
       static all: RecordingObserver[] = [];
-      targets: Element[] = [];
+      targets = new Set<Element>();
       isDisconnected = false;
 
       constructor() {
@@ -155,24 +161,27 @@ describe('<ItemActionsWrapper />', () => {
       }
 
       observe(el: Element) {
-        this.targets.push(el);
+        this.targets.add(el);
       }
 
-      unobserve() {}
+      unobserve(el: Element) {
+        this.targets.delete(el);
+      }
 
       disconnect() {
+        this.targets.clear();
         this.isDisconnected = true;
       }
     }
 
-    function getRun(row: HTMLElement) {
-      return row.parentElement!.querySelector(
-        ':scope > [data-element="Actions"]',
-      )!;
+    function getRun(qa: string) {
+      return screen
+        .getByTestId(qa)
+        .parentElement!.querySelector(':scope > [data-element="Actions"]')!;
     }
 
     function watching(el: Element) {
-      return RecordingObserver.all.filter((o) => o.targets.includes(el));
+      return RecordingObserver.all.filter((o) => o.targets.has(el));
     }
 
     afterEach(() => {
@@ -180,41 +189,57 @@ describe('<ItemActionsWrapper />', () => {
       vi.unstubAllGlobals();
     });
 
-    function renderRow(autoHideActions: boolean) {
+    function renderRows({ isSecondAutoHidden = true, hasSecond = true } = {}) {
       return (
-        <ItemButton
-          qa="Row"
-          autoHideActions={autoHideActions}
-          actions={<ItemButton.Action qa="Act" />}
-        >
-          Row
-        </ItemButton>
+        <>
+          <ItemButton qa="First" actions={<ItemButton.Action />}>
+            First
+          </ItemButton>
+          {hasSecond ? (
+            <ItemButton
+              qa="Second"
+              autoHideActions={isSecondAutoHidden}
+              actions={<ItemButton.Action />}
+            >
+              Second
+            </ItemButton>
+          ) : null}
+        </>
       );
     }
 
-    it('moves to the new run when a prop swaps it, and lets go on unmount', () => {
+    it('watches every run with one observer, and follows each run', () => {
       vi.stubGlobal('ResizeObserver', RecordingObserver);
 
-      const { getByTestId, rerender, unmount } = renderWithRoot(
-        renderRow(true),
-      );
-      const first = getRun(getByTestId('Row'));
+      const { rerender, unmount } = renderWithRoot(renderRows());
+      const first = getRun('First');
+      const second = getRun('Second');
+
+      // One observer, so runs that resize together are published together.
+      // (`Item`'s auto-tooltip keeps observers of its own.)
+      const [observer] = watching(first);
 
       expect(watching(first)).toHaveLength(1);
+      expect(watching(second)).toEqual([observer]);
+      expect([...observer.targets]).toEqual([first, second]);
 
       // Dropping `autoHideActions` renders the run as a different element.
-      rerender(renderRow(false));
+      rerender(renderRows({ isSecondAutoHidden: false }));
 
-      const second = getRun(getByTestId('Row'));
+      const swapped = getRun('Second');
 
-      expect(second).not.toBe(first);
-      expect(watching(first).every((o) => o.isDisconnected)).toBe(true);
-      expect(watching(second)).toHaveLength(1);
-      expect(watching(second)[0].isDisconnected).toBe(false);
+      expect(swapped).not.toBe(second);
+      expect([...observer.targets]).toEqual([first, swapped]);
 
+      rerender(renderRows({ isSecondAutoHidden: false, hasSecond: false }));
+
+      expect([...observer.targets]).toEqual([first]);
+      expect(observer.isDisconnected).toBe(false);
+
+      // Nothing left to watch: the observer is let go, not kept for later.
       unmount();
 
-      expect(watching(second)[0].isDisconnected).toBe(true);
+      expect(observer.isDisconnected).toBe(true);
     });
   });
 

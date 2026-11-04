@@ -1,4 +1,4 @@
-import { Activity, useState } from 'react';
+import { Activity, Profiler, useState } from 'react';
 
 import { renderWithRoot, screen, userEvent, waitFor } from '../../test';
 import { Select } from '../fields/Select/Select';
@@ -90,8 +90,8 @@ function publishedWidth(wrapper: HTMLElement) {
  * row's laid-out placeholder column.
  *
  * Observers are notified in the order they were created, all before the frame
- * is painted. This one is created after the wrapper's, so what it reads is what
- * that frame shows. Reading the column's width resolves any transition at its
+ * is painted. This one is created after the one that watches runs, so what it
+ * reads is what that frame shows. Reading the column's width resolves any transition at its
  * current point, so a column sliding open reads near 0 here.
  */
 function watchFirstFrame({
@@ -244,6 +244,45 @@ describe('ItemActionsWrapper in a hidden container', () => {
     expect(changes).toEqual([]);
   });
 
+  it('publishes a whole panel of rows in one commit when it opens', async () => {
+    const commits: number[] = [];
+
+    renderWithRoot(
+      <div data-qa="Panel" hidden>
+        <Profiler id="Rows" onRender={(...args) => commits.push(args[5])}>
+          {Array.from({ length: 10 }, (_, i) => (
+            <ItemButton
+              key={i}
+              actions={<ItemButton.Action aria-label="Pin" />}
+            >
+              {`Row ${i}`}
+            </ItemButton>
+          ))}
+        </Profiler>
+      </div>,
+    );
+    await settle();
+
+    const rows = screen
+      .getAllByRole('button', { name: /^Row/, hidden: true })
+      .map((trigger) => getParts(new RegExp(`^${trigger.textContent}$`)));
+
+    commits.length = 0;
+    screen.getByTestId('Panel').hidden = false;
+
+    await waitFor(() => {
+      for (const { wrapper, run } of rows) {
+        expect(run.offsetWidth).toBeGreaterThan(0);
+        expect(publishedWidth(wrapper)).toBe(`${run.offsetWidth}px`);
+      }
+    });
+    await settle();
+
+    // Every row resized at once, so one commit publishes them all and one more
+    // turns their width transitions back on — not two commits per row.
+    expect(commits).toHaveLength(2);
+  });
+
   it('starts at the full width when an Activity reveals a row it hid', async () => {
     const renderRow = (mode: 'visible' | 'hidden', count: number) => (
       <Activity mode={mode}>
@@ -266,10 +305,10 @@ describe('ItemActionsWrapper in a hidden container', () => {
     rerender(renderRow('hidden', 2));
     await waitFor(() => expect(parts.run.childElementCount).toBe(2));
 
-    // Unlike the other cases, the wrapper's observer is created again AFTER
-    // this recorder, on reveal. The reveal measures in the wrapper's layout
-    // effect, before any observer is notified, so the first frame is still
-    // what this records.
+    // Unlike the other cases, the observer that watches runs is created again
+    // AFTER this recorder, on reveal: no run was observed while the row was
+    // hidden. The reveal measures in the wrapper's layout effect, before any
+    // observer is notified, so the first frame is still what this records.
     const watch = watchFirstFrame(parts);
 
     rerender(renderRow('visible', 2));
