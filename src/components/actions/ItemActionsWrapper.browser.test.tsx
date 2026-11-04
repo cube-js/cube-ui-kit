@@ -245,11 +245,26 @@ describe('ItemActionsWrapper in a hidden container', () => {
   });
 
   it('publishes a whole panel of rows in one commit when it opens', async () => {
-    const commits: number[] = [];
+    let wrappers: HTMLElement[] = [];
+    let widths: string[] = [];
+    // How many rows each commit published a new width for, kept only for the
+    // commits that published any. The rest — the transition reset, or a hover
+    // or focus change from whatever else the page is running — publish none,
+    // so they cannot make this flaky.
+    const publishes: number[] = [];
+
+    function recordPublishes() {
+      const next = wrappers.map(publishedWidth);
+      const changed = next.filter((width, i) => width !== widths[i]).length;
+
+      widths = next;
+
+      if (changed) publishes.push(changed);
+    }
 
     renderWithRoot(
       <div data-qa="Panel" hidden>
-        <Profiler id="Rows" onRender={(...args) => commits.push(args[5])}>
+        <Profiler id="Rows" onRender={recordPublishes}>
           {Array.from({ length: 10 }, (_, i) => (
             <ItemButton
               key={i}
@@ -267,7 +282,8 @@ describe('ItemActionsWrapper in a hidden container', () => {
       .getAllByRole('button', { name: /^Row/, hidden: true })
       .map((trigger) => getParts(new RegExp(`^${trigger.textContent}$`)));
 
-    commits.length = 0;
+    wrappers = rows.map(({ wrapper }) => wrapper);
+    widths = wrappers.map(publishedWidth);
     screen.getByTestId('Panel').hidden = false;
 
     await waitFor(() => {
@@ -278,9 +294,9 @@ describe('ItemActionsWrapper in a hidden container', () => {
     });
     await settle();
 
-    // Every row resized at once, so one commit publishes them all and one more
-    // turns their width transitions back on — not two commits per row.
-    expect(commits).toHaveLength(2);
+    // Every row resized at once, so one commit publishes them all, not one
+    // commit per row.
+    expect(publishes).toEqual([rows.length]);
   });
 
   it('starts at the full width when an Activity reveals a row it hid', async () => {
