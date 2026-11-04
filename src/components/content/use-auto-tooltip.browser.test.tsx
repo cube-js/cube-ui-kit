@@ -4,7 +4,7 @@ import { flushSync } from 'react-dom';
 import { act, renderWithRoot, screen, waitFor } from '../../test';
 import { Button } from '../actions/Button/Button';
 
-import { useAutoTooltip } from './use-auto-tooltip';
+import { AutoTooltipValue, useAutoTooltip } from './use-auto-tooltip';
 
 /**
  * Counts reads of `scrollWidth` / `clientWidth` on real elements.
@@ -110,14 +110,16 @@ describe('useAutoTooltip overflow measurement', () => {
       width,
       label,
       description,
+      tooltip = true,
     }: {
       width: string;
       label: string;
       description?: ReactNode;
+      tooltip?: AutoTooltipValue;
     }) {
       const { labelRef, descriptionRef, isOverflowed, isTooltipActive } =
         useAutoTooltip({
-          tooltip: true,
+          tooltip,
           children: label,
           description,
           labelProps: undefined,
@@ -310,6 +312,93 @@ describe('useAutoTooltip overflow measurement', () => {
 
       expect(label()).toHaveAttribute('data-overflowed', 'false');
       expect(label()).toHaveAttribute('data-tooltip-active', 'false');
+    });
+
+    /**
+     * An element label with a tooltip of its own (`{ title, auto: true }`).
+     * The element is new on every render, so the re-check is keyed by the
+     * title, which the caller derives from the same text.
+     */
+    function ElementProbe({ width, text }: { width: string; text: string }) {
+      const label = <b>{text}</b>;
+      const { labelRef, isOverflowed, isTooltipActive } = useAutoTooltip({
+        tooltip: { title: text, auto: true },
+        children: label,
+        labelProps: undefined,
+      });
+
+      return (
+        <div style={{ width }}>
+          <div
+            ref={labelRef as never}
+            data-qa="Label"
+            data-overflowed={String(isOverflowed)}
+            data-tooltip-active={String(isTooltipActive)}
+            style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}
+          >
+            {label}
+          </div>
+        </div>
+      );
+    }
+
+    it('re-measures an element label when its own title changes', async () => {
+      const { rerender } = renderWithRoot(
+        <ElementProbe width="80px" text="Short" />,
+      );
+      await waitFor(() => expect(spy.counter.reads).toBeGreaterThan(0));
+      // Let the observer's initial delivery settle before changing only text.
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const node = label();
+      expect(node).toHaveAttribute('data-overflowed', 'false');
+
+      rerender(<ElementProbe width="80px" text={LONG_LABEL} />);
+      await waitFor(() =>
+        expect(label()).toHaveAttribute('data-tooltip-active', 'true'),
+      );
+      expect(label()).toBe(node);
+
+      rerender(<ElementProbe width="80px" text="Short" />);
+      await waitFor(() =>
+        expect(label()).toHaveAttribute('data-overflowed', 'false'),
+      );
+      expect(label()).toBe(node);
+    });
+
+    it('does not re-measure an element label on a render that changes nothing', async () => {
+      const { rerender } = renderWithRoot(
+        <ElementProbe width="600px" text="Short" />,
+      );
+      await waitFor(() => expect(spy.counter.reads).toBeGreaterThan(0));
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const reads = spy.counter.reads;
+
+      for (let i = 0; i < 5; i++) {
+        rerender(<ElementProbe width="600px" text="Short" />);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(spy.counter.reads).toBe(reads);
+    });
+
+    // A tooltip with a title of its own never shows the description, so an
+    // element description is measured too, as `Item` passes it.
+    it('measures an element description when the tooltip has its own title', async () => {
+      await act(async () => {
+        renderWithRoot(
+          <Probe
+            width="200px"
+            label="Short"
+            description={<span>{LONG_LABEL}</span>}
+            tooltip={{ title: LONG_LABEL, auto: true }}
+          />,
+        );
+      });
+
+      await waitFor(() => {
+        expect(label()).toHaveAttribute('data-overflowed', 'true');
+      });
+      expect(label()).toHaveAttribute('data-tooltip-active', 'true');
     });
 
     // The label and the description share one observer, so this fails if the
