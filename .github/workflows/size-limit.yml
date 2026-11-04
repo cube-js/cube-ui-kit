@@ -17,12 +17,30 @@ permissions:
   statuses: write  # Write access to commit statuses
 
 jobs:
+  # Whether this PR changes a file the bundle is built from
+  # (scripts/ci/plan-jobs.mjs). A push always measures: that run is the next
+  # PR's baseline.
+  plan:
+    name: 'Plan the size check'
+    runs-on: ubuntu-latest
+    outputs:
+      size: ${{ steps.plan.outputs.size }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Plan the size check
+        id: plan
+        run: node scripts/ci/plan-jobs.mjs size
+
   size-limit:
     name: 'Measure size of the library'
+    needs: plan
     # The Version Packages PR changes no code, so it cannot move the size. Its
     # tree is measured anyway once it lands, by the push run that becomes the
-    # next baseline.
-    if: github.head_ref != 'changeset-release/main'
+    # next baseline. Neither can a PR the plan finds no bundle input in. When
+    # the planner fails, the check runs.
+    if: ${{ !cancelled() && github.head_ref != 'changeset-release/main' && needs.plan.outputs.size != 'false' }}
     runs-on: ubuntu-latest
     env:
       REPORT_FOLDER: './size-limit-report'

@@ -1,10 +1,10 @@
 name: Publish
 
+# No `paths-ignore`: a workflow skipped by a path filter leaves the required
+# `Build & canary release` check pending. `plan` skips the job instead, and a
+# skipped job satisfies a required check.
 on:
   pull_request:
-    paths-ignore:
-      - '.changeset/**'
-      - '.husky/**'
   push:
     branches:
       - main
@@ -28,9 +28,28 @@ env:
   HUSKY: '0'
 
 jobs:
+  # Whether this PR changes a file the package is built or documented from
+  # (scripts/ci/plan-jobs.mjs). A canary of a PR that only touches specs or
+  # repository notes would be `main` again under a new version.
+  plan:
+    name: 'Plan the canary'
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      canary: ${{ steps.plan.outputs.canary }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Plan the canary
+        id: plan
+        run: node scripts/ci/plan-jobs.mjs canary
+
   publish-canary:
     name: 'Build & canary release'
-    if: github.event_name == 'pull_request'
+    needs: plan
+    # When the planner fails, the canary is built anyway.
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && needs.plan.outputs.canary != 'false' }}
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=4096
