@@ -29,7 +29,7 @@ Two constraints follow and must not be "simplified" away:
 
 Tasty sub-element state keys resolve against the **root**, not the element's DOM parent: inside `Cell: {}`, the key `hovered` compiles to `.t0.t0[data-hovered] […Cell]` — the _table_ hovered, not the row. A cell can therefore never react to its row's state through a state map.
 
-So `Row` publishes `#row-base`, `#row-overlay`, `$row-overlay-weight`, `#row-text` and `$dim`, and cells consume them (`fill: '#row-overlay $row-overlay-weight, #row-base'`). Custom properties inherit through the DOM and ignore selector context. Pinned cells overlay the scrolling ones and must be opaque, and this is what makes them match their row for free.
+So `Row` publishes `#row-base`, `#row-overlay`, `$row-overlay-weight`, `#row-text` and `$dim`, and cells consume them (`fill: 'color-mix(in srgb, #row-overlay $row-overlay-weight, #row-base)'`). Custom properties inherit through the DOM and ignore selector context. Pinned cells overlay the scrolling ones and must be opaque, and this is what makes them match their row for free.
 
 Use `@own(...)` for an element's own state.
 

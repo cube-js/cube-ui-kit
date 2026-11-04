@@ -83,8 +83,8 @@ const CELL_STYLES: Styles = {
   '#cell-base': '#row-base',
   '#cell-text': '#row-text',
   fill: {
-    '': '#row-overlay $row-overlay-weight, #cell-base',
-    '@own(cell-selected)': '#purple 10%, #cell-base',
+    '': 'color-mix(in srgb, #row-overlay $row-overlay-weight, #cell-base)',
+    '@own(cell-selected)': '#cell-base+#purple.1',
   },
   color: '#cell-text',
   opacity: '$dim',
@@ -365,9 +365,9 @@ export const TableElement = tasty({
       border: '1bw #border bottom, $column-divider #border right',
       zIndex: { '': 'auto', '@own(pin=start | pin=end)': 3 },
       fill: {
-        '': '#row-overlay $row-overlay-weight, #cell-base',
+        '': 'color-mix(in srgb, #row-overlay $row-overlay-weight, #cell-base)',
         '(@own(sortable) & @own(:hover)) | @own(menu-open)':
-          '#surface-text 4%, #cell-base',
+          '#cell-base+#surface-text.04',
       },
       // `pointer` wins on a sortable header: sorting is the primary action, and a
       // native drag needs movement while a click does not, so both still work.
@@ -925,7 +925,7 @@ export const TableElement = tasty({
       boxSizing: 'border-box',
       height: '($row-height + 1bw)',
       padding: 0,
-      fill: '#row-overlay $row-overlay-weight, #row-base',
+      fill: 'color-mix(in srgb, #row-overlay $row-overlay-weight, #row-base)',
       opacity: '$dim',
       border: {
         '': '1bw #border bottom',
