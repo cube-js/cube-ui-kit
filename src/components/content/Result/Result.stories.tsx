@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { Icon } from '../../../icons/Icon';
-import { Button } from '../../actions/Button';
+import { Button } from '../../actions/Button/Button';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogContainer } from '../../overlays/Dialog/DialogContainer';
 import { Alert } from '../Alert/Alert';

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { StrictMode } from 'react';
 
 import { TextInput } from '../../../fields/TextInput/TextInput';
-import { FormScopeMask } from '../Form';
+import { FormScopeMask } from '../FormContext';
 import { Form } from '../index';
 
 import { createFormController } from './controller';

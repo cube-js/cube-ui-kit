@@ -9,7 +9,7 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, HTMLAttributes, ReactNode } from 'react';
 
-import { useCombinedRefs } from '../../../utils/react';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
 
 import { LayoutContextReset } from './LayoutContext';

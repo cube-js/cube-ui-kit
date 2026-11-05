@@ -1,7 +1,7 @@
 import { keyframes, mergeStyles, tasty } from '@tenphi/tasty';
 
 import { Action } from '../../actions/Action/Action';
-import { Item } from '../../content/Item';
+import { Item } from '../../content/Item/Item';
 
 import type { Styles } from '@tenphi/tasty';
 

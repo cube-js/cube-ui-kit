@@ -11,7 +11,7 @@ import {
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
 
-import { I18nProvider } from '../i18n';
+import { I18nProvider } from '../i18n/I18nProvider';
 import { Provider } from '../provider';
 import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
@@ -24,7 +24,7 @@ import { TASTY_VERSION, VERSION } from '../version';
 import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog/AlertDialogApiProvider';
 import { OverlayProvider } from './overlays/Notifications/OverlayProvider';
-import { PortalProvider } from './portal';
+import { PortalProvider } from './portal/PortalProvider';
 
 import type { i18n as I18nInstance } from 'i18next';
 

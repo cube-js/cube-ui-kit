@@ -15,14 +15,14 @@ import {
 } from 'react-aria';
 import { useNumberFieldState } from 'react-stately';
 
-import { useI18n } from '../../../i18n';
-import { mergeProps } from '../../../utils/react';
+import { useI18n } from '../../../i18n/useI18n';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   castNullableNumberValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
-import { useFieldProps } from '../../form';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
   CubeTextInputBaseProps,

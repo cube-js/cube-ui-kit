@@ -1,6 +1,6 @@
 import { mergeStyles, tasty } from '@tenphi/tasty';
 
-import { Item } from '../../content/Item';
+import { Item } from '../../content/Item/Item';
 
 import {
   SEGMENTED_LIST_STYLES,

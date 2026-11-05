@@ -5,17 +5,19 @@ import { AriaCheckboxGroupProps, useCheckboxGroup } from 'react-aria';
 import { useCheckboxGroupState } from 'react-stately';
 
 import { Provider } from '../../../provider';
-import { FieldBaseProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
+import { FieldBaseProps } from '../../../shared/form';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { FormScopeMask, useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { FormScopeMask } from '../../form/Form/FormContext';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { wrapWithField } from '../../form/wrapper';
 
 import { CheckboxGroupContext } from './context';
 

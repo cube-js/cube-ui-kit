@@ -2,7 +2,7 @@ import { SelectionManager } from '@react-stately/selection';
 import { useCallback, useMemo, useRef } from 'react';
 import { useMultipleSelectionState } from 'react-stately';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 import { RowCollection } from './RowCollection';
 

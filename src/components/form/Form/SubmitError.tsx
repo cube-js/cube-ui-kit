@@ -6,10 +6,11 @@ import {
   useContext,
 } from 'react';
 
-import { useI18n } from '../../../i18n';
-import { Alert, CubeAlertProps } from '../../content/Alert/index';
+import { useI18n } from '../../../i18n/useI18n';
+import { Alert } from '../../content/Alert/Alert';
+import { CubeAlertProps } from '../../content/Alert/types';
 
-import { FormContext } from './Form';
+import { FormContext } from './FormContext';
 import { ModernControllerContext } from './modern/context';
 import { useFormSelector } from './modern/react';
 

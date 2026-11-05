@@ -24,30 +24,30 @@ import {
 import { useToggleState } from 'react-stately';
 
 import { Icon } from '../../../icons/Icon';
-import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
-import { mergeProps, mergeRefs } from '../../../utils/react';
+import { FieldBaseProps, ToggleSelectionProps } from '../../../shared/form';
 import {
   getDisabledElementProps,
   getInertInputProps,
 } from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
-import {
-  getValidationMods,
-  INLINE_LABEL_STYLES,
-  LABEL_STYLES,
-  resolveValidationProps,
-  useFieldProps,
-  wrapWithField,
-} from '../../form';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../../form/Label';
+import {
+  getValidationMods,
+  resolveValidationProps,
+} from '../../form/validation/resolve-validation-props';
+import { wrapWithField } from '../../form/wrapper';
 import { HiddenInput } from '../../HiddenInput';
 import {
   mergeTooltipFocusProps,

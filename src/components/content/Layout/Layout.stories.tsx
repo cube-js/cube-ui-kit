@@ -16,7 +16,9 @@ import { Card } from '../Card/Card';
 import { Text } from '../Text';
 import { Title } from '../Title';
 
-import { GridLayout, Layout } from './index';
+import { GridLayout } from './GridLayout';
+
+import { Layout } from './index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { CubeLayoutPanelProps } from './LayoutPanel';

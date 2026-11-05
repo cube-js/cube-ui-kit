@@ -1,9 +1,9 @@
 import { StoryFn } from '@storybook/react-vite';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Button } from '../../actions/Button';
-import { ItemButton } from '../../actions/ItemButton';
-import { Item } from '../../content/Item';
+import { Button } from '../../actions/Button/Button';
+import { ItemButton } from '../../actions/ItemButton/ItemButton';
+import { Item } from '../../content/Item/Item';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 

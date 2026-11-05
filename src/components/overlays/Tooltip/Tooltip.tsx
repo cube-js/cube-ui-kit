@@ -16,12 +16,15 @@ import {
 } from 'react';
 import { AriaTooltipProps, useTooltip } from 'react-aria';
 
-import { PlacementAxis } from '../../../shared';
-import { mergeProps, mergeRefs, useLayoutEffect } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
+import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { extractStyles } from '../../../utils/styles';
 import { useModalLayerRef } from '../Modal/modal-containment';
 
 import { TooltipContext } from './context';
+
+import type { PlacementAxis } from '../../../shared';
 
 export type { AriaTooltipProps };
 

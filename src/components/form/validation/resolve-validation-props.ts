@@ -1,4 +1,4 @@
-import { ValidationProps, ValidationState } from '../../../shared/index';
+import { ValidationProps, ValidationState } from '../../../shared/form';
 
 export interface ResolvableValidationProps extends ValidationProps {
   /** @deprecated Use `isInvalid` / `isValid` instead. */

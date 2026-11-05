@@ -1,6 +1,6 @@
 import { Key, useEffect, useRef } from 'react';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 import type { InternalToast } from '../Toast/types';
 import type { DismissReason, InternalNotification } from './types';

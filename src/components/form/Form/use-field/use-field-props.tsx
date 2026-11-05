@@ -1,15 +1,15 @@
 import { useDebugValue, useId, useState } from 'react';
 
-import { useEvent } from '../../../../_internal/index';
+import { useEvent } from '../../../../_internal/hooks/use-event';
 import { useProviderProps } from '../../../../provider';
-import { mergeProps } from '../../../../utils/react/index';
+import { mergeProps } from '../../../../utils/react/mergeProps';
 import { warn } from '../../../../utils/warnings';
 import { asksForFieldChrome, withFieldChrome } from '../../field-chrome';
 import { useFieldDescribedBy } from '../../FieldWrapper/field-description';
-import { useValidationProps } from '../../validation/index';
+import { useValidationProps } from '../../validation/use-validation-props';
 import { isModernFormController } from '../backend';
 import { useInsideLegacyField } from '../Field';
-import { useFormProps } from '../Form';
+import { useFormProps } from '../FormContext';
 import { getFieldKey } from '../modern/values';
 
 import { useFieldBinding } from './use-field-binding';

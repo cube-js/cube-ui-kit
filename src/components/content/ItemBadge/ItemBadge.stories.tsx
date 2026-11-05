@@ -3,7 +3,7 @@ import { Meta, StoryObj } from '@storybook/react-vite';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { KeyIcon } from '../../../icons/KeyIcon';
 import { Space } from '../../layout/Space';
-import { Item } from '../Item';
+import { Item } from '../Item/Item';
 
 import { ItemBadge } from './ItemBadge';
 

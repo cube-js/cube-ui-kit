@@ -12,8 +12,8 @@ import { KeyboardEvent, ReactElement, Ref, useState } from 'react';
 import { DateValue, useDateFormatter } from 'react-aria';
 import { CalendarState, RangeCalendarState } from 'react-stately';
 
-import { useI18n } from '../../../i18n';
-import { mergeProps } from '../../../utils/react';
+import { useI18n } from '../../../i18n/useI18n';
+import { mergeProps } from '../../../utils/react/mergeProps';
 
 import { CalendarGrid } from './CalendarGrid';
 import { CalendarHeader } from './CalendarHeader';

@@ -1,13 +1,15 @@
 import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
 import { AriaTextFieldProps, useTextField } from 'react-aria';
 
-import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
+import { chain } from '../../../utils/react/chain';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
-import { useFieldProps } from '../../form';
+import { useBufferedValue } from '../../../utils/react/useBufferedValue';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
   CubeBufferedValueProps,

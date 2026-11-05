@@ -13,8 +13,8 @@ import {
 } from 'react';
 import { useTreeItem, VisuallyHidden } from 'react-aria';
 
-import { useEvent } from '../../../_internal/hooks';
-import { useI18n } from '../../../i18n';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
@@ -22,7 +22,8 @@ import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { useSlotProps } from '../../../utils/react/Slots';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
-import { Menu, MenuTrigger } from '../../actions/Menu';
+import { Menu } from '../../actions/Menu/Menu';
+import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
 import { useContextMenu } from '../../actions/use-context-menu';
 import {
   Placeholder,
@@ -30,8 +31,8 @@ import {
 } from '../../content/Placeholder/Placeholder';
 import { Skeleton } from '../../content/Skeleton/Skeleton';
 import { TextItemWithNativeLink } from '../../content/TextItem/TextItem';
-import { Checkbox } from '../../fields/Checkbox';
-import { useToast } from '../../overlays/Toast';
+import { Checkbox } from '../../fields/Checkbox/Checkbox';
+import { useToast } from '../../overlays/Toast/useToast';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
 import { renderColumnHeaderContent, resolveColumnSort } from './column-header';

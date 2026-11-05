@@ -20,9 +20,9 @@ import {
 import { FocusScope, Key, mergeProps, Placement, useLabel } from 'react-aria';
 import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
@@ -30,8 +30,12 @@ import { isTextOnly } from '../../../utils/react/isTextOnly';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
 import { processSelectionArray } from '../../../utils/selection';
 import { mergeStyleLayers } from '../../../utils/styles';
-import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
-import { CubeItemProps } from '../../content/Item';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
+import {
+  CubeItemButtonProps,
+  ItemButton,
+} from '../../actions/ItemButton/ItemButton';
+import { CubeItemProps } from '../../content/Item/Item';
 import { Text } from '../../content/Text';
 import {
   deriveCheckedSets,
@@ -39,23 +43,21 @@ import {
 } from '../../content/Tree/checked-keys';
 import { buildTreeIndex, getTreeNodeText } from '../../content/Tree/tree-index';
 import {
-  getValidationIcon,
-  getValidationTheme,
-  useFieldProps,
-  wrapWithField,
-} from '../../form';
-import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { TRIGGER_TOOLTIP_WARNING } from '../../form/legacy-tooltip';
+import { getValidationTheme } from '../../form/validation/resolve-validation-props';
+import { getValidationIcon } from '../../form/validation/ValidationIndicator';
+import { wrapWithField } from '../../form/wrapper';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import {
   CubeFilterListBoxProps,
   FilterListBox,
 } from '../FilterListBox/FilterListBox';
-import { ListBox } from '../ListBox';
+import { ListBox } from '../ListBox/ListBox';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import { FilterTree } from './FilterTree';

@@ -20,9 +20,11 @@ import {
   useTabListState,
 } from 'react-stately';
 
-import { useEvent, useWarn } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
-import { mergeProps, useMergeStyles } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { useMergeStyles } from '../../../utils/react/useMergeStyles';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';

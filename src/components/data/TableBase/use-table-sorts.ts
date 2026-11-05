@@ -1,7 +1,7 @@
 import { useCollator } from '@react-aria/i18n';
 import { useControlledState } from '@react-stately/utils';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 import { sortRows } from './use-table-sort';
 

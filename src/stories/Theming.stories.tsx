@@ -1,41 +1,40 @@
 import { IconDownload } from '@tabler/icons-react';
+import { tasty } from '@tenphi/tasty';
 import { useEffect, useMemo, useState } from 'react';
 
+import { Button } from '../components/actions/Button/Button';
+import { ItemButton } from '../components/actions/ItemButton/ItemButton';
+import { Link } from '../components/actions/Link/Link';
+import { Alert } from '../components/content/Alert/Alert';
+import { CopySnippet } from '../components/content/CopySnippet/CopySnippet';
+import { InfoBadge } from '../components/content/InfoBadge/InfoBadge';
+import { PrismCode } from '../components/content/PrismCode/PrismCode';
+import { Tag } from '../components/content/Tag/Tag';
+import { Checkbox } from '../components/fields/Checkbox/Checkbox';
+import { ColorInput } from '../components/fields/ColorInput/ColorInput';
+import { ColorSwatch } from '../components/fields/ColorSwatch/ColorSwatch';
+import { Radio } from '../components/fields/RadioGroup/Radio';
+import { RadioGroup } from '../components/fields/RadioGroup/RadioGroup';
+import { HueSlider } from '../components/fields/Slider/HueSlider';
+import { Slider } from '../components/fields/Slider/Slider';
+import { Switch } from '../components/fields/Switch/Switch';
+import { CubeLogo } from '../components/other/CubeLogo/CubeLogo';
+import { Dialog } from '../components/overlays/Dialog/Dialog';
+import { DialogTrigger } from '../components/overlays/Dialog/DialogTrigger';
+import { CopyIcon } from '../icons/CopyIcon';
+import { ReloadIcon } from '../icons/ReloadIcon';
+import { renderColorTokens } from '../tokens/colors';
+import { getPaletteTokens } from '../tokens/palette';
 import {
-  Alert,
-  Button,
-  Checkbox,
-  ColorInput,
-  ColorSwatch,
-  CopyIcon,
-  CopySnippet,
-  CubeLogo,
   DEFAULT_PALETTE_CONFIG,
-  Dialog,
-  DialogTrigger,
   getPaletteConfig,
   getPaletteConfigInput,
-  getPaletteTokens,
-  HueSlider,
-  InfoBadge,
-  ItemButton,
-  Link,
   MAX_BASE_SATURATION,
-  PrismCode,
-  Radio,
-  RadioGroup,
-  ReloadIcon,
-  renderColorTokens,
   resetPaletteConfig,
-  Slider,
-  Switch,
-  Tag,
-  tasty,
-  useHighContrast,
   usePaletteConfig,
   usePaletteVersion,
-  useScheme,
-} from '../index';
+} from '../tokens/palette-config';
+import { useHighContrast, useScheme } from '../utils/react/useScheme';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Styles, Tokens } from '@tenphi/tasty';

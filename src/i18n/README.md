@@ -21,7 +21,7 @@ Instances are initialized with the options Cloud relies on: `enableSelector: tru
 Never hardcode a user-facing string. Add a key to `locales/en-US/uikit.json`, translate it into **all 12 locales** (see below), and read it with the internal hook:
 
 ```tsx
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 
 function MyComponent() {
   const { t } = useI18n();

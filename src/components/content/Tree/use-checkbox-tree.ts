@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 import { deriveCheckedSets, toggleCheckedKey } from './checked-keys';
 

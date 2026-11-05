@@ -1,12 +1,12 @@
+import { Paragraph } from '../../components/content/Paragraph';
+import { Text } from '../../components/content/Text';
+import { Input } from '../../components/fields/Input/Input';
+import { Field } from '../../components/form/Form/Field';
+import { FieldTypes } from '../../components/form/Form/types';
 import {
   CubeDialogFormProps,
   DialogForm,
-  Field,
-  FieldTypes,
-  Input,
-  Paragraph,
-  Text,
-} from '../../index';
+} from '../../components/overlays/Dialog/DialogForm';
 
 interface ConfirmDeletionDialogFormProps<T extends FieldTypes> extends Pick<
   CubeDialogFormProps<T>,

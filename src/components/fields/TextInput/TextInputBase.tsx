@@ -12,24 +12,28 @@ import {
 } from 'react';
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
-import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
-import { mergeProps, mergeRefs, useCombinedRefs } from '../../../utils/react';
+import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared/form';
 import {
   getDisabledElementProps,
   getInertInputProps,
 } from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
-import { useAutoTooltip } from '../../content/use-auto-tooltip';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
-  getValidationMods,
-  hasValidationIndicator,
-  ValidationIndicator,
-  wrapWithField,
-} from '../../form';
+  mergeRefs,
+  useCombinedRefs,
+} from '../../../utils/react/useCombinedRefs';
+import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
+import {
+  hasValidationIndicator,
+  ValidationIndicator,
+} from '../../form/validation/ValidationIndicator';
+import { wrapWithField } from '../../form/wrapper';
 import {
   mergeTooltipFocusProps,
   splitTooltipTriggerProps,

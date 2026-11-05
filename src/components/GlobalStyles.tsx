@@ -1,6 +1,6 @@
 import { useGlobalStyles, useRawCSS } from '@tenphi/tasty';
 
-import { getTokens } from '../tokens';
+import { getTokens } from '../tokens/all-tokens';
 import { usePaletteValue } from '../tokens/palette-config';
 import { mergeStyleLayers } from '../utils/styles';
 

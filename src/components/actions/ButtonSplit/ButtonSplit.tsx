@@ -1,9 +1,9 @@
 import { CONTAINER_STYLES, filterBaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode, useMemo, useState } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { Button } from '../Button/Button';
 import { Menu } from '../Menu/Menu';

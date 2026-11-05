@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useLayoutEffect, useRef } from 'react';
 
-import { useEvent } from '../../../_internal/index';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 /**
  * Computed properties that decide where text wraps and how tall a line box is.

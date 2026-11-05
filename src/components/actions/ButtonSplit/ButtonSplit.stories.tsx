@@ -7,11 +7,11 @@ import {
 } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { Button } from '..';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
+import { Button } from '../Button';
 import { Menu } from '../Menu/Menu';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';

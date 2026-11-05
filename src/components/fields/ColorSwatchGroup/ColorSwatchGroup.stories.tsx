@@ -5,7 +5,7 @@ import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
 import { Flow } from '../../layout/Flow';
-import { ColorPicker } from '../ColorPicker';
+import { ColorPicker } from '../ColorPicker/ColorPicker';
 
 import {
   ColorSwatchGroup,

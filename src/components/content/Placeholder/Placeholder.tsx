@@ -9,7 +9,7 @@ import {
 } from '@tenphi/tasty';
 import { createContext, forwardRef, useContext } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 
 // Create the placeholder animation using keyframes helper

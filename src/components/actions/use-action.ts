@@ -3,15 +3,16 @@ import { FocusableRef, PressEvent } from '@react-types/shared';
 import { AllBaseProps, filterBaseProps, TagName } from '@tenphi/tasty';
 import { AriaButtonProps, useButton, useHover } from 'react-aria';
 
-import { useEvent, useWarn } from '../../_internal';
+import { useEvent } from '../../_internal/hooks/use-event';
+import { useWarn } from '../../_internal/hooks/use-warn';
 import {
   isExternalUrl,
   normalizeNavigationUrl,
 } from '../../providers/navigation-url';
 import { useTracking } from '../../providers/TrackingProvider';
 import { useNavigation } from '../../providers/use-navigation';
-import { mergeProps } from '../../utils/react';
 import { useFocus } from '../../utils/react/interactions';
+import { mergeProps } from '../../utils/react/mergeProps';
 
 // Import specific types for internal usage
 import type {
