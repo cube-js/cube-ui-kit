@@ -114,6 +114,11 @@ jobs:
       - name: Run the lint
         run: pnpm lint
 
+      # Here rather than in a spec: a PR that changes only docs pages runs no
+      # test job, and a docs edit can drop the mention a token relies on.
+      - name: Check every published component token is documented
+        run: pnpm check:component-tokens
+
       - name: Verify the modern Form store without React or DOM setup
         run: pnpm test:form-store
 

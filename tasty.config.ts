@@ -20,6 +20,53 @@
 
 import { runtimeNames } from './tasty.config.generated';
 
+/**
+ * Component tokens a component's docs offer consumers: to read inside the
+ * component that sets them, so their own content lines up with it, or to set
+ * on it. Each is part of that component's documented API:
+ * `pnpm check:component-tokens` fails when one is in no component's
+ * `.docs.mdx`, and `src/tokens/tasty-config.test.ts` when no component sets
+ * it. UI Kit's internal component tokens are in `src/tasty.config.ts`, which
+ * consumers' lint never reads.
+ */
+export const componentTokens = [
+  // Dialog
+  '$dialog-size',
+  '$dialog-padding-h',
+  '$dialog-title-padding-v',
+  '$dialog-content-padding-v',
+  '$dialog-footer-v',
+  // Item, Button and the text inputs publish their height; ColorSwatch reads it.
+  '$size',
+  '$prefix-gap',
+  '$suffix-gap',
+  // ItemButton's actions
+  '$action-size',
+  // ItemTable's rows and cells
+  '#row-base',
+  '#row-overlay',
+  '#row-text',
+  '$row-overlay-weight',
+  '$dim',
+  '$row-height',
+  '$header-height',
+  '$cell-padding-x',
+  '$cell-padding-y',
+  // Layout, for its sub-components
+  '$content-padding',
+  // FieldWrapper's side label, for a row without one
+  '$full-label-width',
+  // GridProvider
+  '$grid-width',
+  '$columns-amount',
+  '$column-gap',
+  '$column-width',
+  // Slider and HueSlider, through `thumbTokens`
+  '#slider-thumb',
+  // Notifications and Toast: an app sets it to keep the stack below its bar.
+  '$overlay-inset-top',
+];
+
 export default {
   extends: '@tenphi/tasty',
 
@@ -188,21 +235,13 @@ export default {
   tokens: [
     ...runtimeNames.tokens,
 
-    // `<Root>` sets it for every element below it, through its `tokens`.
+    // Set for the whole app outside `getTokens()`: `<Root>`'s `tokens`, and
+    // the `html` block `GlobalStyles` writes.
     '$pointer',
+    '$font-sans',
+    '$font-mono',
 
-    // Component tokens, set in one file and read in another.
-    // ColorPanel, ColorSwatch, ColorSwatchGroup and HueSlider set these per
-    // render through `tokens`.
-    '#color-picker',
-    '#color-picker-contrast',
-    '#color-swatch',
-    '#slider-thumb',
-    '#slider-thumb-hovered',
-    // Tabs, and Layout's tiny scrollbar (`useTinyScrollbar`).
-    '$tab-indicator-size',
-    '$scrollbar-h-left',
-    '$scrollbar-h-width',
+    ...componentTokens,
   ],
   states: runtimeNames.states,
   presets: runtimeNames.presets,
