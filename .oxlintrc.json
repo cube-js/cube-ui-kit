@@ -85,6 +85,7 @@
     "tasty/known-property": "error",
     "tasty/valid-value": "error",
     "tasty/valid-color-token": "error",
+    "tasty/valid-custom-property": "error",
     "tasty/valid-custom-unit": "error",
     "tasty/valid-boolean-property": "error",
     "tasty/valid-state-key": "error",

@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   symlinkSync,
@@ -12,8 +13,9 @@ import { join } from 'node:path';
 
 import { getGlobalPredefinedStates, getGlobalRecipes } from '@tenphi/tasty';
 
-import tastyConfig from '../../tasty.config';
+import tastyConfig, { componentTokens } from '../../tasty.config';
 import { runtimeNames } from '../../tasty.config.generated';
+import internalConfig from '../tasty.config';
 
 // Registers the state aliases and recipes `<Root>` configures at module scope.
 import '../components/Root';
@@ -53,14 +55,16 @@ export const runtimeNames = ${JSON.stringify(names, null, 2)};
 `;
 }
 
-// Names UI Kit defines, then names it never did. Through `extends`, only the
-// second component's lines report.
+// Names UI Kit defines or documents, then names it never did or keeps to
+// itself. Through `extends`, only the second component's lines report.
 const NAMES = `import { tasty } from '@cube-dev/ui-kit';
 
 export const Defined = tasty({
   styles: {
     fill: { '': '#surface', '@dark': '#surface-2', '@hc': '#current-fill' },
     width: '$t4-icon-size',
+    padding: '0 $dialog-padding-h',
+    fontFamily: '$font-sans',
     cursor: '$pointer',
     preset: 'text',
     recipe: 'button',
@@ -72,6 +76,7 @@ export const Phantom = tasty({
     fill: '#pink-01',
     color: { '': '#dark', '@mobile': '#surface' },
     width: '$fade-width',
+    height: '$tab-indicator-size',
     preset: 'inline',
   },
 });
@@ -125,6 +130,38 @@ export function Consumer() {
   );
 }
 `;
+
+/** The text of every file under `src/` whose path matches `include`. */
+function readSources(include: RegExp, exclude?: RegExp) {
+  const src = join(ROOT, 'src');
+
+  return readdirSync(src, { recursive: true, encoding: 'utf8' })
+    .filter((file) => include.test(file) && !exclude?.test(file))
+    .map((file) => readFileSync(join(src, file), 'utf8'))
+    .join('\n');
+}
+
+/** A `$name` or `#name` token, as a regular expression source. */
+function tokenPattern(token: string) {
+  return `\\${token[0]}${token.slice(1)}(?![\\w-])`;
+}
+
+/**
+ * Whether `source` sets `token` (a styles or tokens key, a raw `--name` key,
+ * a CSS declaration or `setProperty`), or reads it with a fallback, which is
+ * how a component takes a token its consumer may set.
+ */
+function isSetOrDefaulted(source: string, token: string) {
+  const variable =
+    token[0] === '#' ? `${token.slice(1)}(?:-color)?` : token.slice(1);
+
+  return [
+    `(?<![\\w-])[\\[\`'"]*${tokenPattern(token)}[\`'"\\]]*\\s*:(?!:)`,
+    `[\`'"]--${variable}[\`'"]\\s*[:,]`,
+    `(?<![\\w(-])--${variable}\\s*:`,
+    `\\(\\s*${tokenPattern(token)}\\s*,`,
+  ].some((pattern) => new RegExp(pattern).test(source));
+}
 
 /**
  * Lint `files` in a throwaway consumer project that installs this checkout as
@@ -252,10 +289,40 @@ describe('tasty.config.ts', () => {
         "fill: '#pink-01',",
         "color: { '': '#dark', '@mobile': '#surface' },",
         "width: '$fade-width',",
+        "height: '$tab-indicator-size',",
         "preset: 'inline',",
       ].sort(),
     );
   }, 30_000);
+
+  // A published component token is part of a component's documented API, and
+  // every listed one is set by a component, or read with a fallback when an
+  // app may set it. A name that is neither renders an invalid `var()` wherever
+  // it is read, and the list keeps the lint quiet about it.
+  it('lists only component tokens UI Kit sets, publishing the documented ones', () => {
+    const docs = readSources(/\.docs\.mdx$/);
+    const source = readSources(
+      /\.tsx?$/,
+      /\.(test|spec|stories|test-d)\.tsx?$|(^|\/)test\//,
+    );
+    const internalTokens = internalConfig.tokens;
+
+    expect({
+      undocumented: componentTokens.filter(
+        (token) =>
+          !new RegExp(tokenPattern(token)).test(docs) &&
+          !docs.includes(`--${token.slice(1)}`),
+      ),
+      unset: [...componentTokens, ...internalTokens].filter(
+        (token) => !isSetOrDefaulted(source, token),
+      ),
+      listedTwice: internalTokens.filter(
+        (token) =>
+          componentTokens.includes(token) ||
+          runtimeNames.tokens.includes(token),
+      ),
+    }).toEqual({ undocumented: [], unset: [], listedTwice: [] });
+  });
 
   // A consumer that extends this config gets `protectedComponents`, so
   // restyling a component reports, its primitives stay open, containers keep

@@ -108,7 +108,6 @@ const FileInputElement = tasty(Action, {
       right: 0,
       bottom: 0,
       left: 0,
-      radius: '$content-radius',
       opacity: 0.01,
       cursor: '$pointer',
       zIndex: 10,
