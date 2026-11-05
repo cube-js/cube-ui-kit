@@ -6,7 +6,10 @@
       "mergeFunctions": ["mergeStyleLayers"]
     }
   },
-  "plugins": [],
+  // `import` builds the module graph `import/no-cycle` needs; it has to be on
+  // here, not only in an override. Categories stay off, so this enables no
+  // other import rule.
+  "plugins": ["import"],
   "jsPlugins": [
     { "name": "tasty", "specifier": "@tenphi/eslint-plugin-tasty" },
     {
@@ -1402,6 +1405,44 @@
       "rules": {
         "tasty/consistent-token-usage": "warn",
         "tasty/no-runtime-styles-mutation": "warn"
+      }
+    },
+    {
+      // Inside the library, import the file that defines a thing, never a
+      // barrel, and keep the graph free of cycles. Storybook's own config is
+      // included: `preview.jsx` is the root of the tree Chromatic re-snapshots
+      // in full. See docs/rules/coding.md#imports.
+      "files": ["src/**", ".storybook/**"],
+      "rules": {
+        "repo/no-barrel-import": "error",
+        "import/no-cycle": "error"
+      }
+    },
+    {
+      // A story shows a component's public API, so it may import a compound
+      // (`Button.Group`, `Form.Item`) from that component's own entry.
+      "files": ["**/*.stories.tsx", "**/storybook/**/*.tsx", "src/stories/**"],
+      "rules": {
+        "repo/no-barrel-import": ["error", { "allowComponentEntries": true }]
+      }
+    },
+    {
+      // Specs and their helpers test the public surface the way a consumer
+      // imports it, and the defaults-registry tooling renders every export.
+      // Neither is in a runtime graph or a story's.
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.test-d.tsx",
+        "**/*.fixture.tsx",
+        "**/__mocks__/**",
+        "src/test/**",
+        "src/eslint-plugin/fixtures.tsx",
+        "src/eslint-plugin/generate.ts",
+        "src/eslint-plugin/probe.tsx"
+      ],
+      "rules": {
+        "repo/no-barrel-import": "off"
       }
     }
   ]

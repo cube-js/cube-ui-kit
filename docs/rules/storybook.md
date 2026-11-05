@@ -250,7 +250,7 @@ import { ItemButton } from '../../actions';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 ```
 
-`pnpm chromatic:check` fails when that set grows past its budget, which is the only thing that would ever notice.
+`repo/no-barrel-import` rejects a barrel import there (and anywhere else in the library, see [coding.md](coding.md#imports)), and `pnpm chromatic:check` fails when that set grows past its budget for any other reason.
 
 ## The Accessibility Baseline
 
