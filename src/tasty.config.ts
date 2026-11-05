@@ -2,14 +2,15 @@
  * UI Kit's internal component tokens, for its own lint
  *
  * A component token that one file sets and another reads, and that no
- * component's docs offer consumers. `@tenphi/eslint-plugin-tasty` merges every
- * `tasty.config.*` from a file's directory up to the project root, so these
- * names reach everything under `src/` on top of the root `tasty.config.ts`.
- * The package doesn't ship `src/`, so a consumer's lint never accepts them.
+ * component's docs offer consumers. `@tenphi/eslint-plugin-tasty` merges the
+ * `tasty.config.*` files on the path from a linted file up to its project
+ * root, so these names reach everything under `src/` on top of the root
+ * config. A consumer's files are on no such path, and its `extends` reads only
+ * the package root's config, so its lint never accepts them.
  *
  * A token a component's docs offer consumers goes in the root config's
  * `componentTokens` instead. `src/tokens/tasty-config.test.ts` fails when a
- * name here is set by no component, or is listed in both places.
+ * name here is set by no component, or is already listed elsewhere.
  */
 export default {
   tokens: [
@@ -64,7 +65,6 @@ export default {
     '$size-compensation',
 
     // Tabs: the active tab's indicator.
-    '$tab-indicator-size',
     '$indicator-start',
     '$indicator-size',
     // Tree, and TableView's tree column.

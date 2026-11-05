@@ -80,12 +80,12 @@ Off on purpose: `no-styles-prop` (UI Kit's own components pass `styles` down, an
 
 The same config tells consumers' lint which names exist. Its `tokens`, `states`, `presets` and `recipes` come from `tasty.config.generated.ts`, which `pnpm generate:tasty-config` writes from the runtime: the tokens `getTokens()` emits, the state aliases and recipes `<Root>` registers, and `TYPOGRAPHY_PRESETS`. When you add, rename or remove one of them, run it and commit the file; `src/tokens/tasty-config.test.ts` fails until you do. Never edit the generated file by hand: on a merge conflict in it, take either side and run the command again.
 
-A component token that one file sets and another reads is not in those lists, and `valid-custom-property` reports it until it is declared where the plugin sees it. The plugin merges every `tasty.config.*` from a file's directory up to the root, so there are two places:
+A component token that one file sets and another reads is not in those lists, and `valid-custom-property` reports it until it is declared where the plugin sees it. The plugin merges the `tasty.config.*` files on the path from a linted file up to its project root, and a consumer's `extends` reads only the package root's config, so there are two places:
 
 - **Offered to consumers** (to read inside the component, or to set on it): document it in the component's `.docs.mdx` and add it to `componentTokens` in `tasty.config.ts`. It is part of that component's API, and consumers' lint accepts it.
-- **Internal**: add it to `src/tasty.config.ts`. Only UI Kit's own lint reads it, since the package doesn't ship `src/`, so a consumer that reads the token is told it isn't theirs.
+- **Internal**: add it to `src/tasty.config.ts`. Only files under `src/` get it, so a consumer that reads the token is told it isn't theirs.
 
-`src/tokens/tasty-config.test.ts` fails when a published component token is in no `.docs.mdx`, when a listed token is set by no component (one an app may set counts when UI Kit reads it with a fallback, `($name, 0px)`), or when a token is in both lists. A token set and read in the same file needs no list: declare it as a `$name` / `#name` key in a styles object, or in a `tokens` literal.
+`pnpm check:component-tokens`, in CI's lint job, fails when a published component token is in no component's `.docs.mdx`. `src/tokens/tasty-config.test.ts` fails when a listed token is set by no component (one an app may set counts when UI Kit reads it with a fallback, `($name, 0px)`), or is listed twice: in both lists, or already in the generated ones. A token set and read in the same file needs no list: declare it as a `$name` / `#name` key in a styles object, or in a `tokens` literal.
 
 # Markdown rules
 

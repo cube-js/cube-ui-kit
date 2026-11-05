@@ -131,13 +131,27 @@ export function Consumer() {
 }
 `;
 
-/** The text of every file under `src/` whose path matches `include`. */
-function readSources(include: RegExp, exclude?: RegExp) {
+/**
+ * The runtime source under `src/`, without comments: no specs, stories,
+ * fixtures or the `stories/` guides, which the CI planner doesn't run this
+ * spec for, and no comments, which only mention a token.
+ */
+function readRuntimeSource() {
   const src = join(ROOT, 'src');
 
   return readdirSync(src, { recursive: true, encoding: 'utf8' })
-    .filter((file) => include.test(file) && !exclude?.test(file))
-    .map((file) => readFileSync(join(src, file), 'utf8'))
+    .filter(
+      (file) =>
+        /\.tsx?$/.test(file) &&
+        !/\.(test|spec|stories|test-d|fixture)\.tsx?$|(^|\/)(test|stories)\//.test(
+          file,
+        ),
+    )
+    .map((file) =>
+      readFileSync(join(src, file), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1'),
+    )
     .join('\n');
 }
 
@@ -148,18 +162,20 @@ function tokenPattern(token: string) {
 
 /**
  * Whether `source` sets `token` (a styles or tokens key, a raw `--name` key,
- * a CSS declaration or `setProperty`), or reads it with a fallback, which is
- * how a component takes a token its consumer may set.
+ * a CSS declaration or `setProperty`), or reads it with a fallback,
+ * `($name, 0px)`, which is how a component takes a token its consumer may set.
+ * A key is matched as Prettier writes one, with no space before the colon, so
+ * a ternary's `'$name' : …` is not one; `max($name, …)` is no fallback.
  */
 function isSetOrDefaulted(source: string, token: string) {
   const variable =
     token[0] === '#' ? `${token.slice(1)}(?:-color)?` : token.slice(1);
 
   return [
-    `(?<![\\w-])[\\[\`'"]*${tokenPattern(token)}[\`'"\\]]*\\s*:(?!:)`,
-    `[\`'"]--${variable}[\`'"]\\s*[:,]`,
+    `(?<![\\w-])[\\[\`'"]*${tokenPattern(token)}[\`'"\\]]*:(?!:)`,
+    `[\`'"]--${variable}[\`'"][:,]`,
     `(?<![\\w(-])--${variable}\\s*:`,
-    `\\(\\s*${tokenPattern(token)}\\s*,`,
+    `(?<![\\w-])\\(\\s*${tokenPattern(token)}\\s*,`,
   ].some((pattern) => new RegExp(pattern).test(source));
 }
 
@@ -295,33 +311,23 @@ describe('tasty.config.ts', () => {
     );
   }, 30_000);
 
-  // A published component token is part of a component's documented API, and
-  // every listed one is set by a component, or read with a fallback when an
-  // app may set it. A name that is neither renders an invalid `var()` wherever
-  // it is read, and the list keeps the lint quiet about it.
-  it('lists only component tokens UI Kit sets, publishing the documented ones', () => {
-    const docs = readSources(/\.docs\.mdx$/);
-    const source = readSources(
-      /\.tsx?$/,
-      /\.(test|spec|stories|test-d)\.tsx?$|(^|\/)test\//,
-    );
-    const internalTokens = internalConfig.tokens;
+  // Every listed component token is set by a component, or read with a
+  // fallback when an app may set it: a name that is neither renders an
+  // invalid `var()` wherever it is read, and the list keeps the lint quiet
+  // about it. `pnpm check:component-tokens` checks the published ones are
+  // documented, in the lint job, which runs for a docs-only PR too.
+  it('lists only component tokens UI Kit sets, each once', () => {
+    const source = readRuntimeSource();
+    const listed = [...componentTokens, ...internalConfig.tokens];
 
     expect({
-      undocumented: componentTokens.filter(
-        (token) =>
-          !new RegExp(tokenPattern(token)).test(docs) &&
-          !docs.includes(`--${token.slice(1)}`),
-      ),
-      unset: [...componentTokens, ...internalTokens].filter(
-        (token) => !isSetOrDefaulted(source, token),
-      ),
-      listedTwice: internalTokens.filter(
-        (token) =>
-          componentTokens.includes(token) ||
+      unset: listed.filter((token) => !isSetOrDefaulted(source, token)),
+      listedTwice: listed.filter(
+        (token, index) =>
+          listed.indexOf(token) !== index ||
           runtimeNames.tokens.includes(token),
       ),
-    }).toEqual({ undocumented: [], unset: [], listedTwice: [] });
+    }).toEqual({ unset: [], listedTwice: [] });
   });
 
   // A consumer that extends this config gets `protectedComponents`, so

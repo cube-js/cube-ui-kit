@@ -23,10 +23,11 @@ import { runtimeNames } from './tasty.config.generated';
 /**
  * Component tokens a component's docs offer consumers: to read inside the
  * component that sets them, so their own content lines up with it, or to set
- * on it. Each is part of that component's documented API.
- * `src/tokens/tasty-config.test.ts` fails when one is in no `.docs.mdx` or is
- * set by no component. UI Kit's internal component tokens are in
- * `src/tasty.config.ts`, which the package doesn't ship.
+ * on it. Each is part of that component's documented API:
+ * `pnpm check:component-tokens` fails when one is in no component's
+ * `.docs.mdx`, and `src/tokens/tasty-config.test.ts` when no component sets
+ * it. UI Kit's internal component tokens are in `src/tasty.config.ts`, which
+ * consumers' lint never reads.
  */
 export const componentTokens = [
   // Dialog
@@ -56,6 +57,9 @@ export const componentTokens = [
   // FieldWrapper's side label, for a row without one
   '$full-label-width',
   // GridProvider
+  '$grid-width',
+  '$columns-amount',
+  '$column-gap',
   '$column-width',
   // Slider and HueSlider, through `thumbTokens`
   '#slider-thumb',
