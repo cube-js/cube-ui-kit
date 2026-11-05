@@ -337,54 +337,95 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
 } as const;
 
 /**
- * Glass edge (prototype, ported from tenphi.me): outline and primary buttons
- * draw their edge with inset glass layers instead of a solid border, and sit
- * in a soft outer shadow (`$glass-halo`) that collapses while pressed, so the
- * button reads as lowered onto the page.
+ * Glass edge (prototype, fitted to macOS controls): outline and primary
+ * buttons draw their edge from the glass layers in `src/tokens/shadows.ts`
+ * instead of a solid border.
  *
- * The border can't simply go away: every size here assumes it (`$size - 2bw`,
- * the inline padding, ButtonSplit's `-1bw` overlap). It can't just turn
- * transparent either, because an inset shadow paints inside the padding box,
- * so the rim would sit 1bw in from the edge. So the border stays as a
- * transparent 1bw (the fill already paints under it), and the glass is drawn
- * on a `::before` overlay that reaches over the border to the outer edge. The
- * layout doesn't change at all.
+ * - The border stays, as a transparent 1bw: every size here assumes it
+ *   (`$size - 2bw`, the inline padding, ButtonSplit's `-1bw` overlap), so the
+ *   layout doesn't change. The layers reach over it to the outer edge.
+ * - The root paints the tint, the outer shadow and the inner shade, so the
+ *   shade sits under the glow. The outer shadow collapses while pressed.
+ * - `::before` (Sheen) paints the glow and the highlight lines.
+ * - `::after` (Ring) paints the hairline ring on top. Chromium rounds a border
+ *   or padding thinner than 1px up to 1px, twice the ring's width on a 2x
+ *   screen. So the ring is laid out at double size with a 1bw padding and
+ *   scaled down by half, which keeps the hairline. Its radius doubles to
+ *   match, so it repeats the button's radius map instead of inheriting it.
  *
- * Brand fills take the accent layers (the same split as tenphi.me's badges):
- * their color is fixed across schemes, so the neutral edge would glare in
- * light mode and outline them in black in dark mode. Their outer shadow
- * (`$glass-accent-halo`) is denser in dark mode, so the fill stands out from
- * the page. The same goes for any button on the fixed `#special-surface`.
+ * Brand fills take the accent layers: their color is fixed across schemes, so
+ * the neutral ring would outline them in gray in light mode and in black in
+ * dark mode. The same goes for any button on the fixed `#special-surface`.
+ *
+ * A disabled button keeps a flat ring and drops the glow, the highlight and
+ * both shadows, like a disabled macOS control.
  */
-function glassEdge(glassShadow: string, glassHalo: string): Styles {
+function glassEdge(kind: 'glass' | 'glass-accent'): Styles {
   return {
     border: {
       '': '#clear',
       invalid: '#danger-accent-text',
       valid: '#success-accent-text',
     },
-    shadow: {
-      '': glassHalo,
-      // Same layer count, so the shadow animates instead of snapping.
-      'pressed | disabled': '0 0 0 #clear',
+    // A translucent layer over whatever fill the state paints, so hover,
+    // pressed and selected keep their tints.
+    image: {
+      '': `$${kind}-tint`,
+      disabled: 'none',
     },
-    Glass: {
+    shadow: {
+      '': `$${kind}-halo, $${kind}-inner-shade`,
+      // Same layer count everywhere, so the shadow animates instead of
+      // snapping.
+      pressed: `0 0 0 #clear, 0 0 0 #clear, $${kind}-inner-shade`,
+      disabled: '0 0 0 #clear, 0 0 0 #clear, inset 0 0 0 #clear',
+    },
+    Sheen: {
       $: '&::before',
       content: '""',
       position: 'absolute',
       inset: '-1bw',
       radius: 'inherit',
       pointerEvents: 'none',
-      shadow: glassShadow,
+      image: {
+        '': `$${kind}-sheen`,
+        disabled: 'none',
+      },
+      shadow: {
+        '': `$${kind}-highlight`,
+        disabled: 'inset 0 0 0 #clear, inset 0 0 0 #clear',
+      },
+    },
+    Ring: {
+      $: '&::after',
+      content: '""',
+      position: 'absolute',
+      top: '-1bw',
+      left: '-1bw',
+      width: '(200% + 4bw)',
+      height: '(200% + 4bw)',
+      padding: '1bw',
+      boxSizing: 'border-box',
+      transform: 'scale(.5)',
+      transformOrigin: '0 0',
+      radius: {
+        '': '2r',
+        '@parent(button-split, >) & !:last-child': '2r left',
+        '@parent(button-split, >) & !:first-child': '2r right',
+        '@parent(button-split, >) & !:first-child & !:last-child': 0,
+      },
+      pointerEvents: 'none',
+      image: {
+        '': `$${kind}-ring`,
+        disabled: '$glass-ring-disabled',
+      },
+      mask: 'linear-gradient(white, white) content-box exclude, linear-gradient(white, white)',
     },
   };
 }
 
-const GLASS_EDGE_STYLES = glassEdge('$glass-shadow', '$glass-halo');
-const GLASS_ACCENT_EDGE_STYLES = glassEdge(
-  '$glass-accent-shadow',
-  '$glass-accent-halo',
-);
+const GLASS_EDGE_STYLES = glassEdge('glass');
+const GLASS_ACCENT_EDGE_STYLES = glassEdge('glass-accent');
 
 const withGlass = (styles: Styles) => mergeStyles(styles, GLASS_EDGE_STYLES);
 const withAccentGlass = (styles: Styles) =>

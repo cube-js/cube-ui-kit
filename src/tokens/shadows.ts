@@ -24,90 +24,97 @@ export const SHADOW_TOKENS: Styles = {
 };
 
 /**
- * Glass edge tokens: a dark shade along the sides and a light tint along the
- * top and bottom, both drawn as inset shadows. Together they make a surface's
- * edge read like a pane of glass.
+ * Glass edge tokens, fitted to macOS controls (light, dark and disabled
+ * screenshots, scored pixel by pixel). A glass surface is five layers, top
+ * first:
  *
- * - `$glass-shadow` is for neutral surfaces. It follows the page scheme, and
- *   high contrast strengthens whichever layer is faint in that scheme (the
- *   shade in light, the tint in dark).
- * - `$glass-accent-shadow` is for brand fills such as a primary button. Those
- *   keep the same color in both schemes, so their edge can't follow the page:
- *   the light-scheme tint would glare on them, and the dark-scheme shade would
- *   outline them in black.
+ * 1. `$glass-ring`: a hairline ring colored by a vertical gradient, light at
+ *    the top and bottom and dark along the sides. Coloring it by height, not
+ *    by a shadow offset, is what makes the highlight fade out quickly as the
+ *    corner turns.
+ * 2. `$glass-highlight`: crisp inset lines along the top (and bottom) that
+ *    follow the outline and thin out toward the sides.
+ * 3. `$glass-sheen`: a soft glow by the top (and bottom) edge. A vertical
+ *    gradient, so unlike a blurred inset shadow it can't creep down the sides.
+ * 4. `$glass-inner-shade`: a large, faint inset shade from the top. It sits
+ *    under the glow, so the glow still stands out on a white surface.
+ * 5. `$glass-halo`: the outer shadow.
  *
- * The accent layers need tokens of their own: `$glass-shadow` resolves its
- * colors where it is declared (the body), so overriding `#glass-shade` on an
- * element would not reach it.
+ * `$glass-tint` lifts the fill: a translucent layer over the fill color, under
+ * the label and the shade.
+ *
+ * The `-accent` tokens are for brand fills such as a primary button. Those
+ * keep the same color in both schemes, so their edge can't follow the page:
+ * the light-scheme ring would outline them in gray, and the dark-scheme one
+ * in black. `$glass-ring-disabled` is the flat ring of a disabled surface.
  *
  * Kept apart from {@link SHADOW_TOKENS}, which a themed region re-declares as
  * flat values (`renderColorTokens`). These are state maps on the ambient
  * `@dark` / `@hc` schemes.
  */
 export const GLASS_TOKENS: Styles = {
-  '#glass-shade': {
-    '': 'rgb(0 0 0 / .1)',
-    '@hc': 'rgb(0 0 0 / .4)',
-    '@dark': 'rgb(0 0 0 / .8)',
-  },
-  '#glass-tint': {
-    '': 'rgb(255 255 255 / .8)',
-    '@dark': 'rgb(255 255 255 / .1)',
-    '@dark & @hc': 'rgb(255 255 255 / .4)',
-  },
-  '$glass-shade':
-    '.5px 0 .5px #glass-shade inset, -.5px 0 .5px #glass-shade inset',
-  '$glass-tint': '0 1px 1px #glass-tint inset, 0 -1px 1px #glass-tint inset',
-  /** Glass edge for neutral surfaces */
-  '$glass-shadow': '$glass-shade, $glass-tint',
-
-  // In dark mode the fill already stands out against the page, so the side
-  // shade goes away and the edge is the glow alone. It stays transparent
-  // rather than dropping the layers, so the shadow keeps its layer count and
-  // still animates.
-  '#glass-accent-shade': {
-    '': 'rgb(0 0 0 / .3)',
-    '@hc': 'rgb(0 0 0 / .6)',
-    '@dark': 'rgb(0 0 0 / 0)',
-  },
-  // A saturated fill swallows a faint highlight, so the accent glow is
-  // stronger than the neutral one, and it barely fades in dark mode: the fill
-  // it sits on is the same color there.
-  '#glass-accent-tint': {
-    '': 'rgb(255 255 255 / .5)',
-    '@dark': 'rgb(255 255 255 / .35)',
-  },
-  '$glass-accent-shade':
-    '.5px 0 .5px #glass-accent-shade inset, -.5px 0 .5px #glass-accent-shade inset',
-  // Light mode: a wider, softer glow. The negative spread pushes the blur ramp
-  // past the left and right edges, so the glow stays on the top and bottom
-  // instead of creeping down the sides (a plain `0 1px 2px` would glow on
-  // every edge).
-  // Dark mode: a thin glow with the neutral `$glass-tint` geometry.
-  '$glass-accent-tint': {
-    '': '0 2px 2px -1px #glass-accent-tint inset, 0 -2px 2px -1px #glass-accent-tint inset',
+  // Gradients and shadows that would need a layer count to animate keep it
+  // the same in every scheme, padding with transparent layers.
+  '$glass-ring': {
+    '': 'linear-gradient(rgb(0 0 0 / .08), rgb(0 0 0 / .19) 42%, rgb(0 0 0 / .19) 58%, rgb(0 0 0 / .09))',
+    '@hc':
+      'linear-gradient(rgb(0 0 0 / .25), rgb(0 0 0 / .45) 42%, rgb(0 0 0 / .45) 58%, rgb(0 0 0 / .25))',
     '@dark':
-      '0 1px 1px #glass-accent-tint inset, 0 -1px 1px #glass-accent-tint inset',
+      'linear-gradient(rgb(255 255 255 / .2), rgb(0 0 0 / .8) 20%, rgb(0 0 0 / .8) 80%, rgb(255 255 255 / .2))',
+    '@dark & @hc':
+      'linear-gradient(rgb(255 255 255 / .45), rgb(0 0 0) 20%, rgb(0 0 0) 80%, rgb(255 255 255 / .45))',
   },
-  /** Glass edge for brand (accent) fills */
-  '$glass-accent-shadow': '$glass-accent-shade, $glass-accent-tint',
-
-  /**
-   * Soft outer shadow around a neutral glass surface. It takes over from the
-   * solid border the glass edge replaces: in light mode it has the border's
-   * color, and in dark mode it's a very faint black.
-   */
+  '$glass-highlight': {
+    '': 'inset 0 2.25px 0 rgb(255 255 255 / .93), inset 0 0 0 #clear',
+    '@dark':
+      'inset 0 1px 0 rgb(255 255 255 / .15), inset 0 -1px 0 rgb(255 255 255 / .15)',
+  },
+  '$glass-sheen': {
+    '': 'linear-gradient(rgb(255 255 255 / .95), rgb(255 255 255 / .42) 1.25px, rgb(255 255 255 / 0) 7.5px)',
+    '@dark':
+      'linear-gradient(rgb(255 255 255 / .05), rgb(255 255 255 / .05) 1.75px, rgb(255 255 255 / 0) 5.75px), linear-gradient(to top, rgb(255 255 255 / .05), rgb(255 255 255 / .05) 1.75px, rgb(255 255 255 / 0) 5.75px)',
+  },
+  '$glass-inner-shade': {
+    '': 'inset 0 18px 20px -1px rgb(0 0 0 / .045)',
+    '@dark': 'inset 0 0 0 #clear',
+  },
+  // A dark macOS control is 13.6% white over the page. The button's own dark
+  // fill is already a step lighter than the page, so 11.5% brings it to the same
+  // lift. A light control is page white already.
+  '$glass-tint': {
+    '': 'none',
+    '@dark':
+      'linear-gradient(rgb(255 255 255 / .115), rgb(255 255 255 / .115))',
+  },
   '$glass-halo': {
-    '': '0 0 .75x #border',
-    '@dark': '0 0 .75x #black.2',
+    '': '0 6px 13px -.5px rgb(0 0 0 / .02), 0 0 .5px rgb(0 0 0 / .035)',
+    '@dark': '0 2px 4px -3.5px rgb(0 0 0 / .12), 0 0 .75px rgb(0 0 0 / .02)',
   },
-  /**
-   * Soft outer shadow around a brand (accent) fill. The same as `$glass-halo`
-   * in light mode; in dark mode it's a denser black, so the fill stands out
-   * from the page.
-   */
+
+  // Brand fills. Not fitted to a reference: the same layers, tuned for a
+  // saturated fill. In dark mode the fill already stands out, so the ring has
+  // no dark sides there.
+  '$glass-accent-ring': {
+    '': 'linear-gradient(rgb(255 255 255 / .35), rgb(0 0 0 / .2) 20%, rgb(0 0 0 / .2) 80%, rgb(255 255 255 / .3))',
+    '@hc':
+      'linear-gradient(rgb(255 255 255 / .5), rgb(0 0 0 / .45) 20%, rgb(0 0 0 / .45) 80%, rgb(255 255 255 / .45))',
+    '@dark':
+      'linear-gradient(rgb(255 255 255 / .3), rgb(255 255 255 / 0) 20%, rgb(255 255 255 / 0) 80%, rgb(255 255 255 / .25))',
+  },
+  '$glass-accent-highlight':
+    'inset 0 1px 0 rgb(255 255 255 / .2), inset 0 -1px 0 rgb(255 255 255 / .12)',
+  '$glass-accent-sheen':
+    'linear-gradient(rgb(255 255 255 / .12), rgb(255 255 255 / .05) 1.5px, rgb(255 255 255 / 0) 6px), linear-gradient(to top, rgb(255 255 255 / .06), rgb(255 255 255 / 0) 4px)',
+  '$glass-accent-inner-shade': 'inset 0 0 0 #clear',
+  '$glass-accent-tint': 'none',
   '$glass-accent-halo': {
-    '': '0 0 .75x #border',
-    '@dark': '0 0 .75x #black.5',
+    '': '0 6px 13px -.5px rgb(0 0 0 / .04), 0 0 .5px rgb(0 0 0 / .06)',
+    '@dark': '0 0 .75x rgb(0 0 0 / .5), 0 0 0 #clear',
+  },
+
+  '$glass-ring-disabled': {
+    '': 'linear-gradient(rgb(0 0 0 / .11), rgb(0 0 0 / .16) 40%, rgb(0 0 0 / .16) 60%, rgb(0 0 0 / .11))',
+    '@dark':
+      'linear-gradient(rgb(255 255 255 / .08), rgb(0 0 0 / .5) 20%, rgb(0 0 0 / .5) 80%, rgb(255 255 255 / .08))',
   },
 };
