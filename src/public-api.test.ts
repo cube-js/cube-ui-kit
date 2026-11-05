@@ -75,12 +75,17 @@ function readSubpaths(): Subpath[] {
 function resolveAlias(symbol: ts.Symbol, checker: ts.TypeChecker): ts.Symbol {
   if (!(symbol.flags & ts.SymbolFlags.Alias)) return symbol;
 
-  try {
-    return checker.getAliasedSymbol(symbol);
-  } catch {
-    // Unresolvable alias (e.g. a missing module); fall back to the alias itself.
-    return symbol;
+  const resolved = checker.getAliasedSymbol(symbol);
+
+  // A re-export of a missing file resolves to the checker's `unknown` symbol,
+  // which has no declarations and would be recorded as a value.
+  if (!resolved.declarations?.length) {
+    throw new Error(
+      `[public-api] Export "${symbol.getName()}" does not resolve to a declaration.`,
+    );
   }
+
+  return resolved;
 }
 
 function isTypeOnlyDeclaration(declaration: ts.Declaration): boolean {
@@ -95,6 +100,8 @@ function isTypeOnlyDeclaration(declaration: ts.Declaration): boolean {
   }
 
   if (ts.isImportClause(declaration)) return declaration.isTypeOnly;
+
+  if (ts.isNamespaceImport(declaration)) return declaration.parent.isTypeOnly;
 
   return false;
 }
@@ -208,7 +215,7 @@ function collectExports(subpaths: Subpath[]): Map<string, EntryExports> {
             name: symbol.getName(),
             kind: classify(symbol, checker),
           }))
-          .sort((a, b) => a.name.localeCompare(b.name))
+          .sort((a, b) => a.name.localeCompare(b.name, 'en'))
       : [];
 
     result.set(specifier, {

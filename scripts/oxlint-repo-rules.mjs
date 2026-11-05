@@ -59,18 +59,30 @@ function isFile(path) {
   }
 }
 
+// `.`, `..` and `./dir/` name a directory, so a file of the same name beside
+// it does not count, as in TypeScript's resolution.
+const DIRECTORY = /(?:^|\/)\.{1,2}$|\/$/;
+
+function indexIn(dir) {
+  return (
+    SOURCE_EXTENSIONS.map((ext) => resolve(dir, `index${ext}`)).find(isFile) ??
+    null
+  );
+}
+
 /** The barrel a relative specifier resolves to, or `null` when it names a file. */
 function resolveBarrel(importer, specifier) {
   const target = resolve(dirname(importer), specifier);
-  const file = SOURCE_EXTENSIONS.map((ext) => target + ext).find(isFile);
+
+  if (DIRECTORY.test(specifier)) return indexIn(target);
+
+  const file = [target, ...SOURCE_EXTENSIONS.map((ext) => target + ext)].find(
+    isFile,
+  );
 
   if (file) return INDEX.test(basename(file)) ? file : null;
 
-  return (
-    SOURCE_EXTENSIONS.map((ext) => resolve(target, `index${ext}`)).find(
-      isFile,
-    ) ?? null
-  );
+  return indexIn(target);
 }
 
 /** Type-only imports are erased at build time, so they add nothing to the graph. */
@@ -138,6 +150,7 @@ const noBarrelImport = {
       ImportDeclaration: check,
       ExportNamedDeclaration: check,
       ExportAllDeclaration: check,
+      ImportExpression: check,
     };
   },
 };
