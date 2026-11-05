@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.206.0",
+  "version": "0.206.1",
   "type": "module",
   "description": "UIKit for Cube Projects",
   "repository": {
@@ -90,6 +90,7 @@
     "test:form-compiled": "vitest run --config vitest.form-compiled.config.ts",
     "diagnostics:hooks": "node scripts/hooks-diagnostics.mjs",
     "check:react-package": "node scripts/compiler/check-package.mjs",
+    "check:component-tokens": "node scripts/check-component-tokens.mjs",
     "check:consumer-declarations": "node scripts/check-consumer-declarations.mjs"
   },
   "keywords": [
