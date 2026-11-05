@@ -1361,15 +1361,17 @@ function buildPalette(
     //
     // Tuned to keep the shadows Glaze 2 drew. Each one darkens the white
     // light surface by 4 / 8 / 12.3 tones (4.4 / 9 / 13.8 in high contrast)
-    // and the dark surface by 3.9 / 6 / 6.7.
+    // and the dark surface by 4 / 6 / 6.7.
     //
-    // `reach` parks the pigment at tone 14, Glaze 2's dark gray, instead of
-    // pure black, which keeps the light opacities at 0.066 / 0.132 / 0.197.
+    // `reach` parks the pigment 86% of the way from the surface's tone to
+    // black: tone 14 on the white surface, about where Glaze 2's dark gray
+    // sat, which keeps the light opacities within 0.001 of Glaze 2's.
     //
-    // `objectInfluence` sets how much each shadow weakens in dark mode, where
-    // `surface-text` is lighter than the surface: not at all for `sm`, more
-    // for the larger two. That keeps `lg` within what the pigment can reach
-    // on the dark surface.
+    // `objectInfluence` scales each step by how far `surface-text` sits from
+    // the surface: it deepens the light shadows, where the text is darker,
+    // and weakens the dark ones, where it is lighter. It is 0 for `sm` and
+    // larger for the bigger two, with the intensities set to match. That
+    // keeps `lg` within what the pigment can reach on the dark surface.
     'shadow-sm': {
       type: 'shadow',
       bg: 'surface',
