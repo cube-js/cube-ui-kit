@@ -1421,11 +1421,7 @@
     {
       // A story shows a component's public API, so it may import a compound
       // (`Button.Group`, `Form.Item`) from that component's own entry.
-      "files": [
-        "**/*.stories.tsx",
-        "**/*.stories.jsx",
-        "**/storybook/**/*.tsx"
-      ],
+      "files": ["**/*.stories.tsx", "**/*.stories.jsx"],
       "rules": {
         "repo/no-barrel-import": ["error", { "allowComponentEntries": true }]
       }

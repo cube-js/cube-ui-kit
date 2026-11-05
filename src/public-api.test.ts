@@ -72,10 +72,14 @@ function readSubpaths(): Subpath[] {
   });
 }
 
-function resolveAlias(symbol: ts.Symbol, checker: ts.TypeChecker): ts.Symbol {
-  if (!(symbol.flags & ts.SymbolFlags.Alias)) return symbol;
+function aliasTarget(symbol: ts.Symbol, checker: ts.TypeChecker): ts.Symbol {
+  return symbol.flags & ts.SymbolFlags.Alias
+    ? checker.getAliasedSymbol(symbol)
+    : symbol;
+}
 
-  const resolved = checker.getAliasedSymbol(symbol);
+function resolveAlias(symbol: ts.Symbol, checker: ts.TypeChecker): ts.Symbol {
+  const resolved = aliasTarget(symbol, checker);
 
   // A re-export of a missing file resolves to the checker's `unknown` symbol,
   // which has no declarations and would be recorded as a value.
@@ -102,6 +106,8 @@ function isTypeOnlyDeclaration(declaration: ts.Declaration): boolean {
   if (ts.isImportClause(declaration)) return declaration.isTypeOnly;
 
   if (ts.isNamespaceImport(declaration)) return declaration.parent.isTypeOnly;
+
+  if (ts.isNamespaceExport(declaration)) return declaration.parent.isTypeOnly;
 
   return false;
 }
@@ -172,14 +178,20 @@ function starPackageSymbols(
       continue;
     }
 
+    // `export *` copies the package's export symbols into the entry as they
+    // are, and a name the library also re-exports by another route resolves
+    // to the same declaration; both count. A broken re-export inside the
+    // package's declarations resolves to nothing, and is not ours to fail on.
     const moduleSymbol = checker.getSymbolAtLocation(statement.moduleSpecifier);
-    const symbols = new Set(
-      moduleSymbol
-        ? checker
-            .getExportsOfModule(moduleSymbol)
-            .map((symbol) => resolveAlias(symbol, checker))
-        : [],
-    );
+    const exported = moduleSymbol
+      ? checker.getExportsOfModule(moduleSymbol)
+      : [];
+    const symbols = new Set([
+      ...exported,
+      ...exported
+        .map((symbol) => aliasTarget(symbol, checker))
+        .filter((symbol) => symbol.declarations?.length),
+    ]);
 
     result.set(statement.moduleSpecifier.text, symbols);
   }
@@ -209,7 +221,9 @@ function collectExports(subpaths: Subpath[]): Map<string, EntryExports> {
       ? checker
           .getExportsOfModule(moduleSymbol)
           .filter(
-            (symbol) => !fromStarPackage.has(resolveAlias(symbol, checker)),
+            (symbol) =>
+              !fromStarPackage.has(symbol) &&
+              !fromStarPackage.has(aliasTarget(symbol, checker)),
           )
           .map((symbol) => ({
             name: symbol.getName(),

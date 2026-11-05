@@ -128,7 +128,12 @@ const noBarrelImport = {
     if (INDEX.test(basename(importer))) return {};
 
     function check(node) {
-      const specifier = node.source?.value;
+      const { source } = node;
+      // `import(`./x`)` with no substitutions is a plain path too.
+      const specifier =
+        source?.type === 'TemplateLiteral' && source.expressions.length === 0
+          ? source.quasis[0].value.cooked
+          : source?.value;
 
       if (typeof specifier !== 'string' || !specifier.startsWith('.')) return;
       if (isTypeOnly(node)) return;
