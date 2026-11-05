@@ -5,17 +5,19 @@ import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
 
-import { NotificationAction } from './NotificationAction';
-import { NotificationItem } from './NotificationItem';
-import { OverlayProvider } from './OverlayProvider';
-import { PersistentNotificationsList } from './PersistentNotificationsList';
-import { useNotifications } from './use-notifications';
+// The entry, not the defining files: `.design-sync/config.json` shims this one
+// module path to the built package, so previews share Root's notification
+// context instead of bundling a second copy from source.
 import {
+  Notification,
+  NotificationAction,
+  NotificationItem,
+  OverlayProvider,
+  PersistentNotificationsList,
+  useNotifications,
   useNotificationsCount,
   usePersistentNotifications,
-} from './use-persistent-notifications';
-
-import { Notification } from './index';
+} from './index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { InternalNotification } from './types';

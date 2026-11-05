@@ -1,7 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { useState } from 'react';
 
-import { Button } from '../components/actions/Button';
+import { Button } from '../components/actions/Button/Button';
 import { Link } from '../components/actions/Link/Link';
 import { Block } from '../components/Block';
 import { Layout } from '../components/content/Layout';

@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 
-import { Button } from '../../actions/Button';
+import { Button } from '../../actions/Button/Button';
 import { Text } from '../../content/Text';
 
 import { FieldWrapper } from './FieldWrapper';

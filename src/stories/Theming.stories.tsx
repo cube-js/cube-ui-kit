@@ -2,7 +2,7 @@ import { IconDownload } from '@tabler/icons-react';
 import { tasty } from '@tenphi/tasty';
 import { useEffect, useMemo, useState } from 'react';
 
-import { Button } from '../components/actions/Button';
+import { Button } from '../components/actions/Button/Button';
 import { ItemButton } from '../components/actions/ItemButton/ItemButton';
 import { Link } from '../components/actions/Link/Link';
 import { Alert } from '../components/content/Alert/Alert';

@@ -1,4 +1,4 @@
-import { Button } from '../components/actions/Button';
+import { Button } from '../components/actions/Button/Button';
 import { Block } from '../components/Block';
 import { Card } from '../components/content/Card/Card';
 import { Flex as UIKitFlex } from '../components/layout/Flex';

@@ -5,7 +5,7 @@ import { DatabaseIcon } from '../../../icons/DatabaseIcon';
 import { FolderIcon } from '../../../icons/FolderIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
 import { UserIcon } from '../../../icons/UserIcon';
-import { Button } from '../../actions/Button';
+import { Button } from '../../actions/Button/Button';
 import { Menu } from '../../actions/Menu/Menu';
 import { Tag } from '../../content/Tag/Tag';
 import { Text } from '../../content/Text';
