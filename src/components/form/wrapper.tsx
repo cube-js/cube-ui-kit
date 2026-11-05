@@ -2,12 +2,12 @@ import { DOMRef, FocusableRef } from '@react-types/shared';
 import { BaseProps, Styles } from '@tenphi/tasty';
 import { ReactElement, RefObject } from 'react';
 
-import { FieldBaseProps, FormBaseProps } from '../../shared/index';
-import { mergeProps } from '../../utils/react/index';
+import { FieldBaseProps, FormBaseProps } from '../../shared/form';
+import { mergeProps } from '../../utils/react/mergeProps';
 import { mergeStyleLayers } from '../../utils/styles';
 
 import { hasFieldContent, warnAboutForceField } from './field-chrome';
-import { FieldWrapper } from './FieldWrapper/index';
+import { FieldWrapper } from './FieldWrapper/FieldWrapper';
 import { warnAboutLegacyTooltip } from './legacy-tooltip';
 
 // The input is passed as `component`, never through props.children.

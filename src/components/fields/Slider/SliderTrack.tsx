@@ -1,6 +1,6 @@
 import { Styles } from '@tenphi/tasty';
 
-import { getValidationMods } from '../../form';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
 
 import { SliderTrackContainerElement } from './elements';
 

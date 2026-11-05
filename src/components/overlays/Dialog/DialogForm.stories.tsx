@@ -13,7 +13,7 @@ import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
-import { Input } from '../../fields/Input';
+import { Input } from '../../fields/Input/Input';
 import { Form } from '../../form/Form';
 
 import { DialogContainer } from './DialogContainer';

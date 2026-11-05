@@ -18,10 +18,10 @@ import { ButtonSplitContext } from '../../actions/ButtonSplit/context';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 
 import { OpenTransitionContext } from './OpenTransitionContext';
-import { WithCloseBehavior } from './types';
 
 import type { Props } from '../../../props';
 import type { ReportedPhase } from '../../helpers/DisplayTransition/DisplayTransition';
+import type { WithCloseBehavior } from './types';
 
 export interface CubeOverlayProps extends WithCloseBehavior {
   children?: ReactNode;

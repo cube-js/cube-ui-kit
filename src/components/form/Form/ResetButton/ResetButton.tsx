@@ -1,12 +1,12 @@
 import { FocusableRef } from '@react-types/shared';
 import { forwardRef } from 'react';
 
-import { useEvent } from '../../../../_internal/index';
+import { useEvent } from '../../../../_internal/hooks/use-event';
 import { useProviderProps } from '../../../../provider';
-import { mergeProps } from '../../../../utils/react/index';
+import { mergeProps } from '../../../../utils/react/mergeProps';
 import { Button, CubeButtonProps } from '../../../actions/Button/Button';
 import { isModernFormController } from '../backend';
-import { useFormProps } from '../Form';
+import { useFormProps } from '../FormContext';
 import { ModernResetButton } from '../modern/actions';
 import { FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';

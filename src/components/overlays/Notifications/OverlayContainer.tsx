@@ -10,11 +10,11 @@ import {
   useState,
 } from 'react';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { useViewportSize } from '../../../utils/react/useViewportSize';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
-import { Portal } from '../../portal';
+import { Portal } from '../../portal/Portal';
 import { ToastItem } from '../Toast/ToastItem';
 
 import { NotificationItem } from './NotificationItem';

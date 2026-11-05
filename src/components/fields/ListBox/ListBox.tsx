@@ -43,14 +43,15 @@ import {
 } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { GripVerticalIcon } from '../../../icons/GripVerticalIcon';
 import { Icon } from '../../../icons/Icon';
-import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
-import { mergeProps, useCombinedRefs } from '../../../utils/react';
+import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { useFocus } from '../../../utils/react/interactions';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 // Import Menu styled components for header and footer
 import {
   StyledDivider,
@@ -67,15 +68,15 @@ import {
 } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
 import {
-  getValidationMods,
-  getValidationTheme,
-  useFieldProps,
-  wrapWithField,
-} from '../../form';
-import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import {
+  getValidationMods,
+  getValidationTheme,
+} from '../../form/validation/resolve-validation-props';
+import { wrapWithField } from '../../form/wrapper';
 import { createMockDragState } from '../../shared/DraggableCollection';
 import { useOptionOriginPress } from '../option-origin-press';
 

@@ -4,9 +4,9 @@ import { KeyboardEvent, RefObject, useRef } from 'react';
 import { useFocusRing, useId, useTag, useTagGroup } from 'react-aria';
 import { Item, ListState, useListState } from 'react-stately';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CubeTagProps, Tag } from '../../content/Tag/Tag';
 

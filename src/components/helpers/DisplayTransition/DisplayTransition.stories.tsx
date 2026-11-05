@@ -2,7 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { useState } from 'react';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { Button } from '../../actions/Button';
+import { Button } from '../../actions/Button/Button';
 import { Card } from '../../content/Card/Card';
 import { Text } from '../../content/Text';
 

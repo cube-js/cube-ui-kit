@@ -20,29 +20,31 @@ import React, {
 import { AriaTextFieldProps, useFilter, useTextField } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
-import { chain, mergeProps, useCombinedRefs } from '../../../utils/react';
+import { chain } from '../../../utils/react/chain';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { mergeStyleLayers } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
-import { useFieldProps } from '../../form';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { getListBoxOptionId } from '../ListBox/optionId';
+import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
   collectVisibleKeys,
   filterCollectionNodes,
   getEdgeVisibleKey,
   getNextVisibleKey,
-  ListBoxPopover,
   ListStateLike,
   markKeyboardFocus,
   TextFilterFn,
-  useCompositeFocus,
-} from '../ListBoxPopover';
+} from '../ListBoxPopover/listNavigation';
+import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
 import {
   CubeTextInputBaseProps,
   TextInputBase,

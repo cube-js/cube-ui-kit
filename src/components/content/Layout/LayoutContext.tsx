@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 export type Side = 'left' | 'top' | 'right' | 'bottom';
 

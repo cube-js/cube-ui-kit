@@ -11,20 +11,19 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n';
-import { FieldBaseProps } from '../../../shared';
-import { mergeProps, useCombinedRefs } from '../../../utils/react';
-import { Action } from '../../actions';
-import {
-  getValidationMods,
-  useFieldProps,
-  ValidationIndicator,
-  wrapWithField,
-} from '../../form';
+import { useI18n } from '../../../i18n/useI18n';
+import { FieldBaseProps } from '../../../shared/form';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { Action } from '../../actions/Action/Action';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
+import { ValidationIndicator } from '../../form/validation/ValidationIndicator';
+import { wrapWithField } from '../../form/wrapper';
 
 import type { AriaLabelingProps, FocusableRefValue } from '@react-types/shared';
 import type { ChangeEvent } from 'react';

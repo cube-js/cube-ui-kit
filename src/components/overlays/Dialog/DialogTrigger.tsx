@@ -18,12 +18,16 @@ import {
 } from 'react-aria';
 import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
-import { useCombinedRefs, useLayoutEffect } from '../../../utils/react/index';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { isOwnActionsPress } from '../../actions/actions-run';
-import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
+import { Modal } from '../Modal/Modal';
+import { Popover } from '../Modal/Popover';
+import { Tray } from '../Modal/Tray';
+import { WithCloseBehavior } from '../Modal/types';
 
 import { DialogContext } from './context';
 import { DialogContainer } from './DialogContainer';

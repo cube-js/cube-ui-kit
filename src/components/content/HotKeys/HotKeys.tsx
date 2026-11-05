@@ -7,7 +7,7 @@ import {
 } from '@tenphi/tasty';
 import { Children, forwardRef, Fragment } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { useKeySymbols } from '../../../utils/react/useKeySymbols';
 import { extractStyles } from '../../../utils/styles';
 import { Space } from '../../layout/Space';

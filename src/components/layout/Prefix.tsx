@@ -7,7 +7,8 @@ import {
 } from '@tenphi/tasty';
 import { CSSProperties, forwardRef } from 'react';
 
-import { useCombinedRefs, useLayoutEffect } from '../../utils/react';
+import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
+import { useLayoutEffect } from '../../utils/react/useLayoutEffect';
 import { extractStyles } from '../../utils/styles';
 
 const PrefixElement = tasty({

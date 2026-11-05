@@ -1,7 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { RefObject, useRef } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { Block, CubeBlockProps } from '../../Block';
 

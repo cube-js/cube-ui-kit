@@ -1,4 +1,5 @@
-import { Button, DialogTrigger } from '../../index';
+import { Button } from '../../components/actions/Button';
+import { DialogTrigger } from '../../components/overlays/Dialog/DialogTrigger';
 
 import { ConfirmDeletionDialogForm } from './ConfirmDeletionDialogForm';
 

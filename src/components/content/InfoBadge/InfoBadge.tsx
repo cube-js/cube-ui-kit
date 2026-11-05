@@ -13,12 +13,15 @@ import {
 } from 'react';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { InfoCircleIcon } from '../../../icons/InfoCircleIcon';
-import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
+import {
+  CubeItemActionProps,
+  ItemAction,
+} from '../../actions/ItemAction/ItemAction';
 import { CubeUseActionProps } from '../../actions/use-action';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
-import { ItemBadge } from '../ItemBadge';
+import { ItemBadge } from '../ItemBadge/ItemBadge';
 
 export type CubeInfoBadgeTooltipConfig = Omit<
   CubeTooltipProviderProps,

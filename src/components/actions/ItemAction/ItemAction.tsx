@@ -36,9 +36,9 @@ import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import {
   getDisabledElementProps,
-  mergeProps,
   omitActivationEventProps,
-} from '../../../utils/react';
+} from '../../../utils/react/disabledProps';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { mergeTooltipFocusProps } from '../../overlays/Tooltip/split-trigger-props';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useItemActionContext } from '../ItemActionContext';

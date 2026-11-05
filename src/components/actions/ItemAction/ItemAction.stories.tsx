@@ -9,12 +9,12 @@ import {
 } from '@tabler/icons-react';
 import { userEvent, within } from 'storybook/test';
 
-import { Item } from '../../content/Item';
+import { Item } from '../../content/Item/Item';
 import { Paragraph } from '../../content/Paragraph';
 import { Title } from '../../content/Title';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
-import { ItemButton } from '../ItemButton';
+import { ItemButton } from '../ItemButton/ItemButton';
 
 import { ItemAction } from './ItemAction';
 

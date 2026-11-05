@@ -8,16 +8,16 @@ import {
   useContext,
 } from 'react';
 
-import { FieldBaseProps, LabelPosition } from '../../../shared/index';
-import { mergeProps } from '../../../utils/react/index';
+import { FieldBaseProps, LabelPosition } from '../../../shared/form';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { warn } from '../../../utils/warnings';
-import { FieldWrapper } from '../FieldWrapper/index';
+import { FieldWrapper } from '../FieldWrapper/FieldWrapper';
 import { warnAboutLegacyTooltip } from '../legacy-tooltip';
-import { useValidationProps } from '../validation/index';
+import { useValidationProps } from '../validation/use-validation-props';
 
-import { useFormProps } from './Form';
+import { useFormProps } from './FormContext';
 import { FieldTypes } from './types';
-import { useField } from './use-field/index';
+import { useField } from './use-field/use-field';
 import { CubeFormInstance } from './use-form';
 
 function getDefaultValidateTrigger(type) {

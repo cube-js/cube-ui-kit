@@ -1,7 +1,7 @@
 import { BaseProps, ContainerStyleProps } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { Flow } from '../../layout/Flow';
 import { CubeGridProps, Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';

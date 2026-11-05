@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Content } from '../../content/Content';

@@ -9,18 +9,15 @@ import { extractStyles } from '../../../utils/styles';
 import { useDialogContext } from '../../overlays/Dialog/context';
 import { useValidationProps } from '../validation/use-validation-props';
 
-import {
-  FormContext,
-  FormElement,
-  FormPresentationContext,
-  formPropNames,
-} from './Form';
+import { FormContext, FormPresentationContext } from './FormContext';
+import { FormElement, formPropNames } from './FormElement';
 import { ModernControllerContext } from './modern/context';
 import { getControllerInternals } from './modern/controller';
 import { resetUnboundControls } from './reset-unbound-controls';
 
 import type { FormEvent, ReactElement, ReactNode, Ref } from 'react';
-import type { CubeFormProps, FormPresentationContextValue } from './Form';
+import type { CubeFormProps } from './Form';
+import type { FormPresentationContextValue } from './FormContext';
 import type { FormController } from './modern/controller';
 import type { CallbackBinding, FormCallbacks } from './modern/types';
 

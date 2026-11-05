@@ -12,12 +12,12 @@ import React, {
 import { useInteractOutside, useOverlay, useOverlayPosition } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n';
-import { mergeProps } from '../../../utils/react';
+import { useI18n } from '../../../i18n/useI18n';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
-import { DisplayTransition } from '../../helpers';
+import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
-import { Portal } from '../../portal';
+import { Portal } from '../../portal/Portal';
 import { ListBox } from '../ListBox/ListBox';
 
 export interface ListBoxPopoverProps {

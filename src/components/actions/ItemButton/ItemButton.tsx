@@ -2,15 +2,13 @@ import { FocusableRef, PressEvent } from '@react-types/shared';
 import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, HTMLAttributes, ReactNode, useMemo, useRef } from 'react';
 
-import { useEvent } from '../../../_internal';
-import {
-  mergeProps,
-  mergeRefs,
-  useDismissParentPopover,
-} from '../../../utils/react';
-import { CubeItemProps, Item } from '../../content/Item';
-import { ItemBadge } from '../../content/ItemBadge';
-import { CubeItemActionProps, ItemAction } from '../ItemAction';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
+import { useDismissParentPopover } from '../../../utils/react/usePopoverSync';
+import { CubeItemProps, Item } from '../../content/Item/Item';
+import { ItemBadge } from '../../content/ItemBadge/ItemBadge';
+import { CubeItemActionProps, ItemAction } from '../ItemAction/ItemAction';
 import { ItemActionsWrapper } from '../ItemActionsWrapper';
 import { CubeUseActionProps, useAction } from '../use-action';
 

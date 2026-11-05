@@ -9,7 +9,7 @@ import { tasty } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { Button, CubeButtonProps } from '../Button/Button';
 import { CubeItemActionProps } from '../ItemAction/ItemAction';

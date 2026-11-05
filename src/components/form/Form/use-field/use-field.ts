@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useEvent, useIsFirstRender } from '../../../../_internal/index';
-import { ValidateTrigger } from '../../../../shared/index';
+import { useEvent } from '../../../../_internal/hooks/use-event';
+import { useIsFirstRender } from '../../../../_internal/hooks/use-is-first-render';
+import { ValidateTrigger } from '../../../../shared/form';
 import { useLayoutEffect } from '../../../../utils/react/useLayoutEffect';
-import { resolveValidationProps } from '../../validation/index';
+import { resolveValidationProps } from '../../validation/resolve-validation-props';
 import {
   isModernFormController,
   modernBackendUnavailableError,
 } from '../backend';
-import { useFormProps } from '../Form';
+import { useFormProps } from '../FormContext';
 import { FieldTypes } from '../types';
 import { delayValidationRule } from '../validation';
 

@@ -1,7 +1,7 @@
 import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 
 import { Action } from '../../actions/Action/Action';
-import { Item } from '../Item';
+import { Item } from '../Item/Item';
 
 /**
  * Tree root.

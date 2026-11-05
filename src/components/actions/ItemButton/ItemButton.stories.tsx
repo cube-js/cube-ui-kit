@@ -13,7 +13,7 @@ import { Title } from '../../content/Title';
 import { Flow } from '../../layout/Flow';
 import { Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';
-import { ItemAction } from '../ItemAction';
+import { ItemAction } from '../ItemAction/ItemAction';
 
 import { ItemButton } from './ItemButton';
 

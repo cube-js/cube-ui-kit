@@ -3,7 +3,7 @@ import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 

@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 
 import { LeftIcon } from '../../../icons/LeftIcon';
 import { RightIcon } from '../../../icons/RightIcon';
-import { Button } from '../../actions';
+import { Button } from '../../actions/Button/Button';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
 

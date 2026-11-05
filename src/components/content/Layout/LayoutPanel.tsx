@@ -26,17 +26,15 @@ import {
 import { useFocusRing, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
-import { useDebouncedValue } from '../../../_internal/hooks';
-import { useI18n } from '../../../i18n';
-import {
-  mergeProps,
-  useCombinedRefs,
-  useLocalStorage,
-} from '../../../utils/react';
+import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value';
+import { useI18n } from '../../../i18n/useI18n';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { useLocalStorage } from '../../../utils/react/useLocalStorage';
 import { extractStyles } from '../../../utils/styles';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
-import { Dialog } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
 import {
   CubeDialogContainerProps,
   DialogContainer,

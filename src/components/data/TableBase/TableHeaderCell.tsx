@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDraggableItem, useDropIndicator } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 
 import type { ReactNode } from 'react';
 import type {

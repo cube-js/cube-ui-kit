@@ -16,7 +16,7 @@ import React, { KeyboardEvent, ReactElement, ReactNode, Ref } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import { Section as BaseSection, useTreeState } from 'react-stately';
 
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { extractStyles } from '../../../utils/styles';
 
 import { useMenuContext } from './context';

@@ -10,24 +10,22 @@ import {
 } from 'react';
 import { Placement } from 'react-aria';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n';
-import { FieldBaseProps } from '../../../shared';
-import { ItemButton } from '../../actions';
-import { CubeItemProps } from '../../content/Item';
+import { useI18n } from '../../../i18n/useI18n';
+import { FieldBaseProps } from '../../../shared/form';
+import { ItemButton } from '../../actions/ItemButton/ItemButton';
+import { CubeItemProps } from '../../content/Item/Item';
 import { Text } from '../../content/Text';
-import {
-  getValidationIcon,
-  getValidationTheme,
-  useFieldProps,
-  wrapWithField,
-} from '../../form';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { TRIGGER_TOOLTIP_WARNING } from '../../form/legacy-tooltip';
+import { getValidationTheme } from '../../form/validation/resolve-validation-props';
+import { getValidationIcon } from '../../form/validation/ValidationIndicator';
+import { wrapWithField } from '../../form/wrapper';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
@@ -39,9 +37,15 @@ import {
 } from '../color/color';
 import { ColorPanel } from '../color/ColorPanel';
 import { ColorPopoverContext } from '../color/context';
-import { ColorInput } from '../ColorInput';
-import { ColorSwatch } from '../ColorSwatch';
-import { ColorSwatchGroup, CubeColorSwatchItem } from '../ColorSwatchGroup';
+import { ColorInput } from '../ColorInput/ColorInput';
+import { ColorSwatch } from '../ColorSwatch/ColorSwatch';
+// ColorPicker shows a ColorSwatchGroup palette, and a ColorSwatchGroup can
+// append a ColorPicker. Each renders the other only inside render, never at
+// module scope, so the cycle cannot change initialization order.
+// oxlint-disable-next-line import/no-cycle -- mutual composition used only at render time; see above
+import { ColorSwatchGroup } from '../ColorSwatchGroup/ColorSwatchGroup';
+
+import type { CubeColorSwatchItem } from '../ColorSwatchGroup/ColorSwatchGroup';
 
 /**
  * A popover caps its height at half the viewport. The panel can exceed that on

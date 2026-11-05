@@ -9,16 +9,16 @@ import {
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { useI18n } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 import { useProviderProps } from '../../provider';
 import {
   LabelPosition,
   NecessityIndicator,
   ValidationProps,
-} from '../../shared/index';
+} from '../../shared/form';
 import { extractStyles } from '../../utils/styles';
 
-import { getValidationMods } from './validation/index';
+import { getValidationMods } from './validation/resolve-validation-props';
 
 const RequiredIconElement = tasty({
   as: 'svg',

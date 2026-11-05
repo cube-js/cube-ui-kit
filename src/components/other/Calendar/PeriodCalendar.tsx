@@ -9,7 +9,7 @@ import {
 import { KeyboardEvent, ReactElement, useState } from 'react';
 import { DateValue, useDateFormatter } from 'react-aria';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { useProviderProps } from '../../../provider';
 import { getQuarter } from '../../fields/DatePicker/period';
 

@@ -7,7 +7,8 @@ import { configure } from 'storybook/test';
 import { create, themes } from 'storybook/theming';
 
 import { Root } from '../src/components/Root';
-import { getI18n, LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n';
+import { getI18n } from '../src/i18n/instance';
+import { LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n/locales';
 import { setToolbarScheme } from '../src/stories/decorators/colorSchemeBridge';
 
 // Summarizes DOM/React events before Storybook's action spies see them. Without

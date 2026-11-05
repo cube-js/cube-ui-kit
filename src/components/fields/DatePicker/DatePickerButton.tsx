@@ -4,8 +4,8 @@ import { CalendarIcon } from '../../../icons/CalendarIcon';
 import {
   CubeItemActionProps,
   ItemAction,
-  ItemActionProvider,
-} from '../../actions';
+} from '../../actions/ItemAction/ItemAction';
+import { ItemActionProvider } from '../../actions/ItemActionContext';
 
 const StyledDatePickerButton = tasty(ItemAction, {
   icon: <CalendarIcon />,

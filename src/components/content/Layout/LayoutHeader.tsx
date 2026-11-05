@@ -10,7 +10,7 @@ import {
   useRef,
 } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { SlashIcon } from '../../../icons/SlashIcon';
 import { Button } from '../../actions/Button/Button';
 import { Link } from '../../actions/Link/Link';

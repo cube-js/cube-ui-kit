@@ -5,16 +5,17 @@ import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
 
+import { NotificationAction } from './NotificationAction';
+import { NotificationItem } from './NotificationItem';
+import { OverlayProvider } from './OverlayProvider';
+import { PersistentNotificationsList } from './PersistentNotificationsList';
+import { useNotifications } from './use-notifications';
 import {
-  Notification,
-  NotificationAction,
-  NotificationItem,
-  OverlayProvider,
-  PersistentNotificationsList,
-  useNotifications,
   useNotificationsCount,
   usePersistentNotifications,
-} from './index';
+} from './use-persistent-notifications';
+
+import { Notification } from './index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { InternalNotification } from './types';

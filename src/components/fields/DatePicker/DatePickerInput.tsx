@@ -10,7 +10,7 @@ import {
 } from 'react-aria';
 import { DateSegment, useDateFieldState } from 'react-stately';
 
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 
 import { DatePickerSegment } from './DatePickerSegment';
 import { DateFieldBase, Granularity } from './types';

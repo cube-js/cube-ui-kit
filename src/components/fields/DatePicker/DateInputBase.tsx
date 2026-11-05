@@ -9,13 +9,13 @@ import {
 import React, { useRef } from 'react';
 import { useFocusRing } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { extractStyles } from '../../../utils/styles';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
 import {
-  getValidationMods,
   hasValidationIndicator,
   ValidationIndicator,
-} from '../../form';
+} from '../../form/validation/ValidationIndicator';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,

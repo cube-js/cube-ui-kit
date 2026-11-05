@@ -1,4 +1,4 @@
-import { CubeNumberInputProps, NumberInput } from '../../../';
+import { CubeNumberInputProps, NumberInput } from '../NumberInput/NumberInput';
 
 import type { Styles } from '@tenphi/tasty';
 import type { SliderState } from 'react-stately';

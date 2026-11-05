@@ -7,10 +7,12 @@ import { Grid } from '../components/layout/Grid';
 import { Space } from '../components/layout/Space';
 import { baseProps } from '../stories/lists/baseProps';
 
+import { DirectionIcon } from './DirectionIcon';
 import { Icon } from './Icon';
+import { SparklesIcon } from './SparklesIcon';
 
+// oxlint-disable-next-line repo/no-barrel-import -- the story lists every icon the barrel exports, so the barrel is what it shows
 import * as Icons from './index';
-import { DirectionIcon, SparklesIcon } from './index';
 
 import type { CubeIconProps } from './Icon';
 

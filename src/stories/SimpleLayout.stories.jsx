@@ -1,12 +1,10 @@
-import {
-  Block,
-  Button,
-  Card,
-  Space,
-  Flex as UIKitFlex,
-  Flow as UIKitFlow,
-  Grid as UIKitGrid,
-} from '../index';
+import { Button } from '../components/actions/Button';
+import { Block } from '../components/Block';
+import { Card } from '../components/content/Card/Card';
+import { Flex as UIKitFlex } from '../components/layout/Flex';
+import { Flow as UIKitFlow } from '../components/layout/Flow';
+import { Grid as UIKitGrid } from '../components/layout/Grid';
+import { Space } from '../components/layout/Space';
 
 export default {
   title: 'Content/SimpleLayout',

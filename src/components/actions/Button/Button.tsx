@@ -20,7 +20,7 @@ import {
 } from 'react';
 import { Placement } from 'react-aria';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
@@ -61,16 +61,15 @@ import {
 } from '../../../data/item-themes';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import {
-  DynamicIcon,
   getDisabledElementProps,
-  mergeProps,
   omitActivationEventProps,
-  resolveIcon,
-  useDismissParentPopover,
-} from '../../../utils/react';
+} from '../../../utils/react/disabledProps';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { DynamicIcon, resolveIcon } from '../../../utils/react/resolveIcon';
+import { useDismissParentPopover } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
-import { DisplayTransition } from '../../helpers/DisplayTransition';
+import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import { mergeTooltipFocusProps } from '../../overlays/Tooltip/split-trigger-props';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';

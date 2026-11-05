@@ -1,10 +1,10 @@
 import { tasty } from '@tenphi/tasty';
 import { createContext, useContext } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { ReloadIcon } from '../../../icons/ReloadIcon';
-import { Button } from '../../actions';
-import { SearchInput } from '../../fields/SearchInput';
+import { Button } from '../../actions/Button/Button';
+import { SearchInput } from '../../fields/SearchInput/SearchInput';
 
 import type { Key } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';

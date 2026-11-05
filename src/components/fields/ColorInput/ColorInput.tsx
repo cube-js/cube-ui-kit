@@ -12,15 +12,16 @@ import {
 } from 'react';
 import { Placement, useTextField } from 'react-aria';
 
-import { useEvent } from '../../../_internal';
-import { useI18n } from '../../../i18n';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
 import { PipetteIcon } from '../../../icons/PipetteIcon';
-import { FieldBaseProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
+import { FieldBaseProps } from '../../../shared/form';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
-import { ItemAction, ItemActionProvider } from '../../actions';
-import { useFieldProps } from '../../form';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
+import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { FieldLayoutStyleProps } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
@@ -33,7 +34,7 @@ import {
 } from '../color/color';
 import { ColorPanel } from '../color/ColorPanel';
 import { useIsInsideColorPopover } from '../color/context';
-import { ColorSwatch } from '../ColorSwatch';
+import { ColorSwatch } from '../ColorSwatch/ColorSwatch';
 import { TextInputBase } from '../TextInput/TextInputBase';
 
 /**

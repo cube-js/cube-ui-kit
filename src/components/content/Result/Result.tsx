@@ -20,7 +20,8 @@ import {
   useContext,
 } from 'react';
 
-import { mergeProps, wrapNodeIfPlain } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { wrapNodeIfPlain } from '../../../utils/react/wrapNodeIfPlain';
 import { extractStyles } from '../../../utils/styles';
 import { Button, CubeButtonProps } from '../../actions/Button/Button';
 import { Title } from '../Title';

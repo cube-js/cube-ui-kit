@@ -5,30 +5,32 @@ import {
   ContainerStyleProps,
   filterBaseProps,
   Styles,
-  tasty,
 } from '@tenphi/tasty';
 import {
-  ContextType,
-  createContext,
   FormEvent,
   FormHTMLAttributes,
   forwardRef,
   ReactElement,
   ReactNode,
   Ref,
-  useContext,
   useRef,
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { Provider, useProviderProps } from '../../../provider';
-import { FormBaseProps } from '../../../shared/index';
+import { FormBaseProps } from '../../../shared/form';
 import { timeout } from '../../../utils/promise';
-import { useCombinedRefs } from '../../../utils/react/index';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
-import { useValidationProps } from '../validation/index';
+import { useValidationProps } from '../validation/use-validation-props';
 
 import { isModernFormController } from './backend';
+import {
+  FormContext,
+  FormPresentationContext,
+  FormPresentationContextValue,
+} from './FormContext';
+import { FormElement, formPropNames } from './FormElement';
 import { ModernControllerContext } from './modern/context';
 import { ModernFormRoot } from './ModernFormRoot';
 import { resetUnboundControls } from './reset-unbound-controls';
@@ -36,57 +38,6 @@ import { FieldTypes } from './types';
 import { CubeFormData, CubeFormInstance, useForm } from './use-form';
 
 import type { ModernFormProps } from './ModernFormRoot';
-
-/**
- * Public legacy context. Its value is the full legacy scope (presentation
- * props, the instance, `submitError`, `idPrefix`) and is part of the exported
- * contract: wrappers outside the kit read it and Radio/Checkbox groups mask it.
- */
-export const FormContext = createContext({});
-
-/**
- * Presentation and configuration that any root — legacy or modern — hands to
- * the fields below it. Backend-neutral by construction: no instance in here.
- */
-export interface FormPresentationContextValue {
-  labelPosition?: FormBaseProps['labelPosition'];
-  labelStyles?: FormBaseProps['labelStyles'];
-  orientation?: 'vertical' | 'horizontal';
-  necessityIndicator?: FormBaseProps['necessityIndicator'];
-  validateTrigger?: FormBaseProps['validateTrigger'];
-  requiredMark?: boolean;
-  showValid?: boolean;
-  idPrefix?: string;
-}
-
-const EMPTY_PRESENTATION: FormPresentationContextValue = {};
-
-export const FormPresentationContext =
-  createContext<FormPresentationContextValue>(EMPTY_PRESENTATION);
-
-/**
- * Scope the inputs below to a new form context. Radio/Checkbox groups use it
- * for their options: they see the group's validation state, but neither the
- * surrounding form's presentation props nor its instance, so a nested `name`
- * never registers as an independent field. Wrappers that used to override
- * `FormContext` directly for the same purpose should render this instead — a
- * bare `FormContext.Provider` no longer masks the presentation context.
- */
-export function FormScopeMask({
-  value,
-  children,
-}: {
-  value: ContextType<typeof FormContext>;
-  children?: ReactNode;
-}) {
-  return (
-    <ModernControllerContext.Provider value={null}>
-      <FormPresentationContext.Provider value={EMPTY_PRESENTATION}>
-        <FormContext.Provider value={value}>{children}</FormContext.Provider>
-      </FormPresentationContext.Provider>
-    </ModernControllerContext.Provider>
-  );
-}
 
 /** Separate overloads retain contextual callback typing for each backend. */
 export interface FormRootComponent {
@@ -97,81 +48,6 @@ export interface FormRootComponent {
     props: ModernFormProps<T> & { ref?: Ref<HTMLFormElement> },
   ): ReactElement;
 }
-
-export const FormElement = tasty({
-  as: 'form',
-  qa: 'Form',
-  styles: {
-    // A form placed directly in a `Dialog` sits between the dialog and its
-    // slots (`Dialog > Form > Content + Footer`), so it takes over the dialog's
-    // own slot layout: a flex column that grows into the dialog, lets `Content`
-    // shrink and scroll (`min-height: 0` — a flex item's default `auto` refuses
-    // to shrink below its content), and adds no space between the slots, whose
-    // padding already spaces them. Direct child only: a form nested inside
-    // `Content` is an ordinary form.
-    //
-    // It lives here, in the form's own styles, so a consumer's `styles` on the
-    // form replace it key by key, inside a dialog as anywhere else — and can
-    // name `@in-dialog` themselves. Last in each map, so
-    // `orientation="horizontal"` cannot turn the slots into a row.
-    '@in-dialog': '@parent(id=Dialog, >)',
-
-    display: {
-      '': 'block',
-      horizontal: 'flex',
-      '@in-dialog': 'flex',
-    },
-    flow: {
-      '': 'column',
-      horizontal: 'row',
-      '@in-dialog': 'column',
-    },
-    placeItems: {
-      '': 'initial',
-      horizontal: 'center',
-      '@in-dialog': 'initial',
-    },
-    gap: {
-      '': '2x',
-      '@in-dialog': 0,
-    },
-    flexGrow: {
-      '': false,
-      '@in-dialog': 1,
-    },
-    height: {
-      '': false,
-      '@in-dialog': 'min 0',
-    },
-    '$label-width': '25x',
-  },
-});
-
-/**
- * Merge order: presentation context, then the legacy `FormContext`, then the
- * props. Under a legacy root the two contexts carry the same presentation
- * values, so the result is exactly `{ ...FormContext, ...props }` as before.
- */
-export function useFormProps(props) {
-  const presentation = useContext(FormPresentationContext);
-  const ctx = useContext(FormContext);
-  const modern = useContext(ModernControllerContext);
-
-  return {
-    ...presentation,
-    ...(modern ? { form: modern } : {}),
-    ...ctx,
-    ...props,
-  };
-}
-
-export const formPropNames = new Set([
-  'action',
-  'autoComplete',
-  'encType',
-  'method',
-  'target',
-] as const);
 
 export interface CubeFormProps<T extends FieldTypes = FieldTypes>
   extends
