@@ -357,10 +357,15 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
  * the neutral ring would outline them in gray in light mode and in black in
  * dark mode. The same goes for any button on the fixed `#special-surface`.
  *
+ * A brand fill also bleeds a little of its own color around its edge
+ * (`glowColor`, its resting fill), so it reads as lit from inside.
+ *
  * A disabled button keeps a flat ring and drops the glow, the highlight and
- * both shadows, like a disabled macOS control.
+ * the shadows, like a disabled macOS control.
  */
-function glassEdge(kind: 'glass' | 'glass-accent'): Styles {
+function glassEdge(kind: 'glass' | 'glass-accent', glowColor?: string): Styles {
+  const glow = glowColor ? `0 0 1.5px ${glowColor}` : '0 0 0 #clear';
+
   return {
     border: {
       '': '#clear',
@@ -374,11 +379,11 @@ function glassEdge(kind: 'glass' | 'glass-accent'): Styles {
       disabled: 'none',
     },
     shadow: {
-      '': `$${kind}-halo, $${kind}-inner-shade`,
+      '': `$${kind}-halo, $${kind}-inner-shade, ${glow}`,
       // Same layer count everywhere, so the shadow animates instead of
       // snapping.
-      pressed: `0 0 0 #clear, 0 0 0 #clear, $${kind}-inner-shade`,
-      disabled: '0 0 0 #clear, 0 0 0 #clear, inset 0 0 0 #clear',
+      pressed: `0 0 0 #clear, 0 0 0 #clear, $${kind}-inner-shade, 0 0 0 #clear`,
+      disabled: '0 0 0 #clear, 0 0 0 #clear, inset 0 0 0 #clear, 0 0 0 #clear',
     },
     Sheen: {
       $: '&::before',
@@ -425,11 +430,15 @@ function glassEdge(kind: 'glass' | 'glass-accent'): Styles {
 }
 
 const GLASS_EDGE_STYLES = glassEdge('glass');
-const GLASS_ACCENT_EDGE_STYLES = glassEdge('glass-accent');
 
 const withGlass = (styles: Styles) => mergeStyles(styles, GLASS_EDGE_STYLES);
+// The glow takes the variant's resting fill, so every theme glows in its own
+// color.
 const withAccentGlass = (styles: Styles) =>
-  mergeStyles(styles, GLASS_ACCENT_EDGE_STYLES);
+  mergeStyles(
+    styles,
+    glassEdge('glass-accent', (styles.fill as Record<string, string>)['']),
+  );
 
 const ButtonElement = tasty({
   qa: 'Button',
