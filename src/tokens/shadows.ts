@@ -64,18 +64,24 @@ export const GLASS_TOKENS: Styles = {
     '@dark & @hc':
       'linear-gradient(rgb(255 255 255 / .45), rgb(0 0 0) 20%, rgb(0 0 0) 80%, rgb(255 255 255 / .45))',
   },
+  // Light mode departs from the fit here. macOS draws a wide, solid white
+  // highlight on a white fill, where it barely shows. The button's light fill
+  // is gray (darker still when hovered), and on it the same highlight read as
+  // one big glow at the top. So light mode takes dark mode's shape instead: a
+  // thin, translucent line at the top and a fainter one at the bottom, with
+  // short sheens and a lighter shade.
   '$glass-highlight': {
-    '': 'inset 0 2.25px 0 rgb(255 255 255 / .93), inset 0 0 0 #clear',
+    '': 'inset 0 1px 0 rgb(255 255 255 / .7), inset 0 -1px 0 rgb(255 255 255 / .45)',
     '@dark':
       'inset 0 1px 0 rgb(255 255 255 / .15), inset 0 -1px 0 rgb(255 255 255 / .15)',
   },
   '$glass-sheen': {
-    '': 'linear-gradient(rgb(255 255 255 / .95), rgb(255 255 255 / .42) 1.25px, rgb(255 255 255 / 0) 7.5px)',
+    '': 'linear-gradient(rgb(255 255 255 / .35), rgb(255 255 255 / 0) 4px), linear-gradient(to top, rgb(255 255 255 / .2), rgb(255 255 255 / 0) 3px)',
     '@dark':
       'linear-gradient(rgb(255 255 255 / .05), rgb(255 255 255 / .05) 1.75px, rgb(255 255 255 / 0) 5.75px), linear-gradient(to top, rgb(255 255 255 / .05), rgb(255 255 255 / .05) 1.75px, rgb(255 255 255 / 0) 5.75px)',
   },
   '$glass-inner-shade': {
-    '': 'inset 0 18px 20px -1px rgb(0 0 0 / .045)',
+    '': 'inset 0 18px 20px -1px rgb(0 0 0 / .035)',
     '@dark': 'inset 0 0 0 #clear',
   },
   // A dark macOS control is 13.6% white over the page. The button's own dark
