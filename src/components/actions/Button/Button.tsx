@@ -336,55 +336,160 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
 } as const;
 
+/**
+ * Glass edge (prototype, fitted to macOS controls): outline and primary
+ * buttons draw their edge from the glass layers in `src/tokens/shadows.ts`
+ * instead of a solid border.
+ *
+ * - The border stays, as a transparent 1bw: every size here assumes it
+ *   (`$size - 2bw`, the inline padding, ButtonSplit's `-1bw` overlap), so the
+ *   layout doesn't change. The layers reach over it to the outer edge.
+ * - The root paints the tint, the outer shadow and the inner shade, so the
+ *   shade sits under the glow. The outer shadow collapses while pressed.
+ * - `::before` (Sheen) paints the glow and the highlight lines.
+ * - `::after` (Ring) paints the hairline ring on top. Chromium rounds a border
+ *   or padding thinner than 1px up to 1px, twice the ring's width on a 2x
+ *   screen. So the ring is laid out at double size with a 1bw padding and
+ *   scaled down by half, which keeps the hairline. Its radius doubles to
+ *   match, so it repeats the button's radius map instead of inheriting it.
+ *
+ * Brand fills take the accent layers: their color is fixed across schemes, so
+ * the neutral ring would outline them in gray in light mode and in black in
+ * dark mode. The same goes for any button on the fixed `#special-surface`.
+ *
+ * A brand fill also bleeds a little of its own color around its edge
+ * (`glowColor`, its resting fill), so it reads as lit from inside.
+ *
+ * A disabled button keeps a flat ring and drops the glow, the highlight and
+ * the shadows, like a disabled macOS control.
+ */
+function glassEdge(kind: 'glass' | 'glass-accent', glowColor?: string): Styles {
+  const glow = glowColor ? `0 0 1.5px ${glowColor}` : '0 0 0 #clear';
+
+  return {
+    border: {
+      '': '#clear',
+      invalid: '#danger-accent-text',
+      valid: '#success-accent-text',
+    },
+    // A translucent layer over whatever fill the state paints, so hover,
+    // pressed and selected keep their tints.
+    image: {
+      '': `$${kind}-tint`,
+      disabled: 'none',
+    },
+    shadow: {
+      '': `$${kind}-halo, $${kind}-inner-shade, ${glow}`,
+      // Same layer count everywhere, so the shadow animates instead of
+      // snapping.
+      pressed: `0 0 0 #clear, 0 0 0 #clear, $${kind}-inner-shade, 0 0 0 #clear`,
+      disabled: '0 0 0 #clear, 0 0 0 #clear, inset 0 0 0 #clear, 0 0 0 #clear',
+    },
+    Sheen: {
+      $: '&::before',
+      content: '""',
+      position: 'absolute',
+      inset: '-1bw',
+      radius: 'inherit',
+      pointerEvents: 'none',
+      image: {
+        '': `$${kind}-sheen`,
+        disabled: 'none',
+      },
+      shadow: {
+        '': `$${kind}-highlight`,
+        disabled: 'inset 0 0 0 #clear, inset 0 0 0 #clear',
+      },
+    },
+    Ring: {
+      $: '&::after',
+      content: '""',
+      position: 'absolute',
+      top: '-1bw',
+      left: '-1bw',
+      width: '(200% + 4bw)',
+      height: '(200% + 4bw)',
+      padding: '1bw',
+      boxSizing: 'border-box',
+      transform: 'scale(.5)',
+      transformOrigin: '0 0',
+      radius: {
+        '': '2r',
+        '@parent(button-split, >) & !:last-child': '2r left',
+        '@parent(button-split, >) & !:first-child': '2r right',
+        '@parent(button-split, >) & !:first-child & !:last-child': 0,
+      },
+      pointerEvents: 'none',
+      image: {
+        '': `$${kind}-ring`,
+        disabled: '$glass-ring-disabled',
+      },
+      mask: 'linear-gradient(white, white) content-box exclude, linear-gradient(white, white)',
+    },
+  };
+}
+
+const GLASS_EDGE_STYLES = glassEdge('glass');
+
+const withGlass = (styles: Styles) => mergeStyles(styles, GLASS_EDGE_STYLES);
+// The glow takes the variant's resting fill, so every theme glows in its own
+// color.
+const withAccentGlass = (styles: Styles) =>
+  mergeStyles(
+    styles,
+    glassEdge('glass-accent', (styles.fill as Record<string, string>)['']),
+  );
+
 const ButtonElement = tasty({
   qa: 'Button',
   styles: DEFAULT_BUTTON_STYLES,
   variants: {
     // Current theme — colors mixed from the inherited `currentcolor`
-    'current.primary': CURRENT_PRIMARY_STYLES,
-    'current.outline': CURRENT_OUTLINE_STYLES,
-    'current.outline-2': CURRENT_OUTLINE_2_STYLES,
+    'current.primary': withAccentGlass(CURRENT_PRIMARY_STYLES),
+    'current.outline': withGlass(CURRENT_OUTLINE_STYLES),
+    'current.outline-2': withGlass(CURRENT_OUTLINE_2_STYLES),
     'current.clear': CURRENT_CLEAR_STYLES,
     'current.link': CURRENT_LINK_STYLES,
 
     // Default theme
-    'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.outline': DEFAULT_OUTLINE_STYLES,
-    'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
+    'default.primary': withAccentGlass(DEFAULT_PRIMARY_STYLES),
+    'default.outline': withGlass(DEFAULT_OUTLINE_STYLES),
+    'default.outline-2': withGlass(DEFAULT_OUTLINE_2_STYLES),
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
 
     // Danger theme
-    'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.outline': DANGER_OUTLINE_STYLES,
-    'danger.outline-2': DANGER_OUTLINE_2_STYLES,
+    'danger.primary': withAccentGlass(DANGER_PRIMARY_STYLES),
+    'danger.outline': withGlass(DANGER_OUTLINE_STYLES),
+    'danger.outline-2': withGlass(DANGER_OUTLINE_2_STYLES),
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
 
     // Success theme
-    'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.outline': SUCCESS_OUTLINE_STYLES,
-    'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
+    'success.primary': withAccentGlass(SUCCESS_PRIMARY_STYLES),
+    'success.outline': withGlass(SUCCESS_OUTLINE_STYLES),
+    'success.outline-2': withGlass(SUCCESS_OUTLINE_2_STYLES),
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
 
     // Warning theme
-    'warning.primary': WARNING_PRIMARY_STYLES,
-    'warning.outline': WARNING_OUTLINE_STYLES,
-    'warning.outline-2': WARNING_OUTLINE_2_STYLES,
+    'warning.primary': withAccentGlass(WARNING_PRIMARY_STYLES),
+    'warning.outline': withGlass(WARNING_OUTLINE_STYLES),
+    'warning.outline-2': withGlass(WARNING_OUTLINE_2_STYLES),
     'warning.clear': WARNING_CLEAR_STYLES,
     'warning.link': WARNING_LINK_STYLES,
 
     // Note theme
-    'note.primary': NOTE_PRIMARY_STYLES,
-    'note.outline': NOTE_OUTLINE_STYLES,
-    'note.outline-2': NOTE_OUTLINE_2_STYLES,
+    'note.primary': withAccentGlass(NOTE_PRIMARY_STYLES),
+    'note.outline': withGlass(NOTE_OUTLINE_STYLES),
+    'note.outline-2': withGlass(NOTE_OUTLINE_2_STYLES),
     'note.clear': NOTE_CLEAR_STYLES,
     'note.link': NOTE_LINK_STYLES,
 
-    // Special theme
-    'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.outline': SPECIAL_OUTLINE_STYLES,
+    // Special theme — its outline sits on the fixed `#special-surface`, which
+    // doesn't follow the page scheme either, so it takes the accent glass too.
+    'special.primary': withAccentGlass(SPECIAL_PRIMARY_STYLES),
+    'special.outline': withAccentGlass(SPECIAL_OUTLINE_STYLES),
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
   },
