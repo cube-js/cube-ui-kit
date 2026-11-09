@@ -55,6 +55,14 @@ export default {
         defaultValue: { summary: 'medium' },
       },
     },
+    shape: {
+      options: ['button', 'card', 'sharp', 'pill'],
+      control: { type: 'radio' },
+      description: 'Corner shape, named as on `Item`',
+      table: {
+        defaultValue: { summary: 'button' },
+      },
+    },
 
     /* Content */
     icon: {
@@ -489,6 +497,25 @@ export const CustomSize: StoryFn<CubeButtonProps> = () => (
     </Button>
   </Space>
 );
+
+export const Shapes: StoryFn<CubeButtonProps> = () => (
+  <Space gap="2x" placeItems="center">
+    <Button shape="button">Button</Button>
+    <Button shape="card">Card</Button>
+    <Button shape="sharp">Sharp</Button>
+    <Button shape="pill">Pill</Button>
+    <Button shape="pill" icon={<IconCoin />} aria-label="Coins" />
+  </Space>
+);
+
+Shapes.parameters = {
+  docs: {
+    description: {
+      story:
+        'The `shape` prop picks the corner radius: `button` (default), `card`, `sharp` or `pill`. A single-icon `pill` is a circle.',
+    },
+  },
+};
 
 CustomSize.parameters = {
   docs: {
