@@ -336,109 +336,70 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
 } as const;
 
-/**
- * Glass edge (prototype, fitted to macOS controls): outline and primary
- * buttons draw their edge from the glass layers in `src/tokens/shadows.ts`
- * instead of a solid border.
- *
- * - The border stays, as a transparent 1bw: every size here assumes it
- *   (`$size - 2bw`, the inline padding, ButtonSplit's `-1bw` overlap), so the
- *   layout doesn't change. The layers reach over it to the outer edge.
- * - The root paints the tint, the outer shadow and the inner shade, so the
- *   shade sits under the glow. The outer shadow collapses while pressed.
- * - `::before` (Sheen) paints the glow and the highlight lines.
- * - `::after` (Ring) paints the hairline ring on top. Chromium rounds a border
- *   or padding thinner than 1px up to 1px, twice the ring's width on a 2x
- *   screen. So the ring is laid out at double size with a 1bw padding and
- *   scaled down by half, which keeps the hairline. Its radius doubles to
- *   match, so it repeats the button's radius map instead of inheriting it.
- *
- * Brand fills take the accent layers: their color is fixed across schemes, so
- * the neutral ring would outline them in gray in light mode and in black in
- * dark mode. The same goes for any button on the fixed `#special-surface`.
- *
- * A brand fill also bleeds a little of its own color around its edge
- * (`glowColor`, its resting fill), so it reads as lit from inside.
- *
- * A disabled button keeps a flat ring and drops the glow, the highlight and
- * the shadows, like a disabled macOS control.
- */
-function glassEdge(kind: 'glass' | 'glass-accent', glowColor?: string): Styles {
-  const glow = glowColor ? `0 0 1.5px ${glowColor}` : '0 0 0 #clear';
+// The fill's own color, lighter or darker by a token's worth of OKLCH lightness.
+const EDGE_LIGHT = 'oklch(from #glass-fill calc(l + $glass-edge-lift) c h)';
+const EDGE_DARK = 'oklch(from #glass-fill calc(l - $glass-edge-shade) c h)';
 
+/**
+ * Glass edge (prototype): outline and primary buttons draw their edge as a
+ * 1bw ring in their own fill color, lighter along the top and bottom and
+ * darker along the sides, instead of a solid border.
+ *
+ * - One ring for every variant, state and scheme. Its colors are the fill
+ *   moved up or down in OKLCH lightness (`$glass-edge-lift`,
+ *   `$glass-edge-shade`), so the same decoration reads on a white chip, a dark
+ *   one and any brand fill. A blend mode can't do that: `overlay` and
+ *   `soft-light` act mostly on mid-tones, so they vanish on a near-white fill
+ *   and overpower a saturated one.
+ * - The fill goes through `#glass-fill`, which carries the variant's own fill
+ *   map, states included, so the ring can derive its colors from it.
+ * - The border stays as a transparent 1bw: every size here assumes it
+ *   (`$size - 2bw`, the inline padding, ButtonSplit's `-1bw` overlap), so the
+ *   layout doesn't change. `::before` (Edge) draws the ring right over it and
+ *   inherits the radius, ButtonSplit's corners included.
+ * - A validation border keeps its color: the ring steps aside.
+ * - Brand fills also bleed a little of their own color past the edge, and both
+ *   kinds sit on an outer shadow that collapses while pressed.
+ */
+function glassEdge(styles: Styles, kind: 'glass' | 'glass-accent'): Styles {
   return {
+    '#glass-fill': styles.fill,
+    fill: '#glass-fill',
     border: {
       '': '#clear',
       invalid: '#danger-accent-text',
       valid: '#success-accent-text',
     },
-    // A translucent layer over whatever fill the state paints, so hover,
-    // pressed and selected keep their tints.
-    image: {
-      '': `$${kind}-tint`,
-      disabled: 'none',
-    },
     shadow: {
-      '': `$${kind}-halo, $${kind}-inner-shade, ${glow}`,
+      '':
+        kind === 'glass-accent'
+          ? '$glass-accent-halo, 0 0 1.5px #glass-fill'
+          : '$glass-halo, 0 0 0 #clear',
       // Same layer count everywhere, so the shadow animates instead of
       // snapping.
-      pressed: `0 0 0 #clear, 0 0 0 #clear, $${kind}-inner-shade, 0 0 0 #clear`,
-      disabled: '0 0 0 #clear, 0 0 0 #clear, inset 0 0 0 #clear, 0 0 0 #clear',
+      'pressed | disabled': '0 0 0 #clear, 0 0 0 #clear, 0 0 0 #clear',
     },
-    Sheen: {
+    Edge: {
       $: '&::before',
       content: '""',
       position: 'absolute',
       inset: '-1bw',
+      padding: '1bw',
       radius: 'inherit',
       pointerEvents: 'none',
       image: {
-        '': `$${kind}-sheen`,
-        disabled: 'none',
-      },
-      shadow: {
-        '': `$${kind}-highlight`,
-        disabled: 'inset 0 0 0 #clear, inset 0 0 0 #clear',
-      },
-    },
-    Ring: {
-      $: '&::after',
-      content: '""',
-      position: 'absolute',
-      top: '-1bw',
-      left: '-1bw',
-      width: '(200% + 4bw)',
-      height: '(200% + 4bw)',
-      padding: '1bw',
-      boxSizing: 'border-box',
-      transform: 'scale(.5)',
-      transformOrigin: '0 0',
-      radius: {
-        '': '2r',
-        '@parent(button-split, >) & !:last-child': '2r left',
-        '@parent(button-split, >) & !:first-child': '2r right',
-        '@parent(button-split, >) & !:first-child & !:last-child': 0,
-      },
-      pointerEvents: 'none',
-      image: {
-        '': `$${kind}-ring`,
-        disabled: '$glass-ring-disabled',
+        '': `linear-gradient(${EDGE_LIGHT}, ${EDGE_DARK} 35%, ${EDGE_DARK} 65%, ${EDGE_LIGHT})`,
+        'invalid | valid': 'none',
       },
       mask: 'linear-gradient(white, white) content-box exclude, linear-gradient(white, white)',
     },
   };
 }
 
-const GLASS_EDGE_STYLES = glassEdge('glass');
-
-const withGlass = (styles: Styles) => mergeStyles(styles, GLASS_EDGE_STYLES);
-// The glow takes the variant's resting fill, so every theme glows in its own
-// color.
+const withGlass = (styles: Styles) =>
+  mergeStyles(styles, glassEdge(styles, 'glass'));
 const withAccentGlass = (styles: Styles) =>
-  mergeStyles(
-    styles,
-    glassEdge('glass-accent', (styles.fill as Record<string, string>)['']),
-  );
+  mergeStyles(styles, glassEdge(styles, 'glass-accent'));
 
 const ButtonElement = tasty({
   qa: 'Button',
