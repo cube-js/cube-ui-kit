@@ -500,7 +500,7 @@ export const CustomSize: StoryFn<CubeButtonProps> = () => (
 
 export const Shapes: StoryFn<CubeButtonProps> = () => (
   <Space gap="2x" placeItems="center">
-    <Button shape="button">Button</Button>
+    <Button>Button</Button>
     <Button shape="card">Card</Button>
     <Button shape="sharp">Sharp</Button>
     <Button shape="pill">Pill</Button>
