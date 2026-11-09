@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.206.3
+
+### Patch Changes
+
+- [#1622](https://github.com/cube-js/cube-ui-kit/pull/1622) [`1bef6a8a3`](https://github.com/cube-js/cube-ui-kit/commit/1bef6a8a32e8a695041f3f9432b209f003d0bb3d) Thanks [@tenphi](https://github.com/tenphi)! - The published `tasty.config.ts` lets containers (`Card`, `Panel`, `Layout`, `Alert`, `Result`, `Skeleton` and the rest) keep `display`, so `tasty/no-protected-restyle` accepts a `display: 'flex'` or `'grid'` that their other layout props need on a block container such as `Card`.
+
 ## 0.206.2
 
 ### Patch Changes
