@@ -92,6 +92,7 @@ const CONSUMER = `import { Alert, AlertDialog, Button, ButtonGroup, Card, CloseI
 import { CopyButton } from './CopyButton';
 
 export const DangerButton = tasty(Button, { styles: { fill: '#danger' } });
+export const FlexCard = tasty(Card, { styles: { display: 'flex', placeContent: 'center' } });
 export const ClearButton = tasty(Button, { type: 'clear', size: 'small' });
 export const CopyDangerButton = tasty(CopyButton, { styles: { fill: '#danger' } });
 
@@ -121,6 +122,7 @@ export function Consumer() {
       <Text.Strong styles={{ color: '#danger' }} />
       <CloseIcon color="#danger" />
       <Card padding="2x" gap="1x" flow="row" />
+      <Card display="grid" gridColumns="1fr auto" />
       <Card fill="#danger" />
       <Layout.Content padding="0" scrollbar="tiny" />
       <GridLayout.Content padding="0" />

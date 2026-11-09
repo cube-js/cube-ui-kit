@@ -156,7 +156,9 @@ export default {
     // as `Layout.Content`, whose `scrollbar` is their own prop;
     // `ResizablePanel`'s `direction` is the side it resizes from. `Alert`,
     // `Result` and `Skeleton` hold content the consumer supplies, so how that
-    // content is spaced is the consumer's call.
+    // content is spaced is the consumer's call. `display` picks the layout:
+    // a block `Card` needs `flex` or `grid` before `flow`, `grid*` or `place*`
+    // do anything.
     {
       source: '@cube-dev/ui-kit',
       include: [
@@ -175,6 +177,7 @@ export default {
       allowedStyleProps: [
         'position',
         'dimension',
+        'display',
         'flow',
         'gap',
         'columnGap',
