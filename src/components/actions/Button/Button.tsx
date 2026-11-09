@@ -132,6 +132,16 @@ export interface CubeButtonProps extends CubeActionProps {
     | number
     | (string & {});
   /**
+   * Corner shape, named as on `Item`:
+   * - `button` - The button radius (`1r`, default)
+   * - `card` - The card radius (`1cr`), for a button laid out as a card
+   * - `sharp` - Square corners, for a button that fills a row or cell edge to edge
+   * - `pill` - Fully rounded ends (`round`); a single-icon button becomes a circle
+   *
+   * A `link` button and the joined edges inside a `Button.Split` keep their own radius.
+   */
+  shape?: 'button' | 'card' | 'sharp' | 'pill';
+  /**
    * Tooltip content and configuration:
    * - string: simple tooltip text
    * - true: auto tooltip on overflow (shows children as tooltip when truncated)
@@ -240,6 +250,9 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   whiteSpace: 'nowrap',
   radius: {
     '': true,
+    'shape=card': '1cr',
+    'shape=sharp': 0,
+    'shape=pill': 'round',
     'type=link & !focused': 0,
     '@parent(button-split, >) & !:last-child': '1r left',
     '@parent(button-split, >) & !:first-child': '1r right',
@@ -403,6 +416,7 @@ export const Button = forwardRef(function Button(
   let {
     type,
     size: sizeProp,
+    shape,
     label,
     children,
     theme = splitContext?.theme ?? 'default',
@@ -701,6 +715,7 @@ export const Button = forwardRef(function Button(
         data-theme={theme}
         data-type={effectiveType ?? 'outline'}
         data-size={size}
+        data-shape={shape === 'button' ? undefined : shape}
         data-popover-dismiss=""
         styles={styles}
         tokens={{

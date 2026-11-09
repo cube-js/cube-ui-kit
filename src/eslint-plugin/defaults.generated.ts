@@ -77,6 +77,7 @@ export const DEFAULTS: DefaultsRegistry = {
           reason: 'unverified',
           note: 'Rendering <Button isSelected={false}> differs from omitting it, so the documented default could not be reproduced. Check for docs drift, an alias mapping, or a state-map style default. Docs say `false`.',
         },
+        shape: { kind: 'default', value: 'button' },
         size: {
           kind: 'skip',
           reason: 'conditional',
