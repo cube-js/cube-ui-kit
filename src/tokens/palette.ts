@@ -445,12 +445,12 @@ function cappedAccent(
  * Opaque stand-in for the BASE selected fill used by outline / outline-2 / clear Item
  * types (`#accent-surface 9%` mixed into `#surface|#surface-2|#surface-3`).
  *
- * Anchors the `accent-text*` contrast. `value: 9` matches the 9% weight;
- * `space: 'srgb'` approximates the sRGB mix `fill` paints. Inherited so colored themes
- * re-resolve against their own `surface` + `accent-surface` (default `surface-2` /
- * `surface-3` are `inherit: false` and can't be the mix base). Primary's tinted
- * `surface` makes this slightly harder than default clear-selected, covering
- * outline / outline-2 selected fills as well.
+ * Anchors the `accent-text*` contrast. `value: 9` matches the 9% weight.
+ * `space: 'srgb'` mixes in linear light, while `fill` blends gamma-encoded sRGB, so in
+ * light mode this anchor is lighter than the fill it stands for and the text floors
+ * carry headroom for it. Inherited so colored themes re-resolve against their own
+ * `surface` + `accent-surface` (default `surface-2` / `surface-3` are `inherit: false`
+ * and can't be the mix base).
  *
  * The same in both accent arrangements — it is defined by its two ends, and both of
  * those move with the seed on their own.
@@ -940,16 +940,19 @@ function accentTextColors(accent: AccentSeed): ColorMap {
         contrast: [6, 11],
       },
       // Rest brand text for selected outline/clear labels and LINK base color.
-      // Anchored to `accent-selected-fill` with `contrast: 'AA'` — the measured
-      // floor for every BASE state of those Item types (surface / outline /
-      // outline-2 / clear selected fills). Sits visibly less prominent than
+      // Anchored to `accent-selected-fill` at 4.6:1: AA plus headroom, because
+      // that anchor reads lighter in light mode than the fills `fill` paints
+      // (see ACCENT_SELECTED_FILL). Glaze 3 lands on the floor itself, so with a
+      // bare 'AA' the focused clear-selected label fell to 4.47:1. Outline and
+      // outline-2 selected fills sit on the darker `surface-2` / `surface-3` and
+      // stay below AA, as they did on Glaze 2. Sits visibly less prominent than
       // `accent-text` (lighter in light, darker in dark) so the rest→hover
       // intensify is real.
       'accent-text-soft': {
         base: 'accent-selected-fill',
         tone: '-49',
         saturation: 1,
-        contrast: ['AA', 'AAA'],
+        contrast: [4.6, 'AAA'],
       },
       'accent-icon': {
         base: 'surface',
