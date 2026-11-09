@@ -49,7 +49,7 @@ export const GLASS_TOKENS: Styles = {
    * How much the fill itself darkens toward the top and bottom, under the
    * edge's light parts, so they stand out
    */
-  '$glass-fill-shade': '.04',
+  '$glass-fill-shade': '.02',
 
   /** Outer shadow of a neutral glass surface */
   '$glass-halo': {
