@@ -20,7 +20,7 @@ Before taking this PR from the draft, please, make sure you have done the follow
 - [ ] If the size check flagged a third-party package, the baseline entries from its comment are committed and the PR says why
 - [ ] Commit message follows [commit guidelines](https://github.com/cube-js/cube-ui-kit/blob/main/CONTRIBUTING.md)
 
-<!-- Linear issues, one line each: "Part of <issue ID>". The Cloud PR that bumps a release with this change closes them. Write "Closes <issue ID>" only when an issue's whole outcome stays in UI Kit (CI, tooling, docs). See AGENTS.md → Linear Issues. -->
+<!-- Linear issues, one line each: "Part of <issue ID>", with no issue ID in the PR title or branch name. The Cloud PR that bumps a release with this change closes them. A change that needs no changeset closes its issue here instead: "Closes <issue ID>". See AGENTS.md → Linear Issues. -->
 
 #
 

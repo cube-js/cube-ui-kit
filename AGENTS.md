@@ -60,11 +60,11 @@ When making code changes that affect end users or the public API, **always add a
 
 ## Linear Issues: Done When Cloud Has the Fix
 
-Cloud consumes the published package, so a UI Kit fix reaches users only when a Cloud PR bumps a release that carries it. That Cloud PR closes the fix's Linear issue; Cloud's `update-uikit` skill collects the issues from the UI Kit PRs the bump brings. Until then the issue stays open, so a UI Kit PR links its issues without closing them:
+Cloud consumes the published package, so a UI Kit fix reaches users only when a Cloud PR bumps a release that carries it. Cloud's `update-uikit` skill finds the fix's issues through the changelog's links to UI Kit PRs, and the bump closes each one it completes; an issue that also needs a Cloud change, such as removing a workaround, closes with that change. So a UI Kit PR links its issues without closing them:
 
-- Name each issue on a line of its own in the PR body: `Part of <issue ID>`. Commit messages say `Part of` too.
-- Keep issue IDs out of the branch name, the PR title and changesets (the release PR copies their text), and never put a closing word (close, fix, resolve, complete, implement, in any form) before an ID. Each of these moves the issue to Done when the PR merges.
-- An issue whose whole outcome stays in UI Kit (CI, tooling, docs, Storybook, tests) is done when its PR merges: say `Closes <issue ID>` instead.
+- Name each issue on a line of its own in the PR body: `Part of <issue ID>`.
+- Keep issue IDs out of the PR title and the branch name, which close an issue on merge, and out of changesets, whose text the release PR copies. Never put a closing word before an ID: Linear's are close, fix, resolve, complete and implement in any form, and "Linear issue".
+- A fix that needs no changeset (see Changesets) has no changelog entry for a bump to find, so its own PR closes the issue: write `Closes <issue ID>` instead.
 - Tasty isn't connected to Linear. The UI Kit PR that bumps `@tenphi/tasty` names the Tasty fix's issues as `Part of`.
 - After a merge, check each issue the PR names. One that went to Done before Cloud has the fix goes back to In Progress, with a comment saying what is left.
 
