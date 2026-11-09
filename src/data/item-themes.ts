@@ -66,11 +66,11 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     '': '0 #primary-accent-text.0',
     focused: '$ring-width #primary-accent-text',
   },
-  border: {
-    '': '#primary-accent-surface-border',
-    pressed: '#primary-accent-surface-border',
-    disabled: '#clear',
-  },
+  // No visible border: the transparent border shows the fill painted under it,
+  // so the button keeps the same box as an outline button. Inside a
+  // `ButtonSplit`, the halves are divided by a real gap that shows whatever is
+  // behind them (see `margin` in `Button.tsx`).
+  border: '#clear',
   // Every state is one opaque `background-color`, like every other theme's
   // fill (a compound fill such as `'#surface-2+#surface-text.03'` compiles to one
   // too). A transition between any two of them, including a theme switch on
@@ -261,11 +261,8 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     '': '0 #primary-accent-text.0',
     focused: '$ring-width #primary-accent-text',
   },
-  border: {
-    '': '#white.2',
-    pressed: '#danger-accent-text',
-    disabled: '#clear',
-  },
+  // See `DEFAULT_PRIMARY_STYLES.border`.
+  border: '#clear',
   // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
   fill: {
     '': '#danger-accent-surface',
@@ -398,11 +395,8 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     '': '0 #primary-accent-text.0',
     focused: '$ring-width #primary-accent-text',
   },
-  border: {
-    '': '#white.2',
-    pressed: '#success-accent-text',
-    disabled: '#clear',
-  },
+  // See `DEFAULT_PRIMARY_STYLES.border`.
+  border: '#clear',
   // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
   fill: {
     '': '#success-accent-surface',
@@ -529,11 +523,8 @@ export const WARNING_PRIMARY_STYLES: Styles = {
     '': '0 #primary-accent-text.0',
     focused: '$ring-width #primary-accent-text',
   },
-  border: {
-    '': '#white.2',
-    pressed: '#warning-accent-text',
-    disabled: '#clear',
-  },
+  // See `DEFAULT_PRIMARY_STYLES.border`.
+  border: '#clear',
   // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
   fill: {
     '': '#warning-accent-surface',
@@ -660,11 +651,8 @@ export const NOTE_PRIMARY_STYLES: Styles = {
     '': '0 #primary-accent-text.0',
     focused: '$ring-width #primary-accent-text',
   },
-  border: {
-    '': '#white.2',
-    pressed: '#note-accent-text',
-    disabled: '#clear',
-  },
+  // See `DEFAULT_PRIMARY_STYLES.border`.
+  border: '#clear',
   // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
   fill: {
     '': '#note-accent-surface',
@@ -799,11 +787,8 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
     '': '0 #special-accent-text.0',
     focused: '$ring-width #special-accent-text',
   },
-  border: {
-    '': '#special-accent-surface-border',
-    pressed: '#special-accent-surface-border',
-    disabled: '#clear',
-  },
+  // See `DEFAULT_PRIMARY_STYLES.border`.
+  border: '#clear',
   // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
   // The same monotonic `-1`/`-2`/`-3` ramp gives the brand fill a visibly
   // darker hover and pressed state.
@@ -1269,23 +1254,17 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = mergeStyles(
 export const CURRENT_PRIMARY_STYLES: Styles = mergeStyles(
   CURRENT_FOCUS_RING,
   {
-    // Every other `primary` rims its fill with a lighter sibling
-    // (`accent-surface-border` over `accent-surface`, cr 1.48 against it in both
-    // schemes). An arbitrary inherited color has no such sibling, so the rim comes
-    // from the same token the label does — the one color guaranteed to sit on the
-    // opposite side of the fill in either scheme, and the one a container can
-    // redirect, so the rim cannot come apart from the label it edges. `.25`
-    // measures cr 1.82 in light and 1.55 in dark against the fill: the brand rim's
-    // presence, a shade more so in light, where `current` has no other edge cue.
+    // No visible border, like every brand `primary` (see
+    // `DEFAULT_PRIMARY_STYLES.border`).
     //
-    // Disabled swaps to the neutral text color, and has to. The chip there is a
-    // `.4` tint sitting close to the page, so a `#surface` rim washes into the
-    // page rather than defining the chip; `#surface-text` goes the other way and
-    // holds cr ~1.5 against the chip AND 2.8–3.7 against the page. It is also
-    // immune to the `.4` fade below, which `#current` is not — a `#current` rim on
-    // a disabled chip resolves to the fill's own color and disappears.
+    // Disabled keeps a rim, and has to. The chip there is a `.4` tint sitting
+    // close to the page, so without an edge it washes into the page.
+    // `#surface-text` holds cr ~1.5 against the chip AND 2.8–3.7 against the
+    // page. It is also immune to the `.4` fade below, which `#current` is not — a
+    // `#current` rim on a disabled chip resolves to the fill's own color and
+    // disappears.
     border: {
-      '': '#current-fill.25',
+      '': '#clear',
       disabled: '#surface-text.2',
     },
     // Every state is one `background-color`, so the overlay interpolates from

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { userEvent } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
+import { ButtonSplit } from '../ButtonSplit/ButtonSplit';
 
 import { Button } from './Button';
 
@@ -14,6 +15,66 @@ function settle() {
     await new Promise(requestAnimationFrame);
   });
 }
+
+describe('<Button /> shape', () => {
+  const radius = (qa: string) =>
+    getComputedStyle(screen.getByTestId(qa)).borderTopLeftRadius;
+
+  it('sets the corner radius each shape names', () => {
+    renderWithRoot(
+      <>
+        <Button qa="Default">Default</Button>
+        <Button qa="ButtonShape" shape="button">
+          Button
+        </Button>
+        <Button qa="Card" shape="card">
+          Card
+        </Button>
+        <Button qa="Sharp" shape="sharp">
+          Sharp
+        </Button>
+        <Button qa="Pill" shape="pill">
+          Pill
+        </Button>
+      </>,
+    );
+
+    const base = parseFloat(radius('Default'));
+
+    expect(base).toBeGreaterThan(0);
+    expect(radius('ButtonShape')).toBe(radius('Default'));
+    expect(parseFloat(radius('Card'))).toBeGreaterThan(base);
+    expect(radius('Sharp')).toBe('0px');
+    // `round` is a radius no button height reaches, so the ends are half-circles.
+    expect(parseFloat(radius('Pill'))).toBeGreaterThanOrEqual(
+      screen.getByTestId('Pill').offsetHeight / 2,
+    );
+  });
+
+  it('leaves a link and the joined edges of a split their own radius', () => {
+    renderWithRoot(
+      <>
+        <Button qa="Link" type="link" shape="pill">
+          Link
+        </Button>
+        <ButtonSplit>
+          <Button qa="First" shape="pill">
+            First
+          </Button>
+          <Button qa="Last" shape="pill">
+            Last
+          </Button>
+        </ButtonSplit>
+      </>,
+    );
+
+    expect(radius('Link')).toBe('0px');
+    expect(
+      getComputedStyle(screen.getByTestId('First')).borderTopRightRadius,
+    ).toBe('0px');
+    expect(radius('Last')).toBe('0px');
+  });
+});
 
 describe('<Button /> disabled focusability', () => {
   /**
