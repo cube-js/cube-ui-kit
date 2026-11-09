@@ -23,7 +23,7 @@ Follow the `category: message` format:
 | Category   | Use for                                           |
 | ---------- | ------------------------------------------------- |
 | `feat`     | New features or components                        |
-| `fix`      | Bug fixes (reference an issue when possible)      |
+| `fix`      | Bug fixes                                         |
 | `refactor` | Code changes that are neither a fix nor a feature |
 | `docs`     | Documentation updates                             |
 | `build`    | Build config or dependency changes                |
@@ -57,7 +57,7 @@ pnpm changeset
 >
 > If your changeset includes JSX snippets, disable live preview: ` ```jsx live=false `
 
-4. **Push** and open a Pull Request against `main`.
+4. **Push** and open a Pull Request against `main`. Name its Linear issues in the body as the template says, and keep issue IDs out of the title and branch name, which close an issue on merge ([AGENTS.md → Linear Issues](AGENTS.md#linear-issues-done-when-cloud-has-the-fix)).
 
 ## Tests
 
