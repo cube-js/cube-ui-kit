@@ -1,6 +1,6 @@
 import { Children, cloneElement, isValidElement } from 'react';
 
-import { Menu } from '../../actions/Menu';
+import { Menu } from '../../actions/Menu/Menu';
 
 import { normalizeMenuAction } from './row-menu';
 

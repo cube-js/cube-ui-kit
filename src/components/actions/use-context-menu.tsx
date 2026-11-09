@@ -16,13 +16,13 @@ import {
 import { VisuallyHidden } from 'react-aria';
 import { createPortal } from 'react-dom';
 
-import { useEvent } from '../../_internal';
-import { useI18n } from '../../i18n';
+import { useEvent } from '../../_internal/hooks/use-event';
+import { useI18n } from '../../i18n/useI18n';
 import { generateRandomId } from '../../utils/random';
-import { mergeProps } from '../../utils/react';
+import { mergeProps } from '../../utils/react/mergeProps';
 import { usePopoverSync } from '../../utils/react/usePopoverSync';
 
-import { MenuTrigger } from './Menu';
+import { MenuTrigger } from './Menu/MenuTrigger';
 
 // A zero-size `fixed` host, so the anchor's coordinates are viewport ones.
 const ContextMenuHostElement = tasty({

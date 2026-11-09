@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import { Button } from '../components/actions';
+import { Button } from '../components/actions/Button';
 import { ItemButton } from '../components/actions/ItemButton/ItemButton';
 import { Card } from '../components/content/Card/Card';
 import { Layout } from '../components/content/Layout';

@@ -23,12 +23,17 @@ This is not a style preference — three things read that graph:
 - **Consumers' bundlers.** A narrower graph is a tree-shakeable one.
 - **Module init order.** `Root.tsx` calls tasty's `configure()` at module scope; the wider the graph, the more ways there are for something to evaluate before it.
 
-Concretely:
+Lint enforces it. `repo/no-barrel-import` (`scripts/oxlint-repo-rules.mjs`) resolves every relative import in `src/` and `.storybook/`, and reports one that lands on an `index.ts`:
 
-- **Icons: always the file.** `import { CloseIcon } from '../../icons/CloseIcon'`. `no-restricted-imports` in `.oxlintrc.json` enforces this — the barrel re-exports 133 components, so it is the single worst offender. `src/index.ts` is exempt, because re-exporting that barrel is its job.
-- **Category barrels** (`../../actions`, `../../form`, `../../content`, …) pull in a whole family. Reach past them, especially anywhere `Root` can reach.
-- **Component barrels** (`../Dialog`, `../HotKeys`) are cheap on their own but chain: `../Dialog` pulls `DialogForm`, which used to pull the `actions` _and_ `form` barrels. Prefer the file.
-- **`index.ts` files may import barrels** — assembling the public surface is what they are for.
+- **Runtime code never imports a barrel.** That covers the package root, category barrels (`../../actions`, `../../form`), which pull in a whole family, component entries (`../Dialog`), which are cheap on their own but chain, and support barrels (`../../utils/react`, `../../i18n`). Import the file: `from '../../actions/ItemButton/ItemButton'`.
+- **Type-only imports are exempt.** `import type { CubeFormProps } from '../Form'` is erased at build time and adds nothing to the graph. A plain `import { SomeType }` is not exempt, because lint cannot see that it imports only types: write `import type`.
+- **A story may import a component's own entry** for its compound API: `import { Button } from '../../actions/Button'` gives it `Button.Group`. Never a category barrel or the package root. Everything else comes from the defining file, as in runtime code. A story that shows a barrel's whole contents, as `icons/Icons.stories.tsx` does with `import * as Icons`, disables the rule on that line with a reason.
+- **`index.ts` files may import barrels.** Assembling the public surface is what they are for. Specs, their `*.fixture.tsx` files, `src/test/` and the defaults-registry tooling in `src/eslint-plugin/` are exempt too: they exercise the surface the way a consumer imports it.
+- **Icons** also have their own `no-restricted-imports` entry, which applies to specs as well: the icon barrel re-exports 133 components.
+
+An `index.ts` only re-exports. A component's entry may also assemble the compound it exports, such as `Object.assign(Button, { Group, Split })` in `actions/Button/index.ts`, when the parts import the base, so assembling it in the base's own file would be a cycle. Anything else (a component, a hook, a helper, a type) goes in a named file, where runtime code can import it. Some older index files still define code: `Toast` in `overlays/Toast/index.ts`, `addUIKitLocale` in `i18n/index.ts`, the `Axis`, `PlacementAxis` and `RangeValue` types in `shared/index.ts`, and `Typography` in the package root. Runtime code can take those types with `import type`, but not the values: move one into a named file before runtime code needs it.
+
+**No import cycles.** `import/no-cycle` reports one in `src/` and `.storybook/`. Break it by moving what both sides use into a file of its own: `Form/FormContext.tsx` and `Form/FormElement.tsx` hold what `Form.tsx` and `ModernFormRoot.tsx` both render. A cycle made only of types goes away with `import type`. Two components that render each other, and touch each other only inside render, may keep their cycle with a `-- reason`, as `ColorPicker` and `ColorSwatchGroup` do.
 
 When you do need to widen something inside `Root`'s tree, `node scripts/chromatic-report.mjs --trace <file>` shows what it costs before you commit to it.
 

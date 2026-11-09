@@ -21,9 +21,10 @@ import {
 } from 'react';
 import { useFocusRing, useHover, useMove } from 'react-aria';
 
-import { useDebouncedValue } from '../../../_internal/hooks';
-import { useI18n } from '../../../i18n';
-import { mergeProps, useCombinedRefs } from '../../../utils/react';
+import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value';
+import { useI18n } from '../../../i18n/useI18n';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';

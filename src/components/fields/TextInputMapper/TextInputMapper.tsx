@@ -9,22 +9,23 @@ import {
   useState,
 } from 'react';
 
-import { useEvent } from '../../../_internal/hooks';
-import { useI18n } from '../../../i18n';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
-import { FieldBaseProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
-import { Button } from '../../actions';
+import { FieldBaseProps } from '../../../shared/form';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { Button } from '../../actions/Button/Button';
 import { Block } from '../../Block';
-import { useFieldProps, wrapWithField } from '../../form';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { wrapWithField } from '../../form/wrapper';
 import { Flow } from '../../layout/Flow';
 import { Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';
-import { ComboBox } from '../ComboBox';
+import { ComboBox } from '../ComboBox/ComboBox';
 import { PasswordInput } from '../PasswordInput/PasswordInput';
-import { TextArea } from '../TextArea/index';
-import { TextInput } from '../TextInput';
+import { TextArea } from '../TextArea/TextArea';
+import { TextInput } from '../TextInput/TextInput';
 
 import type { AriaLabelingProps } from '@react-types/shared';
 

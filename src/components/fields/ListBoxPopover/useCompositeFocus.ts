@@ -1,6 +1,6 @@
 import { FocusEvent, RefObject, useEffect, useRef } from 'react';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 export interface CompositeBlurInfo {
   /**

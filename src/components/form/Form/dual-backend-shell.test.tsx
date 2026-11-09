@@ -17,12 +17,12 @@ import { Slider } from '../../fields/Slider/Slider';
 import { TextInput } from '../../fields/TextInput/TextInput';
 
 import { FORM_BACKEND, isModernFormController } from './backend';
+import { LegacyFormRoot } from './Form';
 import {
   FormContext,
   FormPresentationContext,
-  LegacyFormRoot,
   useFormProps,
-} from './Form';
+} from './FormContext';
 import { RenderErrorBoundary } from './legacy-contract/helpers';
 import { CubeFormInstance, useForm } from './use-form';
 

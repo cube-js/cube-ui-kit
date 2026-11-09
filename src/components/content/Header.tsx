@@ -9,7 +9,7 @@ import {
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { useSlotProps } from '../../utils/react';
+import { useSlotProps } from '../../utils/react/Slots';
 import { extractStyles } from '../../utils/styles';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];

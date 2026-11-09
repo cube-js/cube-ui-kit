@@ -33,9 +33,10 @@ import {
   useDialog,
 } from 'react-aria';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
-import { mergeProps, SlotProvider } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { SlotProvider } from '../../../utils/react/Slots';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';

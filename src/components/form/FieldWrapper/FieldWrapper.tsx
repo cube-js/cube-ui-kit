@@ -2,17 +2,18 @@ import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 import { VisuallyHidden } from 'react-aria';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { isDevEnv } from '../../../utils/is-dev-env';
-import { mergeProps, wrapNodeIfPlain } from '../../../utils/react/index';
-import { InfoBadge } from '../../content/InfoBadge';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { wrapNodeIfPlain } from '../../../utils/react/wrapNodeIfPlain';
+import { InfoBadge } from '../../content/InfoBadge/InfoBadge';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
 import { hasFieldContent } from '../field-chrome';
 import { Label, NecessityIndicatorMark } from '../Label';
 import { warnAboutLegacyTooltip } from '../legacy-tooltip';
-import { getValidationMods } from '../validation/index';
+import { getValidationMods } from '../validation/resolve-validation-props';
 
 import {
   getFieldDescriptionId,

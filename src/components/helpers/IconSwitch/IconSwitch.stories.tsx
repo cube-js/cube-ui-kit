@@ -7,7 +7,7 @@ import { DownIcon } from '../../../icons/DownIcon';
 import { PauseIcon } from '../../../icons/PauseIcon';
 import { PlayIcon } from '../../../icons/PlayIcon';
 import { UpIcon } from '../../../icons/UpIcon';
-import { Button } from '../../actions/Button';
+import { Button } from '../../actions/Button/Button';
 import { Text } from '../../content/Text';
 
 import { IconSwitch } from './IconSwitch';

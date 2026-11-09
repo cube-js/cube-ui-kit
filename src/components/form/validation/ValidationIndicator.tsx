@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { ValidationProps } from '../../../shared/index';
+import { ValidationProps } from '../../../shared/form';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 

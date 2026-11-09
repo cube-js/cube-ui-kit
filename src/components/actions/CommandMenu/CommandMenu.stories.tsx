@@ -19,20 +19,18 @@ import { TrashIcon } from '../../../icons/TrashIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Block } from '../../Block';
 import { Card } from '../../content/Card/Card';
-import { HotKeys } from '../../content/HotKeys';
+import { HotKeys } from '../../content/HotKeys/HotKeys';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Flex } from '../../layout/Flex';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
-import {
-  Dialog,
-  DialogTrigger,
-  useDialogContainer,
-} from '../../overlays/Dialog';
-import { Button } from '../Button';
-import { ItemAction } from '../ItemAction';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
+import { useDialogContainer } from '../../overlays/Dialog/use-dialog-container';
+import { Button } from '../Button/Button';
+import { ItemAction } from '../ItemAction/ItemAction';
 import { Menu } from '../Menu/Menu';
 import { useAnchoredMenu } from '../use-anchored-menu';
 import { useContextMenu } from '../use-context-menu';

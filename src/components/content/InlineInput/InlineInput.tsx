@@ -26,8 +26,8 @@ import {
   useFocusWithin,
 } from 'react-aria';
 
-import { useEvent } from '../../../_internal/hooks';
-import { mergeProps } from '../../../utils/react';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { AutoTooltipValue, useAutoTooltip } from '../use-auto-tooltip';
 

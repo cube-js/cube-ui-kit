@@ -1,7 +1,7 @@
 import { filterBaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
 
-import { useCombinedRefs } from '../utils/react';
+import { useCombinedRefs } from '../utils/react/useCombinedRefs';
 
 const GridElement = tasty({
   styles: {

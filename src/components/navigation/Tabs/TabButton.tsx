@@ -17,14 +17,18 @@ import {
   useTab,
 } from 'react-aria';
 
-import { useEvent } from '../../../_internal/hooks';
-import { useI18n } from '../../../i18n';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
-import { mergeProps } from '../../../utils/react';
-import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import {
+  CubeItemActionProps,
+  ItemAction,
+} from '../../actions/ItemAction/ItemAction';
 import { ItemActionsWrapper } from '../../actions/ItemActionsWrapper';
-import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
+import { CubeMenuProps, Menu } from '../../actions/Menu/Menu';
+import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
 import { useContextMenu } from '../../actions/use-context-menu';
 import {
   CubeInlineInputRef,

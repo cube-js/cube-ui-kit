@@ -9,13 +9,14 @@ import {
 } from 'react-aria';
 import { useTimeFieldState } from 'react-stately';
 
-import { FieldBaseProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
-import { useFieldProps, wrapWithField } from '../../form';
+import { FieldBaseProps } from '../../../shared/form';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { wrapWithField } from '../../form/wrapper';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';

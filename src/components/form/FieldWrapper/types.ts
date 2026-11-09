@@ -5,7 +5,7 @@ import {
   LabelPosition,
   NecessityIndicator,
   ValidationProps,
-} from '../../../shared/index';
+} from '../../../shared/form';
 import { CubeLabelProps } from '../Label';
 
 import type { Props } from '../../../props';

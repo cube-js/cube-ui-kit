@@ -20,41 +20,40 @@ import React, {
 import { useCollator, useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
-import { useEvent } from '../../../_internal';
-import { useI18n } from '../../../i18n';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
+import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared/form';
 import { generateRandomId } from '../../../utils/random';
-import { useCombinedRefs, useLayoutEffect } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import {
   OVERLAY_KEYS,
   settleOverlayKey,
 } from '../../../utils/react/overlayKeyPropagation';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { CollectionItem as Item } from '../../CollectionItem';
-import {
-  getValidationIcon,
-  getValidationMods,
-  useFieldProps,
-  wrapWithField,
-} from '../../form';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
+import { getValidationIcon } from '../../form/validation/ValidationIndicator';
+import { wrapWithField } from '../../form/wrapper';
 import { getListBoxOptionId } from '../ListBox/optionId';
+import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
   filterCollectionNodes,
   getEdgeVisibleKey,
   getNextVisibleKey,
-  ListBoxPopover,
   ListStateLike,
   markKeyboardFocus,
-  useCompositeFocus,
-} from '../ListBoxPopover';
+} from '../ListBoxPopover/listNavigation';
+import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,

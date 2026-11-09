@@ -11,22 +11,22 @@ import {
 import { forwardRef, useRef } from 'react';
 import { useHover, useRadio } from 'react-aria';
 
-import { FieldBaseProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
+import { FieldBaseProps } from '../../../shared/form';
 import {
   getDisabledElementProps,
   getInertInputProps,
 } from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { INLINE_LABEL_STYLES } from '../../form/Label';
 import {
   getValidationMods,
   getValidationTheme,
-  INLINE_LABEL_STYLES,
-  useFieldProps,
-} from '../../form';
+} from '../../form/validation/resolve-validation-props';
 import { HiddenInput } from '../../HiddenInput';
 import { SEGMENTED_SEGMENT_STYLES } from '../../navigation/Tabs/segmented-styles';
 import { RADIO_SIZE_MAP } from '../../navigation/Tabs/types';

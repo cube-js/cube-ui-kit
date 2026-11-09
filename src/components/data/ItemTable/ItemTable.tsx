@@ -2,8 +2,8 @@ import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { forwardRef, useMemo, useRef, useState } from 'react';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n';
-import { useCombinedRefs } from '../../../utils/react';
+import { useI18n } from '../../../i18n/useI18n';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { DraggableCollection } from '../../shared/DraggableCollection';
 import {

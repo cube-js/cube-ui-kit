@@ -7,7 +7,7 @@ import {
 import { Text } from '../../content/Text';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
-import { LoadingAnimation } from '../../status/LoadingAnimation';
+import { LoadingAnimation } from '../../status/LoadingAnimation/LoadingAnimation';
 
 import { NoDataIcon } from './NoDataIcon';
 

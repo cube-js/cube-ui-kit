@@ -11,15 +11,16 @@ import {
 } from 'react-aria';
 import { useDatePickerState } from 'react-stately';
 
-import { useI18n } from '../../../i18n';
-import { FieldBaseProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
+import { useI18n } from '../../../i18n/useI18n';
+import { FieldBaseProps } from '../../../shared/form';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { mergeStyleLayers } from '../../../utils/styles';
-import { useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { wrapWithField } from '../../form/wrapper';
 import { Calendar } from '../../other/Calendar/Calendar';
 import { PeriodCalendar } from '../../other/Calendar/PeriodCalendar';
 import { Dialog } from '../../overlays/Dialog/Dialog';

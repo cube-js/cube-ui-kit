@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { TransitionStatus } from './types';
+import type { TransitionStatus } from './types';
 
 const OpenTransitionContext = createContext<{
   transitionState: TransitionStatus;

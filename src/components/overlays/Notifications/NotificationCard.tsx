@@ -1,7 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { isValidElement, Key, ReactNode } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { Block } from '../../Block';
 import { Item } from '../../content/Item/Item';

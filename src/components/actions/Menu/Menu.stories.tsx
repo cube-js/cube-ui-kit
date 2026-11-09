@@ -26,32 +26,31 @@ import { TrashIcon } from '../../../icons/TrashIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
-import { Alert } from '../../content/Alert';
+import { Alert } from '../../content/Alert/Alert';
 import { Card } from '../../content/Card/Card';
 import { Content } from '../../content/Content';
 import { Header } from '../../content/Header';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
-import { ComboBox } from '../../fields/ComboBox';
-import { FilterPicker } from '../../fields/FilterPicker';
-import { Select } from '../../fields/Select';
+import { ComboBox } from '../../fields/ComboBox/ComboBox';
+import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
+import { Select } from '../../fields/Select/Select';
 import { Flex } from '../../layout/Flex';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
-import { AlertDialog } from '../../overlays/AlertDialog';
-import {
-  Dialog,
-  DialogContainer,
-  DialogTrigger,
-  useDialogContainer,
-} from '../../overlays/Dialog';
-import { Button } from '../Button';
-import { ItemAction } from '../ItemAction';
+import { AlertDialog } from '../../overlays/AlertDialog/AlertDialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogContainer } from '../../overlays/Dialog/DialogContainer';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
+import { useDialogContainer } from '../../overlays/Dialog/use-dialog-container';
+import { Button } from '../Button/Button';
+import { ItemAction } from '../ItemAction/ItemAction';
 import { useAnchoredMenu } from '../use-anchored-menu';
 import { useContextMenu } from '../use-context-menu';
 
-import { Menu, MenuTrigger } from './index';
+import { Menu } from './Menu';
+import { MenuTrigger } from './MenuTrigger';
 
 export default {
   title: 'Actions/Menu',

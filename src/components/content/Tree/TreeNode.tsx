@@ -1,15 +1,20 @@
 import { Children, memo, useMemo, useRef, useState } from 'react';
 import { useHover, useTreeItem } from 'react-aria';
 
-import { useEvent } from '../../../_internal/hooks';
-import { useI18n } from '../../../i18n';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
-import { mergeProps, mergeRefs } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
-import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
-import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
+import {
+  CubeItemActionProps,
+  ItemAction,
+} from '../../actions/ItemAction/ItemAction';
+import { CubeMenuProps, Menu } from '../../actions/Menu/Menu';
+import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
 import { useContextMenu } from '../../actions/use-context-menu';
 import { Checkbox } from '../../fields/Checkbox/Checkbox';
 

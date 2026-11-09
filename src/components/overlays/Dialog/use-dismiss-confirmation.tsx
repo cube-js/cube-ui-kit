@@ -1,7 +1,7 @@
 import { focusSafely } from '@react-aria/interactions';
 import { useEffect, useRef, useState } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { AlertDialog } from '../AlertDialog/AlertDialog';
 
 interface PendingDismissal {

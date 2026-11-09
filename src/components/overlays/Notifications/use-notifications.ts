@@ -1,6 +1,6 @@
 import { Key, useEffect, useRef } from 'react';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 
 import { useNotificationContext } from './NotificationContext';

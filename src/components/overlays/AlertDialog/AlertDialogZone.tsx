@@ -1,4 +1,4 @@
-import { Portal } from '../../portal';
+import { Portal } from '../../portal/Portal';
 import { DialogContainer } from '../Dialog/DialogContainer';
 
 import { AlertDialog, CubeAlertDialogActionsProps } from './AlertDialog';

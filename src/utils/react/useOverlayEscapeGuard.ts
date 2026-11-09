@@ -1,6 +1,6 @@
 import { getEventTarget, nodeContains } from '@react-aria/utils';
 
-import { useEvent } from '../../_internal';
+import { useEvent } from '../../_internal/hooks/use-event';
 
 import type { DOMAttributes, KeyboardEvent } from 'react';
 

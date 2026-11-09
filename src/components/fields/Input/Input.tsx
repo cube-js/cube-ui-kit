@@ -2,7 +2,7 @@ import { FileInput } from '../FileInput/FileInput';
 import { NumberInput } from '../NumberInput/NumberInput';
 import { PasswordInput } from '../PasswordInput/PasswordInput';
 import { TextArea } from '../TextArea/TextArea';
-import { TextInput } from '../TextInput';
+import { TextInput } from '../TextInput/TextInput';
 
 type CubeInput = typeof TextInput & {
   Text: typeof TextInput;

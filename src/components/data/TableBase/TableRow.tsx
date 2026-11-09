@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import { useDraggableItem, useDropIndicator, useTreeItem } from 'react-aria';
 
-import { mergeProps, mergeRefs } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 
 import type { Key, Node } from '@react-types/shared';
 import type { ReactNode, Ref } from 'react';

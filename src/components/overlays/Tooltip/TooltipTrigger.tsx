@@ -22,7 +22,7 @@ import {
 } from 'react-aria';
 import { useTooltipTriggerState } from 'react-stately';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { isDevEnv } from '../../../utils/is-dev-env';
 import { isFocusRestoration } from '../../../utils/react/programmaticFocus';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
@@ -32,7 +32,7 @@ import {
   DisplayTransition,
   DisplayTransitionProps,
 } from '../../helpers/DisplayTransition/DisplayTransition';
-import { Portal } from '../../portal';
+import { Portal } from '../../portal/Portal';
 
 import { TooltipContext } from './context';
 import { CubeTooltipProps, Tooltip } from './Tooltip';

@@ -17,7 +17,7 @@ import {
 } from 'react';
 import { useHover } from 'react-aria';
 
-import { useCombinedRefs } from '../../../utils/react';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';

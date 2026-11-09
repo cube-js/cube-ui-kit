@@ -2,15 +2,16 @@ import { useControlledState } from '@react-stately/utils';
 import { filterBaseProps, OUTER_STYLES, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { useEvent } from '../../../_internal/hooks';
-import { useFormatter, useI18n } from '../../../i18n';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useFormatter } from '../../../i18n/useFormatter';
+import { useI18n } from '../../../i18n/useI18n';
 import { BackwardIcon } from '../../../icons/BackwardIcon';
 import { ForwardIcon } from '../../../icons/ForwardIcon';
 import { LeftIcon } from '../../../icons/LeftIcon';
 import { RightIcon } from '../../../icons/RightIcon';
 import { extractStyles } from '../../../utils/styles';
-import { Button } from '../../actions';
-import { Select } from '../../fields/Select';
+import { Button } from '../../actions/Button/Button';
+import { Select } from '../../fields/Select/Select';
 
 import { clampPage, getPageInfo, getPaginationRange } from './use-pagination';
 

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { isDevEnvOrTest } from '../../../utils/is-dev-env';
 
 import type { Key } from '@react-types/shared';

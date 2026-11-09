@@ -23,7 +23,7 @@ import {
   normalizeNavigationUrl,
 } from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   COLLECTION_ITEM_CLICK,
   filterCollectionItemProps,

@@ -3,8 +3,7 @@ import { BaseProps, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, HTMLAttributes } from 'react';
 import { AriaOverlayProps, useModal, useOverlay } from 'react-aria';
 
-import { PlacementAxis } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 
@@ -13,6 +12,7 @@ import { CubeOverlayProps, Overlay } from './Overlay';
 import { TransitionState } from './types';
 
 import type { Props } from '../../../props';
+import type { PlacementAxis } from '../../../shared';
 
 const PopoverElement = tasty({
   role: 'presentation',

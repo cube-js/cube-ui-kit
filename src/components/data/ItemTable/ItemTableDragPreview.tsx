@@ -1,6 +1,6 @@
 import { tasty } from '@tenphi/tasty';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { Text } from '../../content/Text';
 
 import type { ReactNode } from 'react';

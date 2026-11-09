@@ -2,7 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { useRef, useState } from 'react';
 import { useFilter, useId, useKeyboard } from 'react-aria';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { StyledFooter } from '../../actions/Menu/styled';

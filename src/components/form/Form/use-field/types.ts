@@ -6,7 +6,7 @@ import {
   ValidateTrigger,
   ValidationProps,
   ValidationState,
-} from '../../../../shared/index';
+} from '../../../../shared/form';
 import { CubeFieldData, FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';
 

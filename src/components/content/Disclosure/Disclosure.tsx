@@ -26,10 +26,13 @@ import {
 } from 'react-stately';
 
 import { RightIcon } from '../../../icons/RightIcon';
-import { mergeRefs } from '../../../utils/react';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
-import { CubeItemButtonProps, ItemButton } from '../../actions/ItemButton';
-import { DisplayTransition } from '../../helpers';
+import {
+  CubeItemButtonProps,
+  ItemButton,
+} from '../../actions/ItemButton/ItemButton';
+import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 
 import type { Key as AriaKey } from '@react-types/shared';
 

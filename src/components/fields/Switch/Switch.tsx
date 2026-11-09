@@ -5,25 +5,28 @@ import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
 import { useToggleState } from 'react-stately';
 
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
-import { mergeProps, mergeRefs } from '../../../utils/react';
+import { FieldBaseProps, ToggleSelectionProps } from '../../../shared/form';
 import {
   getDisabledElementProps,
   getInertInputProps,
 } from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useId } from '../../../utils/react/useId';
 import { Text } from '../../content/Text';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
-import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
+import { wrapWithField } from '../../form/wrapper';
 import { HiddenInput } from '../../HiddenInput';
 import {
   mergeTooltipFocusProps,

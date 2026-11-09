@@ -9,8 +9,10 @@ import { Space } from '../../layout/Space';
 import { OverlayProvider } from '../Notifications/OverlayProvider';
 
 import { ToastItem } from './ToastItem';
+import { useProgressToast } from './useProgressToast';
+import { useToast } from './useToast';
 
-import { Toast, useProgressToast, useToast } from './index';
+import { Toast } from './index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

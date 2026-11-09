@@ -4,14 +4,14 @@ import { expect, userEvent, within } from 'storybook/test';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Checkbox } from '../../fields/Checkbox/Checkbox';
 import { ComboBox } from '../../fields/ComboBox/ComboBox';
-import { Input } from '../../fields/Input';
+import { Input } from '../../fields/Input/Input';
 import { Radio } from '../../fields/RadioGroup/Radio';
 import { RadioGroup } from '../../fields/RadioGroup/RadioGroup';
 import { Switch } from '../../fields/Switch/Switch';
 import { Space } from '../../layout/Space';
 
-import { ResetButton } from './ResetButton';
-import { SubmitButton } from './SubmitButton';
+import { ResetButton } from './ResetButton/ResetButton';
+import { SubmitButton } from './SubmitButton/SubmitButton';
 import { SubmitError } from './SubmitError';
 
 import { Form } from './index';

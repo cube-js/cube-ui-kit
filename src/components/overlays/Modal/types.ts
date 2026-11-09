@@ -3,7 +3,7 @@ import { AriaOverlayProps } from 'react-aria';
 
 import { ReportedPhase } from '../../helpers/DisplayTransition/DisplayTransition';
 
-import { CubeOverlayProps } from './Overlay';
+import type { CubeOverlayProps } from './Overlay';
 
 export type CloseBehavior = 'remove' | 'hide';
 export type TransitionStatus = ReportedPhase;

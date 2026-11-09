@@ -18,10 +18,10 @@ import {
 } from 'react-aria';
 import { useMenuTriggerState } from 'react-stately';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
-import { Popover } from '../../overlays/Modal';
+import { Popover } from '../../overlays/Modal/Popover';
 
 import { MenuContext, MenuContextValue, useMenuContext } from './context';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';

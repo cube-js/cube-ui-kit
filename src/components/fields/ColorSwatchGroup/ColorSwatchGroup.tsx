@@ -4,20 +4,23 @@ import { ForwardedRef, forwardRef, useMemo, useRef, useState } from 'react';
 import { useRadio, useRadioGroup } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
 
-import { useEvent } from '../../../_internal';
-import { useI18n } from '../../../i18n';
-import { FieldBaseProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
+import { FieldBaseProps } from '../../../shared/form';
 import { useFocus } from '../../../utils/react/interactions';
-import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
+import { wrapWithField } from '../../form/wrapper';
 import { HiddenInput } from '../../HiddenInput';
 import { ColorFormat, formatColor, parseColor, toHex } from '../color/color';
 import { useIsInsideColorPopover } from '../color/context';
-import { ColorPicker } from '../ColorPicker';
+// oxlint-disable-next-line import/no-cycle -- ColorPicker renders this group as its palette; each uses the other only at render time (see ColorPicker.tsx)
+import { ColorPicker } from '../ColorPicker/ColorPicker';
 
 import type { RadioGroupState } from 'react-stately';
 
