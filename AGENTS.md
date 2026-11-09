@@ -58,6 +58,18 @@ When making code changes that affect end users or the public API, **always add a
 - Add changeset manually (no CLI) — full guidelines: [`.cursor/commands/add-changeset.md`](.cursor/commands/add-changeset.md).
 - Write the summary unwrapped: one paragraph is one line, like every other Markdown file here (see [Markdown rules](docs/rules/coding.md#markdown-rules)).
 
+## Linear Issues: Done When Cloud Has the Fix
+
+Cloud consumes the published package, so a UI Kit fix reaches users only when a Cloud PR bumps a release that carries it. That Cloud PR closes the fix's Linear issue; Cloud's `update-uikit` skill collects the issues from the UI Kit PRs the bump brings. Until then the issue stays open, so a UI Kit PR links its issues without closing them:
+
+- Name each issue on a line of its own in the PR body: `Part of <issue ID>`. Commit messages say `Part of` too.
+- Keep issue IDs out of the branch name, the PR title and changesets (the release PR copies their text), and never put a closing word (close, fix, resolve, complete, implement, in any form) before an ID. Each of these moves the issue to Done when the PR merges.
+- An issue whose whole outcome stays in UI Kit (CI, tooling, docs, Storybook, tests) is done when its PR merges: say `Closes <issue ID>` instead.
+- Tasty isn't connected to Linear. The UI Kit PR that bumps `@tenphi/tasty` names the Tasty fix's issues as `Part of`.
+- After a merge, check each issue the PR names. One that went to Done before Cloud has the fix goes back to In Progress, with a comment saying what is left.
+
+File new issues with the [`create-ticket`](.claude/skills/create-ticket/SKILL.md) skill.
+
 ## Stories: Interaction-Only States
 
 A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs `play` before it snapshots, so a story whose point is such a state **must** drive it with `play` and end on a `waitFor` assertion for the state itself (that assertion is also the wait Chromatic needs). Drive one element per story — only the final state is captured. For tooltips, copy the recipe verbatim: `timeout(250)` (the trigger is wired in a mount effect), `unhover` before `hover` (React Aria ignores a hover until a mouse move sets the pointer modality), and `delay: 0` in the tooltip config. Both caveats fail silently, and a local render test can pass while the story does not — Chromatic is the check. Full pattern: [storybook.md](docs/rules/storybook.md#interaction-only-states-need-a-play-function).
