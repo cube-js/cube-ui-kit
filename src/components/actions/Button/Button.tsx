@@ -245,11 +245,10 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     '@parent(button-split, >) & !:first-child': '1r right',
     '@parent(button-split, >) & !:first-child & !:last-child': 0,
   },
-  margin: {
-    '': 0,
-    '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2 | type=primary)':
-      '-1bw left',
-  },
+  // No overlap inside a ButtonSplit: every bordered type draws a glass edge
+  // ring, and two rings stacked on one pixel read as a heavier seam than two
+  // side by side.
+  margin: 0,
   // oxlint-disable-next-line tasty/require-default-state -- outside a ButtonSplit the button sets no z-index, so the consumer's stacking applies
   zIndex: {
     '@parent(button-split, >) & :hover': 1,
@@ -360,9 +359,10 @@ const FILL_CLEAR = 'oklch(from #glass-fill l c h / 0)';
  * - The fill goes through `#glass-fill`, which carries the variant's own fill
  *   map, states included, so the ring and the shading derive from it.
  * - The border stays as a transparent 1bw: every size here assumes it
- *   (`$size - 2bw`, the inline padding, ButtonSplit's `-1bw` overlap), so the
- *   layout doesn't change. `::before` (Edge) draws the ring right over it and
- *   inherits the radius, ButtonSplit's corners included.
+ *   (`$size - 2bw`, the inline padding), so the layout doesn't change.
+ *   `::before` (Edge) draws the ring right over it and inherits the radius,
+ *   ButtonSplit's corners included. Inside a ButtonSplit the buttons no longer
+ *   overlap by 1bw, so each seam shows both rings side by side.
  * - A validation border keeps its color: the ring steps aside.
  * - Brand fills also bleed a little of their own color past the edge, and both
  *   kinds sit on an outer shadow that collapses while pressed.
