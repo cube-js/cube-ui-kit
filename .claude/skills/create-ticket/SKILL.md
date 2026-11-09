@@ -75,7 +75,7 @@ When the user asked for this ticket, any result other than `pass` goes back to t
 
 ## Done when
 
-<"The Cloud PRs that bring the fix have merged: the bump to a UI Kit release carrying it, and <any Cloud change this issue also asks for, such as removing a workaround>." For a fix that needs no changeset: "Its UI Kit PR has merged.">
+<"The Cloud PRs that bring the fix have merged: the bump to a UI Kit release carrying it, and <any Cloud change this issue also asks for, such as removing a workaround>." For a fix that needs no changeset: "Its UI Kit PRs have merged." (it is then moved to Done by hand)>
 
 ## Entropy task assessment
 
