@@ -260,8 +260,12 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
   margin: {
     '': 0,
-    '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2 | type=primary)':
+    // Outline halves overlap so their borders merge into one line. Primary halves
+    // have no visible border, so a real gap divides them instead and shows
+    // whatever is behind the split.
+    '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2)':
       '-1bw left',
+    '@parent(button-split, >) & !:first-child & type=primary': '1bw left',
   },
   // oxlint-disable-next-line tasty/require-default-state -- outside a ButtonSplit the button sets no z-index, so the consumer's stacking applies
   zIndex: {
