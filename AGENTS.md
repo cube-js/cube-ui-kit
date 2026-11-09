@@ -64,10 +64,9 @@ Cloud consumes the published package, so a UI Kit fix reaches users only when a 
 
 - Name each issue on a line of its own in the PR body: `Part of <issue ID>`.
 - Keep issue IDs out of the PR title and the branch name, which close an issue on merge, and out of changesets, whose text the release PR copies. Never put a closing word before an ID: Linear's are close, fix, resolve, complete and implement in any form, and "Linear issue".
-- A PR with no changeset (see Changesets), or only an empty one, has no changelog entry for a bump to find, so it closes its issue: write `Closes <issue ID>` instead.
-- A PR that only edits another PR's unreleased changeset is listed under that PR's entry, so it names only issues that PR names too. Give any other issue a changeset of its own.
+- A PR that only edits another PR's unreleased changeset ships under that PR's changelog entry, which links only that PR, so it names only issues that PR names too. Give any other issue a changeset of its own.
 - Tasty isn't connected to Linear. The UI Kit PR that bumps `@tenphi/tasty` names the Tasty fix's issues as `Part of`.
-- After a merge, check each issue the PR names as `Part of`. One that went to Done before Cloud has the fix goes back to In Progress, with a comment saying what is left.
+- After a merge, check each issue the PR names. An issue whose fix ships in no release, because none of its PRs adds a changeset (see Changesets) or each adds only an empty one, has nothing for a bump to find: move it to Done by hand once its last PR has merged. One that went to Done before Cloud has the fix goes back to In Progress, with a comment saying what is left.
 
 File new issues with the [`create-ticket`](.claude/skills/create-ticket/SKILL.md) skill.
 
