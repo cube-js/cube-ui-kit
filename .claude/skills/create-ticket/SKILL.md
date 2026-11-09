@@ -34,7 +34,7 @@ Search Linear in **every status**: Backlog, To Do, In Progress, Done, Canceled a
 
 - **Open:** don't file. Add the new evidence as a comment and use that issue. If it covers only part, file a new one that links it and says what differs.
 - **Canceled:** if its reason still applies (by design, misuse, a supported alternative), don't file: follow that answer and tell the user. If the reason doesn't cover this case, file a new one that links it and says why. With no reason recorded, ask the user.
-- **Done:** if the fix hasn't reached the version Cloud resolves, it needs a Cloud bump, not a ticket, and the issue went Done too early: move it back to In Progress with a comment ([`AGENTS.md` → Linear Issues](../../../AGENTS.md#linear-issues-done-when-cloud-has-the-fix)). If it shipped and the problem remains, file a new ticket that links it, with the version and a reproduction.
+- **Done:** if its fix is in a release Cloud doesn't resolve yet, it needs a Cloud bump, not a ticket, and the issue went Done too early: move it back to In Progress with a comment ([`AGENTS.md` → Linear Issues](../../../AGENTS.md#linear-issues-done-when-cloud-has-the-fix)). If it shipped and the problem remains, file a new ticket that links it, with the version and a reproduction.
 - **Duplicate:** follow it to the canonical ticket and apply these rules there.
 
 A search that failed or came back truncated is not "no duplicates": stop and say so.
@@ -79,7 +79,7 @@ When the user asked for this ticket, any result other than `pass` goes back to t
 
 ## Entropy task assessment
 
-Scope: <the task as filed>, against UI Kit `<sha>` and Cloud `<sha>`. Nothing is implemented yet, so every burden below is projected.
+Scope: <the task as filed>, against UI Kit `<sha>` and Cloud `<sha>` (or: no Cloud checkout). Nothing is implemented yet, so every burden below is projected.
 
 **Requirement** (<who>, <date>): <the outcome and constraints; options rejected and why>.
 
@@ -96,7 +96,7 @@ Scope: <the task as filed>, against UI Kit `<sha>` and Cloud `<sha>`. Nothing is
 **Migration:** <additive, or what breaks and for whom>.
 
 - **Entropy change: <level> — UI Kit <affected context>.** <before → after>.
-- **Entropy change: <level> — Cloud <affected context>.** <before → after>.
+- **Entropy change: <level, or unverified: what is missing> — Cloud <affected context>.** <before → after>.
 
 **Conclusion: <pass | changes needed | exception accepted | unverified>.** <the benefit that justifies any increase, or what is missing>.
 ```
