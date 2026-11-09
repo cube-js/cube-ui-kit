@@ -1,6 +1,6 @@
 import { Key, useRef, useState } from 'react';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 import type { InternalToast, ToastData } from '../Toast/types';
 import type { OverlayTimers } from './use-overlay-timers';

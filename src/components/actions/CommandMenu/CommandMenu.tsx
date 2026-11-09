@@ -19,9 +19,9 @@ import React, {
 import { useFilter, useMenu } from 'react-aria';
 import { Section, useTreeState } from 'react-stately';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useMenuContext } from '../Menu/context';
 import { CubeMenuProps } from '../Menu/Menu';

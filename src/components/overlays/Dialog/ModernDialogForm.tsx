@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';

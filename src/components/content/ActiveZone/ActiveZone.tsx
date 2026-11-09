@@ -13,8 +13,8 @@ import {
 import { forwardRef, MouseEventHandler } from 'react';
 import { FocusableOptions, useFocusable, useHover } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { extractStyles } from '../../../utils/styles';
 
 export interface CubeActiveZoneProps

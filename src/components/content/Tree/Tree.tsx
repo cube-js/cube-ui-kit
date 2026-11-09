@@ -4,10 +4,10 @@ import { forwardRef, useLayoutEffect, useMemo, useRef } from 'react';
 import { useTree } from 'react-aria';
 import { Item, useTreeState } from 'react-stately';
 
-import { useEvent } from '../../../_internal/hooks';
-import { useI18n } from '../../../i18n';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
-import { mergeRefs } from '../../../utils/react';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
 
 import { TreeElement, TreeScrollContainer, TreeSizer } from './styled';

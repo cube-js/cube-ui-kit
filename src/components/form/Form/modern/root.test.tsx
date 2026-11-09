@@ -7,7 +7,7 @@ import {
   FormPresentationContext,
   FormScopeMask,
   useFormProps,
-} from '../Form';
+} from '../FormContext';
 import { Form } from '../index';
 import { RenderErrorBoundary } from '../legacy-contract/helpers';
 

@@ -14,10 +14,12 @@ import {
 import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
 
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { Text } from '../../content/Text';
-import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { splitFieldLayout } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
+import { wrapWithField } from '../../form/wrapper';
 
 import { SliderControlsElement, SliderElement } from './elements';
 

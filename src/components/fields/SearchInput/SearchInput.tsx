@@ -5,17 +5,19 @@ import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { SearchIcon } from '../../../icons/SearchIcon';
 import { useProviderProps } from '../../../provider';
-import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
+import { chain } from '../../../utils/react/chain';
 import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
+import { useBufferedValue } from '../../../utils/react/useBufferedValue';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
-import { useValidationProps } from '../../form';
 import { asksForFieldChrome, withFieldChrome } from '../../form/field-chrome';
+import { useValidationProps } from '../../form/validation/use-validation-props';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,

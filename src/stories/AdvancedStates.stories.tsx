@@ -1,7 +1,12 @@
 import { tasty } from '@tenphi/tasty';
 import { useState } from 'react';
 
-import { Block, Button, Flex, Layout, Link, Text } from '../index';
+import { Button } from '../components/actions/Button/Button';
+import { Link } from '../components/actions/Link/Link';
+import { Block } from '../components/Block';
+import { Layout } from '../components/content/Layout';
+import { Text } from '../components/content/Text';
+import { Flex } from '../components/layout/Flex';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

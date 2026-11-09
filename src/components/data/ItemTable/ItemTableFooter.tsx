@@ -1,6 +1,6 @@
 import { tasty } from '@tenphi/tasty';
 
-import { Pagination } from '../../navigation/Pagination';
+import { Pagination } from '../../navigation/Pagination/Pagination';
 
 import type { Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';

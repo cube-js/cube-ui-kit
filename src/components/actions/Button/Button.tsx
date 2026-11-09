@@ -20,7 +20,7 @@ import {
 } from 'react';
 import { Placement } from 'react-aria';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
@@ -61,16 +61,15 @@ import {
 } from '../../../data/item-themes';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import {
-  DynamicIcon,
   getDisabledElementProps,
-  mergeProps,
   omitActivationEventProps,
-  resolveIcon,
-  useDismissParentPopover,
-} from '../../../utils/react';
+} from '../../../utils/react/disabledProps';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { DynamicIcon, resolveIcon } from '../../../utils/react/resolveIcon';
+import { useDismissParentPopover } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
-import { DisplayTransition } from '../../helpers/DisplayTransition';
+import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import { mergeTooltipFocusProps } from '../../overlays/Tooltip/split-trigger-props';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
@@ -131,6 +130,16 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'inline'
     | number
     | (string & {});
+  /**
+   * Corner shape, named as on `Item`:
+   * - `button` - The button radius (`1r`, default)
+   * - `card` - The card radius (`1cr`), for a button laid out as a card
+   * - `sharp` - Square corners, for a button that fills a row or cell edge to edge
+   * - `pill` - Fully rounded ends (`round`); a single-icon button becomes a circle
+   *
+   * A `link` button and the joined edges inside a `Button.Split` keep their own radius.
+   */
+  shape?: 'button' | 'card' | 'sharp' | 'pill';
   /**
    * Tooltip content and configuration:
    * - string: simple tooltip text
@@ -240,15 +249,22 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   whiteSpace: 'nowrap',
   radius: {
     '': true,
+    'shape=card': '1cr',
+    'shape=sharp': 0,
+    'shape=pill': 'round',
     'type=link & !focused': 0,
     '@parent(button-split, >) & !:last-child': '1r left',
     '@parent(button-split, >) & !:first-child': '1r right',
     '@parent(button-split, >) & !:first-child & !:last-child': 0,
   },
-  // No overlap inside a ButtonSplit: every bordered type draws a glass edge
-  // ring, and two rings stacked on one pixel read as a heavier seam than two
-  // side by side.
-  margin: 0,
+  margin: {
+    '': 0,
+    // Outline halves sit side by side with no overlap: each draws its own glass
+    // edge ring, and two rings stacked on one pixel read as a heavier seam than
+    // two next to each other. Primary halves are divided by a real gap that
+    // shows whatever is behind the split.
+    '@parent(button-split, >) & !:first-child & type=primary': '1bw left',
+  },
   // oxlint-disable-next-line tasty/require-default-state -- outside a ButtonSplit the button sets no z-index, so the consumer's stacking applies
   zIndex: {
     '@parent(button-split, >) & :hover': 1,
@@ -361,8 +377,9 @@ const FILL_CLEAR = 'oklch(from #glass-fill l c h / 0)';
  * - The border stays as a transparent 1bw: every size here assumes it
  *   (`$size - 2bw`, the inline padding), so the layout doesn't change.
  *   `::before` (Edge) draws the ring right over it and inherits the radius,
- *   ButtonSplit's corners included. Inside a ButtonSplit the buttons no longer
- *   overlap by 1bw, so each seam shows both rings side by side.
+ *   ButtonSplit's corners included. Inside a ButtonSplit, outline halves no
+ *   longer overlap by 1bw, so each seam shows both rings side by side; primary
+ *   halves keep their 1bw gap.
  * - A validation border keeps its color: the ring steps aside.
  * - Brand fills also bleed a little of their own color past the edge, and both
  *   kinds sit on an outer shadow that collapses while pressed.
@@ -473,6 +490,7 @@ export const Button = forwardRef(function Button(
   let {
     type,
     size: sizeProp,
+    shape,
     label,
     children,
     theme = splitContext?.theme ?? 'default',
@@ -771,6 +789,7 @@ export const Button = forwardRef(function Button(
         data-theme={theme}
         data-type={effectiveType ?? 'outline'}
         data-size={size}
+        data-shape={shape === 'button' ? undefined : shape}
         data-popover-dismiss=""
         styles={styles}
         tokens={{

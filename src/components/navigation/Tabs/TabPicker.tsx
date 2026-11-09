@@ -1,7 +1,7 @@
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
-import { ItemAction } from '../../actions/ItemAction';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 
 import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';

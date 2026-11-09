@@ -2,9 +2,9 @@ import { ReactElement } from 'react';
 import { Item, ItemProps } from 'react-stately';
 import { ListCollection } from 'react-stately/private/list/ListCollection';
 
-import { ItemAction } from './actions/ItemAction';
+import { ItemAction } from './actions/ItemAction/ItemAction';
 import { CubeItemProps } from './content/Item/Item';
-import { ItemBadge } from './content/ItemBadge';
+import { ItemBadge } from './content/ItemBadge/ItemBadge';
 
 import type { LinkDOMProps, Node } from '@react-types/shared';
 import type { ListState } from 'react-stately';

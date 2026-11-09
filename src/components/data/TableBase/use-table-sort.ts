@@ -1,7 +1,7 @@
 import { useControlledState } from '@react-stately/utils';
 import { useCollator } from 'react-aria';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 import { getColumnText, getColumnValue } from './use-table-columns';
 

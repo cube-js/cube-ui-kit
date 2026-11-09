@@ -11,13 +11,13 @@ import {
 } from 'react';
 import { VisuallyHidden } from 'react-aria';
 
-import { useEvent } from '../../_internal';
-import { useI18n } from '../../i18n';
+import { useEvent } from '../../_internal/hooks/use-event';
+import { useI18n } from '../../i18n/useI18n';
 import { generateRandomId } from '../../utils/random';
-import { mergeProps } from '../../utils/react';
+import { mergeProps } from '../../utils/react/mergeProps';
 import { usePopoverSync } from '../../utils/react/usePopoverSync';
 
-import { MenuTrigger } from './Menu';
+import { MenuTrigger } from './Menu/MenuTrigger';
 
 export interface UseAnchoredMenuReturn<P, T> {
   /** Ref to attach to the anchor element for positioning the menu. */

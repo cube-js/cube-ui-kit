@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { Button } from '../../actions/Button';
-import { Switch } from '../../fields/Switch';
+import { Button } from '../../actions/Button/Button';
+import { Switch } from '../../fields/Switch/Switch';
 import { Space } from '../../layout/Space';
 import { Divider } from '../Divider/Divider';
 import { Paragraph } from '../Paragraph';

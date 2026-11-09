@@ -1,10 +1,10 @@
 import { Styles, tasty } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
-import { useEvent } from '../../../_internal';
-import { useI18n } from '../../../i18n';
-import { Radio } from '../RadioGroup';
-import { Slider } from '../Slider';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
+import { Radio } from '../RadioGroup/Radio';
+import { Slider } from '../Slider/Slider';
 
 import {
   CHANNELS,

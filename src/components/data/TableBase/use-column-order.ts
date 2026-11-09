@@ -1,7 +1,7 @@
 import { useControlledState } from '@react-stately/utils';
 import { useState } from 'react';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 import type { CubeResolvedColumn, CubeTableColumn } from './types';
 import type { useTableStorage } from './use-table-storage';

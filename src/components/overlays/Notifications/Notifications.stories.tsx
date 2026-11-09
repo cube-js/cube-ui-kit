@@ -5,6 +5,9 @@ import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
 
+// The entry, not the defining files: `.design-sync/config.json` shims this one
+// module path to the built package, so previews share Root's notification
+// context instead of bundling a second copy from source.
 import {
   Notification,
   NotificationAction,

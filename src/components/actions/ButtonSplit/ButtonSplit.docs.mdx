@@ -133,7 +133,7 @@ const [currentKey, setCurrentKey] = useState('deploy');
 
 ### Custom Mode
 
-Pass `children` to render arbitrary buttons with split-group styling (joined radius, collapsed borders). Set `type` and `theme` on the wrapper -- child buttons inherit them via context.
+Pass `children` to render arbitrary buttons with split-group styling (joined radius; outline buttons sit side by side, each with its own edge, and primary buttons are divided by a 1px gap that shows the background). Set `type` and `theme` on the wrapper -- child buttons inherit them via context.
 
 ```jsx
 import { Button, Menu } from '@cube-dev/ui-kit';

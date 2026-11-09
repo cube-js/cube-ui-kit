@@ -6,10 +6,10 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { extractStyles } from '../../../utils/styles';
-import { ItemAction } from '../../actions/ItemAction';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { useDialogContext } from '../../overlays/Dialog/context';
 import { CubeItemProps, Item } from '../Item/Item';
 

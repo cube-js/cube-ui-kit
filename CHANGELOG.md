@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.207.0
+
+### Minor Changes
+
+- [#1625](https://github.com/cube-js/cube-ui-kit/pull/1625) [`e555c3add`](https://github.com/cube-js/cube-ui-kit/commit/e555c3addac1f3e9f05824ba716588bc53a4b70c) Thanks [@tenphi](https://github.com/tenphi)! - `Button` takes a `shape` prop (`button`, `card`, `sharp` or `pill`) with the same names as `Item`'s, so a round, square-cornered or card-radius button no longer needs a `radius` override. A `link` button and the joined edges inside a `Button.Split` keep their own radius.
+
+## 0.206.3
+
+### Patch Changes
+
+- [#1622](https://github.com/cube-js/cube-ui-kit/pull/1622) [`1bef6a8a3`](https://github.com/cube-js/cube-ui-kit/commit/1bef6a8a32e8a695041f3f9432b209f003d0bb3d) Thanks [@tenphi](https://github.com/tenphi)! - The published `tasty.config.ts` lets containers (`Card`, `Panel`, `Layout`, `Alert`, `Result`, `Skeleton` and the rest) keep `display`, so `tasty/no-protected-restyle` accepts a `display: 'flex'` or `'grid'` that their other layout props need on a block container such as `Card`.
+
+## 0.206.2
+
+### Patch Changes
+
+- [#1620](https://github.com/cube-js/cube-ui-kit/pull/1620) [`71d0ba43e`](https://github.com/cube-js/cube-ui-kit/commit/71d0ba43e406de359e54cf9a79d29867633af7dc) Thanks [@tenphi](https://github.com/tenphi)! - The published `tasty.config.ts` treats `Alert`, `Result` and `Skeleton` as containers, so `tasty/no-protected-restyle` accepts the props that lay out their content (`padding`, `gap`, `flow`, `place*`, `align*`, `justify*`, `grid*`, `overflow`, `scrollbar`), and a `styles` that sets only those. `Placeholder` also keeps `radius`, the shape of what it stands in for. Their appearance props (`fill`, `border`, `color`, `preset`) are still reported.
+
 ## 0.206.1
 
 ### Patch Changes

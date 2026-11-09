@@ -1,6 +1,6 @@
 import { DIMENSION_STYLES, POSITION_STYLES } from '@tenphi/tasty';
 
-import { mergeProps } from '../../utils/react/index';
+import { mergeProps } from '../../utils/react/mergeProps';
 import { extractStyles, mergeStyleLayers } from '../../utils/styles';
 
 import { rendersFieldChrome } from './wrapper';

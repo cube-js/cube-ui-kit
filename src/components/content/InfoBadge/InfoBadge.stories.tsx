@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { Switch } from '../../fields/Switch';
+import { Switch } from '../../fields/Switch/Switch';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { Paragraph } from '../Paragraph';

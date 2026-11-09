@@ -20,7 +20,7 @@ import { Badge } from '../../content/Badge/Badge';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Form } from '../../form/Form';
-import { SubmitButton } from '../../form/Form/SubmitButton';
+import { SubmitButton } from '../../form/Form/SubmitButton/SubmitButton';
 import { Space } from '../../layout/Space';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';

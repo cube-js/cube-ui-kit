@@ -1,7 +1,7 @@
 import { forwardRef, ReactNode } from 'react';
 
-import { useI18n } from '../../../i18n';
-import { chain } from '../../../utils/react';
+import { useI18n } from '../../../i18n/useI18n';
+import { chain } from '../../../utils/react/chain';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Content } from '../../content/Content';

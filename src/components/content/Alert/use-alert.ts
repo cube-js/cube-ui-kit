@@ -1,6 +1,6 @@
 import { CONTAINER_STYLES, filterBaseProps, TEXT_STYLES } from '@tenphi/tasty';
 
-import { useDeprecationWarning } from '../../../_internal';
+import { useDeprecationWarning } from '../../../_internal/hooks/use-deprecation-warning';
 import { extractStyles } from '../../../utils/styles';
 
 import { CubeAlertProps } from './types';

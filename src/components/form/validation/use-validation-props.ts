@@ -1,4 +1,4 @@
-import { useWarn } from '../../../_internal/index';
+import { useWarn } from '../../../_internal/hooks/use-warn';
 
 import {
   ResolvableValidationProps,

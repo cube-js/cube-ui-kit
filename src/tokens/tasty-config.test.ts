@@ -87,11 +87,12 @@ const COPY_BUTTON = `import { Button, tasty } from '@cube-dev/ui-kit';
 export const CopyButton = tasty(Button, { type: 'clear' });
 `;
 
-const CONSUMER = `import { AlertDialog, Button, ButtonGroup, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, GridProvider, ItemButton, Layout, ResizablePanel, Root, Space, tasty, Text, TextArea } from '@cube-dev/ui-kit';
+const CONSUMER = `import { Alert, AlertDialog, Button, ButtonGroup, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, GridProvider, ItemButton, Layout, Placeholder, ResizablePanel, Result, Root, Skeleton, Space, tasty, Text, TextArea } from '@cube-dev/ui-kit';
 
 import { CopyButton } from './CopyButton';
 
 export const DangerButton = tasty(Button, { styles: { fill: '#danger' } });
+export const FlexCard = tasty(Card, { styles: { display: 'flex', placeContent: 'center' } });
 export const ClearButton = tasty(Button, { type: 'clear', size: 'small' });
 export const CopyDangerButton = tasty(CopyButton, { styles: { fill: '#danger' } });
 
@@ -121,9 +122,16 @@ export function Consumer() {
       <Text.Strong styles={{ color: '#danger' }} />
       <CloseIcon color="#danger" />
       <Card padding="2x" gap="1x" flow="row" />
+      <Card display="grid" gridColumns="1fr auto" />
       <Card fill="#danger" />
       <Layout.Content padding="0" scrollbar="tiny" />
       <GridLayout.Content padding="0" />
+      <Alert padding="1x" gap="1x" />
+      <Result padding="0" styles={{ gap: '1x' }} />
+      <Skeleton padding="2x" gap="1x" />
+      <Placeholder width="120px" radius="1r" />
+      <Alert fill="#danger" />
+      <Placeholder padding="2x" />
       {/* oxlint-disable-next-line tasty/no-protected-restyle -- a reasoned override */}
       <Button fill="#purple" />
     </>
@@ -332,10 +340,11 @@ describe('tasty.config.ts', () => {
 
   // A consumer that extends this config gets `protectedComponents`, so
   // restyling a component reports, its primitives stay open, containers keep
-  // the props that lay out their content, and a component's own prop named
-  // like a style passes, while that name on a component that doesn't own it
-  // (`<Button filter>`) is reported. A sub-component counts as its export
-  // (`Button.Split`) unless the config names it (`Button.Group`).
+  // the props that lay out their content, a placeholder keeps its `radius`,
+  // and a component's own prop named like a style passes, while that name on
+  // a component that doesn't own it (`<Button filter>`) is reported. A
+  // sub-component counts as its export (`Button.Split`) unless the config
+  // names it (`Button.Group`).
   it('protects components for a consumer that extends it', () => {
     const reported = lintConsumer(['no-protected-restyle'], {
       'CopyButton.tsx': COPY_BUTTON,
@@ -355,6 +364,8 @@ describe('tasty.config.ts', () => {
         '<Button filter="grayscale(1)" />',
         '<Button.Split fill="#danger" />',
         '<Card fill="#danger" />',
+        '<Alert fill="#danger" />',
+        '<Placeholder padding="2x" />',
       ].sort(),
     );
   }, 30_000);

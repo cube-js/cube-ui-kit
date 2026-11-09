@@ -2,7 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
 import THEMES from '../../../data/themes';
-import { CubeItemProps, Item } from '../Item';
+import { CubeItemProps, Item } from '../Item/Item';
 
 const FILL_STYLES = Object.keys(THEMES).reduce((map, type) => {
   map[`theme=${type}`] =

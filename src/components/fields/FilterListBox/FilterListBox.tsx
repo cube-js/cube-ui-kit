@@ -1,5 +1,5 @@
 import { ItemElement, Key } from '@react-types/shared';
-import { Styles } from '@tenphi/tasty';
+import { modAttrs, Styles } from '@tenphi/tasty';
 import {
   cloneElement,
   ForwardedRef,
@@ -19,16 +19,19 @@ import { useFilter, useFocusWithin, useId, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import {
   CubeCollectionItemProps,
   CollectionItem as Item,
 } from '../../CollectionItem';
-import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { splitFieldLayout } from '../../form/field-layout';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
+import { wrapWithField } from '../../form/wrapper';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import {

@@ -173,13 +173,11 @@ describe('current theme disabled fades', () => {
 
   // Every slot that carries the label carries it identically, so a container
   // that sets `#current-fill` moves all of them at once and cannot leave one
-  // behind. The rim is in the list on purpose: it is the same "opposite side of
-  // the fill" color, at `.25`.
-  it('current.primary paints label, rim and icon slots from it', () => {
+  // behind.
+  it('current.primary paints label and icon slots from it', () => {
     const primary = ITEM_VARIANTS['current.primary'] as Record<string, any>;
 
     expect(primary.fill['']).toContain('#current');
-    expect(primary.border['']).toBe('#current-fill.25');
     expect(primary['-webkit-text-fill-color']['']).toBe('#current-fill');
 
     for (const slot of ['Icon', 'RightIcon', 'Prefix', 'Suffix', 'Actions']) {

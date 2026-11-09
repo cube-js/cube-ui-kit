@@ -1,6 +1,6 @@
 import { useControlledState } from '@react-stately/utils';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 import type { CubePaginationItem, CubeTablePageInfo } from './types';
 

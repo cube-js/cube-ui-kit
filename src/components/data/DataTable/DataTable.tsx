@@ -5,11 +5,15 @@ import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { forwardRef, useMemo, useRef, useState } from 'react';
 import { useMultipleSelectionState } from 'react-stately';
 
-import { useEvent, useWarn } from '../../../_internal/hooks';
-import { useI18n } from '../../../i18n';
-import { useCombinedRefs } from '../../../utils/react';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useWarn } from '../../../_internal/hooks/use-warn';
+import { useI18n } from '../../../i18n/useI18n';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
-import { clampPage, getPageInfo } from '../../navigation/Pagination';
+import {
+  clampPage,
+  getPageInfo,
+} from '../../navigation/Pagination/use-pagination';
 import { DraggableCollection } from '../../shared/DraggableCollection';
 import { ItemTableFooter } from '../ItemTable/ItemTableFooter';
 import { RowCollection } from '../TableBase/RowCollection';

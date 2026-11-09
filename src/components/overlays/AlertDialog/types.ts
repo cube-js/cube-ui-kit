@@ -7,7 +7,7 @@ import {
 import { ReactNode } from 'react';
 import { AriaDialogProps } from 'react-aria';
 
-import { CubeDialogContainerProps } from '../Dialog';
+import { CubeDialogContainerProps } from '../Dialog/DialogContainer';
 
 import { CubeAlertDialogProps } from './AlertDialog';
 

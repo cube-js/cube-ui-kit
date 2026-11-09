@@ -29,9 +29,9 @@ import {
 } from 'react';
 
 import { isDevEnv } from '../../../utils/is-dev-env';
-import { useCombinedRefs } from '../../../utils/react';
+import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
-import { Alert } from '../Alert';
+import { Alert } from '../Alert/Alert';
 
 import {
   LayoutNestedContext,

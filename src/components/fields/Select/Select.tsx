@@ -36,16 +36,19 @@ import {
   useSelectState,
 } from 'react-stately';
 
-import { useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { FieldBaseProps } from '../../../shared/index';
+import { FieldBaseProps } from '../../../shared/form';
 import { generateRandomId } from '../../../utils/random';
-import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
+import {
+  mergeRefs,
+  useCombinedRefs,
+} from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { mergeStyleLayers } from '../../../utils/styles';
@@ -63,22 +66,20 @@ import {
   filterSelectionItemProps,
   getValueSelectionState,
 } from '../../CollectionItem';
-import { CubeItemProps, Item } from '../../content/Item';
+import { CubeItemProps, Item } from '../../content/Item/Item';
 import { Text } from '../../content/Text';
-import {
-  getValidationIcon,
-  getValidationMods,
-  useFieldProps,
-  wrapWithField,
-} from '../../form';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
-import { DisplayTransition } from '../../helpers';
+import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { getValidationMods } from '../../form/validation/resolve-validation-props';
+import { getValidationIcon } from '../../form/validation/ValidationIndicator';
+import { wrapWithField } from '../../form/wrapper';
+import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
-import { Portal } from '../../portal';
+import { Portal } from '../../portal/Portal';
 import { useOptionOriginPress } from '../option-origin-press';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 

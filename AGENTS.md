@@ -58,13 +58,25 @@ When making code changes that affect end users or the public API, **always add a
 - Add changeset manually (no CLI) — full guidelines: [`.cursor/commands/add-changeset.md`](.cursor/commands/add-changeset.md).
 - Write the summary unwrapped: one paragraph is one line, like every other Markdown file here (see [Markdown rules](docs/rules/coding.md#markdown-rules)).
 
+## Linear Issues: Done When Cloud Has the Fix
+
+Cloud consumes the published package, so a UI Kit fix reaches users only when a Cloud PR bumps a release that carries it. Cloud's `update-uikit` skill finds the fix's issues through the changelog's links to UI Kit PRs, and the bump closes each one it completes; an issue that also needs a Cloud change, such as removing a workaround, closes with that change. So a UI Kit PR links its issues without closing them:
+
+- Name each issue on a line of its own in the PR body: `Part of <issue ID>`.
+- Keep issue IDs out of the PR title and the branch name, which close an issue on merge, and out of changesets, whose text the release PR copies. Never put a closing word before an ID: Linear's are close, fix, resolve, complete and implement in any form, and "Linear issue".
+- A PR that only edits another PR's unreleased changeset ships under that PR's changelog entry, which links only that PR, so it names only issues that PR names too. Give any other issue a changeset of its own.
+- Tasty isn't connected to Linear. The UI Kit PR that bumps `@tenphi/tasty` names the Tasty fix's issues as `Part of`.
+- After a merge, check each issue the PR names. An issue whose fix ships in no release, because none of its PRs adds a non-empty changeset (see Changesets), has nothing for a bump to find: move it to Done by hand once its last PR has merged. One whose fix ships in a release and went to Done before Cloud has it goes back to In Progress, with a comment saying what is left.
+
+File new issues with the [`create-ticket`](.claude/skills/create-ticket/SKILL.md) skill.
+
 ## Stories: Interaction-Only States
 
 A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs `play` before it snapshots, so a story whose point is such a state **must** drive it with `play` and end on a `waitFor` assertion for the state itself (that assertion is also the wait Chromatic needs). Drive one element per story — only the final state is captured. For tooltips, copy the recipe verbatim: `timeout(250)` (the trigger is wired in a mount effect), `unhover` before `hover` (React Aria ignores a hover until a mouse move sets the pointer modality), and `delay: 0` in the tooltip config. Both caveats fail silently, and a local render test can pass while the story does not — Chromatic is the check. Full pattern: [storybook.md](docs/rules/storybook.md#interaction-only-states-need-a-play-function).
 
 ## Imports: Reach Past the Barrel
 
-Inside `src/`, import the file that defines a thing rather than the barrel that re-exports it: `from '../../actions/ItemButton/ItemButton'`, not `from '../../actions'`. Same component either way, but the barrel also drags `Menu`, `CommandMenu`, `ButtonSplit` and everything they import into the graph. Three things read that graph — Chromatic's TurboSnap (which cannot scope a build around anything reachable from `<Root>`, so a barrel there costs a full 1000-snapshot rebuild), consumers' tree-shaking, and module init order around `Root`'s module-scope `configure()`. Icons are enforced by `no-restricted-imports`; the rest is on you, with `pnpm chromatic:check` as the backstop and `node scripts/chromatic-report.mjs --trace <file>` to price a change before making it. `index.ts` files are exempt — assembling the public surface is their job. Full rules: [coding.md](docs/rules/coding.md#imports).
+Inside `src/`, import the file that defines a thing rather than the barrel that re-exports it: `from '../../actions/ItemButton/ItemButton'`, not `from '../../actions'`. Same component either way, but the barrel also drags `Menu`, `CommandMenu`, `ButtonSplit` and everything they import into the graph. Three things read that graph — Chromatic's TurboSnap (which cannot scope a build around anything reachable from `<Root>`, so a barrel there costs a full 1000-snapshot rebuild), consumers' tree-shaking, and module init order around `Root`'s module-scope `configure()`. Lint enforces it: `repo/no-barrel-import` rejects a relative import that resolves to an `index.ts`, and `import/no-cycle` rejects an import cycle. `import type` is exempt, a story may import a component's own entry for its compound API (`Button.Group`), and `index.ts` files and specs are exempt. `node scripts/chromatic-report.mjs --trace <file>` prices a change before you make it. Full rules: [coding.md](docs/rules/coding.md#imports).
 
 ## React Compiler: Skip Manual Memoization
 
@@ -87,7 +99,7 @@ Such a rule only works by beating the child's own styles, so it also beats the c
   '@in-dialog': '@parent(id=Dialog, >)', // `, >` = direct parent; drop it for any ancestor
   display: { '': 'block', '@in-dialog': 'flex' },
   ```
-  The rule keeps the child's own specificity and a consumer's `styles` key replaces it. Because the state travels with the styles, a consumer can also target the same case: `gap: { '': '3x', '@in-dialog': '1x' }`. Worked example: `FormElement` in `Form.tsx`. It replaced two `Dialog` rules that silently beat a form's own `display` and `gap` styles.
+  The rule keeps the child's own specificity and a consumer's `styles` key replaces it. Because the state travels with the styles, a consumer can also target the same case: `gap: { '': '3x', '@in-dialog': '1x' }`. Worked example: `FormElement` in `FormElement.tsx`. It replaced two `Dialog` rules that silently beat a form's own `display` and `gap` styles.
 - **Never build state keys in JS.** No `const IN_DIALOG = '@parent(…)'` spread as `[IN_DIALOG]: …`. The condition then lives outside the styles, a consumer can't name it, and every map carries the raw selector instead of a word. If several components need a state, register it with the global predefined states in `Root.tsx` (`setGlobalPredefinedStates`) rather than exporting a string.
 - **A parent passes values only through channels built for overriding.** Those channels are slot styles (a `SlotProvider` merges them under the consumer's own `styles`), custom properties the child reads (`$dialog-padding-h`), props and mods.
 - **Know what tasty's `gap` compiles to.** On `display: flex` or `grid` it becomes the CSS `gap` property. On `display: block` it becomes a bottom margin on every child but the last. Those margins land on whatever goes inside the container, and a `gap: 0` from outside never reaches them. So when a block container's spacing is wrong in some context, change the container's own `gap` for that context; don't reset its children. `Form` stays a block outside dialogs because a flex column would stretch a bare `Button` child to full width and stack inline content.

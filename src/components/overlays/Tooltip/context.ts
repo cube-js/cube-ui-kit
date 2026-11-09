@@ -2,9 +2,8 @@ import React, { HTMLAttributes, RefCallback, RefObject } from 'react';
 import { Placement } from 'react-aria';
 import { TooltipTriggerState } from 'react-stately';
 
-import { PlacementAxis } from '../../../shared';
-
 import type { Props } from '../../../props';
+import type { PlacementAxis } from '../../../shared';
 
 type Phase = 'enter' | 'entered' | 'exit' | 'unmounted';
 

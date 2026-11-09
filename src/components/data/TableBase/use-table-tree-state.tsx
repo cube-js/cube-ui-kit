@@ -1,8 +1,8 @@
 import { useControlledState } from '@react-stately/utils';
 import { Item, useTreeState } from 'react-stately';
 
-import { useEvent } from '../../../_internal/hooks';
-import { useI18n } from '../../../i18n';
+import { useEvent } from '../../../_internal/hooks/use-event';
+import { useI18n } from '../../../i18n/useI18n';
 
 import type { Key, Node } from '@react-types/shared';
 import type { ReactElement } from 'react';

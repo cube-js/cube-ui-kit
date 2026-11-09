@@ -27,6 +27,7 @@ A versatile action component that triggers commands and navigates users.
 - **`type`** `'primary' | 'outline' | 'outline-2' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button (`outline-2` is identical to `outline` but uses `#surface-3` as the base fill; not available for the `special` theme)
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special' | 'current'` (default: `default`) — Semantic colour palette theme. `current` is not a brand palette: it mixes every color from the inherited text color, so the button adopts the color of whatever container it sits in
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Button size. Use `'inline'` for link-type buttons or a number/string for custom sizes (e.g. `64` or `'8x'`)
+- **`shape`** `'button' | 'card' | 'sharp' | 'pill'` (default: `button`) — Corner shape, with the same names as `Item`'s `shape`
 - **`icon`** — Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
 - **`rightIcon`** — Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
 - **`children`** `ReactNode` — Button label or custom content
@@ -118,6 +119,17 @@ The `mods` prop accepts the following modifiers you can override:
 - `xlarge` – Extra spacious height (48px).
 - `inline` – Inline size for link-type buttons (no fixed height).
 - Custom values – Pass a number (pixels) or a string (e.g. `'8x'`) for custom sizing.
+
+### Shapes. `shape` prop
+
+- `button` – The button radius (`1r`, default).
+- `card` – The card radius (`1cr`), for a button laid out as a card.
+- `sharp` – Square corners, for a button that fills a row or a cell edge to edge.
+- `pill` – Fully rounded ends (`round`). A single-icon button becomes a circle.
+
+A `link` button keeps no radius at rest, and the joined edges inside a `Button.Split` stay square, whatever the shape.
+
+<Story of={ButtonStories.Shapes} />
 
 ## Examples
 

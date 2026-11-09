@@ -4,7 +4,7 @@ import { forwardRef } from 'react';
 import { useProviderProps } from '../../../../provider';
 import { Button, CubeButtonProps } from '../../../actions/Button/Button';
 import { isModernFormController } from '../backend';
-import { useFormProps } from '../Form';
+import { useFormProps } from '../FormContext';
 import { ModernSubmitButton } from '../modern/actions';
 import { FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';

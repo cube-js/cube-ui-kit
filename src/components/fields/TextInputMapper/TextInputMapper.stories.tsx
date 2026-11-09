@@ -5,7 +5,7 @@ import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Form } from '../../form/Form';
 import { Space } from '../../layout/Space';
-import { TextInput } from '../TextInput/index';
+import { TextInput } from '../TextInput/TextInput';
 
 import { CubeTextInputMapperProps, TextInputMapper } from './TextInputMapper';
 

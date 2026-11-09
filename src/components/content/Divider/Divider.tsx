@@ -12,7 +12,7 @@ import {
 import { forwardRef, useId } from 'react';
 import { useSeparator } from 'react-aria';
 
-import { useSlotProps } from '../../../utils/react';
+import { useSlotProps } from '../../../utils/react/Slots';
 import { extractStyles } from '../../../utils/styles';
 
 import type { ReactNode } from 'react';

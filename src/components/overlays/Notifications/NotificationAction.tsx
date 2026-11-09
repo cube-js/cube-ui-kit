@@ -1,6 +1,6 @@
 import { createContext, Key, ReactNode, useContext, useMemo } from 'react';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 
 import type { NotificationActionProps } from './types';

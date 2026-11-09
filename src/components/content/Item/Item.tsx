@@ -36,14 +36,16 @@ import {
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import {
-  DynamicIcon,
   getDisabledElementProps,
-  mergeProps,
   omitActivationEventProps,
+} from '../../../utils/react/disabledProps';
+import { mergeProps } from '../../../utils/react/mergeProps';
+import {
+  DynamicIcon,
   ResolvedIcon,
   resolveIcon,
-} from '../../../utils/react';
-import { ItemAction } from '../../actions/ItemAction';
+} from '../../../utils/react/resolveIcon';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import {
@@ -54,7 +56,7 @@ import {
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { highlightText } from '../highlightText';
 import { CubeHotKeysProps, HotKeys } from '../HotKeys/HotKeys';
-import { ItemBadge } from '../ItemBadge';
+import { ItemBadge } from '../ItemBadge/ItemBadge';
 import { useAutoTooltip } from '../use-auto-tooltip';
 
 import type { Props } from '../../../props';
