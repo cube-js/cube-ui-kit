@@ -154,7 +154,9 @@ export default {
     },
     // Containers. `Layout` and `GridLayout` cover their sub-components, such
     // as `Layout.Content`, whose `scrollbar` is their own prop;
-    // `ResizablePanel`'s `direction` is the side it resizes from.
+    // `ResizablePanel`'s `direction` is the side it resizes from. `Alert`,
+    // `Result` and `Skeleton` hold content the consumer supplies, so how that
+    // content is spaced is the consumer's call.
     {
       source: '@cube-dev/ui-kit',
       include: [
@@ -166,6 +168,9 @@ export default {
         'Footer',
         'Layout',
         'GridLayout',
+        'Alert',
+        'Result',
+        'Skeleton',
       ],
       allowedStyleProps: [
         'position',
@@ -197,6 +202,13 @@ export default {
         'scrollbar',
         'direction',
       ],
+    },
+    // A placeholder stands in for content of any shape, so `radius` is its
+    // shape, like `dimension`.
+    {
+      source: '@cube-dev/ui-kit',
+      include: ['Placeholder'],
+      allowedStyleProps: ['position', 'dimension', 'radius'],
     },
     {
       source: '@cube-dev/ui-kit',
