@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.207.0
+
+### Minor Changes
+
+- [#1625](https://github.com/cube-js/cube-ui-kit/pull/1625) [`e555c3add`](https://github.com/cube-js/cube-ui-kit/commit/e555c3addac1f3e9f05824ba716588bc53a4b70c) Thanks [@tenphi](https://github.com/tenphi)! - `Button` takes a `shape` prop (`button`, `card`, `sharp` or `pill`) with the same names as `Item`'s, so a round, square-cornered or card-radius button no longer needs a `radius` override. A `link` button and the joined edges inside a `Button.Split` keep their own radius.
+
 ## 0.206.3
 
 ### Patch Changes
