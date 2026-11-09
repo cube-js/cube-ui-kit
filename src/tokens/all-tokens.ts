@@ -26,7 +26,7 @@ import type { Styles } from '@tenphi/tasty';
  * - Space tokens ($space-xs, $space-sm, etc.)
  * - Size tokens ($size-xs, $size-sm, etc.)
  * - Shadow tokens ($shadow, $item-shadow, etc.)
- * - Glass edge tokens ($glass-edge-lift, $glass-edge-shade, $glass-halo, $glass-accent-halo)
+ * - Glass edge tokens ($glass-edge-lift, $glass-edge-shade, $glass-fill-shade, $glass-halo, $glass-accent-halo)
  * - Layout tokens ($max-content-width, $topbar-height, etc.)
  * - Typography tokens ($h1-font-size, $t3-line-height, etc.)
  * - Color tokens ($purple-color, $danger-color, etc.)

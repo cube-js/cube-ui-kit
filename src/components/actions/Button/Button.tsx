@@ -339,6 +339,9 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
 // The fill's own color, lighter or darker by a token's worth of OKLCH lightness.
 const EDGE_LIGHT = 'oklch(from #glass-fill calc(l + $glass-edge-lift) c h)';
 const EDGE_DARK = 'oklch(from #glass-fill calc(l - $glass-edge-shade) c h)';
+const FILL_DARK = 'oklch(from #glass-fill calc(l - $glass-fill-shade) c h)';
+// The fill itself, fully transparent: a fade to it keeps the hue.
+const FILL_CLEAR = 'oklch(from #glass-fill l c h / 0)';
 
 /**
  * Glass edge (prototype): outline and primary buttons draw their edge as a
@@ -351,8 +354,11 @@ const EDGE_DARK = 'oklch(from #glass-fill calc(l - $glass-edge-shade) c h)';
  *   one and any brand fill. A blend mode can't do that: `overlay` and
  *   `soft-light` act mostly on mid-tones, so they vanish on a near-white fill
  *   and overpower a saturated one.
+ * - The fill itself darkens a little toward the top and bottom
+ *   (`$glass-fill-shade`), right where the ring is light, so the ring's light
+ *   edges stand out against it.
  * - The fill goes through `#glass-fill`, which carries the variant's own fill
- *   map, states included, so the ring can derive its colors from it.
+ *   map, states included, so the ring and the shading derive from it.
  * - The border stays as a transparent 1bw: every size here assumes it
  *   (`$size - 2bw`, the inline padding, ButtonSplit's `-1bw` overlap), so the
  *   layout doesn't change. `::before` (Edge) draws the ring right over it and
@@ -365,6 +371,8 @@ function glassEdge(styles: Styles, kind: 'glass' | 'glass-accent'): Styles {
   return {
     '#glass-fill': styles.fill,
     fill: '#glass-fill',
+    // Over the fill color, under the label and the ring.
+    image: `linear-gradient(${FILL_DARK}, ${FILL_CLEAR} 35%, ${FILL_CLEAR} 65%, ${FILL_DARK})`,
     border: {
       '': '#clear',
       invalid: '#danger-accent-text',

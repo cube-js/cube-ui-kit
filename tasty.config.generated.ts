@@ -291,6 +291,7 @@ export const runtimeNames = {
     '$glass-accent-halo',
     '$glass-edge-lift',
     '$glass-edge-shade',
+    '$glass-fill-shade',
     '$glass-halo',
     '$h1-bold-font-weight',
     '$h1-font-size',
