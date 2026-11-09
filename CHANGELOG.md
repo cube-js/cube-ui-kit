@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.206.2
+
+### Patch Changes
+
+- [#1620](https://github.com/cube-js/cube-ui-kit/pull/1620) [`71d0ba43e`](https://github.com/cube-js/cube-ui-kit/commit/71d0ba43e406de359e54cf9a79d29867633af7dc) Thanks [@tenphi](https://github.com/tenphi)! - The published `tasty.config.ts` treats `Alert`, `Result` and `Skeleton` as containers, so `tasty/no-protected-restyle` accepts the props that lay out their content (`padding`, `gap`, `flow`, `place*`, `align*`, `justify*`, `grid*`, `overflow`, `scrollbar`), and a `styles` that sets only those. `Placeholder` also keeps `radius`, the shape of what it stands in for. Their appearance props (`fill`, `border`, `color`, `preset`) are still reported.
+
 ## 0.206.1
 
 ### Patch Changes
