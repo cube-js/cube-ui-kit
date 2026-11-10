@@ -235,15 +235,42 @@ export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
   disableFocusableProvider?: boolean;
 }
 
+/** The `TooltipTrigger` options `useTooltipTriggerBinding` reads. */
+export type TooltipTriggerBindingProps = Omit<
+  CubeTooltipTriggerProps,
+  'children' | 'activeWrap' | 'disableFocusableProvider'
+>;
+
+export interface TooltipTriggerBinding {
+  /** Spread on the trigger element. */
+  triggerProps: HTMLAttributes<HTMLElement>;
+  /** Attached to the trigger element; the tooltip is positioned against it. */
+  triggerRef: RefObject<HTMLElement>;
+  /**
+   * The positioned tooltip, rendered beside the trigger: it portals out, and
+   * mounts nothing until the tooltip first opens.
+   */
+  renderTooltip: (placement?: Placement) => ReactNode;
+}
+
 /**
- * TooltipTrigger wraps around a trigger element and a Tooltip. It handles opening and closing
- * the Tooltip when the user hovers over or focuses the trigger, and positioning the Tooltip
- * relative to the trigger.
+ * Everything `TooltipTrigger` does except render the trigger: the open state,
+ * the trigger's props and ref, and the positioned tooltip.
+ *
+ * A component that renders its own trigger and turns its tooltip on and off
+ * calls this directly and renders the tooltip beside the trigger. Wrapping the
+ * trigger in `TooltipTrigger` only while a tooltip exists changes the element
+ * type above the trigger, so React remounts it: the node is replaced and its
+ * focus drops to the page.
+ *
+ * `tooltip` is the second child `TooltipTrigger` would get: the `Tooltip` to
+ * show, or a placeholder while `isDisabled`.
  */
-export function TooltipTrigger(props: CubeTooltipTriggerProps) {
-  let {
-    children,
-    activeWrap,
+export function useTooltipTriggerBinding(
+  props: TooltipTriggerBindingProps,
+  tooltip: ReactElement<CubeTooltipProps>,
+): TooltipTriggerBinding {
+  const {
     targetRef: externalRef,
     crossOffset = DEFAULT_CROSS_OFFSET,
     isDisabled,
@@ -256,41 +283,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     isOpen,
     onOpenChange,
     defaultOpen,
-    disableFocusableProvider,
   } = props;
-
-  // Extract both children without using React.Children.toArray so we don't lose
-  // function-as-child (render-prop) which React.Children filters out.
-  const rawChildrenArray = Array.isArray(children)
-    ? (children as unknown[])
-    : ([children] as unknown[]);
-
-  const [trigger, tooltip] = rawChildrenArray;
-
-  // Type guard the tooltip
-  if (!isReactElement<CubeTooltipProps>(tooltip)) {
-    throw new Error(
-      'CubeUIKit: TooltipTrigger expects the second child to be a valid React element (Tooltip component).',
-    );
-  }
-
-  // Type guard the trigger
-  if (
-    !isTriggerFunction(trigger) &&
-    !isReactElement(trigger) &&
-    typeof trigger !== 'string'
-  ) {
-    throw new Error(
-      'CubeUIKit: TooltipTrigger expects the first child to be a function, React element, or string.',
-    );
-  }
-
-  // Show deprecation warning for activeWrap
-  if (activeWrap && isDevEnv()) {
-    console.warn(
-      'CubeUIKit: The `activeWrap` prop is deprecated. Use function-as-first-child pattern instead.',
-    );
-  }
 
   let internalRef = useRef<HTMLElement>(null!);
   let tooltipTriggerRef = externalRef ?? internalRef;
@@ -346,20 +339,6 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
       : rawTriggerProps['aria-describedby'],
   };
 
-  const positionOptions: TooltipPositionOptions = {
-    placement: props.placement || 'top',
-    targetRef: tooltipTriggerRef,
-    overlayRef,
-    offset,
-    crossOffset,
-    isOpen: state.isOpen,
-    // Documented on `Tooltip`, which renders inside the positioned layer, so
-    // it is read from the element here.
-    shouldFlip: tooltip.props.shouldFlip,
-    // Called once a scroll carries the trigger out of view.
-    onClose: () => state.close(true),
-  };
-
   const tooltipContextValue = {
     state,
     ref: overlayRef,
@@ -370,26 +349,94 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   // Closed triggers retain their interaction state, but positioning resources
   // belong to the overlay's visible/closing lifetime rather than every label.
-  const tooltipContent = (
-    <TooltipPositionContext.Provider value={positionOptions}>
-      <TooltipTransition isShown={state.isOpen && !isTooltipDisabled}>
-        {({ phase, isShown, ref: transitionRef }) => (
-          <Portal>
-            <PositionedTooltip
-              tooltip={tooltip}
-              contextValue={{
-                ...tooltipContextValue,
-                phase,
-                isShown,
-                ref: overlayRef,
-                transitionRef,
-              }}
-            />
-          </Portal>
-        )}
-      </TooltipTransition>
-    </TooltipPositionContext.Provider>
-  );
+  const renderTooltip = (placement?: Placement) => {
+    const positionOptions: TooltipPositionOptions = {
+      placement: placement || 'top',
+      targetRef: tooltipTriggerRef,
+      overlayRef,
+      offset,
+      crossOffset,
+      isOpen: state.isOpen,
+      // Documented on `Tooltip`, which renders inside the positioned layer, so
+      // it is read from the element here.
+      shouldFlip: tooltip.props.shouldFlip,
+      // Called once a scroll carries the trigger out of view.
+      onClose: () => state.close(true),
+    };
+
+    return (
+      <TooltipPositionContext.Provider value={positionOptions}>
+        <TooltipTransition isShown={state.isOpen && !isTooltipDisabled}>
+          {({ phase, isShown, ref: transitionRef }) => (
+            <Portal>
+              <PositionedTooltip
+                tooltip={tooltip}
+                contextValue={{
+                  ...tooltipContextValue,
+                  phase,
+                  isShown,
+                  ref: overlayRef,
+                  transitionRef,
+                }}
+              />
+            </Portal>
+          )}
+        </TooltipTransition>
+      </TooltipPositionContext.Provider>
+    );
+  };
+
+  return { triggerProps, triggerRef: tooltipTriggerRef, renderTooltip };
+}
+
+/**
+ * TooltipTrigger wraps around a trigger element and a Tooltip. It handles opening and closing
+ * the Tooltip when the user hovers over or focuses the trigger, and positioning the Tooltip
+ * relative to the trigger.
+ */
+export function TooltipTrigger(props: CubeTooltipTriggerProps) {
+  const { children, activeWrap, disableFocusableProvider } = props;
+
+  // Extract both children without using React.Children.toArray so we don't lose
+  // function-as-child (render-prop) which React.Children filters out.
+  const rawChildrenArray = Array.isArray(children)
+    ? (children as unknown[])
+    : ([children] as unknown[]);
+
+  const [trigger, tooltip] = rawChildrenArray;
+
+  // Type guard the tooltip
+  if (!isReactElement<CubeTooltipProps>(tooltip)) {
+    throw new Error(
+      'CubeUIKit: TooltipTrigger expects the second child to be a valid React element (Tooltip component).',
+    );
+  }
+
+  // Type guard the trigger
+  if (
+    !isTriggerFunction(trigger) &&
+    !isReactElement(trigger) &&
+    typeof trigger !== 'string'
+  ) {
+    throw new Error(
+      'CubeUIKit: TooltipTrigger expects the first child to be a function, React element, or string.',
+    );
+  }
+
+  // Show deprecation warning for activeWrap
+  if (activeWrap && isDevEnv()) {
+    console.warn(
+      'CubeUIKit: The `activeWrap` prop is deprecated. Use function-as-first-child pattern instead.',
+    );
+  }
+
+  const {
+    triggerProps,
+    triggerRef: tooltipTriggerRef,
+    renderTooltip,
+  } = useTooltipTriggerBinding(props, tooltip);
+
+  const tooltipContent = renderTooltip(props.placement);
 
   // Function trigger pattern (new)
   if (isTriggerFunction(trigger)) {

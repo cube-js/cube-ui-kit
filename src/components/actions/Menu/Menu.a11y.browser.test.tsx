@@ -608,7 +608,7 @@ describe('Mixed menu accessibility', () => {
     expect(menuAction).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
   });
-  it('restores primary focus through tooltip remounts and opens its tooltip from the keyboard', async () => {
+  it('keeps primary focus while its tooltip is turned on and off, and opens it from the keyboard', async () => {
     const navigate = vi.fn();
     const content = (tooltip: boolean) => (
       <Root navigation={{ useHref: String, useNavigate: () => navigate }}>

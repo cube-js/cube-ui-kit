@@ -165,7 +165,7 @@ const HTML_PASSTHROUGH_PROPS = new Set([
 const INTERNAL_PROPS = new Set([
   'insideWrapper', 'labelProps', 'descriptionProps', 'keyboardShortcutProps',
   'loadingSlot', 'defaultTooltipPlacement', 'labelRef', 'highlightStyles',
-  'hiddenContent', 'isDynamicLabel',
+  'hiddenContent',
   'variant', 'insideForm', 'fieldProps', 'fieldStyles', 'messageStyles',
   'forceField', 'requiredMark', 'validateTrigger', 'showValid', 'idPrefix',
   'shouldUpdate', 'validationDelay', 'message', 'showActions',

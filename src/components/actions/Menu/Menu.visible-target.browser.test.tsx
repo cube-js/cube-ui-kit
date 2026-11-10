@@ -464,10 +464,21 @@ describe('Stable visible native menu targets', () => {
       const currentPrimary = screen.getByRole('menuitem', {
         name: 'Target workbook',
       });
+      // Turning the tooltip on keeps the row's node: nothing above it changes
+      // type, so React does not remount it.
+      expect(currentPrimary).toBe(primary);
       expect(currentPrimary).toHaveFocus();
       expect(currentPrimary).toBeVisible();
-      expect(currentPrimary).toHaveAccessibleDescription(
-        'Visible description Target help',
+      // The tooltip opens on the user's next arrival, not by itself, so it does
+      // not describe the row yet.
+      expect(currentPrimary).toHaveAccessibleDescription('Visible description');
+      // React Aria ignores a hover until a pointer move sets the modality.
+      await act(() => userEvent.hover(document.body));
+      await act(() => userEvent.hover(currentPrimary));
+      await waitFor(() =>
+        expect(currentPrimary).toHaveAccessibleDescription(
+          'Visible description Target help',
+        ),
       );
       expect(labelRef.current).toBe(
         screen

@@ -16,9 +16,8 @@ describe('Layout.Header title', () => {
   const TITLE = 'A header title far too long for the layout it heads';
 
   it('truncates a title too long for the header and shows it in a tooltip', async () => {
-    // The overflow verdict lands in a microtask after the commit, and turning
-    // it on remounts the heading under `TooltipProvider`. Let both happen
-    // before looking the heading up, or the hover lands on a detached node.
+    // The overflow verdict lands in a microtask after the commit. Let it land
+    // before hovering, so the tooltip is already on.
     await act(async () => {
       renderWithRoot(
         <div style={{ width: 240, height: 200, display: 'grid' }}>
@@ -39,6 +38,26 @@ describe('Layout.Header title', () => {
 
     await waitFor(() =>
       expect(screen.getByRole('tooltip')).toHaveTextContent(TITLE),
+    );
+
+    // Positioned against the heading, below it as the header asks. A tooltip
+    // with no anchor sits in the viewport's top-left corner instead.
+    const heading = title.getBoundingClientRect();
+
+    await waitFor(() => {
+      const tooltip = screen.getByRole('tooltip').getBoundingClientRect();
+
+      expect(tooltip.top).toBeGreaterThanOrEqual(heading.bottom - 1);
+      expect(tooltip.top - heading.bottom).toBeLessThan(24);
+      expect(tooltip.right).toBeGreaterThan(heading.left);
+      expect(tooltip.left).toBeLessThan(heading.right);
+    });
+
+    // React Aria closes it on Escape only while it knows the trigger.
+    await userEvent.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument(),
     );
   });
 });
