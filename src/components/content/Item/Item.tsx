@@ -255,9 +255,10 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   /**
    * @private
    * The label's room changes over the item's life — a radio tab in a
-   * responsive switch, say. The auto tooltip then stays mounted, disabled
-   * while the label fits, instead of mounting only once the label truncates.
-   * Either way the element itself keeps its node.
+   * responsive switch, say. The auto tooltip's layer then stays mounted,
+   * disabled while the label fits, instead of mounting each time the label
+   * starts truncating and unmounting each time it stops. Either way the
+   * element itself keeps its node.
    */
   isDynamicLabel?: boolean;
   /**

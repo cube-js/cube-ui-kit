@@ -15,8 +15,11 @@ import { Placement, PositionProps, useIsSSR } from 'react-aria';
 import { flushSync } from 'react-dom';
 
 import { useLayoutEffect } from '../../utils/react/useLayoutEffect';
-import { CubeTooltipProps, Tooltip } from '../overlays/Tooltip/Tooltip';
-import { CubeTooltipProviderProps } from '../overlays/Tooltip/TooltipProvider';
+import { CubeTooltipProps } from '../overlays/Tooltip/Tooltip';
+import {
+  createProviderTooltip,
+  CubeTooltipProviderProps,
+} from '../overlays/Tooltip/TooltipProvider';
 import {
   TooltipTriggerBindingProps,
   useTooltipTriggerBinding,
@@ -60,38 +63,50 @@ function assignRef(ref: unknown, element: HTMLElement | null) {
 }
 
 /**
- * What the binding gets while its tooltip is disabled, as `TooltipProvider`
- * passes `TooltipTrigger`.
- */
-const NO_TOOLTIP = <div />;
-
-/**
- * Every handler React Aria's `useTooltipTrigger` can put on the trigger. The
+ * The handlers React Aria's `useTooltipTrigger` puts on the trigger. The
  * element renders before the tooltip beside it has computed its own, so it
- * gets a forwarder for each while a tooltip is mounted.
+ * gets a forwarder for each while a tooltip is mounted. Hover comes from
+ * `useHover`, which uses pointer events where the browser has them and mouse
+ * and touch events elsewhere; only those names are forwarded, so a forwarder
+ * never replaces a handler of the element's own that React Aria leaves alone.
  */
-const TRIGGER_HANDLERS = [
+const FOCUS_TRIGGER_HANDLERS = [
   'onFocus',
   'onBlur',
   'onKeyDown',
   'onKeyUp',
   'onPointerDown',
-  'onPointerEnter',
-  'onPointerLeave',
+] as const;
+const POINTER_HOVER_HANDLERS = ['onPointerEnter', 'onPointerLeave'] as const;
+const MOUSE_HOVER_HANDLERS = [
   'onMouseEnter',
   'onMouseLeave',
   'onTouchStart',
 ] as const;
 
+type TriggerHandlerName =
+  | (typeof FOCUS_TRIGGER_HANDLERS)[number]
+  | (typeof POINTER_HOVER_HANDLERS)[number]
+  | (typeof MOUSE_HOVER_HANDLERS)[number];
+
 type TriggerHandlers = Partial<
-  Record<(typeof TRIGGER_HANDLERS)[number], (event: SyntheticEvent) => void>
+  Record<TriggerHandlerName, (event: SyntheticEvent) => void>
 >;
 
+function getTriggerHandlerNames(): readonly TriggerHandlerName[] {
+  return [
+    ...FOCUS_TRIGGER_HANDLERS,
+    ...(typeof PointerEvent === 'undefined'
+      ? MOUSE_HOVER_HANDLERS
+      : POINTER_HOVER_HANDLERS),
+  ];
+}
+
 interface AutoTooltipLayerProps {
-  options: TooltipTriggerBindingProps;
+  /** The trigger options, with the ref the tooltip is positioned against. */
+  options: TooltipTriggerBindingProps & { targetRef: RefObject<HTMLElement> };
   tooltip: ReactElement<CubeTooltipProps>;
   placement: Placement | undefined;
-  triggerRef: RefObject<HTMLElement>;
   /** Where the layer publishes its trigger handlers for the forwarders. */
   handlersRef: RefObject<TriggerHandlers | null>;
   onDescribedByChange: (id: string | undefined) => void;
@@ -108,13 +123,12 @@ function AutoTooltipLayer({
   options,
   tooltip,
   placement,
-  triggerRef,
   handlersRef,
   onDescribedByChange,
 }: AutoTooltipLayerProps) {
   const isSSR = useIsSSR();
   const { triggerProps, renderTooltip } = useTooltipTriggerBinding(
-    { ...options, targetRef: triggerRef },
+    options,
     tooltip,
   );
   const describedBy = triggerProps['aria-describedby'];
@@ -612,39 +626,35 @@ export function useAutoTooltip({
       qa,
       placement,
       isDisabled,
+      targetRef,
       ...triggerOptions
     } = resolvedTooltip;
+    // A caller that positions the tooltip against an element of its own (the
+    // `Layout.Header` title) passes that ref, and the element gets it too.
+    const anchorRef = targetRef ?? triggerRef;
 
     const forwardedProps: Record<string, unknown> = {
       'aria-describedby': describedBy,
     };
 
-    for (const name of TRIGGER_HANDLERS) {
+    for (const name of getTriggerHandlerNames()) {
       forwardedProps[name] = (event: SyntheticEvent) =>
         handlersRef.current?.[name]?.(event);
     }
 
     return (
       <>
-        {renderElement(forwardedProps, triggerRef)}
+        {renderElement(forwardedProps, anchorRef)}
         <AutoTooltipLayer
-          options={{ ...triggerOptions, isDisabled }}
-          // What `TooltipProvider` renders for the same props.
-          tooltip={
-            isDisabled ? (
-              NO_TOOLTIP
-            ) : (
-              <Tooltip
-                styles={tooltipStyles}
-                {...(width ? { width } : null)}
-                {...(qa ? { qa } : null)}
-              >
-                {title}
-              </Tooltip>
-            )
-          }
+          options={{ ...triggerOptions, isDisabled, targetRef: anchorRef }}
+          tooltip={createProviderTooltip({
+            title,
+            tooltipStyles,
+            width,
+            qa,
+            isDisabled,
+          })}
           placement={placement ?? defaultTooltipPlacement}
-          triggerRef={triggerRef}
           handlersRef={handlersRef}
           onDescribedByChange={updateDescribedBy}
         />
