@@ -27,7 +27,7 @@ A file input component that allows users to select and upload files through a cu
 - **`placeholder`** `string` — Text displayed when no file is selected
 - **`accept`** `string` — Comma-separated list of accepted file types
 - **`type`** `'file' | 'text'` (default: `file`) — How to process the selected file(s)
-- **`size`** `'small' | 'default' | 'large'` (default: `default`) — The size of the input
+- **`size`** `'small' | 'default' | 'large'` (default: `default`) — The size of the input: the same heights as text inputs (28, 32 and 40px)
 - **`inputStyles`** `Styles` — Custom styles for the file input element
 - **`inputProps`** `Props` — Direct props passed to the native file input element
 - **`onChange`** `function` — Callback fired when files are selected
@@ -46,11 +46,11 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 
 #### styles
 
-Styles the input element. Its style props place and size the field: see [Field properties](/docs/getting-started-field-properties--docs).
+Styles the input element, the box that opens the file dialog. It is drawn like the text inputs' box and fills the width of its field, as they do; narrow it with `controlWidth`. Its style props place and size the field: see [Field properties](/docs/getting-started-field-properties--docs).
 
 **Sub-elements:**
 
-- `Button` - The clickable button element for file selection
+- `Button` - The "Choose file" chip at the start of the box
 - `Placeholder` - Text shown when no file is selected
 - `Value` - Text showing the selected file name(s)
 - `Input` - The hidden native file input element
@@ -66,7 +66,11 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-- **`drag-hover`** `boolean` — Whether files are being dragged over the component
+- **`drag-hover`** `boolean` — Whether files are being dragged over the component (never while disabled)
+- **`hovered`** `boolean` — Whether the pointer is over the component
+- **`pressed`** `boolean` — Whether the component is being pressed
+- **`selected`** `boolean` — Whether a file is selected
+- **`size`** `string` — The `size` prop's value
 - **`disabled`** `boolean` — Whether the file input is disabled
 - **`invalid`** `boolean` — Whether the file input has validation errors
 - **`valid`** `boolean` — Whether the file input is valid
@@ -94,6 +98,16 @@ The `mods` property accepts the following modifiers you can override:
 ### Form Values and Resets
 
 When bound to a legacy or modern form, resetting updates the displayed filename and clears any obsolete native file selection. This also allows choosing the same file again. A nonempty string value can display a filename, but it cannot restore file bytes; the user must select the file again. With `type="text"`, the form stores the file's text content.
+
+### Sizes
+
+Each size has the height of a text input of the same size, so the two line up in a form.
+
+```jsx
+<FileInput label="Key file" size="small" />
+<FileInput label="Key file" />
+<FileInput label="Key file" size="large" />
+```
 
 ### With Validation
 
@@ -183,7 +197,6 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 - Implement file preview functionality for images
 - Add support for file size and type validation messages
 - Consider adding file removal functionality for selected files
-- Implement custom drag-and-drop visual feedback
 
 ## Related Components
 

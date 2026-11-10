@@ -56,6 +56,23 @@ describe('FileInput value and selection lifecycle', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ['Enter', '{Enter}'],
+    ['Space', ' '],
+  ])('opens the file dialog with %s', async (_, key) => {
+    const view = renderWithRoot(<FileInput label="Attachment" />);
+    const input = view.getByLabelText('Attachment', {
+      selector: 'input',
+    }) as HTMLInputElement;
+    const click = vi.spyOn(input, 'click');
+
+    await userEvent.tab();
+    expect(view.getByRole('button', { name: /Attachment/ })).toHaveFocus();
+
+    await userEvent.keyboard(key);
+    expect(click).toHaveBeenCalledTimes(1);
+  });
+
   it('aborts a pending text read when replaced or unmounted', async () => {
     const readers: FileReader[] = [];
     const original = globalThis.FileReader;
