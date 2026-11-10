@@ -102,6 +102,108 @@ describe('<Button />', () => {
     spy.mockRestore();
   });
 
+  describe('collapsing', () => {
+    it('marks what a collapsing button collapses to', () => {
+      render(
+        <>
+          <Button qa="Icon" icon={<IconCopy />} collapseState>
+            Copy
+          </Button>
+          <Button
+            qa="Short"
+            icon={<IconCopy />}
+            collapseState="@media(w < 600px)"
+            shortLabel="Cp"
+          >
+            Copy
+          </Button>
+          <Button qa="Plain" icon={<IconCopy />}>
+            Copy
+          </Button>
+        </>,
+      );
+
+      expect(screen.getByTestId('Icon')).toHaveAttribute(
+        'data-collapse',
+        'icon',
+      );
+      expect(screen.getByTestId('Short')).toHaveAttribute(
+        'data-collapse',
+        'label',
+      );
+      expect(screen.getByTestId('Plain')).not.toHaveAttribute('data-collapse');
+      expect(screen.getByTestId('Plain')).not.toHaveAttribute('data-collapsed');
+    });
+
+    it('collapses from `isCollapsed`', () => {
+      const { rerender } = render(
+        <Button qa="Flag" icon={<IconCopy />} isCollapsed>
+          Copy
+        </Button>,
+      );
+
+      expect(screen.getByTestId('Flag')).toHaveAttribute('data-collapsed');
+      expect(screen.getByTestId('Flag')).toHaveAttribute(
+        'data-collapse',
+        'icon',
+      );
+
+      rerender(
+        <Button qa="Flag" icon={<IconCopy />} isCollapsed={false}>
+          Copy
+        </Button>,
+      );
+
+      expect(screen.getByTestId('Flag')).not.toHaveAttribute('data-collapsed');
+      expect(screen.getByTestId('Flag')).toHaveAttribute(
+        'data-collapse',
+        'icon',
+      );
+    });
+
+    it('renders a short label beside the full one only when given', () => {
+      render(
+        <>
+          <Button qa="Short" isCollapsed shortLabel="Add">
+            Add new item
+          </Button>
+          <Button qa="Icon" icon={<IconCopy />} isCollapsed>
+            Add new item
+          </Button>
+        </>,
+      );
+
+      const short = screen.getByTestId('Short');
+
+      expect(
+        short.querySelector('[data-element="FullLabel"]'),
+      ).toHaveTextContent('Add new item');
+      expect(
+        short.querySelector('[data-element="ShortLabel"]'),
+      ).toHaveTextContent('Add');
+      expect(
+        screen.getByTestId('Icon').querySelector('[data-element="ShortLabel"]'),
+      ).toBeNull();
+    });
+
+    it('warns when there is nothing to collapse', () => {
+      const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      render(<Button collapseState>Copy</Button>);
+
+      expect(
+        spy.mock.calls.some((args) =>
+          args.some(
+            (arg) =>
+              typeof arg === 'string' && arg.includes('nothing to collapse'),
+          ),
+        ),
+      ).toBe(true);
+
+      spy.mockRestore();
+    });
+  });
+
   describe('current theme', () => {
     it('should render the outline shape by default', () => {
       render(

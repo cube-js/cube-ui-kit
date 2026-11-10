@@ -1,5 +1,5 @@
-import { Profiler, useState } from 'react';
-import { userEvent } from 'vitest/browser';
+import { Profiler, ReactNode, useState } from 'react';
+import { page, userEvent } from 'vitest/browser';
 
 import { PlusIcon } from '../../../icons/PlusIcon';
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
@@ -214,5 +214,190 @@ describe('<Button /> label truncation', () => {
 
     expect(renders.short - before.short).toBe(0);
     expect(renders.long - before.long).toBeLessThanOrEqual(crossings.length);
+  });
+});
+
+describe('<Button /> collapsing', () => {
+  const NARROW = '@(bar, w < 400px)';
+
+  /** A named query container, so a `collapseState` condition can read it. */
+  function Bar({ width, children }: { width: number; children: ReactNode }) {
+    return (
+      <div
+        data-qa="Bar"
+        style={{
+          width,
+          display: 'flex',
+          containerType: 'inline-size',
+          containerName: 'bar',
+        }}
+      >
+        {children}
+      </div>
+    );
+  }
+
+  const resizeBar = async (width: number) => {
+    screen.getByTestId('Bar').style.width = `${width}px`;
+    await settle();
+  };
+
+  const isSquare = (element: HTMLElement) => {
+    const { width, height } = element.getBoundingClientRect();
+
+    return Math.round(width) === Math.round(height);
+  };
+
+  afterEach(async () => {
+    // Other specs in this project assume the default 414x896.
+    await page.viewport(414, 896);
+  });
+
+  it('collapses to its icon in a narrow container, keeping its name', async () => {
+    renderWithRoot(
+      <Bar width={600}>
+        <Button icon={<PlusIcon />} collapseState={NARROW}>
+          Add item
+        </Button>
+      </Bar>,
+    );
+
+    await settle();
+
+    const button = screen.getByRole('button', { name: 'Add item' });
+
+    expect(isSquare(button)).toBe(false);
+
+    await resizeBar(300);
+
+    expect(isSquare(button)).toBe(true);
+    expect(screen.getByRole('button', { name: 'Add item' })).toBe(button);
+
+    await resizeBar(600);
+
+    expect(isSquare(button)).toBe(false);
+  });
+
+  it('shows its label as a tooltip while collapsed to its icon', async () => {
+    renderWithRoot(
+      <Button icon={<PlusIcon />} isCollapsed>
+        Add item
+      </Button>,
+    );
+
+    await settle();
+
+    const button = screen.getByRole('button', { name: 'Add item' });
+
+    expect(isSquare(button)).toBe(true);
+
+    // React Aria ignores a hover until a pointer move sets the modality.
+    await userEvent.hover(document.body);
+    await userEvent.hover(button);
+
+    await waitFor(() =>
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Add item'),
+    );
+  });
+
+  it('swaps to its short label while collapsed', async () => {
+    const { rerender } = renderWithRoot(
+      <Button icon={<PlusIcon />} isCollapsed={false} shortLabel="Add">
+        Add new item
+      </Button>,
+    );
+
+    await settle();
+
+    expect(screen.getByRole('button')).toHaveAccessibleName('Add new item');
+
+    rerender(
+      <Button icon={<PlusIcon />} isCollapsed shortLabel="Add">
+        Add new item
+      </Button>,
+    );
+    await settle();
+
+    expect(screen.getByRole('button')).toHaveAccessibleName('Add');
+  });
+
+  it('collapses on `@mobile` for `collapseState={true}`', async () => {
+    renderWithRoot(
+      <Button icon={<PlusIcon />} collapseState>
+        Add item
+      </Button>,
+    );
+
+    await page.viewport(1280, 800);
+    await settle();
+
+    const button = screen.getByRole('button', { name: 'Add item' });
+
+    expect(isSquare(button)).toBe(false);
+
+    await page.viewport(414, 896);
+    await settle();
+
+    expect(isSquare(button)).toBe(true);
+  });
+
+  /**
+   * A container condition is unknown where no such container is around the
+   * button, a dialog portaled out of the page say, and its negation is unknown
+   * too. Without fallback floors the button lost its width and label padding.
+   */
+  it('keeps its own look outside the container its condition names', async () => {
+    renderWithRoot(
+      <>
+        <Button qa="Collapsing" icon={<PlusIcon />} collapseState={NARROW}>
+          Add item
+        </Button>
+        <Button qa="Plain" icon={<PlusIcon />}>
+          Add item
+        </Button>
+      </>,
+    );
+
+    await settle();
+
+    const width = (qa: string) =>
+      screen.getByTestId(qa).getBoundingClientRect().width;
+    const padding = (qa: string) =>
+      getComputedStyle(
+        screen.getByTestId(qa).querySelector('[data-element="Label"]')!,
+      ).paddingRight;
+
+    expect(width('Collapsing')).toBe(width('Plain'));
+    expect(padding('Collapsing')).toBe(padding('Plain'));
+  });
+
+  it('keeps its node and focus, and renders once per crossing', async () => {
+    let renders = 0;
+
+    renderWithRoot(
+      <Bar width={600}>
+        <Profiler id="collapsing" onRender={() => (renders += 1)}>
+          <Button icon={<PlusIcon />} collapseState={NARROW}>
+            Add item
+          </Button>
+        </Profiler>
+      </Bar>,
+    );
+
+    await settle();
+
+    const button = screen.getByRole('button', { name: 'Add item' });
+
+    await userEvent.keyboard('{Tab}');
+    expect(button).toHaveFocus();
+
+    const before = renders;
+    const crossings = [300, 600, 300, 600];
+
+    for (const width of crossings) await resizeBar(width);
+
+    expect(screen.getByRole('button', { name: 'Add item' })).toBe(button);
+    expect(button).toHaveFocus();
+    expect(renders - before).toBeLessThanOrEqual(crossings.length);
   });
 });

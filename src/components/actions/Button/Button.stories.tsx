@@ -5,6 +5,7 @@ import {
   IconHeart,
   IconHeartFilled,
 } from '@tabler/icons-react';
+import { tasty } from '@tenphi/tasty';
 import { ReactNode, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
@@ -78,6 +79,23 @@ export default {
     children: {
       control: { type: 'text' },
       description: 'Button label or custom content',
+    },
+    shortLabel: {
+      control: { type: 'text' },
+      description:
+        'Label shown while the button is collapsed, beside its icon if it has one',
+    },
+
+    /* Collapsing */
+    collapseState: {
+      control: { type: 'text' },
+      description:
+        'When the button collapses: `true` for `@mobile` (viewport narrower than 920px), or any state or condition such as `@(page, w < 864px)`',
+    },
+    isCollapsed: {
+      control: { type: 'boolean' },
+      description:
+        'Collapses the button from JavaScript; any of `collapseState` and `isCollapsed` collapses it',
     },
 
     /* Tooltip */
@@ -522,6 +540,59 @@ CustomSize.parameters = {
     description: {
       story:
         'Demonstrates custom size values using the `size` prop. Supports both string values (like `8x`) and number values (converted to pixels, like `64`). Custom sizes override the default size token via the `tokens` prop.',
+    },
+  },
+};
+
+/** A named query container for `collapseState` to read, wide or narrow. */
+const CollapseBar = tasty({
+  styles: {
+    container: 'bar / inline-size',
+    display: 'flex',
+    gap: '1x',
+    padding: '1x',
+    border: true,
+    radius: '1cr',
+    width: { '': '80x', narrow: '35x' },
+  },
+});
+
+const COLLAPSE_BELOW_400 = '@(bar, w < 400px)';
+
+export const Collapsing: StoryFn<CubeButtonProps> = () => (
+  <Space flow="column" gap="2x" placeItems="start">
+    {[false, true].map((narrow) => (
+      <CollapseBar key={String(narrow)} mods={{ narrow }}>
+        <Button icon={<IconHeart />} collapseState={COLLAPSE_BELOW_400}>
+          Add to favorites
+        </Button>
+        <Button
+          icon={<IconCoin />}
+          collapseState={COLLAPSE_BELOW_400}
+          shortLabel="Buy"
+        >
+          Buy coins
+        </Button>
+        <Button
+          type="primary"
+          icon={<IconCaretDown />}
+          collapseState={COLLAPSE_BELOW_400}
+        >
+          More options
+        </Button>
+      </CollapseBar>
+    ))}
+    <Button icon={<IconHeart />} isCollapsed>
+      Add to favorites
+    </Button>
+  </Space>
+);
+
+Collapsing.parameters = {
+  docs: {
+    description: {
+      story:
+        'The same three buttons in a container wider and narrower than 400px. `collapseState` reads the container, so in the narrow one a button with an icon shows only the icon, its label kept as its accessible name and tooltip, and a button with a `shortLabel` shows that instead. The last button collapses from `isCollapsed`.',
     },
   },
 };

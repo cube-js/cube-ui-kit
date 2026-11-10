@@ -451,7 +451,7 @@ An intended override takes a disable comment with its reason on the line before 
 
 With this rule on, `tasty/no-styles-prop` can stay off, so the primitives keep their `styles`.
 
-The same `extends` gives the plugin's other rules the names UI Kit defines: its tokens, presets and recipes, and the `@dark`, `@hc` and `@reduced-motion` state aliases. `tasty/valid-color-token`, `tasty/valid-custom-property`, `tasty/valid-preset`, `tasty/valid-recipe`, `tasty/valid-state-key` and `tasty/no-unknown-state-alias` then report only names that don't exist. The tokens include the ones a component's docs offer you, to read inside that component or set on it, such as a dialog's `$dialog-padding-h` or a layout's `$content-padding`. A component's other custom properties are internal and can change, so the rules report them too. List what your app defines itself, in its own `configure()` or `tokens`, in its own config, which adds to the lists it extends:
+The same `extends` gives the plugin's other rules the names UI Kit defines: its tokens, presets and recipes, and the `@dark`, `@hc`, `@mobile` and `@reduced-motion` state aliases. `tasty/valid-color-token`, `tasty/valid-custom-property`, `tasty/valid-preset`, `tasty/valid-recipe`, `tasty/valid-state-key` and `tasty/no-unknown-state-alias` then report only names that don't exist. The tokens include the ones a component's docs offer you, to read inside that component or set on it, such as a dialog's `$dialog-padding-h` or a layout's `$content-padding`. A component's other custom properties are internal and can change, so the rules report them too. List what your app defines itself, in its own `configure()` or `tokens`, in its own config, which adds to the lists it extends:
 
 ```ts
 // tasty.config.ts
@@ -528,6 +528,20 @@ const Spinner = tasty({
 ```
 
 It follows the system preference alone, with no attribute opt-in.
+
+### Mobile
+
+`<Root>` also registers `@mobile`, a viewport narrower than 920px (`@media(w < 920px)`), the width below which the desktop layout stops fitting. `<Button collapseState>` collapses there. Use it for the same breakpoint in your own styles:
+
+```tsx
+const Toolbar = tasty({
+  styles: {
+    flow: { '': 'row', '@mobile': 'column' },
+  },
+});
+```
+
+An app that defines `@mobile` itself in `configure({ states })` replaces this one; Tasty warns in development when the two values differ. For a breakpoint of a container rather than the viewport, use a container query, such as `@(page, w < 864px)`.
 
 ## Icons
 
