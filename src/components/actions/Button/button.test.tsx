@@ -135,6 +135,21 @@ describe('<Button />', () => {
       expect(screen.getByTestId('Plain')).not.toHaveAttribute('data-collapsed');
     });
 
+    it('marks a button with `autoCollapse` as collapsing to its icon', () => {
+      render(
+        <Button qa="Auto" icon={<IconCopy />} autoCollapse>
+          Copy
+        </Button>,
+      );
+
+      // jsdom lays nothing out, so the row is never measured as too narrow.
+      expect(screen.getByTestId('Auto')).toHaveAttribute(
+        'data-collapse',
+        'icon',
+      );
+      expect(screen.getByTestId('Auto')).not.toHaveAttribute('data-collapsed');
+    });
+
     it('collapses from `isCollapsed`', () => {
       const { rerender } = render(
         <Button qa="Flag" icon={<IconCopy />} isCollapsed>

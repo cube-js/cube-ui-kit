@@ -32,7 +32,8 @@ A versatile action component that triggers commands and navigates users.
 - **`rightIcon`** — Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
 - **`children`** `ReactNode` — Button label or custom content
 - **`collapseState`** `boolean | string` — When the button collapses to fit a narrow window or container: `true` for `@mobile` (a viewport narrower than 920px), or any state or condition, such as `'@compact'`, `'@(page, w < 864px)'` or `'@media(w < 600px)'`. See [Collapsing](#collapsing)
-- **`isCollapsed`** `boolean` — Collapses the button from JavaScript. The button collapses when any of `collapseState` and `isCollapsed` says so
+- **`isCollapsed`** `boolean` — Collapses the button from JavaScript. The button collapses when any of `collapseState`, `isCollapsed` and `autoCollapse` says so
+- **`autoCollapse`** `boolean` — Collapses the button when the row it sits in, its parent element, can't fit every child at full width, and expands it when the row can. See [Collapsing](#collapsing)
 - **`shortLabel`** `ReactNode` — The label shown while the button is collapsed, beside its icon if it has one
 - **`label`** `string` — **Deprecated.** Use `children` for visible text and `aria-label` for the accessible name of an icon-only button
 - **`tooltip`** `string | boolean | object` — Tooltip content. Use a string for simple text, `true` for auto tooltip on overflow, or an object with `{ title, auto, placement, ...tooltipProps }`
@@ -87,7 +88,7 @@ The `mods` prop accepts the following modifiers you can override:
 - **`has-right-icon`** `boolean` — Indicates that the button has a trailing icon
 - **`single-icon`** `boolean` — Icon-only button without text
 - **`text-only`** `boolean` — Button has only text content, no icons
-- **`collapsed`** `boolean` — Collapsed by `isCollapsed`. `collapseState` collapses through CSS, so it sets no modifier; read the `@collapsed` state instead
+- **`collapsed`** `boolean` — Collapsed by `isCollapsed` or `autoCollapse`. `collapseState` collapses through CSS, so it sets no modifier; read the `@collapsed` state instead
 - **`collapse`** `'icon' | 'label'` — What a collapsing button collapses to: its icon, or its `shortLabel`
 
 ## Variants
@@ -204,13 +205,20 @@ A button can collapse to fit a narrow window or container. Collapsed, a button w
 <Button icon={<IconDownload />} isCollapsed={isCompact}>
   Download CSV
 </Button>
+
+{/* Collapsed while its row can't fit every label */}
+<Space>
+  <Button icon={<IconCertificate />} autoCollapse>Certify</Button>
+  <Button icon={<IconDownload />} autoCollapse>Load all</Button>
+</Space>
 ```
 
 <Story of={ButtonStories.Collapsing} />
 
 - **The condition is CSS.** `collapseState` takes the same states and conditions as a `styles` map, and crossing it re-renders only the button, once, to turn its tooltip on or off. It becomes the button's `@collapsed` state, which a caller's `styles` can read too.
 - **A container condition needs its container.** `@(page, …)` reads the nearest ancestor named `page`. Where there is none, a dialog portaled out of the page say, the button keeps its full look.
-- **Any trigger collapses it.** `collapseState` and `isCollapsed` combine: the button collapses when either says so.
+- **`autoCollapse` measures instead of using a breakpoint.** A breakpoint can't tell whether the labels fit: their length changes with the content and the language. `autoCollapse` collapses the button when its row, its parent element, can't fit every child at full width, and expands it when the row can. The row's width has to come from its own container, a block, `flex: 1` or a fixed width: a row as wide as its content always fits. The buttons with `autoCollapse` in one row collapse together.
+- **Any trigger collapses it.** `collapseState`, `isCollapsed` and `autoCollapse` combine: the button collapses when any of them says so.
 - **Something to collapse to.** A button with neither an icon nor a `shortLabel` has nothing to collapse to, and warns. Raw children, content other than text, don't collapse.
 - **A short label is the accessible name while it shows.** Keep it a shortened form of the full label, so the name still matches what a user sees.
 

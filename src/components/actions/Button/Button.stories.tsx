@@ -95,7 +95,12 @@ export default {
     isCollapsed: {
       control: { type: 'boolean' },
       description:
-        'Collapses the button from JavaScript; any of `collapseState` and `isCollapsed` collapses it',
+        'Collapses the button from JavaScript; any of `collapseState`, `isCollapsed` and `autoCollapse` collapses it',
+    },
+    autoCollapse: {
+      control: { type: 'boolean' },
+      description:
+        'Collapses the button while the row it sits in, its parent element, cannot fit every child at full width',
     },
 
     /* Tooltip */
@@ -582,6 +587,17 @@ export const Collapsing: StoryFn<CubeButtonProps> = () => (
         </Button>
       </CollapseBar>
     ))}
+    <CollapseBar mods={{ narrow: true }}>
+      <Button icon={<IconHeart />} autoCollapse>
+        Add to favorites
+      </Button>
+      <Button icon={<IconCoin />} autoCollapse shortLabel="Buy">
+        Buy coins
+      </Button>
+      <Button type="primary" icon={<IconCaretDown />} autoCollapse>
+        More options
+      </Button>
+    </CollapseBar>
     <Button icon={<IconHeart />} isCollapsed>
       Add to favorites
     </Button>
@@ -592,7 +608,7 @@ Collapsing.parameters = {
   docs: {
     description: {
       story:
-        'The same three buttons in a container wider and narrower than 400px. `collapseState` reads the container, so in the narrow one a button with an icon shows only the icon, its label kept as its accessible name and tooltip, and a button with a `shortLabel` shows that instead. The last button collapses from `isCollapsed`.',
+        'The same three buttons in a container wider and narrower than 400px. `collapseState` reads the container, so in the narrow one a button with an icon shows only the icon, its label kept as its accessible name and tooltip, and a button with a `shortLabel` shows that instead. In the third row, `autoCollapse` collapses the buttons because the row cannot fit all three labels. The last button collapses from `isCollapsed`.',
     },
   },
 };

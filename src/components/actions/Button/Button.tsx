@@ -77,6 +77,8 @@ import { CubeActionProps } from '../Action/Action';
 import { useButtonSplitContext } from '../ButtonSplit/context';
 import { useAction } from '../use-action';
 
+import { AutoCollapseObserver } from './AutoCollapseObserver';
+
 const BUTTON_SIZE_VALUES = [
   'xsmall',
   'small',
@@ -97,7 +99,10 @@ export type ButtonMods = Mods<{
   'single-icon'?: boolean;
   'text-only'?: boolean;
   'raw-children'?: boolean;
-  /** Collapsed by `isCollapsed`; `collapseState` collapses through CSS instead. */
+  /**
+   * Collapsed by `isCollapsed` or `autoCollapse`; `collapseState` collapses
+   * through CSS instead.
+   */
   collapsed?: boolean;
   /** What a collapsing button collapses to: its icon, or its `shortLabel`. */
   collapse?: 'icon' | 'label';
@@ -153,14 +158,22 @@ export interface CubeButtonProps extends CubeActionProps {
    *
    * Collapsed, a button with an icon shows only the icon: its label stays its
    * accessible name and shows as its tooltip. A `shortLabel` replaces the label
-   * instead. The button collapses when any of `collapseState` and `isCollapsed`
-   * says so.
+   * instead. The button collapses when any of `collapseState`, `isCollapsed`
+   * and `autoCollapse` says so.
    */
   collapseState?: boolean | string;
   /**
    * Collapses the button from JavaScript, as `collapseState` does from CSS.
    */
   isCollapsed?: boolean;
+  /**
+   * Collapses the button when the row it sits in, its parent element, can't
+   * fit every child at full width, and expands it when the row can. It
+   * follows the real width of the labels, so it holds in every locale. The
+   * row's width has to come from its own container: a row as wide as its
+   * content always fits.
+   */
+  autoCollapse?: boolean;
   /**
    * The label shown while the button is collapsed, beside its icon if it has
    * one. Without it, a collapsed button shows only its icon.
@@ -479,6 +492,7 @@ export const Button = forwardRef(function Button(
     tokens,
     collapseState,
     isCollapsed,
+    autoCollapse,
     shortLabel,
     ...props
   } = allProps;
@@ -625,7 +639,11 @@ export const Button = forwardRef(function Button(
 
   // What a collapsing button collapses to: its `shortLabel`, or else its icon.
   // Raw children have no `Label` to hide or swap.
-  const isCollapsible = !!collapseCondition || isCollapsed != null;
+  const isCollapsible =
+    !!collapseCondition || isCollapsed != null || !!autoCollapse;
+  // Set by `AutoCollapseObserver`, which only `autoCollapse` mounts.
+  const [isAutoCollapsed, setIsAutoCollapsed] = useState(false);
+  const isCollapsedByJs = !!isCollapsed || (!!autoCollapse && isAutoCollapsed);
   const collapse: ButtonMods['collapse'] =
     !isCollapsible || !hasChildren || rawChildren
       ? undefined
@@ -640,8 +658,8 @@ export const Button = forwardRef(function Button(
     args: [
       'Button:',
       rawChildren
-        ? '`collapseState` and `isCollapsed` collapse only a text label; this button renders raw children.'
-        : '`collapseState` or `isCollapsed` has nothing to collapse. Give the button an `icon` to collapse to, or a `shortLabel`.',
+        ? '`collapseState`, `isCollapsed` and `autoCollapse` collapse only a text label; this button renders raw children.'
+        : '`collapseState`, `isCollapsed` or `autoCollapse` has nothing to collapse. Give the button an `icon` to collapse to, or a `shortLabel`.',
     ],
   });
 
@@ -661,7 +679,7 @@ export const Button = forwardRef(function Button(
       'text-only': !!(hasChildren && typeof children === 'string' && !hasIcons),
       'raw-children': rawChildren,
       'has-content': children != null,
-      collapsed: !!isCollapsed,
+      collapsed: isCollapsedByJs,
       collapse,
     }),
     [
@@ -675,7 +693,7 @@ export const Button = forwardRef(function Button(
       rawChildren,
       isIconShown,
       isRightIconShown,
-      isCollapsed,
+      isCollapsedByJs,
       collapse,
     ],
   );
@@ -850,6 +868,19 @@ export const Button = forwardRef(function Button(
             </div>
           )}
         </DisplayTransition>
+        {autoCollapse ? (
+          <AutoCollapseObserver
+            targetRef={buttonElementRef}
+            contentKey={[
+              typeof children === 'string' ? children : '',
+              typeof shortLabel === 'string' ? shortLabel : '',
+              size,
+              collapse,
+              hasRightSlot,
+            ].join('|')}
+            onChange={setIsAutoCollapsed}
+          />
+        ) : null}
       </ButtonElement>
     );
   };

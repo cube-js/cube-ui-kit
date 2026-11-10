@@ -401,3 +401,129 @@ describe('<Button /> collapsing', () => {
     expect(renders - before).toBeLessThanOrEqual(crossings.length);
   });
 });
+
+describe('<Button autoCollapse />', () => {
+  /** A row whose width comes from its container, so it can run out of room. */
+  function Row({ width, children }: { width: number; children: ReactNode }) {
+    return (
+      <div data-qa="Row" style={{ width, display: 'flex', gap: 8 }}>
+        {children}
+      </div>
+    );
+  }
+
+  const resizeRow = async (width: number) => {
+    screen.getByTestId('Row').style.width = `${width}px`;
+    await settle();
+  };
+
+  const isSquare = (element: HTMLElement) => {
+    const { width, height } = element.getBoundingClientRect();
+
+    return Math.round(width) === Math.round(height);
+  };
+
+  const content = (
+    <>
+      <Button icon={<PlusIcon />} autoCollapse>
+        Add item
+      </Button>
+      <Button icon={<PlusIcon />} autoCollapse>
+        Add another item
+      </Button>
+    </>
+  );
+
+  it('collapses when its row runs out of room, and expands when the row fits again', async () => {
+    renderWithRoot(<Row width={600}>{content}</Row>);
+
+    await settle();
+
+    const [first, second] = screen.getAllByRole('button');
+
+    expect(isSquare(first)).toBe(false);
+    expect(isSquare(second)).toBe(false);
+
+    await resizeRow(150);
+
+    expect(isSquare(first)).toBe(true);
+    expect(isSquare(second)).toBe(true);
+    // Collapsed to its icon, each keeps its label as its name.
+    expect(first).toHaveAccessibleName('Add item');
+
+    await resizeRow(600);
+
+    expect(isSquare(first)).toBe(false);
+    expect(isSquare(second)).toBe(false);
+  });
+
+  it('settles just below the width the row needs', async () => {
+    renderWithRoot(<Row width={600}>{content}</Row>);
+
+    await settle();
+
+    const [first, second] = screen.getAllByRole('button');
+    const needed =
+      first.getBoundingClientRect().width +
+      second.getBoundingClientRect().width +
+      8;
+
+    await resizeRow(Math.floor(needed) - 2);
+
+    const widths: number[] = [];
+
+    for (let frame = 0; frame < 10; frame += 1) {
+      await new Promise(requestAnimationFrame);
+      widths.push(Math.round(first.getBoundingClientRect().width));
+    }
+
+    expect(isSquare(first)).toBe(true);
+    expect(new Set(widths).size).toBe(1);
+  });
+
+  /**
+   * The decision renders the button once; its label then cuts off, and the
+   * automatic tooltip turning on renders it once more.
+   */
+  it('keeps its node and focus, and renders at most twice per crossing', async () => {
+    let renders = 0;
+
+    renderWithRoot(
+      <Row width={600}>
+        <Profiler id="auto" onRender={() => (renders += 1)}>
+          {content}
+        </Profiler>
+      </Row>,
+    );
+
+    await settle();
+
+    const [first] = screen.getAllByRole('button');
+
+    await userEvent.keyboard('{Tab}');
+    expect(first).toHaveFocus();
+
+    const before = renders;
+    const crossings = [150, 600, 150, 600];
+
+    for (const width of crossings) await resizeRow(width);
+
+    expect(screen.getAllByRole('button')[0]).toBe(first);
+    expect(first).toHaveFocus();
+    expect(renders - before).toBeLessThanOrEqual(crossings.length * 2);
+  });
+
+  it('collapses when `isCollapsed` says so, though its row fits', async () => {
+    renderWithRoot(
+      <Row width={600}>
+        <Button icon={<PlusIcon />} autoCollapse isCollapsed>
+          Add item
+        </Button>
+      </Row>,
+    );
+
+    await settle();
+
+    expect(isSquare(screen.getByRole('button'))).toBe(true);
+  });
+});
