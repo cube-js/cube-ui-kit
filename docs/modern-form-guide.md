@@ -172,7 +172,7 @@ Use `setValue(path, value)` for one path and `setValues(partial)` for several to
 | Validation case | Start here |
 | --- | --- |
 | Required field with a visible marker | Input `isRequired`; it adds required validation too. |
-| Email, length, range, pattern, or enum | Input `rules` using the built-in constraints, or descriptor `rules` when using `field`. |
+| Email, length, range, pattern, or enum | Input `rules` using the built-in constraints, or descriptor `rules` when using `field`. They skip an empty value (`''`, `undefined`, `null`; an empty array is not one), so an optional field passes while empty; add `required` to reject one. |
 | Custom domain check | Descriptor `validate(value, context)` for an inferred field value and checked reads. |
 | Several custom rules or existing shared rule objects | `rules: [{ validator(rule, value, context) { ... } }]`; use `ModernValidationRule` for strict modern rule typing. |
 | Validation depends on another form value | `dependsOn: ['password']`, or nested tuples such as `dependsOn: [['account', 'password']]`. |
@@ -289,6 +289,6 @@ function EditProfileDialog({ initialProfile, save }) {
 
 The dialog closes only after successful submission, including `form.submit()` and controller-configured callbacks. Validation or save errors keep it open. Closing cancels pending submission; late responses cannot close a reopened session. By default, ending the session resets values. Use `preserve` to retain the draft in a controller owned outside the dialog. `preserve` does not keep an unmounted controller alive.
 
-While a field the user edited differs from its default, Escape, a click outside and the close button ask "Discard changes?" first. That holds for a `<Form>` you place in a `Dialog` yourself too: the root reports its edits to the `DialogTrigger` or `DialogContainer` that owns the dialog, with no wiring. A value set from code is not an edit, and a successful submit saves what it carried, so a dialog that stays open after saving (to show a created key, say) closes at once until the user types again. Set `confirmDismiss={false}` on the trigger or container when backing out loses nothing. See [Unsaved edits](https://cube-ui-kit.vercel.app/?path=/docs/overlays-dialogtrigger--docs#unsaved-edits).
+While a field the user edited differs from its default, Escape, a click outside and the close button ask "Discard changes?" first. That holds for a `<Form>` you place in a `Dialog` yourself too: the root reports its edits to the `DialogTrigger` or `DialogContainer` that owns the dialog, with no wiring. A value set from code is not an edit, nor is a field typed into and cleared back to an empty default (`''` over `undefined` or `null`), though `isDirty` still reports it. A successful submit saves what it carried, so a dialog that stays open after saving (to show a created key, say) closes at once until the user types again. Set `confirmDismiss={false}` on the trigger or container when backing out loses nothing. See [Unsaved edits](https://cube-ui-kit.vercel.app/?path=/docs/overlays-dialogtrigger--docs#unsaved-edits).
 
 See the [DialogForm reference](https://cube-ui-kit.vercel.app/?path=/docs/overlays-dialogform--docs) for custom actions, container lifecycle, and legacy behavior.

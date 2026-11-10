@@ -8,6 +8,7 @@ import {
   freezeContainer,
   getFieldKey,
   hasPath,
+  isEmptyFormValue,
   isPlainObject,
   normalizePath,
   pathValueChanged,
@@ -238,6 +239,14 @@ export function createFormStore<
         readPath(values, record.path),
         readPath(defaults, record.path),
       )
+    );
+  }
+
+  /** Typed into and cleared over an empty default: dirty, but nothing to lose. */
+  function emptiedEmpty(record: FieldRecord<ErrorValue>): boolean {
+    return (
+      isEmptyFormValue(readPath(values, record.path)) &&
+      isEmptyFormValue(readPath(defaults, record.path))
     );
   }
 
@@ -1304,7 +1313,9 @@ export function createFormStore<
     },
     hasUserEdits() {
       for (const record of records.values()) {
-        if (record.edited && dirty(record)) return true;
+        if (record.edited && dirty(record) && !emptiedEmpty(record)) {
+          return true;
+        }
       }
       return false;
     },
