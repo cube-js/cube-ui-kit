@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { Profiler, useState } from 'react';
 import { userEvent } from 'vitest/browser';
 
+import { PlusIcon } from '../../../icons/PlusIcon';
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { ButtonSplit } from '../ButtonSplit/ButtonSplit';
 
@@ -147,5 +148,71 @@ describe('<Button /> disabled focusability', () => {
 
     expect(button).toHaveAttribute('data-loading');
     expect(document.activeElement).toBe(button);
+  });
+});
+
+describe('<Button /> label truncation', () => {
+  const resize = async (width: number) => {
+    screen.getByTestId('Box').style.width = `${width}px`;
+    await settle();
+  };
+
+  /**
+   * Turning the automatic tooltip on used to wrap the button in
+   * `TooltipProvider`, and turning it off unwrapped it. Either change replaced
+   * the `<button>` node, so a focused button whose label started or stopped
+   * truncating dropped its focus to the page.
+   */
+  it('keeps its node and focus when its label starts and stops truncating', async () => {
+    renderWithRoot(
+      <div data-qa="Box" style={{ width: 1000 }}>
+        <Button>{LONG_LABEL}</Button>
+      </div>,
+    );
+
+    await settle();
+
+    const button = screen.getByRole('button');
+    const label = button.querySelector('[data-element="Label"]') as HTMLElement;
+
+    await userEvent.keyboard('{Tab}');
+    expect(button).toHaveFocus();
+
+    await resize(80);
+
+    expect(screen.getByRole('button')).toBe(button);
+    expect(button).toHaveFocus();
+    expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
+
+    await resize(1000);
+
+    expect(screen.getByRole('button')).toBe(button);
+    expect(button).toHaveFocus();
+    expect(label.scrollWidth).toBe(label.clientWidth);
+  });
+
+  it('renders once per crossing, and never for a label that fits', async () => {
+    const renders = { long: 0, short: 0 };
+
+    renderWithRoot(
+      <div data-qa="Box" style={{ width: 1000 }}>
+        <Profiler id="long" onRender={() => (renders.long += 1)}>
+          <Button icon={<PlusIcon />}>{LONG_LABEL}</Button>
+        </Profiler>
+        <Profiler id="short" onRender={() => (renders.short += 1)}>
+          <Button icon={<PlusIcon />}>Save</Button>
+        </Profiler>
+      </div>,
+    );
+
+    await settle();
+
+    const before = { ...renders };
+    const crossings = [120, 1000, 120, 1000];
+
+    for (const width of crossings) await resize(width);
+
+    expect(renders.short - before.short).toBe(0);
+    expect(renders.long - before.long).toBeLessThanOrEqual(crossings.length);
   });
 });

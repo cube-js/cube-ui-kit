@@ -16,9 +16,8 @@ describe('Layout.Header title', () => {
   const TITLE = 'A header title far too long for the layout it heads';
 
   it('truncates a title too long for the header and shows it in a tooltip', async () => {
-    // The overflow verdict lands in a microtask after the commit, and turning
-    // it on remounts the heading under `TooltipProvider`. Let both happen
-    // before looking the heading up, or the hover lands on a detached node.
+    // The overflow verdict lands in a microtask after the commit. Let it land
+    // before hovering, so the tooltip is already on.
     await act(async () => {
       renderWithRoot(
         <div style={{ width: 240, height: 200, display: 'grid' }}>

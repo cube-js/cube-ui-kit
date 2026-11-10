@@ -256,9 +256,8 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * @private
    * The label's room changes over the item's life — a radio tab in a
    * responsive switch, say. The auto tooltip then stays mounted, disabled
-   * while the label fits, instead of wrapping the element only once the label
-   * truncates: that wrap remounts the element, which takes focus (and, for a
-   * radio, the native input it holds) with it.
+   * while the label fits, instead of mounting only once the label truncates.
+   * Either way the element itself keeps its node.
    */
   isDynamicLabel?: boolean;
   /**
@@ -1110,10 +1109,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       ?.ref,
     // A row inside an actions wrapper is dynamic whether or not the run holds
     // anything right now: the label's width is whatever `--actions-width` leaves
-    // it, and the wrapper republishes that as the actions change. Holding the
-    // flag steady is also what keeps the row from REMOUNTING when its actions
-    // come and go — the resolved tooltip decides whether a provider wraps the
-    // element, so a flag that flips restructures the tree around it.
+    // it, and the wrapper republishes that as the actions change.
     isDynamicLabel: isDynamicLabel || !!actions || insideWrapper,
   });
 
