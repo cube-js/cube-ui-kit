@@ -30,10 +30,16 @@ function luminance(colors: string[]): number {
 }
 
 /**
- * The contrast of `foreground` over its `background`: one color, or the
- * layers under it, bottom first, when the nearest fill is translucent.
+ * The contrast of `foreground` over an opaque `base`, with any translucent
+ * `layers` painted over the base first, bottom first. A translucent base
+ * would be read as opaque: the canvas drops its alpha.
  */
-export function contrast(foreground: string, ...background: string[]): number {
+export function contrast(
+  foreground: string,
+  base: string,
+  ...layers: string[]
+): number {
+  const background = [base, ...layers];
   const [high, low] = [
     luminance([...background, foreground]),
     luminance(background),

@@ -46,8 +46,12 @@ const FileInputElement = tasty(Action, {
     // fill the field, as the other inputs do.
     width: '100%',
     textAlign: 'start',
-    // The chip sits as far from the left edge as from the top and bottom.
-    padding: '0 (1x - 1bw) 0 (($size - 3x) / 2)',
+    // The chip sits as far from the left edge as from the top and bottom. The
+    // validation icon's cell reaches the right edge, as in a text input.
+    padding: {
+      '': '0 (1x - 1bw) 0 (($size - 3x) / 2)',
+      'valid | invalid': '0 0 0 (($size - 3x) / 2)',
+    },
     // The shared box clips its fill to the content box, which the padding
     // would leave unpainted.
     backgroundClip: 'padding-box',
@@ -57,29 +61,31 @@ const FileInputElement = tasty(Action, {
     },
     overflow: 'hidden',
     whiteSpace: 'nowrap',
-    // A file dragged over the box marks it as the drop target, as focus does.
+    // A file dragged over the box marks it as the drop target, over its
+    // validation color.
     border: {
-      'drag-hover': '#primary-text',
+      'drag-hover': '#primary-accent-text',
     },
 
     Button: {
       display: 'grid',
       placeItems: 'center',
       flexShrink: 0,
-      // An action's height inside a field, at every size.
+      // The tallest an action gets inside a field (`$action-size`), at every
+      // size, so the label's line fits in a small box too.
       height: '(3x - 2bw)',
-      padding: '0 (1x - 1bw)',
+      padding: '0 1x',
       preset: 't3m',
       radius: '(1r - 1bw)',
       fill: {
-        '': '#primary.12',
-        'hovered | drag-hover': '#primary.18',
-        pressed: '#primary.24',
+        '': '#primary-accent-surface.12',
+        'hovered | drag-hover': '#primary-accent-surface.18',
+        pressed: '#primary-accent-surface.24',
       },
-      // The accent text token, not the `#primary` fill: it keeps AA contrast
-      // on the tinted chip in every scheme.
+      // The accent text token, not the accent fill: it keeps AA contrast on
+      // the tinted chip in every scheme.
       color: {
-        '': '#primary-text',
+        '': '#primary-accent-text',
         disabled: '#primary-accent-disabled-text',
       },
       transition: 'theme',
@@ -93,7 +99,7 @@ const FileInputElement = tasty(Action, {
       textOverflow: 'ellipsis',
       overflow: 'hidden',
       color: {
-        '': '#dark-03',
+        '': '#surface-text-soft-2',
         disabled: '#disabled-surface-text',
       },
     },
@@ -104,7 +110,7 @@ const FileInputElement = tasty(Action, {
       textOverflow: 'ellipsis',
       overflow: 'hidden',
       color: {
-        '': '#dark-02',
+        '': '#surface-text-soft',
         disabled: '#disabled-surface-text',
       },
     },
@@ -117,7 +123,6 @@ const FileInputElement = tasty(Action, {
 
     ValidationIcon: {
       $: '> State >',
-      width: 'min 2x',
     },
 
     Input: {
@@ -132,6 +137,11 @@ const FileInputElement = tasty(Action, {
         disabled: 'default',
       },
       zIndex: 10,
+
+      // The browser's own button sits over the chip and keeps its arrow.
+      '&::file-selector-button': {
+        cursor: 'inherit',
+      },
     },
   }),
 });
@@ -195,7 +205,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
     inputProps,
     accept,
     form,
-    size,
+    size = 'default',
   } = props;
 
   const [dragHover, setDragHover] = useState(false);
@@ -300,7 +310,8 @@ function FileInput(allProps: CubeFileInputProps, ref) {
       mods={{
         size,
         selected: !!fileName,
-        'drag-hover': dragHover,
+        // A disabled input takes no drop.
+        'drag-hover': dragHover && !isDisabled,
         ...getValidationMods({ isInvalid, isValid }),
       }}
       onKeyDown={(e) => {

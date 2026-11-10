@@ -146,18 +146,12 @@ export const Validation: StoryFn<CubeFileInputProps> = (props) => (
 export const LongFilePlaceholderOverflow = Template.bind({});
 LongFilePlaceholderOverflow.args = {
   fieldStyles: { width: '0 280px 100%' },
-  inputStyles: {
-    width: '280px',
-  },
-  placeholder: 'Very long placeholder here',
+  placeholder: 'A placeholder far too long to fit beside the button',
 };
 
 export const LongFileNameOverflow = Template.bind({});
 LongFileNameOverflow.args = {
   fieldStyles: { width: '0 300px 100%' },
-  inputStyles: {
-    width: '300px',
-  },
   inputProps: {
     title: 'Test input',
   },
@@ -166,9 +160,13 @@ LongFileNameOverflow.args = {
 LongFileNameOverflow.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   const input = await canvas.getByTitle('Test input');
-  const file = new File(['test'], 'file-with-a-very-long-name.txt', {
-    type: 'text/plain',
-  });
+  const file = new File(
+    ['test'],
+    'file-with-a-very-long-name-that-does-not-fit.txt',
+    {
+      type: 'text/plain',
+    },
+  );
 
   await waitFor(async () => {
     await userEvent.upload(input, file);
@@ -179,9 +177,6 @@ export const ExtractText = Template.bind({});
 ExtractText.args = {
   fieldStyles: { width: '0 300px 100%' },
   type: 'text',
-  inputStyles: {
-    width: '300px',
-  },
   inputProps: {
     title: 'Test input',
   },
@@ -190,9 +185,13 @@ ExtractText.args = {
 ExtractText.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   const input = await canvas.getByTitle('Test input');
-  const file = new File(['test'], 'file-with-a-very-long-name.txt', {
-    type: 'text/plain',
-  });
+  const file = new File(
+    ['test'],
+    'file-with-a-very-long-name-that-does-not-fit.txt',
+    {
+      type: 'text/plain',
+    },
+  );
 
   await waitFor(async () => {
     await userEvent.upload(input, file);

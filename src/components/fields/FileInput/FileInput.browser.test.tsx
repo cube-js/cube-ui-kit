@@ -42,10 +42,38 @@ describe('FileInput box', () => {
     },
   );
 
-  it('keeps a consumer width over its own', () => {
+  it.each([
+    ['small', 'small'],
+    ['default', 'medium'],
+    ['large', 'large'],
+  ] as const)(
+    'puts its validation icon where a %s text input does',
+    (fileSize, textSize) => {
+      renderWithRoot(
+        <div style={{ width: 360 }}>
+          <FileInput qa="File" size={fileSize} label="File" isInvalid />
+          <TextInput size={textSize} label="Text" isInvalid />
+        </div>,
+      );
+
+      const gap = (box: HTMLElement) =>
+        box.getBoundingClientRect().right -
+        box
+          .querySelector('[data-element="ValidationIcon"]')!
+          .getBoundingClientRect().right;
+
+      expect(gap(boxOf('File'))).toBe(gap(textBoxOf('Text')));
+    },
+  );
+
+  it.each([
+    ['controlWidth', { controlWidth: '200px' }],
+    ['inputStyles', { inputStyles: { width: '200px' } }],
+    ['styles', { styles: { width: '200px' } }],
+  ] as const)('keeps a consumer %s width over its own', (_, props) => {
     renderWithRoot(
       <div style={{ width: 360 }}>
-        <FileInput qa="File" label="File" controlWidth="200px" />
+        <FileInput qa="File" aria-label="File" {...props} />
       </div>,
     );
 
@@ -110,15 +138,15 @@ describe('FileInput text contrast', () => {
       );
     const surface = getComputedStyle(boxOf('Empty')).backgroundColor;
     const chip = part('Empty', 'Button');
+    const placeholder = part('Empty', 'Placeholder').color;
+    const value = part('Selected', 'Value').color;
 
     expect(
       contrast(chip.color, surface, chip.backgroundColor),
     ).toBeGreaterThanOrEqual(4.5);
-    expect(
-      contrast(part('Empty', 'Placeholder').color, surface),
-    ).toBeGreaterThanOrEqual(4.5);
-    expect(
-      contrast(part('Selected', 'Value').color, surface),
-    ).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(placeholder, surface)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(value, surface)).toBeGreaterThanOrEqual(4.5);
+    // An empty field reads differently from a chosen file.
+    expect(placeholder).not.toBe(value);
   });
 });

@@ -66,7 +66,9 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-- **`drag-hover`** `boolean` — Whether files are being dragged over the component
+- **`drag-hover`** `boolean` — Whether files are being dragged over the component (never while disabled)
+- **`hovered`** `boolean` — Whether the pointer is over the component
+- **`pressed`** `boolean` — Whether the component is being pressed
 - **`selected`** `boolean` — Whether a file is selected
 - **`size`** `string` — The `size` prop's value
 - **`disabled`** `boolean` — Whether the file input is disabled
@@ -195,7 +197,6 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 - Implement file preview functionality for images
 - Add support for file size and type validation messages
 - Consider adding file removal functionality for selected files
-- Implement custom drag-and-drop visual feedback
 
 ## Related Components
 
