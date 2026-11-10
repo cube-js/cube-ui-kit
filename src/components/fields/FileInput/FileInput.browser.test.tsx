@@ -56,28 +56,34 @@ describe('FileInput box', () => {
         </div>,
       );
 
+      // The glyph itself, not its cell: a wider cell centers it further in.
       const gap = (box: HTMLElement) =>
         box.getBoundingClientRect().right -
         box
-          .querySelector('[data-element="ValidationIcon"]')!
+          .querySelector('[data-element="ValidationIcon"] svg')!
           .getBoundingClientRect().right;
 
       expect(gap(boxOf('File'))).toBe(gap(textBoxOf('Text')));
     },
   );
 
-  it.each([
-    ['controlWidth', { controlWidth: '200px' }],
-    ['inputStyles', { inputStyles: { width: '200px' } }],
-    ['styles', { styles: { width: '200px' } }],
-  ] as const)('keeps a consumer %s width over its own', (_, props) => {
-    renderWithRoot(
-      <div style={{ width: 360 }}>
-        <FileInput qa="File" aria-label="File" {...props} />
-      </div>,
-    );
+  describe.each([
+    ['beside a label', { label: 'File' }],
+    ['bare', { 'aria-label': 'File' }],
+  ] as const)('%s', (_, naming) => {
+    it.each([
+      ['controlWidth', { controlWidth: '200px' }],
+      ['inputStyles', { inputStyles: { width: '200px' } }],
+      ['styles', { styles: { width: '200px' } }],
+    ] as const)('keeps a consumer %s width over its own', (__, props) => {
+      renderWithRoot(
+        <div style={{ width: 360 }}>
+          <FileInput qa="File" {...naming} {...props} />
+        </div>,
+      );
 
-    expect(boxOf('File').getBoundingClientRect().width).toBe(200);
+      expect(boxOf('File').getBoundingClientRect().width).toBe(200);
+    });
   });
 
   it('ends a file name that does not fit in an ellipsis', () => {

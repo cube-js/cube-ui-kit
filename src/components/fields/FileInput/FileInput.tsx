@@ -22,7 +22,10 @@ import {
 } from '../../form/field-layout';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { getValidationMods } from '../../form/validation/resolve-validation-props';
-import { ValidationIndicator } from '../../form/validation/ValidationIndicator';
+import {
+  hasValidationIndicator,
+  ValidationIndicator,
+} from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
 import { INPUT_WRAPPER_STYLES } from '../TextInput/TextInputBase';
 
@@ -47,10 +50,10 @@ const FileInputElement = tasty(Action, {
     width: '100%',
     textAlign: 'start',
     // The chip sits as far from the left edge as from the top and bottom. The
-    // validation icon's cell reaches the right edge, as in a text input.
+    // validation icon (`suffix`) takes a text input's cell at the right edge.
     padding: {
       '': '0 (1x - 1bw) 0 (($size - 3x) / 2)',
-      'valid | invalid': '0 0 0 (($size - 3x) / 2)',
+      suffix: '0 0 0 (($size - 3x) / 2)',
     },
     // The shared box clips its fill to the content box, which the padding
     // would leave unpainted.
@@ -312,11 +315,13 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         selected: !!fileName,
         // A disabled input takes no drop.
         'drag-hover': dragHover && !isDisabled,
+        suffix: hasValidationIndicator({ isInvalid, isValid }),
         ...getValidationMods({ isInvalid, isValid }),
       }}
       onKeyDown={(e) => {
-        // The button's own click doesn't reach the input inside it.
-        if (e.key === 'Enter' || e.key === ' ') {
+        // The button's own click doesn't reach the input inside it. A held
+        // key opens the dialog once.
+        if (!e.repeat && (e.key === 'Enter' || e.key === ' ')) {
           inputRef?.current?.click();
         }
       }}
