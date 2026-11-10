@@ -1,39 +1,60 @@
-import { RefObject, useEffectEvent } from 'react';
+import { RefObject, useEffectEvent, useRef } from 'react';
 import { flushSync } from 'react-dom';
 
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 
 /**
- * Measures whether a `Button` with `autoCollapse` fits the row it sits in, and
- * collapses it when the row can't fit every child at full width.
+ * Collapses the `Button`s with `autoCollapse` in a row while the row can't fit
+ * them expanded, and expands them once it can. The row is the button's parent
+ * element, and its buttons collapse together.
  *
- * The row is the button's parent element. Its width has to come from its own
- * container (a block, `flex: 1`, a fixed width): a row as wide as its content
- * always fits it, so its buttons never collapse.
+ * The decision reads the buttons, not their siblings:
+ *
+ * - **Expanded**, the row is too narrow when one of its buttons' labels is cut
+ *   off, or the row overflows. The row then collapses its buttons, and
+ *   remembers how wide it would have had to be: its width plus everything that
+ *   was cut off.
+ * - **Collapsed**, the row expands its buttons once it is that wide. The freed
+ *   width may have gone to a sibling that grows or to an auto margin, so
+ *   adding up the siblings' widths would never show the row fitting again.
+ * - **After expanding**, the row checks again, before paint. If the buttons
+ *   are cut off after all, they collapse again with the larger width
+ *   remembered, so the estimate only grows and the decision settles.
+ *
+ * When something the needed width depends on changes while collapsed (a
+ * button's content, a child added or removed), the remembered width is stale:
+ * the row expands, checks and collapses again if it has to, all before paint.
+ *
+ * A row as wide as its content always fits, so its buttons never collapse: its
+ * width has to come from its container (a block, `flex: 1`, a fixed width).
+ * Wrapping and vertical rows give their buttons room by wrapping or stacking,
+ * so their buttons never collapse either.
  */
 
 interface RowEntry {
   element: HTMLElement;
   notify: (isCollapsed: boolean) => void;
   isCollapsed: boolean;
-  /** The label's inline padding while expanded, which collapsing removes. */
-  expandedPadding: number;
-  /** The button's full width when last seen expanded. */
-  expandedWidth: number | undefined;
 }
 
 interface RowState {
   entries: Set<RowEntry>;
+  isCollapsed: boolean;
+  /** The row's content width at which its buttons fit expanded. */
+  neededWidth: number | undefined;
+  /** The needed width may be wrong: try expanded, then check. */
+  isStale: boolean;
+  /** Children added or removed change what the row needs. */
+  childObserver: MutationObserver;
 }
 
 const rows = new WeakMap<HTMLElement, RowState>();
-const entriesByElement = new WeakMap<Element, RowEntry>();
 const pendingRows = new Set<HTMLElement>();
 
 /**
  * One observer for every row. It watches the rows alone: collapsing changes
  * the buttons' widths but not their row's, so it never reports its own
- * decision back, and a button whose content changes asks for a check itself.
+ * decision back.
  */
 let rowObserver: ResizeObserver | null = null;
 
@@ -51,125 +72,120 @@ function px(value: string) {
   return parseFloat(value) || 0;
 }
 
+function getContentWidth(row: HTMLElement) {
+  const style = getComputedStyle(row);
+
+  return row.clientWidth - px(style.paddingLeft) - px(style.paddingRight);
+}
+
 function getLabel(element: HTMLElement) {
   return element.querySelector<HTMLElement>(':scope > [data-element="Label"]');
 }
 
-/** Whether a collapsing button shows its collapsed form right now. */
+/**
+ * Whether a button shows its collapsed form, whichever trigger collapsed it.
+ * Read from the styles the collapse applies rather than from widths: a label
+ * squeezed to nothing is not collapsed.
+ */
 function isShownCollapsed(element: HTMLElement, label: HTMLElement) {
   if (element.dataset.collapse === 'label') {
-    const full = label.querySelector('[data-element="FullLabel"]');
+    const full = label.querySelector<HTMLElement>(
+      ':scope > [data-element="FullLabel"]',
+    );
 
-    return !!full && full.getClientRects().length === 0;
+    return !!full && getComputedStyle(full).display === 'none';
   }
 
-  return label.clientWidth === 0 && label.scrollWidth > 0;
+  return getComputedStyle(label).maxWidth === '0px';
 }
 
 /**
- * The width a button takes at full size. Expanded, that is its width plus
- * whatever its label cuts off. Collapsed to its icon, its label still reports
- * the text's width through `scrollWidth`, and the padding is the one seen last
- * expanded; collapsed to a short label, the full label is not laid out, so the
- * width last seen expanded stands in.
+ * How much wider the row has to be for its expanded buttons to show their
+ * labels whole: what their labels cut off, plus what overflows the row. A
+ * button another trigger collapsed has no label on show, so it adds nothing.
  */
-function getFullWidth(entry: RowEntry, width: number) {
-  const { element } = entry;
-  const label = getLabel(element);
+function getShortfall(row: HTMLElement, state: RowState) {
+  let shortfall = Math.max(0, row.scrollWidth - row.clientWidth);
 
-  if (!label) return width;
+  for (const { element } of state.entries) {
+    const label = getLabel(element);
 
-  if (!isShownCollapsed(element, label)) {
-    const style = getComputedStyle(label);
+    if (!label || isShownCollapsed(element, label)) continue;
 
-    entry.expandedPadding = px(style.paddingLeft) + px(style.paddingRight);
-    entry.expandedWidth =
-      width + Math.max(0, label.scrollWidth - label.clientWidth);
-
-    return entry.expandedWidth;
+    shortfall += Math.max(0, label.scrollWidth - label.clientWidth);
   }
 
-  if (element.dataset.collapse === 'icon') {
-    return width + label.scrollWidth + entry.expandedPadding;
-  }
-
-  return entry.expandedWidth ?? width;
+  return shortfall;
 }
 
-/** Whether every child of the row fits it at full width. */
-function fitsAtFullWidth(row: HTMLElement) {
-  const rowStyle = getComputedStyle(row);
-  const available =
-    row.clientWidth - px(rowStyle.paddingLeft) - px(rowStyle.paddingRight);
-  let required = 0;
-  let count = 0;
+/** Whether the row's buttons should be collapsed now. */
+function decide(row: HTMLElement, state: RowState) {
+  const width = getContentWidth(row);
 
-  for (const child of Array.from(row.children)) {
-    if (!(child instanceof HTMLElement)) continue;
+  // What the row remembered was measured on content that has since changed.
+  if (state.isStale) state.neededWidth = undefined;
 
-    const style = getComputedStyle(child);
-
-    if (
-      style.display === 'none' ||
-      style.position === 'absolute' ||
-      style.position === 'fixed'
-    ) {
-      continue;
-    }
-
-    const { width } = child.getBoundingClientRect();
-    const entry = entriesByElement.get(child);
-
-    required +=
-      (entry
-        ? getFullWidth(entry, width)
-        : width + Math.max(0, child.scrollWidth - child.clientWidth)) +
-      px(style.marginLeft) +
-      px(style.marginRight);
-    count += 1;
+  if (state.isCollapsed) {
+    // Half a pixel of slack for sub-pixel widths, so an exact fit expands.
+    return state.neededWidth !== undefined && width + 0.5 < state.neededWidth;
   }
 
-  required += px(rowStyle.columnGap) * Math.max(0, count - 1);
+  const shortfall = getShortfall(row, state);
 
-  // Half a pixel of slack for sub-pixel widths, so an exact fit stays put.
-  return required <= available + 0.5;
+  if (shortfall <= 0) return false;
+
+  state.neededWidth = Math.max(state.neededWidth ?? 0, width + shortfall);
+
+  return true;
 }
 
 /**
  * Checks every queued row and applies the decisions in one synchronous render,
- * before paint, as `useAutoTooltip` applies its overflow verdicts.
+ * before paint, as `useAutoTooltip` applies its overflow verdicts. A row that
+ * expanded is checked once more, which can only collapse it again.
  */
 function runRowChecks() {
   const queued = Array.from(pendingRows);
 
   pendingRows.clear();
 
-  const decisions: [RowEntry, boolean][] = [];
+  const changes: [RowEntry, boolean][] = [];
+  const expanded: HTMLElement[] = [];
 
   for (const row of queued) {
     const state = rows.get(row);
 
     if (!state || !state.entries.size || !row.isConnected) continue;
 
-    const isCollapsed = !fitsAtFullWidth(row);
+    const wasCollapsed = state.isCollapsed;
+    const isCollapsed = decide(row, state);
+
+    state.isCollapsed = isCollapsed;
+    state.isStale = false;
+    if (wasCollapsed && !isCollapsed) expanded.push(row);
 
     for (const entry of state.entries) {
-      if (entry.isCollapsed !== isCollapsed)
-        decisions.push([entry, isCollapsed]);
+      if (entry.isCollapsed !== isCollapsed) changes.push([entry, isCollapsed]);
     }
   }
 
-  if (!decisions.length) return;
+  if (changes.length) {
+    flushSync(() => {
+      for (const [entry, isCollapsed] of changes) {
+        entry.isCollapsed = isCollapsed;
+        entry.notify(isCollapsed);
+      }
+    });
+  }
 
-  flushSync(() => {
-    for (const [entry, isCollapsed] of decisions) {
-      entry.isCollapsed = isCollapsed;
-      entry.notify(isCollapsed);
-    }
-  });
+  for (const row of expanded) scheduleRowCheck(row);
 }
 
-function scheduleRowCheck(row: HTMLElement) {
+function scheduleRowCheck(row: HTMLElement, isStale = false) {
+  const state = rows.get(row);
+
+  if (!state) return;
+  if (isStale) state.isStale = true;
   if (!pendingRows.size) queueMicrotask(runRowChecks);
 
   pendingRows.add(row);
@@ -183,42 +199,55 @@ function joinRow(
   let state = rows.get(row);
 
   if (!state) {
-    state = { entries: new Set() };
+    const childObserver = new MutationObserver(() =>
+      scheduleRowCheck(row, true),
+    );
+
+    state = {
+      entries: new Set(),
+      isCollapsed: false,
+      neededWidth: undefined,
+      isStale: false,
+      childObserver,
+    };
     rows.set(row, state);
     getRowObserver().observe(row);
+    childObserver.observe(row, { childList: true });
   }
 
-  const entry: RowEntry = {
-    element,
-    notify,
-    isCollapsed: false,
-    expandedPadding: 0,
-    expandedWidth: undefined,
-  };
+  const entry: RowEntry = { element, notify, isCollapsed: false };
+  const joined = state;
 
-  state.entries.add(entry);
-  entriesByElement.set(element, entry);
-  scheduleRowCheck(row);
+  joined.entries.add(entry);
+  scheduleRowCheck(row, true);
 
   return () => {
-    state.entries.delete(entry);
-    if (entriesByElement.get(element) === entry) {
-      entriesByElement.delete(element);
-    }
-    if (!state.entries.size) {
+    joined.entries.delete(entry);
+
+    if (joined.entries.size) {
+      // The row may fit its remaining buttons now.
+      scheduleRowCheck(row, true);
+    } else {
       rows.delete(row);
       rowObserver?.unobserve(row);
+      joined.childObserver.disconnect();
     }
-    // The row may fit its remaining buttons now.
-    scheduleRowCheck(row);
   };
 }
 
 export interface AutoCollapseObserverProps {
   /** The button element; its parent is the measured row. */
   targetRef: RefObject<HTMLElement | null>;
-  /** Changes whenever the button's full width can: its label, icons, size. */
+  /**
+   * Changes whenever the button's full width can: its label, short label,
+   * icons, size, and whether another trigger collapses it.
+   */
   contentKey: string;
+  /**
+   * Whether the button's label is cut off, from its automatic tooltip. A
+   * sibling that grows squeezes the button without resizing the row.
+   */
+  isLabelCut: boolean;
   onChange: (isCollapsed: boolean) => void;
 }
 
@@ -229,11 +258,16 @@ export interface AutoCollapseObserverProps {
 export function AutoCollapseObserver({
   targetRef,
   contentKey,
+  isLabelCut,
   onChange,
 }: AutoCollapseObserverProps) {
   const notify = useEffectEvent((isCollapsed: boolean) => {
     onChange(isCollapsed);
   });
+  // The row joined. The button's ref can't be read from this child's layout
+  // effects: on every update React detaches the button's callback ref before
+  // they run and attaches it again only after them.
+  const rowRef = useRef<HTMLElement | null>(null);
 
   useLayoutEffect(() => {
     let leave: (() => void) | undefined;
@@ -247,22 +281,28 @@ export function AutoCollapseObserver({
 
       if (!isActive || !element || !row) return;
 
+      rowRef.current = row;
       leave = joinRow(row, element, (isCollapsed) => notify(isCollapsed));
     });
 
     return () => {
       isActive = false;
+      rowRef.current = null;
       leave?.();
       notify(false);
     };
   }, [targetRef]);
 
-  // The button's full width can change without its row resizing.
+  // What the button needs changed, so what the row remembers may be wrong.
+  // Joining checks the row anyway, so before that there is nothing to do.
   useLayoutEffect(() => {
-    const row = targetRef.current?.parentElement;
+    if (rowRef.current) scheduleRowCheck(rowRef.current, true);
+  }, [contentKey]);
 
-    if (row && rows.has(row)) scheduleRowCheck(row);
-  }, [contentKey, targetRef]);
+  // The row didn't resize, but the button may no longer fit it.
+  useLayoutEffect(() => {
+    if (rowRef.current) scheduleRowCheck(rowRef.current);
+  }, [isLabelCut]);
 
   return null;
 }

@@ -513,6 +513,85 @@ describe('<Button autoCollapse />', () => {
     expect(renders - before).toBeLessThanOrEqual(crossings.length * 2);
   });
 
+  /**
+   * A sibling that grows, or an auto margin, takes the width the collapse
+   * frees. Adding up the siblings' widths would then never show the row
+   * fitting again.
+   */
+  it.each([
+    ['a sibling that grows', { flex: 1 }],
+    ['a sibling with an auto margin', { marginLeft: 'auto' }],
+  ] as const)('expands again beside %s', async (_, siblingStyle) => {
+    renderWithRoot(
+      <Row width={600}>
+        <span style={siblingStyle}>Title</span>
+        {content}
+      </Row>,
+    );
+
+    await settle();
+
+    const [first] = screen.getAllByRole('button');
+
+    await resizeRow(150);
+    expect(isSquare(first)).toBe(true);
+
+    await resizeRow(600);
+    expect(isSquare(first)).toBe(false);
+  });
+
+  it('collapses and expands as a sibling comes and goes in a row that keeps its width', async () => {
+    function Toolbar({ hasSibling }: { hasSibling: boolean }) {
+      return (
+        <Row width={240}>
+          <Button icon={<PlusIcon />} autoCollapse>
+            Add item
+          </Button>
+          {hasSibling ? <Button>A sibling far too wide to share</Button> : null}
+        </Row>
+      );
+    }
+
+    const { rerender } = renderWithRoot(<Toolbar hasSibling={false} />);
+
+    await settle();
+
+    const button = screen.getByRole('button', { name: 'Add item' });
+
+    expect(isSquare(button)).toBe(false);
+
+    rerender(<Toolbar hasSibling />);
+    await settle();
+    expect(isSquare(button)).toBe(true);
+
+    rerender(<Toolbar hasSibling={false} />);
+    await settle();
+    expect(isSquare(button)).toBe(false);
+  });
+
+  it('measures again when its label changes while collapsed', async () => {
+    const toolbar = (label: string) => (
+      <Row width={130}>
+        <Button icon={<PlusIcon />} autoCollapse shortLabel="Go">
+          {label}
+        </Button>
+      </Row>
+    );
+
+    const { rerender } = renderWithRoot(toolbar('Run'));
+
+    await settle();
+    expect(screen.getByRole('button')).toHaveAccessibleName('Run');
+
+    rerender(toolbar('Run the whole long query'));
+    await settle();
+    expect(screen.getByRole('button')).toHaveAccessibleName('Go');
+
+    rerender(toolbar('Run'));
+    await settle();
+    expect(screen.getByRole('button')).toHaveAccessibleName('Run');
+  });
+
   it('collapses when `isCollapsed` says so, though its row fits', async () => {
     renderWithRoot(
       <Row width={600}>

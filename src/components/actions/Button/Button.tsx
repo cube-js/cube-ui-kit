@@ -704,6 +704,7 @@ export const Button = forwardRef(function Button(
     renderWithTooltip,
     isTooltipActive,
     isAutoTooltipEnabled,
+    isOverflowed,
   } = useAutoTooltip({
     tooltip,
     children,
@@ -876,8 +877,13 @@ export const Button = forwardRef(function Button(
               typeof shortLabel === 'string' ? shortLabel : '',
               size,
               collapse,
+              hasLeftSlot,
               hasRightSlot,
+              isLoading,
+              isCollapsed,
+              collapseCondition,
             ].join('|')}
+            isLabelCut={isOverflowed}
             onChange={setIsAutoCollapsed}
           />
         ) : null}
