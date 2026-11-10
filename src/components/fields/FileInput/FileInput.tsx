@@ -315,7 +315,8 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         ...getValidationMods({ isInvalid, isValid }),
       }}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === 'Space') {
+        // The button's own click doesn't reach the input inside it.
+        if (e.key === 'Enter' || e.key === ' ') {
           inputRef?.current?.click();
         }
       }}
