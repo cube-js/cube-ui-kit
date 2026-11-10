@@ -62,6 +62,7 @@ const NAMES = `import { tasty } from '@cube-dev/ui-kit';
 export const Defined = tasty({
   styles: {
     fill: { '': '#surface', '@dark': '#surface-2', '@hc': '#current-fill' },
+    opacity: { '': 1, '@mobile': 0.5 },
     width: '$t4-icon-size',
     padding: '0 $dialog-padding-h',
     fontFamily: '$font-sans',
@@ -74,7 +75,7 @@ export const Defined = tasty({
 export const Phantom = tasty({
   styles: {
     fill: '#pink-01',
-    color: { '': '#dark', '@mobile': '#surface' },
+    color: { '': '#dark', '@tablet': '#surface' },
     width: '$fade-width',
     height: '$tab-indicator-size',
     preset: 'inline',
@@ -311,7 +312,7 @@ describe('tasty.config.ts', () => {
     expect(reported).toEqual(
       [
         "fill: '#pink-01',",
-        "color: { '': '#dark', '@mobile': '#surface' },",
+        "color: { '': '#dark', '@tablet': '#surface' },",
         "width: '$fade-width',",
         "height: '$tab-indicator-size',",
         "preset: 'inline',",
