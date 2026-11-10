@@ -102,7 +102,7 @@ export default {
     size: {
       options: ['small', 'default', 'large'],
       control: { type: 'radio' },
-      description: 'The size of the input',
+      description: 'The size of the input, the same heights as text inputs',
       table: {
         defaultValue: { summary: 'default' },
         type: { summary: "'small' | 'default' | 'large'" },

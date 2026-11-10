@@ -1,6 +1,6 @@
 import { createFocusableRef, unwrapDOMRef } from '@react-spectrum/utils';
 import { useControlledState } from '@react-stately/utils';
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   forwardRef,
   RefObject,
@@ -24,81 +24,100 @@ import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { getValidationMods } from '../../form/validation/resolve-validation-props';
 import { ValidationIndicator } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
+import { INPUT_WRAPPER_STYLES } from '../TextInput/TextInputBase';
 
 import type { AriaLabelingProps, FocusableRefValue } from '@react-types/shared';
 import type { ChangeEvent } from 'react';
 import type { AriaTextFieldProps } from 'react-aria';
 import type { Props } from '../../../props';
 
+// The input box is the one every text field draws (`INPUT_WRAPPER_STYLES`):
+// its fill, border, radius and `$size` height per `size`, so the field lines
+// up with the inputs around it. The box itself is the button that opens the
+// file dialog, so it holds a "Choose file" chip, the file name and the state.
 const FileInputElement = tasty(Action, {
   qa: 'FileInputWrapper',
-  styles: {
-    display: 'inline-flex',
-    position: 'relative',
-    preset: 't3',
-    padding: '.5x 1x',
-    gap: '1x',
+  styles: mergeStyles(INPUT_WRAPPER_STYLES, {
+    display: 'flex',
     flow: 'row',
     placeItems: 'center start',
-    fill: {
-      '': '#surface',
-      'drag-hover': '#primary.16',
-      ':hover': '#primary.08',
-      disabled: '#disabled-surface',
+    gap: '1x',
+    // A button sizes to its content even as a flex box, so it is told to
+    // fill the field, as the other inputs do.
+    width: '100%',
+    textAlign: 'start',
+    // The chip sits as far from the left edge as from the top and bottom.
+    padding: '0 (1x - 1bw) 0 (($size - 3x) / 2)',
+    // The shared box clips its fill to the content box, which the padding
+    // would leave unpainted.
+    backgroundClip: 'padding-box',
+    cursor: {
+      '': '$pointer',
+      disabled: 'default',
     },
-    border: {
-      '': true,
-      valid: '#success-text.50',
-      invalid: '#danger-text.50',
-      ':focus-within & :focus-visible': '#primary-text',
-    },
-    radius: true,
-    cursor: '$pointer',
     overflow: 'hidden',
     whiteSpace: 'nowrap',
+    // A file dragged over the box marks it as the drop target, as focus does.
+    border: {
+      'drag-hover': '#primary-text',
+    },
 
     Button: {
-      radius: true,
-      border: {
-        '': '#clear',
-        pressed: '#primary.30',
+      display: 'grid',
+      placeItems: 'center',
+      flexShrink: 0,
+      // An action's height inside a field, at every size.
+      height: '(3x - 2bw)',
+      padding: '0 (1x - 1bw)',
+      preset: 't3m',
+      radius: '(1r - 1bw)',
+      fill: {
+        '': '#primary.12',
+        'hovered | drag-hover': '#primary.18',
+        pressed: '#primary.24',
       },
-      fill: '#primary.12',
+      // The accent text token, not the `#primary` fill: it keeps AA contrast
+      // on the tinted chip in every scheme.
       color: {
-        '': '#primary',
-        disabled: '#dark.30',
+        '': '#primary-text',
+        disabled: '#primary-accent-disabled-text',
       },
-      padding: '.5x (1.5x - 1bw)',
       transition: 'theme',
     },
 
+    // Both take the room left beside the chip, on one line that ends in an
+    // ellipsis. The placeholder is softer than a file name, and still AA.
     Placeholder: {
-      color: '#dark-02',
+      flexGrow: 1,
       whiteSpace: 'nowrap',
       textOverflow: 'ellipsis',
-      width: 'max 100%',
       overflow: 'hidden',
+      color: {
+        '': '#dark-03',
+        disabled: '#disabled-surface-text',
+      },
     },
 
     Value: {
-      color: '#dark-02',
+      flexGrow: 1,
       whiteSpace: 'nowrap',
       textOverflow: 'ellipsis',
-      width: 'max 100%',
       overflow: 'hidden',
+      color: {
+        '': '#dark-02',
+        disabled: '#disabled-surface-text',
+      },
     },
 
     State: {
+      $: '>',
       display: 'flex',
       placeItems: 'center',
     },
 
     ValidationIcon: {
       $: '> State >',
-      display: 'grid',
-      placeItems: 'center',
       width: 'min 2x',
-      fontSize: '$icon-size',
     },
 
     Input: {
@@ -108,10 +127,13 @@ const FileInputElement = tasty(Action, {
       bottom: 0,
       left: 0,
       opacity: 0.01,
-      cursor: '$pointer',
+      cursor: {
+        '': '$pointer',
+        disabled: 'default',
+      },
       zIndex: 10,
     },
-  },
+  }),
 });
 
 export interface CubeFileInputProps
@@ -173,6 +195,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
     inputProps,
     accept,
     form,
+    size,
   } = props;
 
   const [dragHover, setDragHover] = useState(false);
@@ -275,6 +298,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
       styles={styles}
       isDisabled={isDisabled}
       mods={{
+        size,
         selected: !!fileName,
         'drag-hover': dragHover,
         ...getValidationMods({ isInvalid, isValid }),
