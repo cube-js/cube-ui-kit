@@ -81,6 +81,7 @@ import { createMockDragState } from '../../shared/DraggableCollection';
 import { useOptionOriginPress } from '../option-origin-press';
 
 import { DraggableListBox } from './DraggableListBox';
+import { EMPTY_ROW_STYLES } from './empty-row';
 
 import type { SelectionManager } from '@react-stately/selection';
 import type {
@@ -510,6 +511,7 @@ export interface CubeListBoxProps<T>
   /**
    * Label to display when the list is empty (no items available).
    * Defaults to "No items".
+   * It wraps to the list's width, so a long message, or an action in it, stays in view.
    */
   emptyLabel?: ReactNode;
 
@@ -1299,6 +1301,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             color="#dark-03"
             size={size}
             padding="(.5x - 1bw)"
+            styles={EMPTY_ROW_STYLES}
           >
             {emptyLabel}
           </Item>
