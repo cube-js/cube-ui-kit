@@ -43,7 +43,6 @@ export interface UseAutoTooltipOptions {
    */
   description?: ReactNode;
   labelProps?: Props;
-  isDynamicLabel?: boolean;
   /**
    * The caller's own ref to the label element. The hook owns the label's ref
    * (it measures the node), so a caller that also needs the node hands its ref
@@ -277,8 +276,7 @@ function getAutoTitle(
     );
   }
 
-  // The label is cut off, or nothing is and the tooltip stays mounted but
-  // disabled for a dynamic label.
+  // The label is cut off, or nothing is and no tooltip renders.
   return children;
 }
 
@@ -291,7 +289,6 @@ function resolveTooltip({
   children,
   description,
   labelProps,
-  isDynamicLabel,
   truncation,
 }: Omit<UseAutoTooltipOptions, 'labelRef' | 'descriptionRef'> & {
   truncation: Truncation;
@@ -305,17 +302,11 @@ function resolveTooltip({
 
   const isOverflowed = truncation !== 'none';
   const autoTitle = getAutoTitle(children, description, truncation);
-  const hasAutoContent =
-    !!(autoTitle || labelProps) && (isOverflowed || isDynamicLabel);
+  const hasAutoContent = !!(autoTitle || labelProps) && isOverflowed;
 
   // Boolean tooltip - auto tooltip on overflow
   if (tooltip === true) {
-    if (!hasAutoContent) return null;
-
-    return {
-      title: autoTitle,
-      isDisabled: !isOverflowed && isDynamicLabel,
-    };
+    return hasAutoContent ? { title: autoTitle } : null;
   }
 
   // Object tooltip - advanced configuration
@@ -333,7 +324,6 @@ function resolveTooltip({
   return {
     ...tooltipProps,
     title: tooltipProps.title ?? autoTitle,
-    isDisabled: tooltipProps.isDisabled ?? (!isOverflowed && isDynamicLabel),
   };
 }
 
@@ -389,7 +379,6 @@ export function useAutoTooltip({
   children,
   description,
   labelProps,
-  isDynamicLabel = false,
   labelRef: labelRefOption,
   descriptionRef: descriptionRefOption,
 }: UseAutoTooltipOptions) {
@@ -570,7 +559,6 @@ export function useAutoTooltip({
     children,
     description,
     labelProps,
-    isDynamicLabel,
     truncation,
   });
 
