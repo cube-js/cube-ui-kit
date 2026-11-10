@@ -206,7 +206,7 @@ Internal-only references (`pipeline.md`, `injector.md`), positioning material (`
 
 Bundled in `docs/glaze/` (same symlink/copy mechanism). Consult when working on color tokens, theme generation, or contrast tuning — Glaze powers `src/tokens/palette.ts`.
 
-- [`methodology.md`](docs/glaze/methodology.md), [`api.md`](docs/glaze/api.md), [`migration.md`](docs/glaze/migration.md)
+- [`methodology.mdx`](docs/glaze/methodology.mdx), [`shadows-and-glows.mdx`](docs/glaze/shadows-and-glows.mdx), [API reference](docs/glaze/reference/index.md), [`migration.md`](docs/glaze/migration.md)
 
 ## Stack
 
