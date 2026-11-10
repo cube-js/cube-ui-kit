@@ -12,6 +12,7 @@ import {
 import { DatePicker } from './DatePicker';
 import { DateRangePicker } from './DateRangePicker';
 import { DateRangeSeparatedPicker } from './DateRangeSeparatedPicker';
+import { PeriodPicker } from './PeriodPicker';
 
 /**
  * All three date pickers declare `ContainerStyleProps` and `styles` on their
@@ -479,5 +480,35 @@ describe('<DateRangePicker hideTrigger />', () => {
       withButton.box - withButton.button,
     );
     expect(smaller.box).toBeLessThan(withoutButton.box);
+  });
+});
+
+/**
+ * The input wrapper is a grid (`INPUT_WRAPPER_STYLES`: segments `1sf`, suffix
+ * `max-content`). A `display: flex` override once turned the grid off, so the
+ * calendar button followed the segments into the middle of a wide field.
+ */
+describe.each([
+  ['DatePicker', DatePicker],
+  ['DateRangePicker', DateRangePicker],
+  ['PeriodPicker', PeriodPicker],
+] as const)('<%s /> suffix', (name, Component) => {
+  const Field = Component as any;
+
+  it('pins the calendar button to the right edge of a wide field', async () => {
+    renderWithRoot(
+      <div style={{ width: 400 }}>
+        <Field aria-label={name} qa="DateControl" width="100%" size="small" />
+      </div>,
+    );
+
+    const root = await screen.findByTestId('DateControl');
+    const button = within(root).getByRole('button', { name: /calendar/i });
+    const gap =
+      root.getBoundingClientRect().right - button.getBoundingClientRect().right;
+
+    // Only the wrapper's border and padding separate the two.
+    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(gap).toBeLessThan(12);
   });
 });
