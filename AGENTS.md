@@ -47,6 +47,14 @@ Project-specific working rules for AI agents. Not published with the package.
 
 Every task follows the [Entropy rule](docs/rules/entropy.md): added complexity must serve validated requirements and remain proportional to the capability delivered. Prefer safe simplification in the affected area, and consider the burden on component maintainers, consumers and end users together. Record any developer-accepted exception with its reason and scope. Every UI Kit review includes an Entropy review and reports the entropy change level in the affected context.
 
+## Browser Support and Web Platform Guidance
+
+**Browser Support:** the latest 3 major versions of Chrome, Firefox and Safari, iOS Safari included (`browserslist` in `package.json`). A feature all of them support needs no fallback or polyfill; for anything newer, use the fallback its guide recommends.
+
+The [`modern-web-guidance`](.claude/skills/modern-web-guidance/SKILL.md) skill (Chrome's web platform guides: its `SKILL.md` is copied from the npm package, and the guides load at run time) is guidance, not rules. UI Kit is built on React Aria and does many things differently, so React Aria stays the target and reference for semantics, focus, keyboard, overlays and positioning. Where a guide prescribes a native primitive React Aria already covers (`<dialog>` and `showModal()`, the `popover` attribute, `commandfor` and `interestfor`, CSS anchor positioning for overlay placement, a customizable `<select>`), follow React Aria and skip that advice; drop a `legacy-scan` finding whose fix would replace React Aria behavior for the same reason. Departing from React Aria takes a maintainer's decision in its own issue, never a drive-by in another fix.
+
+Use the guides where they don't conflict: CSS layout, animation, color, scrollbars, typography and performance, with their CSS written as Tasty styles (`@starting`, `@supports(…)`, `@(…)` container states) and their colors as UI Kit's Glaze tokens, which already carry the dark and high-contrast schemes. When the CLI reports the skill out of date, replace `SKILL.md` with the package's current copy, unchanged.
+
 ## Changesets
 
 When making code changes that affect end users or the public API, **always add a new changeset or update an existing one** in [`.changeset/`](.changeset/) as part of the same task. Do not wait to be asked.

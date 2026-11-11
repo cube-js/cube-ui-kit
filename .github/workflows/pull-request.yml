@@ -258,17 +258,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Resolve Playwright version
-        id: playwright
-        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
-
       - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
+        uses: ./.github/actions/install-chromium
 
       - name: Build Storybook
         run: pnpm build-storybook
