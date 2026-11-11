@@ -42,20 +42,22 @@ runs:
     # *.ubuntu.com name resolved on the runners for hours while other hosts
     # did, and apt spent ten minutes on retries before failing the job. So when
     # the mirror's name doesn't resolve, apt uses a mirror outside ubuntu.com
-    # instead: the same packages, signed with the same Ubuntu key.
+    # instead: the same packages, signed with the same Ubuntu key. GitHub's
+    # images list their mirrors in /etc/apt/apt-mirrors.txt, which the sources
+    # name as `mirror+file:`, so that file is rewritten along with them.
     - name: Install Chromium
       shell: bash
       run: |
         mkdir -p ~/.cache/playwright-apt/partial
         printf 'Dir::Cache::Archives "%s";\nAPT::Sandbox::User "root";\n' "$HOME/.cache/playwright-apt" \
           | sudo tee /etc/apt/apt.conf.d/90-playwright-cache > /dev/null
-        sources=()
-        for file in /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list; do
-          if [ -f "$file" ]; then sources+=("$file"); fi
+        files=()
+        for file in /etc/apt/apt-mirrors.txt /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list; do
+          if [ -f "$file" ]; then files+=("$file"); fi
         done
-        mirror=$(grep -m 1 -hoE 'https?://[^/[:space:]]+\.ubuntu\.com' "${sources[@]}" /dev/null | sed -En '1{s#^https?://##;p;q}' || true)
+        mirror=$(grep -m 1 -hoE 'https?://[^/[:space:]]+\.ubuntu\.com' "${files[@]}" /dev/null | sed -En '1{s#^https?://##;p;q}' || true)
         if [ -n "$mirror" ] && ! getent hosts "$mirror" > /dev/null; then
           echo "::warning::$mirror does not resolve, so apt uses mirrors.kernel.org"
-          sudo sed -i -E 's#https?://([a-z0-9-]+\.)*ubuntu\.com/ubuntu/?#http://mirrors.kernel.org/ubuntu/#g' "${sources[@]}"
+          sudo sed -i -E 's#https?://([a-z0-9-]+\.)*ubuntu\.com/ubuntu/?#http://mirrors.kernel.org/ubuntu/#g' "${files[@]}"
         fi
         pnpm exec playwright install --with-deps chromium
