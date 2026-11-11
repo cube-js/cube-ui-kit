@@ -347,6 +347,45 @@ describe('palette tokens', () => {
   });
 
   /**
+   * WCAG 1.4.11 asks 3:1 of a scrollbar thumb against what surrounds it. Tasty's
+   * `scrollbar` style leaves the track transparent (nothing sets
+   * `--scrollbar-track-color`), so the thumb sits on the scroll area's own
+   * surface. `#scrollbar-thumb` is a translucent palette color, so it is measured
+   * as the browser paints it: blended over each of the page surfaces.
+   */
+  it('keeps the scrollbar thumb at 3:1 against #surface to #surface-4 in every scheme', () => {
+    const colorTokens = getColorTokens();
+    const [, name, digits] =
+      /^#([\w-]+?)(?:\.(\d+))?$/.exec(
+        String(BASE_TOKENS['#scrollbar-thumb']),
+      ) ?? [];
+
+    expect(name, 'the thumb is a palette color').toBeDefined();
+
+    // `#text.7` is 70% of `#text`; a color with no `.N` suffix is opaque.
+    const alpha = digits ? Number(`0.${digits}`) : 1;
+    // `#text` is an alias (`#surface-text-soft`); a palette name stands for itself.
+    const base = String(colorTokens[`#${name}`] ?? `#${name}`);
+    const tokens = getPaletteTokens();
+
+    for (const state of ['', '@dark', '@hc', '@dark & @hc']) {
+      const colors = variant(tokens, state);
+
+      for (const surface of [
+        '#surface',
+        '#surface-2',
+        '#surface-3',
+        '#surface-4',
+      ]) {
+        expect(
+          blendedContrastOf(colors[base], alpha, colors[surface]),
+          `${surface} @ '${state || 'light'}'`,
+        ).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+
+  /**
    * Alert's pair exists so its themes can be told apart without repainting the
    * shared tinted `surface` / `border` under Item, Tag and the tables. The
    * snapshot pins the values; this pins where they live and the two promises
@@ -1334,45 +1373,6 @@ describe('renderColorTokens', () => {
     expect(rendered['$card-shadow']).toBe('0 .5x 2x #shadow-md');
     expect(rendered['#scrollbar-thumb']).toBe('#text.7');
     expect(rendered['#scrollbar-bg']).toBe('#surface-2');
-  });
-
-  /**
-   * WCAG 1.4.11 asks 3:1 of a scrollbar thumb against what surrounds it. Tasty's
-   * `scrollbar` style leaves the track transparent (nothing sets
-   * `--scrollbar-track-color`), so the thumb sits on the scroll area's own
-   * surface. `#scrollbar-thumb` is a translucent palette color, so it is measured
-   * as the browser paints it: blended over each surface.
-   */
-  it('keeps the scrollbar thumb at 3:1 against every surface in every scheme', () => {
-    const colorTokens = getColorTokens();
-    const [, name, digits] =
-      /^#([\w-]+?)(?:\.(\d+))?$/.exec(
-        String(BASE_TOKENS['#scrollbar-thumb']),
-      ) ?? [];
-
-    expect(name, 'the thumb is a palette color').toBeDefined();
-
-    // `#text.7` is 70% of `#text`; a color with no `.N` suffix is opaque.
-    const alpha = digits ? Number(`0.${digits}`) : 1;
-    // `#text` is an alias (`#surface-text-soft`); a palette name stands for itself.
-    const base = String(colorTokens[`#${name}`] ?? `#${name}`);
-    const tokens = getPaletteTokens();
-
-    for (const state of ['', '@dark', '@hc', '@dark & @hc']) {
-      const colors = variant(tokens, state);
-
-      for (const surface of [
-        '#surface',
-        '#surface-2',
-        '#surface-3',
-        '#surface-4',
-      ]) {
-        expect(
-          blendedContrastOf(colors[base], alpha, colors[surface]),
-          `${surface} @ '${state || 'light'}'`,
-        ).toBeGreaterThanOrEqual(3);
-      }
-    }
   });
 });
 
