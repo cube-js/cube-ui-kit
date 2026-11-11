@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.211.0
+
+### Minor Changes
+
+- [#1629](https://github.com/cube-js/cube-ui-kit/pull/1629) [`7280e30ac`](https://github.com/cube-js/cube-ui-kit/commit/7280e30ac9bd49ab2983712efd106d4d486584e6) Thanks [@tenphi](https://github.com/tenphi)! - **Form (modern controller):** an empty field (`''`, `undefined` or `null`) is left to `required`. `pattern`, `type` and `whitespace` no longer reject it (`min`, `max`, `len` and `enum` already passed it), so an optional field that was typed into and cleared can be submitted, and an untouched optional `type: 'email'` field no longer fails. Custom `validator` functions still run on empty values. If a rule relied on `pattern`, `type` or `whitespace` to reject an empty value, add `required: true` to it. A `transform` can't turn an empty value into a checked one: a cleared field passed through `Number` is still empty.
+
+  The dismiss prompt ("Discard changes?") no longer asks after a field is typed into and cleared back to an empty default, so dialogs don't need to seed `''` defaults for it. `isDirty` and `dirtyFields` are unchanged and still report `''` over an `undefined` default. The legacy `Form.useForm()` engine is unchanged.
+
+### Patch Changes
+
+- [#1629](https://github.com/cube-js/cube-ui-kit/pull/1629) [`7280e30ac`](https://github.com/cube-js/cube-ui-kit/commit/7280e30ac9bd49ab2983712efd106d4d486584e6) Thanks [@tenphi](https://github.com/tenphi)! - **DatePicker, DateRangePicker, PeriodPicker:** the calendar button sits at the right edge of a field wider than its date, like any other input's suffix, instead of right after the date segments. The field is still never narrower than its segments.
+
+- [#1629](https://github.com/cube-js/cube-ui-kit/pull/1629) [`7280e30ac`](https://github.com/cube-js/cube-ui-kit/commit/7280e30ac9bd49ab2983712efd106d4d486584e6) Thanks [@tenphi](https://github.com/tenphi)! - **ListBox and the components built on it (FilterListBox, FilterPicker, ComboBox, Picker, SearchComboBox):** a long `emptyLabel` wraps to the list's width, in FilterPicker's list and tree mode too, instead of being cut to one line. A whole message is readable, and an action in it, such as a Retry button, stays inside the popover. Short labels look the same.
+
 ## 0.210.0
 
 ### Minor Changes
