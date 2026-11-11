@@ -10,6 +10,7 @@ import {
   variantToOkhsl,
 } from '@tenphi/glaze';
 
+import { BASE_TOKENS } from './base';
 import { colorSeed } from './color-seed';
 import { getColorTokens, renderColorTokens } from './colors';
 import {
@@ -174,6 +175,43 @@ function contrastOf(a: string, b: string): number {
   };
 
   return contrastRatioFromLuminance(luminance(a), luminance(b));
+}
+
+/**
+ * WCAG contrast between a surface and a translucent color painted over it.
+ *
+ * The browser composites a translucent color over its backdrop in gamma-encoded
+ * sRGB, so the two are blended there before the luminance is taken.
+ */
+function blendedContrastOf(
+  color: string,
+  alpha: number,
+  surface: string,
+): number {
+  const srgb = (value: string) => {
+    const { h, s, l } = variantToOkhsl(glaze.color(value).resolve().light);
+
+    return okhslToSrgb(h, s, l, false).map((c) =>
+      Math.max(0, Math.min(1, c)),
+    ) as [number, number, number];
+  };
+  const linear = (rgb: [number, number, number]) =>
+    rgb.map((c) =>
+      c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4,
+    ) as [number, number, number];
+
+  const fg = srgb(color);
+  const bg = srgb(surface);
+  const blended = fg.map((c, i) => c * alpha + bg[i] * (1 - alpha)) as [
+    number,
+    number,
+    number,
+  ];
+
+  return contrastRatioFromLuminance(
+    relativeLuminanceFromLinearRgb(linear(blended)),
+    relativeLuminanceFromLinearRgb(linear(bg)),
+  );
 }
 
 /**
@@ -1296,8 +1334,44 @@ describe('renderColorTokens', () => {
     // Declared on <Root>, so CSS would have frozen the outer theme's color into
     // them; they have to ride along by reference to re-resolve in the region.
     expect(rendered['$card-shadow']).toBe('0 .5x 2x #shadow-md');
-    expect(rendered['#scrollbar-thumb']).toBe('#text.5');
+    expect(rendered['#scrollbar-thumb']).toBe('#text.7');
     expect(rendered['#scrollbar-bg']).toBe('#surface-2');
+  });
+
+  /**
+   * WCAG 1.4.11 asks 3:1 of a scrollbar thumb against what surrounds it. Tasty's
+   * `scrollbar` style leaves the track transparent (nothing sets
+   * `--scrollbar-track-color`), so the thumb sits on the scroll area's own
+   * surface. `#scrollbar-thumb` is a translucent palette color, so it is measured
+   * as the browser paints it: blended over each surface.
+   */
+  it('keeps the scrollbar thumb at 3:1 against every surface in every scheme', () => {
+    const colorTokens = getColorTokens();
+    const [, name, digits] =
+      /^#([\w-]+)\.(\d+)$/.exec(String(BASE_TOKENS['#scrollbar-thumb'])) ?? [];
+
+    expect(name, 'the thumb is a translucent palette color').toBeDefined();
+
+    const alpha = Number(`0.${digits}`);
+    // `#text` is an alias (`#surface-text-soft`); a palette name stands for itself.
+    const base = String(colorTokens[`#${name}`] ?? `#${name}`);
+    const tokens = getPaletteTokens();
+
+    for (const state of ['', '@dark', '@hc', '@dark & @hc']) {
+      const colors = variant(tokens, state);
+
+      for (const surface of [
+        '#surface',
+        '#surface-2',
+        '#surface-3',
+        '#surface-4',
+      ]) {
+        expect(
+          blendedContrastOf(colors[base], alpha, colors[surface]),
+          `${surface} @ '${state || 'light'}'`,
+        ).toBeGreaterThanOrEqual(3);
+      }
+    }
   });
 });
 
