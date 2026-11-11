@@ -68,7 +68,7 @@ Cloud consumes the published package, so a UI Kit fix reaches users only when a 
 - Tasty isn't connected to Linear. The UI Kit PR that bumps `@tenphi/tasty` names the Tasty fix's issues as `Part of`.
 - After a merge, check each issue the PR names. An issue whose fix ships in no release, because none of its PRs adds a non-empty changeset (see Changesets), has nothing for a bump to find: move it to Done by hand once its last PR has merged. One whose fix ships in a release and went to Done before Cloud has it goes back to In Progress, with a comment saying what is left.
 
-File new issues with the [`create-ticket`](.claude/skills/create-ticket/SKILL.md) skill.
+File new issues with the [`create-ticket`](.claude/skills/create-ticket/SKILL.md) skill. `implement` runs it for a task that has no issue.
 
 ## Stories: Interaction-Only States
 

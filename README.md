@@ -143,7 +143,7 @@ pnpm chromatic        # Run visual regression tests
 
 ### Agent reviews
 
-Local agent reviews follow the [UI Kit review rules](docs/rules/review.md), including [Entropy review](docs/rules/entropy.md#entropy-review). Use `$ui-review` in Codex or `/ui-review` in Claude for a full review, and `$entropy-review` or `/entropy-review` respectively for a focused complexity assessment.
+Local agent reviews follow the [UI Kit review rules](docs/rules/review.md), including [Entropy review](docs/rules/entropy.md#entropy-review). Use `$ui-review` in Codex or `/ui-review` in Claude for a full review, and `$entropy-review` or `/entropy-review` respectively for a focused complexity assessment. `$implement` or `/implement` takes a task from its Linear issue to a merged PR with these reviews as its review rounds; agents also use it when asked to implement a task end to end.
 
 ### Project Structure
 
