@@ -39,7 +39,7 @@ A versatile list selection component that allows users to select one or more ite
 - **`shape`** `'card' | 'plain' | 'popover'` (default: `card`) — Visual shape of the ListBox
 - **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`)
 - **`filter`** `(nodes: Iterable<Node>) => Iterable<Node>` — Filter function for the list items
-- **`emptyLabel`** `ReactNode` (default: `No items`) — Label shown when no items are available. The empty listbox stays in the document, described by this label
+- **`emptyLabel`** `ReactNode` (default: `No items`) — Label shown when no items are available. The empty listbox stays in the document, described by this label. It wraps to the list's width, so a long message, or an action in it, stays in view.
 - **`header`** `ReactNode` — Custom header content
 - **`footer`** `ReactNode` — Custom footer content
 - **`focusOnHover`** `boolean` (default: `false`) — Whether moving the pointer over an option will move DOM focus to that option

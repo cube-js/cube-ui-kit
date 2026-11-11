@@ -58,6 +58,15 @@ function copyContainer(value: Container): Container {
   return copy;
 }
 
+/**
+ * An empty field: never set (`undefined`), cleared by the API (`null`), or
+ * typed into and cleared (`''`). Validation leaves it to `required`, and the
+ * dismiss prompt does not count emptying an empty default as an edit.
+ */
+export function isEmptyFormValue(value: unknown): boolean {
+  return value === undefined || value === null || value === '';
+}
+
 /** The ADR's default dirty comparator: Object.is, then one structural level. */
 export function formValueEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;

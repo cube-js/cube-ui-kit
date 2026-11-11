@@ -334,6 +334,73 @@ describe('atomic commands, callbacks, and reentrancy', () => {
     expect(store.hasUserEdits()).toBe(false);
   });
 
+  it('does not count an emptied field as a user edit, but keeps it dirty', () => {
+    const store = createFormStore<{
+      a?: string;
+      b?: string | null;
+      c?: string;
+    }>({ defaultValues: { b: null, c: 'x' } });
+    store.register('a');
+    store.register('b');
+    store.register('c');
+    // Typed into, then cleared: `''` over an `undefined` or `null` default.
+    store.setValue('a', '1', { source: 'user' });
+    store.setValue('a', '', { source: 'user' });
+    store.setValue('b', '', { source: 'user' });
+    expect(store.hasUserEdits()).toBe(false);
+    // `isDirty` still tells `''` from absent, for edit forms that send it.
+    expect(store.getSnapshot().dirtyFields.has('a')).toBe(true);
+    expect(store.getSnapshot().dirtyFields.has('b')).toBe(true);
+    // Clearing a non-empty default is an edit.
+    store.setValue('c', '', { source: 'user' });
+    expect(store.hasUserEdits()).toBe(true);
+  });
+
+  it('leaves an empty value to `required`: format rules skip it', async () => {
+    const store = createFormStore<Record<string, unknown>>({
+      defaultValues: { untouched: undefined, nil: null },
+    });
+    // The checks that used to reject `''` (and `type`, also `undefined`).
+    // `min`, `max`, `len` and `enum` already passed an empty value.
+    const format = [
+      { pattern: /^\d+$/, message: 'pattern' },
+      { type: 'email', message: 'type' },
+      { whitespace: true, message: 'whitespace' },
+      { required: false, pattern: /^\d+$/, message: 'not required' },
+      { transform: Number, type: 'number', min: 1, message: 'transformed' },
+    ];
+    store.register('cleared', { rules: format });
+    store.register('untouched', { rules: format });
+    store.register('nil', { rules: format });
+    store.register('required', {
+      rules: [{ required: true, message: 'required' }, ...format],
+    });
+    store.register('custom', {
+      rules: [{ validator: (_, value) => `custom:${String(value)}` }],
+    });
+    store.setValue('cleared', '1', { source: 'user' });
+    store.setValue('cleared', '', { source: 'user' });
+    store.setValue('required', '', { source: 'user' });
+    store.setValue('custom', '', { source: 'user' });
+
+    const result = await store.validate();
+    const errors = Object.fromEntries(
+      result.fields.map((field) => [field.name, field.errors]),
+    );
+
+    expect(errors.cleared).toEqual([]);
+    expect(errors.untouched).toEqual([]);
+    expect(errors.nil).toEqual([]);
+    expect(errors.required).toEqual(['required']);
+    // A custom validator still decides for itself.
+    expect(errors.custom).toEqual(['custom:']);
+
+    // A non-empty value is still checked.
+    store.setValue('cleared', ' x', { source: 'user' });
+    const next = await store.validate(['cleared']);
+    expect(next.fields[0].errors).toEqual(['pattern']);
+  });
+
   it('finishes delivery of the original snapshot before publishing reentrant writes', () => {
     const events: unknown[] = [];
     const store = createFormStore({

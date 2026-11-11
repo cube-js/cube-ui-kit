@@ -21,6 +21,7 @@ import {
   SearchWrapperElement,
   StyledHeaderWithoutBorder,
 } from '../FilterListBox/styled';
+import { EMPTY_ROW_STYLES } from '../ListBox/empty-row';
 
 import type { Styles } from '@tenphi/tasty';
 import type { ReactNode, RefObject } from 'react';
@@ -456,7 +457,13 @@ export function FilterTree(props: FilterTreeProps) {
             _onRowAction={toggleActive}
           />
         ) : (
-          <Item preset="t4" color="#dark-03" size={size} padding="(.5x - 1bw)">
+          <Item
+            preset="t4"
+            color="#dark-03"
+            size={size}
+            padding="(.5x - 1bw)"
+            styles={EMPTY_ROW_STYLES}
+          >
             {resolvedEmptyLabel}
           </Item>
         )}

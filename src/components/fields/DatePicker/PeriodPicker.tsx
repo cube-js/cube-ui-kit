@@ -187,7 +187,7 @@ function PeriodPickerImpl<T extends DateValue>(
       wrapperRef={domRef}
       qa={qa || 'PeriodPicker'}
       inputType="datepicker"
-      styles={mergeStyleLayers({ display: 'grid' }, styles)}
+      styles={styles}
       inputStyles={mergeStyleLayers(
         isDisabled || isReadOnly ? INERT_INPUT_STYLES : INPUT_STYLES,
         props.inputStyles,

@@ -26,8 +26,11 @@ import type { Props } from '../../../props';
 const DateInputWrapperElement = tasty({
   qa: 'DateInputWrapper',
   role: 'presentation',
+  // The input wrapper's grid, so the segments take the free space and the
+  // suffix sits at the right edge. Their column is `1fr`, not `1sf`: date
+  // segments can't shrink, so the box is never narrower than its content.
   styles: mergeStyles(INPUT_WRAPPER_STYLES, {
-    display: 'flex',
+    gridColumns: { '': '1fr', suffix: '1fr max-content' },
   }),
 });
 

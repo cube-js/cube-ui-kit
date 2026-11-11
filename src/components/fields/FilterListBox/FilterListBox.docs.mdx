@@ -37,7 +37,7 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`)
 - **`searchPlaceholder`** `string` (default: `Search...`) — Placeholder text in the search input
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or `false` to disable filtering
-- **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state
+- **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state. It wraps to the list's width, so a long message, or an action in it, stays in view.
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether to allow custom values not in the options list
 - **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection
 - **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around

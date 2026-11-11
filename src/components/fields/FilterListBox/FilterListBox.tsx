@@ -68,7 +68,7 @@ export interface CubeFilterListBoxProps<T>
    * Pass `false` to disable internal filtering completely (useful for external filtering).
    */
   filter?: FilterFn | false;
-  /** Label shown when the list is empty. When provided, overrides both the "No results found" and "No items" defaults. */
+  /** Label shown when the list is empty. When provided, overrides both the "No results found" and "No items" defaults. It wraps to the list's width, so a long message, or an action in it, stays in view. */
   emptyLabel?: ReactNode;
   /** Custom styles for the search input */
   searchInputStyles?: Styles;

@@ -1,5 +1,7 @@
 import { applyRule } from '../validation';
 
+import { isEmptyFormValue } from './values';
+
 import type { FormValues } from './read-types';
 import type { FormPath } from './values';
 
@@ -57,6 +59,20 @@ export function rulesSignature<ErrorValue>(
   return signature(rules);
 }
 
+/**
+ * An empty value is only `required`'s concern, so an optional field passes its
+ * format checks (`pattern`, `type`, `min`, …) while it is empty.
+ */
+function activeChecks(
+  checks: Omit<ModernValidationRule, 'validator' | 'transform'>,
+  value: unknown,
+): Omit<ModernValidationRule, 'validator' | 'transform'> {
+  if (!isEmptyFormValue(value)) return checks;
+  // Only a rule that sets `required` runs it: an extra check adds microtask
+  // ticks before a custom validator starts.
+  return 'required' in checks ? { required: checks.required } : {};
+}
+
 export async function runRules<ErrorValue>(
   value: unknown,
   rules: readonly ModernValidationRule<ErrorValue>[],
@@ -69,7 +85,13 @@ export async function runRules<ErrorValue>(
     const { validator, transform, ...checks } = rule;
     try {
       const transformed = transform ? transform(value) : value;
-      await applyRule(transformed, checks, undefined);
+      await applyRule(
+        transformed,
+        // Judged on the field's own value too: a `transform` such as `Number`
+        // turns a cleared `''` into a non-empty `0`.
+        activeChecks(checks, isEmptyFormValue(value) ? value : transformed),
+        undefined,
+      );
       if (context.signal.aborted) break;
       const result = await validator?.(rule, transformed, context);
       if (result !== undefined && result !== null && result !== '')

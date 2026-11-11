@@ -52,7 +52,7 @@ Choose a different component when the interaction has another shape:
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the picker component
 - **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`)
 - **`searchPlaceholder`** `string` — Placeholder text in the search input
-- **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state
+- **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state. It wraps to the list's width, so a long message, or an action in it, stays in view.
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function for determining if an option should be included in search results
 - **`header`** `ReactNode` — Custom header content
 - **`footer`** `ReactNode` — Custom footer content
