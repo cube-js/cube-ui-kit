@@ -52,7 +52,7 @@ The gate:
 - **`changes needed`:** simplify within the requirement and assess again.
 - **`unverified`:** name the missing evidence, and file only if the user agrees. The unverified context gets no Entropy label.
 
-When the user asked for this ticket, any result other than `pass` goes back to them with the levels and the simpler alternative; never drop it silently.
+Any result other than `pass` goes back to the user with the levels and the simpler alternative, whoever started this skill; never drop it silently.
 
 ## 5. Write the issue
 

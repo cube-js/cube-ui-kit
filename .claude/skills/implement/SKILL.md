@@ -28,7 +28,7 @@ Then the code:
 - **Which repo owns the fix.** A component's behaviour, styling or API is fixed here. A change only Cloud's code needs belongs to Cloud's `implement`. A Tasty change lands in Tasty first, and its release is bumped here with `pnpm run update-tasty`.
 - **A bug:** reproduce it on `main` first: [`pnpm probe`](../../../docs/rules/probe.md) for markup, CSS and tokens, `pnpm probe:browser` for geometry and pointer behaviour, `pnpm probe render --sr` for what a screen reader says, or a spec that fails today. When it was seen in Cloud, reproduce it on the version Cloud resolves too. **A feature:** find the nearest existing component or prop to follow ([Creating Components](../../../AGENTS.md#creating-components)).
 
-A task with no Linear issue gets one now from [`create-ticket`](../create-ticket/SKILL.md), filed In Progress for the user, with the Entropy assessment stage 2 reuses. When its duplicate search finds an open issue to reuse, move that one to In Progress for the user, unless someone else is working on it: then ask. When the user wants no issue, or Linear can't be reached, say so, and note it in the plan's Decisions once the branch exists.
+A task with no Linear issue gets one now from [`create-ticket`](../create-ticket/SKILL.md), filed In Progress for the user, with the Entropy assessment stage 2 reuses. When its duplicate search finds an open issue to reuse, move that one to In Progress for the user, unless someone else is working on it: then ask. When its assessment doesn't clear the gate, it files nothing yet and stage 2 takes the result. When the user wants no issue, or Linear can't be reached, say so. Note each case without an issue in the plan's Decisions once the branch exists.
 
 Create the branch now, `type/scope` as [CONTRIBUTING](../../../CONTRIBUTING.md) names it (`fix/select-overflow`), with no issue ID ([Linear Issues](../../../AGENTS.md#linear-issues-done-when-cloud-has-the-fix)). Write the plan's Goal and Acceptance criteria, and save the sources verbatim.
 
@@ -36,7 +36,7 @@ Create the branch now, `type/scope` as [CONTRIBUTING](../../../CONTRIBUTING.md) 
 
 ## 2. Entropy task gate
 
-Before any question and any code, assess the plan as [`create-ticket` step 4](../create-ticket/SKILL.md#4-run-the-entropy-task-assessment) does, for UI Kit and for Cloud as its consumer. Reuse an assessment on the issue that still covers this scope. When you reassess an issue stage 1 filed, replace its assessment section and Entropy labels with the new result. On `pass` or `exception accepted`, go on. On `changes needed`, simplify the plan within the requirement, or narrow the scope with the user, and assess again. On `unverified`, get the missing evidence, or go on only with the user's agreement.
+Before any question and any code, assess the plan as [`create-ticket` step 4](../create-ticket/SKILL.md#4-run-the-entropy-task-assessment) does, for UI Kit and for Cloud as its consumer. Reuse an assessment on the issue that still covers this scope. When you reassess an issue stage 1 filed, replace its assessment section and Entropy labels with the new result. On `pass` or `exception accepted`, go on. On `changes needed`, simplify the plan within the requirement, or narrow the scope with the user, and assess again. On `unverified`, get the missing evidence, or go on only with the user's agreement. Once the scope clears, file the issue stage 1 held back with `create-ticket`.
 
 **Done when** Decisions hold `pass` or `exception accepted` for the current scope, or the user's agreement to go on unverified.
 
