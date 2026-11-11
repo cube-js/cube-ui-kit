@@ -118,6 +118,7 @@ A semantic page header with title, breadcrumbs, subtitle, and action areas.
 
 - **`title`** `ReactNode` — Page/section title. A string title that runs out of room is truncated and shown in full in a tooltip; when the title and `extra` both overflow, they share the shortfall
 - **`level`** `1-6` (default: `3`) — Heading level for accessibility
+- **`titlePreset`** `h1-h6` (default: the preset of `level`) — The title's typography preset, apart from its level: `level={1} titlePreset="h3"` gives an `h1` in the document outline that looks like an `h3`
 - **`breadcrumbs`** `[label, href][]` — Navigation breadcrumbs
 - **`subtitle`** `ReactNode` — Text below the title
 - **`suffix`** `ReactNode` — Content next to the title
@@ -459,6 +460,16 @@ A variant of Layout that enables CSS Grid for the content area.
     <Text>Analytics content</Text>
   </Layout.Content>
 </Layout>
+```
+
+### Page Title Sized Apart From Its Level
+
+A page keeps one `h1`, but in an app's chrome it often looks like an `h3`. `titlePreset` sets the title's look; `level` still sets its heading element.
+
+<Story of={LayoutStories.HeaderTitlePreset} />
+
+```jsx
+<Layout.Header title="Page title" level={1} titlePreset="h3" />
 ```
 
 ### With Back Button
