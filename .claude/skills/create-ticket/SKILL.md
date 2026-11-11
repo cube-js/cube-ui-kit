@@ -1,6 +1,6 @@
 ---
 name: create-ticket
-description: "File a Linear issue for a UI Kit or Tasty problem, gap or task: verify it, search every status for duplicates, run the Entropy task assessment and file only on pass, with the Entropy labels. Use when asked to file a ticket, create an issue or open a Linear ticket about UI Kit."
+description: "File a Linear issue for a UI Kit or Tasty problem, gap or task: verify it, search every status for duplicates, run the Entropy task assessment and file only on pass, with the Entropy labels. Use when asked to file a ticket, create an issue or open a Linear ticket about UI Kit, and from implement when a task has no issue."
 metadata:
   version: "1.1.0"
 ---
