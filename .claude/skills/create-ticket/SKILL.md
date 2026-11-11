@@ -1,8 +1,8 @@
 ---
 name: create-ticket
-description: "File a Linear issue for a UI Kit or Tasty problem, gap or task: verify it, search every status for duplicates, run the Entropy task assessment and file only on pass, with the Entropy labels. Use when asked to file a ticket, create an issue or open a Linear ticket about UI Kit."
+description: "File a Linear issue for a UI Kit or Tasty problem, gap or task: verify it, search every status for duplicates, run the Entropy task assessment and file only on pass, with the Entropy labels. Use when asked to file a ticket, create an issue or open a Linear ticket about UI Kit, and from implement when a task has no issue."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Create a UI Kit ticket
@@ -17,7 +17,7 @@ File one Linear issue for the requested UI Kit or Tasty problem, gap or task.
 
 ## 1. Route it
 
-- **Owner.** A fix in UI Kit or Tasty goes to team **Cube Platform**, project **UI Kit**. A fix that belongs in Cloud is a Cloud issue: say so and stop, since Cloud's own `entropy-review` assesses it.
+- **Owner.** A fix in UI Kit or Tasty goes to team **Cube Platform**, project **UI Kit**. A fix that belongs in Cloud is a Cloud issue: file it with Cloud's own `create-ticket` instead (`.claude/skills/create-ticket/SKILL.md` in `cubedevinc/cubejs-enterprise`), which assesses it with Cloud's `entropy-review`.
 - **State.** To Do for work filed for later. In Progress when work on it starts now.
 - **Assignee.** Whoever the user names. Otherwise the user when work starts now, and nobody for work filed for later.
 
@@ -52,7 +52,7 @@ The gate:
 - **`changes needed`:** simplify within the requirement and assess again.
 - **`unverified`:** name the missing evidence, and file only if the user agrees. The unverified context gets no Entropy label.
 
-When the user asked for this ticket, any result other than `pass` goes back to them with the levels and the simpler alternative; never drop it silently.
+Any result other than `pass` goes back to the user with the levels and the simpler alternative, whoever started this skill; never drop it silently.
 
 ## 5. Write the issue
 
