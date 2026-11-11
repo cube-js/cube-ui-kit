@@ -1,7 +1,6 @@
 ---
 name: implement
-description: "Take a UI Kit task from its issue to a merged PR, stage by stage: understand, Entropy gate, ask, build, review rounds, PR, merge, finish. Explicit only: run it when asked to implement a task end to end."
-disable-model-invocation: true
+description: "Take a UI Kit task from its issue to a merged PR, stage by stage: understand, Entropy gate, ask, build, review rounds, PR, merge, finish. Use when asked to implement, fix or build a UI Kit task end to end from a Linear issue, a Slack thread, a GitHub issue or a description."
 argument-hint: "[Linear issue, Slack thread, GitHub issue or description]"
 metadata:
   version: "1.0.0"
@@ -9,7 +8,7 @@ metadata:
 
 # Implement a UI Kit task
 
-The task is `$ARGUMENTS`: a Linear issue ID or URL, a Slack thread, a GitHub issue or a description. If there is none, ask for one.
+The task is `$ARGUMENTS`, or the one the user gave in the conversation: a Linear issue ID or URL, a Slack thread, a GitHub issue or a description. If there is none, ask for one.
 
 The stages run in order. Each names where its rules live: read that rule or skill when you reach the stage instead of working from memory, and move on only when its **Done when** holds. Keep the task's state in a plan outside the working tree, `<git dir>/implement/<branch>/plan.md` (`git rev-parse --absolute-git-dir`), with the sections Goal, Acceptance criteria, Decisions and Review log, and the source text verbatim in `sources.md` beside it. Update the plan at the end of every stage, and give the user a one-line progress note.
 
