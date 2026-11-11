@@ -1,0 +1,42 @@
+name: Warm Chromium cache
+
+# A pull request can restore the caches saved on its own branch or on `main`.
+# Only pull request runs installed Chromium, so every new PR started with both
+# of `install-chromium`'s caches cold: Playwright's browser and the font
+# packages from the runner's Ubuntu mirror. On 2026-11-11 those mirrors didn't
+# resolve for hours, and every new PR's browser and accessibility jobs failed
+# before a test ran. Saving the caches on `main` lets each PR start warm.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - pnpm-lock.yaml
+      - .github/actions/install-chromium/**
+      - .github/workflows/warm-chromium-cache.yml
+  # The apt cache's key follows the runner's Ubuntu release, which can change
+  # without a push.
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  warm:
+    name: Warm Chromium cache
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        uses: ./.github/actions/install-chromium
