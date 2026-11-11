@@ -1,5 +1,29 @@
 # @cube-dev/ui-kit
 
+## 0.210.0
+
+### Minor Changes
+
+- [#1633](https://github.com/cube-js/cube-ui-kit/pull/1633) [`ccdf7a83e`](https://github.com/cube-js/cube-ui-kit/commit/ccdf7a83e0f92f1bd87fd76b62f55c80c9da38e7) Thanks [@tenphi](https://github.com/tenphi)! - `Layout.Header` takes a `titlePreset` prop (`h1`–`h6`) that sets the title's typography preset apart from its `level`, so a page title can be an `h1` in the document outline and look like an `h3`: `<Layout.Header title="Billing" level={1} titlePreset="h3" />`. It replaces a `styles={{ Title: { preset } }}` override, which `tasty/no-protected-restyle` reports.
+
+### Patch Changes
+
+- [#1633](https://github.com/cube-js/cube-ui-kit/pull/1633) [`ccdf7a83e`](https://github.com/cube-js/cube-ui-kit/commit/ccdf7a83e0f92f1bd87fd76b62f55c80c9da38e7) Thanks [@tenphi](https://github.com/tenphi)! - The published `tasty.config.ts` lets a container that draws no fill and no border of its own (`Layout`, `GridLayout`, `Panel`, `ResizablePanel`, `Content`, `Header` and `Footer`) keep `fill` and `border`, so `tasty/no-protected-restyle` accepts a page backdrop such as `<Layout fill="#surface-2">` or a divider such as `<Panel border="top">`. `Layout`'s sections (`Layout.Content`, `Layout.Header`, `Layout.Toolbar` and the rest) keep `fill` only: the border that separates stacked sections is UI Kit's. `Card`, `Layout.Panel` and the other containers with a surface of their own stay as they were. Every container also keeps `textAlign`, which aligns the content it holds, and `container`, which names it for its content's container queries.
+
+## 0.209.0
+
+### Minor Changes
+
+- [#1632](https://github.com/cube-js/cube-ui-kit/pull/1632) [`0191fdd15`](https://github.com/cube-js/cube-ui-kit/commit/0191fdd15921ce26e1e8ddd689bde5a1a919b4fd) Thanks [@tenphi](https://github.com/tenphi)! - `Button` can collapse to fit a narrow window or container. `collapseState` says when: `true` for `@mobile`, a viewport narrower than 920px, or any state or condition, such as `'@(page, w < 864px)'`; it works in CSS, so crossing it re-renders only the button. `isCollapsed` collapses it from JavaScript, and `autoCollapse` collapses it while the row it sits in can't fit every child at full width, which follows the real width of the labels in any language. The button collapses when any of them says so. Collapsed, a button with an icon shows only the icon, its label kept as the accessible name and shown as the tooltip, and a button with a `shortLabel` shows that label instead. A button with neither warns that it has nothing to collapse to. UI Kit now registers the `@mobile` state (`@media(w < 920px)`) for every component's styles.
+
+- [#1630](https://github.com/cube-js/cube-ui-kit/pull/1630) [`8e4f68651`](https://github.com/cube-js/cube-ui-kit/commit/8e4f6865122dd51e4c0578fc054874955754b130) Thanks [@tenphi](https://github.com/tenphi)! - `FileInput` is easier to read and lines up with the inputs around it. The "Choose file" chip's label uses the accent text color instead of the accent fill, so it meets WCAG AA in light, dark and both high-contrast schemes (it was as low as 2.8:1 in dark), and it is medium weight with hover, pressed and drag-over feedback. "No file selected" (or the `placeholder`) is a softer gray than a chosen file name, still AA. The box is drawn like a text input's box: the same height at each `size` (28, 32 and 40px; `size` used to have no effect), the same border, focus and validation colors, and it now fills the width of its field as other inputs do. Pass `controlWidth` (or `width`) to make it narrower; a file name that does not fit ends in an ellipsis. Disabled uses the disabled colors. The pointer cursor now also shows over the "Choose file" chip. Space now opens the file dialog, as Enter does.
+
+### Patch Changes
+
+- [#1632](https://github.com/cube-js/cube-ui-kit/pull/1632) [`0191fdd15`](https://github.com/cube-js/cube-ui-kit/commit/0191fdd15921ce26e1e8ddd689bde5a1a919b4fd) Thanks [@tenphi](https://github.com/tenphi)! - UI Kit runs on Tasty 3.18.0 (`@tenphi/tasty`). A state alias, global or local to a component's styles, can now use other aliases in its expression, such as `'@compact': '@mobile & !expanded'`; before, Tasty dropped such an alias with a warning. A circular alias never matches and warns with `CIRCULAR_STATE_ALIAS`.
+
+- [#1632](https://github.com/cube-js/cube-ui-kit/pull/1632) [`0191fdd15`](https://github.com/cube-js/cube-ui-kit/commit/0191fdd15921ce26e1e8ddd689bde5a1a919b4fd) Thanks [@tenphi](https://github.com/tenphi)! - A `Button` whose label starts or stops truncating, for example when its container is resized, keeps its DOM node and its keyboard focus. The automatic tooltip used to wrap the button only while the label was cut off, so React replaced the `<button>` element each time and focus dropped to the page. The tooltip is now mounted beside the element instead of around it, and only while there is one. The same applies to every component with an automatic or toggled tooltip: `Item`, `ItemButton` and `Menu` items, `TextItem`, the `Layout.Header` title, `InlineInput`, `Checkbox`, `Switch`, `Radio` and text inputs. A component whose tooltip never turns on runs none of the tooltip's logic. `Item`'s private `isDynamicLabel` prop is removed: it kept the tooltip mounted only to avoid that remount.
+
 ## 0.208.0
 
 ### Minor Changes

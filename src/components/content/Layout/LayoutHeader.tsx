@@ -75,6 +75,13 @@ const HeaderElement = tasty(LayoutContent, {
         'level=4': 'h4',
         'level=5': 'h5',
         'level=6': 'h6',
+        // `titlePreset` decides over `level`.
+        'title-preset=h1': 'h1',
+        'title-preset=h2': 'h2',
+        'title-preset=h3': 'h3',
+        'title-preset=h4': 'h4',
+        'title-preset=h5': 'h5',
+        'title-preset=h6': 'h6',
       },
       lineHeight: 'normal',
       color: '#dark',
@@ -115,6 +122,12 @@ export interface CubeLayoutHeaderProps extends CubeLayoutContentProps {
   title?: ReactNode;
   /** Title heading level (1-6) */
   level?: 1 | 2 | 3 | 4 | 5 | 6;
+  /**
+   * The title's typography preset, apart from its `level`: a page title can be
+   * an `h1` in the document outline and look like an `h3`. Defaults to the
+   * preset of `level`.
+   */
+  titlePreset?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   /** Content next to the title */
   suffix?: ReactNode;
   /** Content on the right side */
@@ -139,6 +152,7 @@ function LayoutHeader(
   const {
     title,
     level = 3,
+    titlePreset,
     suffix,
     extra,
     subtitle,
@@ -203,7 +217,7 @@ function LayoutHeader(
     <HeaderElement
       {...otherProps}
       ref={ref}
-      mods={{ ...mods, level }}
+      mods={{ ...mods, level, 'title-preset': titlePreset }}
       scrollbar={scrollbar}
     >
       {renderBreadcrumbs()}

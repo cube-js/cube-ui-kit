@@ -39,7 +39,12 @@ import type { i18n as I18nInstance } from 'i18next';
 // The strings live in `useScheme.ts`, which also reads the same two conditions
 // from JS (`useScheme()` / `useHighContrast()`) — one definition, so the CSS and
 // the JS answers cannot drift apart.
-setGlobalPredefinedStates(AMBIENT_PREDEFINED_STATES);
+setGlobalPredefinedStates({
+  ...AMBIENT_PREDEFINED_STATES,
+  // A viewport too narrow for the desktop layout. `<Button collapseState>`
+  // collapses there. Cube Cloud defines the same value.
+  '@mobile': '@media(w < 920px)',
+});
 
 configure({
   // Collapse the kit's stylesheet writes into one style invalidation per commit

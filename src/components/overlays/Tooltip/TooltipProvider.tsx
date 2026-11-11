@@ -25,6 +25,33 @@ export interface CubeTooltipProviderProps extends Omit<
   qa?: string;
 }
 
+/**
+ * The tooltip `TooltipProvider` hands its trigger: a `Tooltip` with the
+ * provider's title and styles, or a placeholder while it is disabled.
+ */
+export function createProviderTooltip({
+  title,
+  tooltipStyles,
+  width,
+  qa,
+  isDisabled,
+}: Pick<
+  CubeTooltipProviderProps,
+  'title' | 'tooltipStyles' | 'width' | 'qa' | 'isDisabled'
+>): ReactElement<CubeTooltipProps> {
+  return isDisabled ? (
+    <div />
+  ) : (
+    <Tooltip
+      styles={tooltipStyles}
+      {...(width ? { width } : null)}
+      {...(qa ? { qa } : null)}
+    >
+      {title}
+    </Tooltip>
+  );
+}
+
 export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
   const isSSR = useIsSSR();
   const {
@@ -70,17 +97,7 @@ export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
       ) : (
         <>{children}</>
       )}
-      {isDisabled ? (
-        <div />
-      ) : (
-        <Tooltip
-          styles={tooltipStyles}
-          {...(width ? { width } : null)}
-          {...(qa ? { qa } : null)}
-        >
-          {title}
-        </Tooltip>
-      )}
+      {createProviderTooltip({ title, tooltipStyles, width, qa, isDisabled })}
     </TooltipTrigger>
   );
 }

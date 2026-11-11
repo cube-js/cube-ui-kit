@@ -484,9 +484,6 @@ function Radio(props: CubeRadioProps, ref) {
     tooltip: isButton ? undefined : props.tooltip,
     children: label,
     labelRef: isButton ? undefined : props.labelRef,
-    // As for a button radio's `Item`: an auto tooltip that mounted only once
-    // the label truncated would remount the radio, and its focused input.
-    isDynamicLabel: true,
   });
 
   let inputRef = useRef(null);
@@ -579,9 +576,6 @@ function Radio(props: CubeRadioProps, ref) {
         // Outside the label, so `Item` sees the label alone: its auto tooltip
         // and `highlight` only work on a string label, and an input counted as
         // label content gave an icon-only radio an empty, padded `Label`.
-        // Its label's room follows the group's, so whether it truncates can
-        // change while it has focus — keep the tooltip from remounting it.
-        isDynamicLabel
         // A function, so the input — where keyboard focus lands — gets the
         // tooltip's focus-side trigger props: the tooltip opens on focus and
         // describes the control a screen reader announces.

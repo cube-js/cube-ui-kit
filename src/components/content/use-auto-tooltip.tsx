@@ -1,20 +1,29 @@
 import {
   HTMLAttributes,
+  ReactElement,
   ReactNode,
   Ref,
   RefObject,
+  SyntheticEvent,
   useCallback,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from 'react';
-import { PositionProps } from 'react-aria';
+import { Placement, PositionProps, useIsSSR } from 'react-aria';
 import { flushSync } from 'react-dom';
 
+import { useLayoutEffect } from '../../utils/react/useLayoutEffect';
+import { CubeTooltipProps } from '../overlays/Tooltip/Tooltip';
 import {
+  createProviderTooltip,
   CubeTooltipProviderProps,
-  TooltipProvider,
 } from '../overlays/Tooltip/TooltipProvider';
+import {
+  TooltipTriggerBindingProps,
+  useTooltipTriggerBinding,
+} from '../overlays/Tooltip/TooltipTrigger';
 
 import type { Props } from '../../props';
 
@@ -34,7 +43,6 @@ export interface UseAutoTooltipOptions {
    */
   description?: ReactNode;
   labelProps?: Props;
-  isDynamicLabel?: boolean;
   /**
    * The caller's own ref to the label element. The hook owns the label's ref
    * (it measures the node), so a caller that also needs the node hands its ref
@@ -51,6 +59,103 @@ function assignRef(ref: unknown, element: HTMLElement | null) {
   } else if (ref) {
     (ref as { current: HTMLElement | null }).current = element;
   }
+}
+
+/**
+ * The handlers React Aria's `useTooltipTrigger` puts on the trigger. The
+ * element renders before the tooltip beside it has computed its own, so it
+ * gets a forwarder for each while a tooltip is mounted. Hover comes from
+ * `useHover`, which uses pointer events where the browser has them and mouse
+ * and touch events elsewhere; only those names are forwarded, so a forwarder
+ * never replaces a handler of the element's own that React Aria leaves alone.
+ */
+const FOCUS_TRIGGER_HANDLERS = [
+  'onFocus',
+  'onBlur',
+  'onKeyDown',
+  'onKeyUp',
+  'onPointerDown',
+] as const;
+const POINTER_HOVER_HANDLERS = ['onPointerEnter', 'onPointerLeave'] as const;
+const MOUSE_HOVER_HANDLERS = [
+  'onMouseEnter',
+  'onMouseLeave',
+  'onTouchStart',
+] as const;
+
+type TriggerHandlerName =
+  | (typeof FOCUS_TRIGGER_HANDLERS)[number]
+  | (typeof POINTER_HOVER_HANDLERS)[number]
+  | (typeof MOUSE_HOVER_HANDLERS)[number];
+
+type TriggerHandlers = Partial<
+  Record<TriggerHandlerName, (event: SyntheticEvent) => void>
+>;
+
+function getTriggerHandlerNames(): readonly TriggerHandlerName[] {
+  return [
+    ...FOCUS_TRIGGER_HANDLERS,
+    ...(typeof PointerEvent === 'undefined'
+      ? MOUSE_HOVER_HANDLERS
+      : POINTER_HOVER_HANDLERS),
+  ];
+}
+
+interface AutoTooltipLayerProps {
+  /** The trigger options, with the ref the tooltip is positioned against. */
+  options: TooltipTriggerBindingProps & { targetRef: RefObject<HTMLElement> };
+  tooltip: ReactElement<CubeTooltipProps>;
+  placement: Placement | undefined;
+  /** Where the layer publishes its trigger handlers for the forwarders. */
+  handlersRef: RefObject<TriggerHandlers | null>;
+  onDescribedByChange: (id: string | undefined) => void;
+}
+
+/**
+ * The tooltip of an element rendered by `renderWithTooltip`, mounted beside the
+ * element only while a tooltip exists. It owns the tooltip's state and hands
+ * the element its trigger handlers through `handlersRef`, so an element that
+ * never has a tooltip runs none of it, and the element keeps its node when the
+ * tooltip comes and goes.
+ */
+function AutoTooltipLayer({
+  options,
+  tooltip,
+  placement,
+  handlersRef,
+  onDescribedByChange,
+}: AutoTooltipLayerProps) {
+  const isSSR = useIsSSR();
+  const { triggerProps, renderTooltip } = useTooltipTriggerBinding(
+    options,
+    tooltip,
+  );
+  const describedBy = triggerProps['aria-describedby'];
+
+  // Events reach the element only after a commit, so publishing the handlers
+  // here is never late.
+  useLayoutEffect(() => {
+    handlersRef.current = triggerProps as TriggerHandlers;
+  });
+
+  // The open tooltip's id describes the element, which renders it as a prop.
+  const publishDescribedBy = useEffectEvent((id: string | undefined) => {
+    onDescribedByChange(id);
+  });
+
+  useLayoutEffect(() => {
+    publishDescribedBy(describedBy);
+  }, [describedBy]);
+
+  useLayoutEffect(
+    () => () => {
+      handlersRef.current = null;
+      publishDescribedBy(undefined);
+    },
+    [handlersRef],
+  );
+
+  return isSSR ? null : renderTooltip(placement);
 }
 
 /** Overflow checks queued for the end of the current task, from every label. */
@@ -72,11 +177,10 @@ export function refreshAutoTooltipsWithin(element: HTMLElement) {
  * one synchronous render.
  *
  * All reads happen before React touches the DOM again, so they share one
- * layout. `flushSync` applies the verdicts, and the `TooltipProvider` remounts
- * they cause, before paint and before any other task, so code that looks the
- * label up after this task gets the node the verdict leaves in place, not one
- * about to be replaced. Outside a React commit this is an ordinary sync
- * render, not a nested update.
+ * layout. `flushSync` applies the verdicts before paint and before any other
+ * task, so code that asks whether the tooltip is active after this task gets
+ * the answer the measurement gave. Outside a React commit this is an ordinary
+ * sync render, not a nested update.
  */
 function runOverflowChecks() {
   const checks = Array.from(pendingOverflowChecks);
@@ -172,8 +276,7 @@ function getAutoTitle(
     );
   }
 
-  // The label is cut off, or nothing is and the tooltip stays mounted but
-  // disabled for a dynamic label.
+  // The label is cut off, or nothing is and no tooltip renders.
   return children;
 }
 
@@ -186,7 +289,6 @@ function resolveTooltip({
   children,
   description,
   labelProps,
-  isDynamicLabel,
   truncation,
 }: Omit<UseAutoTooltipOptions, 'labelRef' | 'descriptionRef'> & {
   truncation: Truncation;
@@ -200,17 +302,11 @@ function resolveTooltip({
 
   const isOverflowed = truncation !== 'none';
   const autoTitle = getAutoTitle(children, description, truncation);
-  const hasAutoContent =
-    !!(autoTitle || labelProps) && (isOverflowed || isDynamicLabel);
+  const hasAutoContent = !!(autoTitle || labelProps) && isOverflowed;
 
   // Boolean tooltip - auto tooltip on overflow
   if (tooltip === true) {
-    if (!hasAutoContent) return null;
-
-    return {
-      title: autoTitle,
-      isDisabled: !isOverflowed && isDynamicLabel,
-    };
+    return hasAutoContent ? { title: autoTitle } : null;
   }
 
   // Object tooltip - advanced configuration
@@ -228,7 +324,6 @@ function resolveTooltip({
   return {
     ...tooltipProps,
     title: tooltipProps.title ?? autoTitle,
-    isDisabled: tooltipProps.isDisabled ?? (!isOverflowed && isDynamicLabel),
   };
 }
 
@@ -284,7 +379,6 @@ export function useAutoTooltip({
   children,
   description,
   labelProps,
-  isDynamicLabel = false,
   labelRef: labelRefOption,
   descriptionRef: descriptionRefOption,
 }: UseAutoTooltipOptions) {
@@ -424,16 +518,13 @@ export function useAutoTooltip({
       observeMeasuredNodes(measured, checkOverflow);
 
       // No node to measure. Leave the previous verdict alone rather than
-      // clearing it: turning the verdict on mounts `TooltipProvider`, which
-      // remounts the label underneath it, so React detaches the old node and
-      // attaches a new one within that commit. Clearing here would unmount the
-      // provider, remount the label, measure it, mount the provider again — a
-      // loop that never settles.
+      // clearing it: a consumer whose callback ref is new on every render has
+      // React detach and re-attach it within one commit, and clearing here
+      // would undo the measurement the re-attached node is about to repeat.
       if (!element) return;
 
       // Do NOT measure synchronously here — see `scheduleOverflowCheck`. This
-      // covers the node the ref just handed us, including the fresh one React
-      // creates when `TooltipProvider` mounts and remounts the element.
+      // covers the node the ref just handed us.
       scheduleOverflowCheck();
     },
     [checkOverflow, scheduleOverflowCheck],
@@ -468,7 +559,6 @@ export function useAutoTooltip({
     children,
     description,
     labelProps,
-    isDynamicLabel,
     truncation,
   });
 
@@ -476,6 +566,31 @@ export function useAutoTooltip({
   const isTooltipActive =
     !!resolvedTooltip && resolvedTooltip.isDisabled !== true;
 
+  // The element's tooltip trigger. While a tooltip exists, the element gets
+  // forwarders to the handlers of the tooltip layer mounted beside it.
+  const triggerRef = useRef<HTMLElement>(null!);
+  const handlersRef = useRef<TriggerHandlers | null>(null);
+  const describedByRef = useRef<string | undefined>(undefined);
+  const [describedBy, setDescribedBy] = useState<string>();
+
+  // Sets the id only when it changes, as `setVerdict` does: from a layout
+  // effect inside a commit, even an unchanged `setState` can queue a render.
+  const updateDescribedBy = (id: string | undefined) => {
+    if (describedByRef.current === id) return;
+
+    describedByRef.current = id;
+    setDescribedBy(id);
+  };
+
+  /**
+   * Renders the element and, beside it, its tooltip.
+   *
+   * The element keeps its place in the tree whether or not a tooltip exists,
+   * so the tooltip coming or going never remounts it. Wrapping the element in
+   * `TooltipProvider` only while a tooltip existed changed the element type
+   * above it: a button whose label started truncating lost its node and its
+   * focus.
+   */
   const renderWithTooltip = (
     renderElement: (
       tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
@@ -483,12 +598,55 @@ export function useAutoTooltip({
     ) => ReactNode,
     defaultTooltipPlacement: PositionProps['placement'],
   ) => {
-    if (!resolvedTooltip) return renderElement();
+    if (!resolvedTooltip) {
+      return (
+        <>
+          {renderElement()}
+          {null}
+        </>
+      );
+    }
+
+    const {
+      title,
+      tooltipStyles,
+      width,
+      qa,
+      placement,
+      isDisabled,
+      targetRef,
+      ...triggerOptions
+    } = resolvedTooltip;
+    // A caller that positions the tooltip against an element of its own (the
+    // `Layout.Header` title) passes that ref, and the element gets it too.
+    const anchorRef = targetRef ?? triggerRef;
+
+    const forwardedProps: Record<string, unknown> = {
+      'aria-describedby': describedBy,
+    };
+
+    for (const name of getTriggerHandlerNames()) {
+      forwardedProps[name] = (event: SyntheticEvent) =>
+        handlersRef.current?.[name]?.(event);
+    }
 
     return (
-      <TooltipProvider placement={defaultTooltipPlacement} {...resolvedTooltip}>
-        {(triggerProps, ref) => renderElement(triggerProps, ref)}
-      </TooltipProvider>
+      <>
+        {renderElement(forwardedProps, anchorRef)}
+        <AutoTooltipLayer
+          options={{ ...triggerOptions, isDisabled, targetRef: anchorRef }}
+          tooltip={createProviderTooltip({
+            title,
+            tooltipStyles,
+            width,
+            qa,
+            isDisabled,
+          })}
+          placement={placement ?? defaultTooltipPlacement}
+          handlersRef={handlersRef}
+          onDescribedByChange={updateDescribedBy}
+        />
+      </>
     );
   };
 

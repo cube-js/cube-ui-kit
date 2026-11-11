@@ -87,6 +87,35 @@ describe('<TextItem /> tooltip contracts', () => {
     await expectTooltipOnHover(title);
   });
 
+  /**
+   * The tooltip's trigger forwarders cover only the hover handlers React Aria
+   * itself uses: pointer events here, so a caller's mouse handlers are not
+   * replaced while a tooltip exists.
+   */
+  it("keeps the caller's mouse handlers while a tooltip exists", async () => {
+    const onMouseEnter = vi.fn();
+    const onMouseLeave = vi.fn();
+
+    await act(async () => {
+      renderWithRoot(
+        <TextItem
+          as="button"
+          tooltip="Help"
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+        >
+          Label
+        </TextItem>,
+      );
+    });
+
+    await userEvent.hover(screen.getByRole('button'));
+    await userEvent.unhover(screen.getByRole('button'));
+
+    expect(onMouseEnter).toHaveBeenCalled();
+    expect(onMouseLeave).toHaveBeenCalled();
+  });
+
   // An element label, such as a coloured commit hash before its message
   // (CUB-7286). The automatic tooltip has no text to show for it, so it stays
   // off; a title of its own still waits for the overflow.

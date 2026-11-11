@@ -434,17 +434,14 @@ describe('useAutoTooltip overflow measurement', () => {
     });
 
     /**
-     * Regression guard for the provider-remount cycle.
+     * Regression guard for the detach-and-re-attach cycle.
      *
      * A consumer can rebuild its callback ref on every render, making React
-     * detach and re-attach it. Turning the verdict on also mounts
-     * `TooltipProvider`, which
-     * remounts the label underneath it. Clearing the verdict when the node goes
-     * away therefore undoes the measurement that had just been made, and the
-     * tooltip never activates — five Chromatic stories, none of them visible to
-     * a stable-ref probe.
-     *
-     * The status element sits outside the provider so it survives the remount.
+     * detach and re-attach it within one commit. Clearing the verdict when the
+     * node goes away would undo the measurement that had just been made, and the
+     * tooltip would never activate — five Chromatic stories once failed that
+     * way, none of them visible to a stable-ref probe. (Turning the tooltip on
+     * used to remount the label as well; it no longer does.)
      */
     function RemountProbe() {
       const { labelRef, isTooltipActive, renderWithTooltip } = useAutoTooltip({
@@ -478,7 +475,7 @@ describe('useAutoTooltip overflow measurement', () => {
       );
     }
 
-    it('activates the tooltip even though mounting it remounts the label', async () => {
+    it('activates the tooltip for a label whose ref is new on every render', async () => {
       await act(async () => {
         renderWithRoot(<RemountProbe />);
       });
@@ -490,7 +487,7 @@ describe('useAutoTooltip overflow measurement', () => {
         );
       });
 
-      // And stays active rather than being undone by the remount it caused.
+      // And stays active rather than being undone by the ref's re-attachment.
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 400));
       });
@@ -501,16 +498,14 @@ describe('useAutoTooltip overflow measurement', () => {
     });
 
     /**
-     * The remount has to finish before the task that measured ends. Code that
-     * looks the label up after that holds a node React is about to replace,
-     * so its click goes nowhere. A Storybook play function is such code, and
-     * so is anything else that runs once a render has returned.
-     *
-     * A verdict set from the microtask and left to React's scheduler renders
-     * in a later task. That is what Chromatic caught: a Menu story whose
-     * truncated trigger button was clicked, and never opened its menu.
+     * Code that looks the label up once a render has returned must hold a node
+     * that stays in the document after the verdict lands. A Storybook play
+     * function is such code. Chromatic once caught a Menu story whose truncated
+     * trigger button was clicked and never opened its menu: turning the
+     * tooltip on remounted the button, so the click went to a detached node.
+     * The tooltip now mounts beside the element and nothing is replaced.
      */
-    it('remounts the label before the next task can find it', async () => {
+    it('keeps the label node the next task finds', async () => {
       const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
       const wasActEnvironment = env.IS_REACT_ACT_ENVIRONMENT;
 

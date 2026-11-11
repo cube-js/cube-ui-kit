@@ -253,15 +253,6 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
         isTooltipActive: boolean,
       ) => ReactNode);
   /**
-   * @private
-   * The label's room changes over the item's life — a radio tab in a
-   * responsive switch, say. The auto tooltip then stays mounted, disabled
-   * while the label fits, instead of wrapping the element only once the label
-   * truncates: that wrap remounts the element, which takes focus (and, for a
-   * radio, the native input it holds) with it.
-   */
-  isDynamicLabel?: boolean;
-  /**
    * Ref to access the label element directly
    */
   labelRef?: Ref<HTMLElement>;
@@ -947,7 +938,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     showActions = false,
     skipActionsWidthTransition = false,
     hiddenContent,
-    isDynamicLabel = false,
     // Destructured so it reaches the label, not the element's DOM attributes.
     labelRef: labelRefProp,
     nativeLinkProps,
@@ -1108,13 +1098,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     // is handed to it rather than lost under the spread below.
     descriptionRef: (descriptionProps as { ref?: Ref<HTMLElement> } | undefined)
       ?.ref,
-    // A row inside an actions wrapper is dynamic whether or not the run holds
-    // anything right now: the label's width is whatever `--actions-width` leaves
-    // it, and the wrapper republishes that as the actions change. Holding the
-    // flag steady is also what keeps the row from REMOUNTING when its actions
-    // come and go — the resolved tooltip decides whether a provider wraps the
-    // element, so a flag that flips restructures the tree around it.
-    isDynamicLabel: isDynamicLabel || !!actions || insideWrapper,
   });
 
   // A disabled item still has to be able to show its tooltip — that is usually

@@ -62,6 +62,7 @@ const NAMES = `import { tasty } from '@cube-dev/ui-kit';
 export const Defined = tasty({
   styles: {
     fill: { '': '#surface', '@dark': '#surface-2', '@hc': '#current-fill' },
+    opacity: { '': 1, '@mobile': 0.5 },
     width: '$t4-icon-size',
     padding: '0 $dialog-padding-h',
     fontFamily: '$font-sans',
@@ -74,7 +75,7 @@ export const Defined = tasty({
 export const Phantom = tasty({
   styles: {
     fill: '#pink-01',
-    color: { '': '#dark', '@mobile': '#surface' },
+    color: { '': '#dark', '@tablet': '#surface' },
     width: '$fade-width',
     height: '$tab-indicator-size',
     preset: 'inline',
@@ -87,7 +88,7 @@ const COPY_BUTTON = `import { Button, tasty } from '@cube-dev/ui-kit';
 export const CopyButton = tasty(Button, { type: 'clear' });
 `;
 
-const CONSUMER = `import { Alert, AlertDialog, Button, ButtonGroup, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, GridProvider, ItemButton, Layout, Placeholder, ResizablePanel, Result, Root, Skeleton, Space, tasty, Text, TextArea } from '@cube-dev/ui-kit';
+const CONSUMER = `import { Alert, AlertDialog, Button, ButtonGroup, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, GridProvider, ItemButton, Layout, Panel, Placeholder, ResizablePanel, Result, Root, Skeleton, Space, tasty, Text, TextArea } from '@cube-dev/ui-kit';
 
 import { CopyButton } from './CopyButton';
 
@@ -131,6 +132,13 @@ export function Consumer() {
       <Skeleton padding="2x" gap="1x" />
       <Placeholder width="120px" radius="1r" />
       <Alert fill="#danger" />
+      <Layout fill="#surface-2" border="right" />
+      <Panel fill="#surface" border="top" />
+      <Layout.Toolbar fill="#surface-2" />
+      <Card textAlign="center" />
+      <Layout styles={{ container: 'page / inline-size' }} />
+      <Layout.Header border="none" />
+      <Layout.Panel fill="#surface-2" />
       <Placeholder padding="2x" />
       {/* oxlint-disable-next-line tasty/no-protected-restyle -- a reasoned override */}
       <Button fill="#purple" />
@@ -311,7 +319,7 @@ describe('tasty.config.ts', () => {
     expect(reported).toEqual(
       [
         "fill: '#pink-01',",
-        "color: { '': '#dark', '@mobile': '#surface' },",
+        "color: { '': '#dark', '@tablet': '#surface' },",
         "width: '$fade-width',",
         "height: '$tab-indicator-size',",
         "preset: 'inline',",
@@ -340,7 +348,9 @@ describe('tasty.config.ts', () => {
 
   // A consumer that extends this config gets `protectedComponents`, so
   // restyling a component reports, its primitives stay open, containers keep
-  // the props that lay out their content, a placeholder keeps its `radius`,
+  // the props that lay out their content, a frame with no surface of its own
+  // also takes a fill and a border (a Layout section only a fill, since its
+  // border is UI Kit's), a placeholder keeps its `radius`,
   // and a component's own prop named like a style passes, while that name on
   // a component that doesn't own it (`<Button filter>`) is reported. A
   // sub-component counts as its export (`Button.Split`) unless the config
@@ -365,6 +375,8 @@ describe('tasty.config.ts', () => {
         '<Button.Split fill="#danger" />',
         '<Card fill="#danger" />',
         '<Alert fill="#danger" />',
+        '<Layout.Header border="none" />',
+        '<Layout.Panel fill="#surface-2" />',
         '<Placeholder padding="2x" />',
       ].sort(),
     );

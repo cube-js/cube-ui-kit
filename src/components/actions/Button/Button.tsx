@@ -77,6 +77,8 @@ import { CubeActionProps } from '../Action/Action';
 import { useButtonSplitContext } from '../ButtonSplit/context';
 import { useAction } from '../use-action';
 
+import { AutoCollapseObserver } from './AutoCollapseObserver';
+
 const BUTTON_SIZE_VALUES = [
   'xsmall',
   'small',
@@ -97,6 +99,13 @@ export type ButtonMods = Mods<{
   'single-icon'?: boolean;
   'text-only'?: boolean;
   'raw-children'?: boolean;
+  /**
+   * Collapsed by `isCollapsed` or `autoCollapse`; `collapseState` collapses
+   * through CSS instead.
+   */
+  collapsed?: boolean;
+  /** What a collapsing button collapses to: its icon, or its `shortLabel`. */
+  collapse?: 'icon' | 'label';
 }>;
 
 export interface CubeButtonProps extends CubeActionProps {
@@ -140,6 +149,36 @@ export interface CubeButtonProps extends CubeActionProps {
    * A `link` button and the joined edges inside a `Button.Split` keep their own radius.
    */
   shape?: 'button' | 'card' | 'sharp' | 'pill';
+  /**
+   * When the button collapses, so it fits a narrow window or container:
+   * - `true` - On `@mobile`, a viewport narrower than 920px
+   * - a string - Any state or condition, such as `'@compact'`,
+   *   `'@(page, w < 864px)'` or `'@media(w < 600px)'`. A container condition
+   *   needs that container around the button.
+   *
+   * Collapsed, a button with an icon shows only the icon: its label stays its
+   * accessible name and shows as its tooltip. A `shortLabel` replaces the label
+   * instead. The button collapses when any of `collapseState`, `isCollapsed`
+   * and `autoCollapse` says so.
+   */
+  collapseState?: boolean | string;
+  /**
+   * Collapses the button from JavaScript, as `collapseState` does from CSS.
+   */
+  isCollapsed?: boolean;
+  /**
+   * Collapses the button when the row it sits in, its parent element, can't
+   * fit every child at full width, and expands it when the row can. It
+   * follows the real width of the labels, so it holds in every locale. The
+   * row's width has to come from its own container: a row as wide as its
+   * content always fits.
+   */
+  autoCollapse?: boolean;
+  /**
+   * The label shown while the button is collapsed, beside its icon if it has
+   * one. Without it, a collapsed button shows only its icon.
+   */
+  shortLabel?: ReactNode;
   /**
    * Tooltip content and configuration:
    * - string: simple tooltip text
@@ -236,10 +275,16 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
       '$block-padding $inline-padding $block-padding $inline-padding',
     'type=link': '0',
   },
+  // `collapseState` can make `@collapsed` a container query, which is unknown
+  // outside its container. A `''` default is negated by the states above it and
+  // would vanish with that query, so every map that reads `@collapsed` sets its
+  // base value as a `_` floor instead.
+  '@collapsed': 'collapsed',
   width: {
-    '': 'min $size',
+    _: 'min $size',
     'has-icon & has-right-icon': 'min ($size * 2 - 2bw)',
     'single-icon': 'fixed $size',
+    'collapse=icon & @collapsed & !has-right-icon': 'fixed $size',
     'type=link': 'min 1ch',
   },
   height: {
@@ -342,13 +387,31 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    width: '0 100%',
+    width: {
+      _: '0 100%',
+      // Out of sight but still the button's accessible name, and cut off, so
+      // the automatic tooltip shows it.
+      'collapse=icon & @collapsed': 'fixed 0px',
+    },
     textAlign: 'center',
     transition: 'theme, padding',
     padding: {
-      '': '$block-padding $right-padding $block-padding $left-padding',
+      _: '$block-padding $right-padding $block-padding $left-padding',
       'type=link': '0',
+      'collapse=icon & @collapsed': 0,
     },
+  },
+
+  // The label and its `shortLabel`, rendered inside `Label` only when a
+  // `shortLabel` is given. The hidden one leaves the accessible name.
+  FullLabel: {
+    $: '> Label >',
+    hide: { '': false, '@collapsed': true },
+  },
+  ShortLabel: {
+    $: '> Label >',
+    // oxlint-disable-next-line tasty/prefer-hide -- hidden by a floor that holds where `@collapsed` is unknown; `hide: false` emits no `display` to show it over that floor
+    display: { _: 'none', '@collapsed': 'inline' },
   },
 } as const;
 
@@ -427,6 +490,10 @@ export const Button = forwardRef(function Button(
     defaultTooltipPlacement = 'top',
     onPress: userOnPress,
     tokens,
+    collapseState,
+    isCollapsed,
+    autoCollapse,
+    shortLabel,
     ...props
   } = allProps;
 
@@ -473,7 +540,15 @@ export const Button = forwardRef(function Button(
     ref,
   );
 
-  const styles = extractStyles(props, STYLE_PROPS);
+  // `true` collapses on `@mobile`. A button that never collapses keeps the very
+  // styles it had, so its CSS is unchanged.
+  const collapseCondition =
+    collapseState === true ? '@mobile' : collapseState || undefined;
+  const ownStyles = extractStyles(props, STYLE_PROPS);
+  const styles = collapseCondition
+    ? // oxlint-disable-next-line tasty/no-runtime-styles-mutation, tasty/no-style-spread -- the call site names the condition, and the Button's own maps read it as `@collapsed`; a caller's `styles` still win
+      { '@collapsed': `collapsed | (${collapseCondition})`, ...ownStyles }
+    : ownStyles;
   const isDisabledElement = actionProps.isDisabled;
 
   delete actionProps.isDisabled;
@@ -562,6 +637,32 @@ export const Button = forwardRef(function Button(
     !Children.toArray(children).some((child) => typeof child === 'string')
   );
 
+  // What a collapsing button collapses to: its `shortLabel`, or else its icon.
+  // Raw children have no `Label` to hide or swap.
+  const isCollapsible =
+    !!collapseCondition || isCollapsed != null || !!autoCollapse;
+  // Set by `AutoCollapseObserver`, which only `autoCollapse` mounts.
+  const [isAutoCollapsed, setIsAutoCollapsed] = useState(false);
+  const isCollapsedByJs = !!isCollapsed || (!!autoCollapse && isAutoCollapsed);
+  const collapse: ButtonMods['collapse'] =
+    !isCollapsible || !hasChildren || rawChildren
+      ? undefined
+      : shortLabel != null
+        ? 'label'
+        : hasLeftSlot
+          ? 'icon'
+          : undefined;
+
+  useWarn(isCollapsible && hasChildren && !collapse, {
+    key: ['button-nothing-to-collapse', rawChildren],
+    args: [
+      'Button:',
+      rawChildren
+        ? '`collapseState`, `isCollapsed` and `autoCollapse` collapse only a text label; this button renders raw children.'
+        : '`collapseState`, `isCollapsed` or `autoCollapse` has nothing to collapse. Give the button an `icon` to collapse to, or a `shortLabel`.',
+    ],
+  });
+
   const [isIconShown, setIsIconShown] = useState(hasLeftIcon);
   const [isRightIconShown, setIsRightIconShown] = useState(hasRightSlot);
   const isFirstRender = useIsFirstRender();
@@ -578,6 +679,8 @@ export const Button = forwardRef(function Button(
       'text-only': !!(hasChildren && typeof children === 'string' && !hasIcons),
       'raw-children': rawChildren,
       'has-content': children != null,
+      collapsed: isCollapsedByJs,
+      collapse,
     }),
     [
       baseMods,
@@ -590,6 +693,8 @@ export const Button = forwardRef(function Button(
       rawChildren,
       isIconShown,
       isRightIconShown,
+      isCollapsedByJs,
+      collapse,
     ],
   );
 
@@ -599,6 +704,7 @@ export const Button = forwardRef(function Button(
     renderWithTooltip,
     isTooltipActive,
     isAutoTooltipEnabled,
+    isOverflowed,
   } = useAutoTooltip({
     tooltip,
     children,
@@ -740,7 +846,14 @@ export const Button = forwardRef(function Button(
             children
           ) : (
             <div data-element="Label" {...finalLabelProps} ref={labelRef}>
-              {children}
+              {collapse === 'label' ? (
+                <>
+                  <span data-element="FullLabel">{children}</span>
+                  <span data-element="ShortLabel">{shortLabel}</span>
+                </>
+              ) : (
+                children
+              )}
             </div>
           ))}
         <DisplayTransition
@@ -756,6 +869,24 @@ export const Button = forwardRef(function Button(
             </div>
           )}
         </DisplayTransition>
+        {autoCollapse ? (
+          <AutoCollapseObserver
+            targetRef={buttonElementRef}
+            contentKey={[
+              typeof children === 'string' ? children : '',
+              typeof shortLabel === 'string' ? shortLabel : '',
+              size,
+              collapse,
+              hasLeftSlot,
+              hasRightSlot,
+              isLoading,
+              isCollapsed,
+              collapseCondition,
+            ].join('|')}
+            isLabelCut={isOverflowed}
+            onChange={setIsAutoCollapsed}
+          />
+        ) : null}
       </ButtonElement>
     );
   };
