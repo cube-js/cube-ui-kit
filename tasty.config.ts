@@ -67,6 +67,46 @@ export const componentTokens = [
   '$overlay-inset-top',
 ];
 
+/**
+ * The style props a container keeps: those that place or size it, and those
+ * that lay out the content the consumer puts in it. `Layout` and `GridLayout`
+ * cover their sub-components, such as `Layout.Content`, whose `scrollbar` is
+ * their own prop; `ResizablePanel`'s `direction` is the side it resizes from.
+ * `display` picks the layout: a block `Card` needs `flex` or `grid` before
+ * `flow`, `grid*` or `place*` do anything.
+ */
+const containerStyleProps = [
+  'position',
+  'dimension',
+  'display',
+  'flow',
+  'gap',
+  'columnGap',
+  'rowGap',
+  'place',
+  'placeItems',
+  'placeContent',
+  'align',
+  'alignItems',
+  'alignContent',
+  'justify',
+  'justifyItems',
+  'justifyContent',
+  'gridColumns',
+  'gridRows',
+  'gridTemplate',
+  'gridAreas',
+  'gridAutoFlow',
+  'gridAutoColumns',
+  'gridAutoRows',
+  'padding',
+  'blockPadding',
+  'inlinePadding',
+  'overflow',
+  'scrollbar',
+  'direction',
+];
+
 export default {
   extends: '@tenphi/tasty',
 
@@ -152,17 +192,47 @@ export default {
       include: ['GridProvider'],
       allowedStyleProps: ['position', 'dimension', 'gap'],
     },
-    // Containers. `Layout` and `GridLayout` cover their sub-components, such
-    // as `Layout.Content`, whose `scrollbar` is their own prop;
-    // `ResizablePanel`'s `direction` is the side it resizes from. `Alert`,
-    // `Result` and `Skeleton` hold content the consumer supplies, so how that
-    // content is spaced is the consumer's call. `display` picks the layout:
-    // a block `Card` needs `flex` or `grid` before `flow`, `grid*` or `place*`
-    // do anything.
+    // Containers that draw a surface of their own: a fill, a border, a
+    // radius or a theme. `Alert`, `Result` and `Skeleton` hold content the
+    // consumer supplies, so how that content is spaced is the consumer's
+    // call. A member path decides before the export it hangs off, so
+    // `Layout.Panel` and `Layout.PanelHeader` are listed before `Layout`.
     {
       source: '@cube-dev/ui-kit',
       include: [
         'Card',
+        'Layout.Panel',
+        'Layout.PanelHeader',
+        'Alert',
+        'Result',
+        'Skeleton',
+      ],
+      allowedStyleProps: containerStyleProps,
+    },
+    // Layout's sections draw no fill, so the backdrop is the consumer's; their
+    // border is UI Kit's, which separates stacked sections or underlines a
+    // header, so it stays protected.
+    {
+      source: '@cube-dev/ui-kit',
+      include: [
+        'Layout.Content',
+        'Layout.Header',
+        'Layout.Footer',
+        'Layout.Toolbar',
+        'Layout.Block',
+        'Layout.Flex',
+        'Layout.Grid',
+        'Layout.Center',
+        'Layout.Container',
+      ],
+      allowedStyleProps: [...containerStyleProps, 'fill'],
+    },
+    // Frames that draw neither a fill nor a border, such as a page `Layout`
+    // or a plain `Panel`: there is no surface to protect, so a fill or a
+    // border on one is the consumer's, as on a `Block`.
+    {
+      source: '@cube-dev/ui-kit',
+      include: [
         'Panel',
         'ResizablePanel',
         'Content',
@@ -170,41 +240,8 @@ export default {
         'Footer',
         'Layout',
         'GridLayout',
-        'Alert',
-        'Result',
-        'Skeleton',
       ],
-      allowedStyleProps: [
-        'position',
-        'dimension',
-        'display',
-        'flow',
-        'gap',
-        'columnGap',
-        'rowGap',
-        'place',
-        'placeItems',
-        'placeContent',
-        'align',
-        'alignItems',
-        'alignContent',
-        'justify',
-        'justifyItems',
-        'justifyContent',
-        'gridColumns',
-        'gridRows',
-        'gridTemplate',
-        'gridAreas',
-        'gridAutoFlow',
-        'gridAutoColumns',
-        'gridAutoRows',
-        'padding',
-        'blockPadding',
-        'inlinePadding',
-        'overflow',
-        'scrollbar',
-        'direction',
-      ],
+      allowedStyleProps: [...containerStyleProps, 'fill', 'border'],
     },
     // A placeholder stands in for content of any shape, so `radius` is its
     // shape, like `dimension`.
