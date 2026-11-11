@@ -207,9 +207,10 @@
     "vitest": "^5.0.5"
   },
   "browserslist": [
-    "last 2 Chrome versions",
-    "last 2 Firefox versions",
-    "last 2 Safari major versions"
+    "last 3 Chrome versions",
+    "last 3 Firefox versions",
+    "last 3 Safari major versions",
+    "last 3 iOS major versions"
   ],
   "license": "MIT",
   "engines": {
