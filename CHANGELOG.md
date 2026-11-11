@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.210.0
+
+### Minor Changes
+
+- [#1633](https://github.com/cube-js/cube-ui-kit/pull/1633) [`ccdf7a83e`](https://github.com/cube-js/cube-ui-kit/commit/ccdf7a83e0f92f1bd87fd76b62f55c80c9da38e7) Thanks [@tenphi](https://github.com/tenphi)! - `Layout.Header` takes a `titlePreset` prop (`h1`–`h6`) that sets the title's typography preset apart from its `level`, so a page title can be an `h1` in the document outline and look like an `h3`: `<Layout.Header title="Billing" level={1} titlePreset="h3" />`. It replaces a `styles={{ Title: { preset } }}` override, which `tasty/no-protected-restyle` reports.
+
+### Patch Changes
+
+- [#1633](https://github.com/cube-js/cube-ui-kit/pull/1633) [`ccdf7a83e`](https://github.com/cube-js/cube-ui-kit/commit/ccdf7a83e0f92f1bd87fd76b62f55c80c9da38e7) Thanks [@tenphi](https://github.com/tenphi)! - The published `tasty.config.ts` lets a container that draws no fill and no border of its own (`Layout`, `GridLayout`, `Panel`, `ResizablePanel`, `Content`, `Header` and `Footer`) keep `fill` and `border`, so `tasty/no-protected-restyle` accepts a page backdrop such as `<Layout fill="#surface-2">` or a divider such as `<Panel border="top">`. `Layout`'s sections (`Layout.Content`, `Layout.Header`, `Layout.Toolbar` and the rest) keep `fill` only: the border that separates stacked sections is UI Kit's. `Card`, `Layout.Panel` and the other containers with a surface of their own stay as they were. Every container also keeps `textAlign`, which aligns the content it holds, and `container`, which names it for its content's container queries.
+
 ## 0.209.0
 
 ### Minor Changes
