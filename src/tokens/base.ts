@@ -99,8 +99,9 @@ export const BASE_TOKENS: Styles = {
   '$scrollbar-width': '1.5x',
   '$scrollbar-outline-width': '1ow',
   '$scrollbar-radius': '1.5r',
-  // 70% keeps the thumb at WCAG 1.4.11's 3:1 against every surface in every
-  // scheme (the track is transparent); palette.test.ts measures it.
+  // This opacity keeps the thumb at WCAG 1.4.11's 3:1 against `#surface` to
+  // `#surface-4` in every scheme (the track is transparent); palette.test.ts
+  // measures it.
   '#scrollbar-thumb': '#text.7',
   '#scrollbar-outline': '#clear',
   '#scrollbar-bg': '#surface-2',

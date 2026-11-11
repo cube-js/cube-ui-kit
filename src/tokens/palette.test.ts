@@ -191,9 +191,7 @@ function blendedContrastOf(
   const srgb = (value: string) => {
     const { h, s, l } = variantToOkhsl(glaze.color(value).resolve().light);
 
-    return okhslToSrgb(h, s, l, false).map((c) =>
-      Math.max(0, Math.min(1, c)),
-    ) as [number, number, number];
+    return okhslToSrgb(h, s, l, false);
   };
   const linear = (rgb: [number, number, number]) =>
     rgb.map((c) =>
@@ -1348,11 +1346,14 @@ describe('renderColorTokens', () => {
   it('keeps the scrollbar thumb at 3:1 against every surface in every scheme', () => {
     const colorTokens = getColorTokens();
     const [, name, digits] =
-      /^#([\w-]+)\.(\d+)$/.exec(String(BASE_TOKENS['#scrollbar-thumb'])) ?? [];
+      /^#([\w-]+?)(?:\.(\d+))?$/.exec(
+        String(BASE_TOKENS['#scrollbar-thumb']),
+      ) ?? [];
 
-    expect(name, 'the thumb is a translucent palette color').toBeDefined();
+    expect(name, 'the thumb is a palette color').toBeDefined();
 
-    const alpha = Number(`0.${digits}`);
+    // `#text.7` is 70% of `#text`; a color with no `.N` suffix is opaque.
+    const alpha = digits ? Number(`0.${digits}`) : 1;
     // `#text` is an alias (`#surface-text-soft`); a palette name stands for itself.
     const base = String(colorTokens[`#${name}`] ?? `#${name}`);
     const tokens = getPaletteTokens();
