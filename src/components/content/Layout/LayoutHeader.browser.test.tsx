@@ -61,3 +61,37 @@ describe('Layout.Header title', () => {
     );
   });
 });
+
+/**
+ * `titlePreset` sizes the title apart from its `level`, so a page title can be
+ * an `h1` in the outline and look like an `h3`. Computed fonts need a browser.
+ */
+describe('Layout.Header titlePreset', () => {
+  function font(name: string) {
+    const style = getComputedStyle(screen.getByRole('heading', { name }));
+
+    return [style.fontSize, style.lineHeight, style.fontWeight];
+  }
+
+  it('gives a level-1 title the look of the preset it names', async () => {
+    await act(async () => {
+      renderWithRoot(
+        <>
+          <Layout>
+            <Layout.Header title="Page" level={1} titlePreset="h3" />
+          </Layout>
+          <Layout>
+            <Layout.Header title="Section" />
+          </Layout>
+          <Layout>
+            <Layout.Header title="Plain page" level={1} />
+          </Layout>
+        </>,
+      );
+    });
+
+    expect(screen.getByRole('heading', { name: 'Page' }).tagName).toBe('H1');
+    expect(font('Page')).toEqual(font('Section'));
+    expect(font('Page')).not.toEqual(font('Plain page'));
+  });
+});

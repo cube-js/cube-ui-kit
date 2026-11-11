@@ -199,6 +199,25 @@ export const WithBreadcrumbs: Story = {
   ),
 };
 
+export const HeaderTitlePreset: Story = {
+  render: () => (
+    <Layout height="100dvh">
+      <Layout.Header
+        title="Page title"
+        level={1}
+        titlePreset="h3"
+        subtitle="An h1 in the document outline that looks like an h3"
+      />
+      <Layout.Content>
+        <Text>
+          `titlePreset` sizes the title apart from its `level`, so the page
+          keeps one h1 without a larger title.
+        </Text>
+      </Layout.Content>
+    </Layout>
+  ),
+};
+
 export const WithBackButton: Story = {
   render: () => (
     <Layout height="100dvh">
