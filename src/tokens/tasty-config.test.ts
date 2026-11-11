@@ -135,6 +135,8 @@ export function Consumer() {
       <Layout fill="#surface-2" border="right" />
       <Panel fill="#surface" border="top" />
       <Layout.Toolbar fill="#surface-2" />
+      <Card textAlign="center" />
+      <Layout styles={{ container: 'page / inline-size' }} />
       <Layout.Header border="none" />
       <Layout.Panel fill="#surface-2" />
       <Placeholder padding="2x" />

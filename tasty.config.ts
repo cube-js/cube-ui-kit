@@ -69,7 +69,8 @@ export const componentTokens = [
 
 /**
  * The style props a container keeps: those that place or size it, and those
- * that lay out the content the consumer puts in it. `Layout` and `GridLayout`
+ * that lay out the content the consumer puts in it, including `textAlign` and
+ * the `container` that its container queries read. `Layout` and `GridLayout`
  * cover their sub-components, such as `Layout.Content`, whose `scrollbar` is
  * their own prop; `ResizablePanel`'s `direction` is the side it resizes from.
  * `display` picks the layout: a block `Card` needs `flex` or `grid` before
@@ -104,6 +105,8 @@ const containerStyleProps = [
   'inlinePadding',
   'overflow',
   'scrollbar',
+  'textAlign',
+  'container',
   'direction',
 ];
 
