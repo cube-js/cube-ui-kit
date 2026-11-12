@@ -16,6 +16,7 @@ export * from './RadioGroup';
 export * from './SearchInput';
 export * from './Slider';
 export * from './Switch/Switch';
+export * from './ToggleGroup';
 export * from './Select';
 export * from './ComboBox';
 export * from './TagInput';

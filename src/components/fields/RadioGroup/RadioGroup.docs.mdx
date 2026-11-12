@@ -28,6 +28,15 @@ If the control is not a field — a toolbar that swaps which view is on screen, 
 | yes | no | `Radio.Group type="button"` |
 | no | — | `Tabs` (with `type="radio"` when the radio look was wanted) |
 
+A radio group always has exactly one option selected once the user picks one, and a radio can't be unchecked. For a row of joined buttons, what can be selected decides the component:
+
+| What can be selected? | Use |
+| --- | --- |
+| Exactly one option, always | `Radio.Group type="button"` |
+| One option or none | [ToggleGroup](/docs/forms-togglegroup--docs) |
+| Several options | [ToggleGroup](/docs/forms-togglegroup--docs) with `selectionMode="multiple"` |
+| Nothing: a row of actions | [Button.Split](/docs/actions-button-split--docs) |
+
 ## Component
 
 <Story of={RadioGroupStories.Default} />
@@ -109,6 +118,7 @@ The `mods` property accepts the following modifiers you can override:
 - **`horizontal`** `boolean` — Whether the radio group is oriented horizontally
 - **`tabs`** `boolean` — Whether the radio group uses tabs styling
 - **`segmented`** `boolean` — Set with `tabs`: the segmented control look, shared with `Tabs type="radio"`, applies to it. Each `Radio` in the group carries it too
+- **`joined`** `boolean` — Set for `type="button"`: the joined look, shared with [ToggleGroup](/docs/forms-togglegroup--docs), applies to it. The buttons share their borders, the selected one is raised above its neighbours, and the group isolates its stacking so that raise stays inside it. Each `Radio` in the group carries it too
 - **`inside-form`** `boolean` — Whether the radio group is inside a form field
 - **`side-label`** `boolean` — Whether the label is positioned at the side
 - **`fill-width`** `boolean` — Set when the group's style props size its field's width (`width`, `inlineSize`, `flex*`); the group then fills it
@@ -402,3 +412,4 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 - [CheckboxGroup](/docs/forms-checkboxgroup--docs) - For selecting multiple related options
 - [Select](/docs/forms-select--docs) - For single selection from many options
 - [Switch](/docs/forms-switch--docs) - For binary on/off choices
+- [ToggleGroup](/docs/forms-togglegroup--docs) - For a joined row of buttons where one option or none, or several, can be on
