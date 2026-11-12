@@ -221,3 +221,27 @@ export const ThreeButtons: Story = {
     </Button.Split>
   ),
 };
+
+const ALIGNMENTS = ['Left', 'Center', 'Right'] as const;
+
+/** Joined toggles: the selected button's border shows on every side. */
+export const Toggles: Story = {
+  render: function TogglesStory() {
+    const [alignment, setAlignment] =
+      useState<(typeof ALIGNMENTS)[number]>('Center');
+
+    return (
+      <Button.Split size="small" aria-label="Alignment">
+        {ALIGNMENTS.map((value) => (
+          <Button
+            key={value}
+            isSelected={alignment === value}
+            onPress={() => setAlignment(value)}
+          >
+            {value}
+          </Button>
+        ))}
+      </Button.Split>
+    );
+  },
+};

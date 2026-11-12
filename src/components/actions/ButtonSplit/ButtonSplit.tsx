@@ -72,6 +72,10 @@ const ButtonSplitElement = tasty({
     display: 'inline-flex',
     position: 'relative',
     verticalAlign: 'bottom',
+    // Button raises a hovered, selected or focused half above its neighbours;
+    // a stacking context of its own keeps that raise from lifting the half
+    // over the page around the split, such as a sticky header.
+    isolation: 'isolate',
   },
 });
 

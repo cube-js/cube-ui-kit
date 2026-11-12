@@ -170,6 +170,26 @@ More than two buttons are supported. Middle buttons have no border radius.
 
 <Story of={ButtonSplitStories.ThreeButtons} />
 
+### Toggles
+
+A split can also join toggle buttons. A selected button (`isSelected`) draws above its neighbours, so its border shows on every side, and a focused one draws above it. The split keeps that stacking to itself, so a raised button never paints over the page around it.
+
+```jsx
+<Button.Split size="small" aria-label="Alignment">
+  {['Left', 'Center', 'Right'].map((value) => (
+    <Button
+      key={value}
+      isSelected={alignment === value}
+      onPress={() => setAlignment(value)}
+    >
+      {value}
+    </Button>
+  ))}
+</Button.Split>
+```
+
+<Story of={ButtonSplitStories.Toggles} />
+
 ## Examples
 
 ### Variants

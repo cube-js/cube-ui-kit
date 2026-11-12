@@ -311,10 +311,15 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
       '-1bw left',
     '@parent(button-split, >) & !:first-child & type=primary': '1bw left',
   },
+  // The halves overlap by a border width, so the later one paints over the
+  // shared edge unless raised. A selected toggle stays above a hovered
+  // neighbour, so its border shows on every side, as in `Radio`; focus is on
+  // top. The split isolates its stacking, so the raise stays inside it.
   // oxlint-disable-next-line tasty/require-default-state -- outside a ButtonSplit the button sets no z-index, so the consumer's stacking applies
   zIndex: {
     '@parent(button-split, >) & :hover': 1,
-    '@parent(button-split, >) & :focus-visible': 2,
+    '@parent(button-split, >) & selected': 2,
+    '@parent(button-split, >) & :focus-visible': 3,
   },
   transition: 'theme, grid-template, padding',
   verticalAlign: 'bottom',

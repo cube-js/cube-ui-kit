@@ -77,6 +77,85 @@ describe('<Button /> shape', () => {
   });
 });
 
+describe('<Button /> stacking in a split', () => {
+  /**
+   * Outline halves overlap by a border width, so whichever paints on top owns
+   * the shared edge. Hit-testing a point on it names that button.
+   */
+  const ownerAt = (x: number, y: number) =>
+    document.elementFromPoint(x, y)?.closest('button')?.textContent;
+
+  const edges = (qa: string) => {
+    const rect = screen.getByTestId(qa).getBoundingClientRect();
+    const y = rect.top + rect.height / 2;
+
+    return {
+      left: [rect.left + 0.5, y],
+      right: [rect.right - 0.5, y],
+    } as const;
+  };
+
+  const toggles = (
+    <ButtonSplit type="outline">
+      <Button qa="Left">Left</Button>
+      <Button isSelected qa="Middle">
+        Middle
+      </Button>
+      <Button qa="Right">Right</Button>
+    </ButtonSplit>
+  );
+
+  it('draws a selected button above both neighbours, so every edge is its own', () => {
+    renderWithRoot(toggles);
+
+    const { left, right } = edges('Middle');
+
+    expect(ownerAt(...left)).toBe('Middle');
+    expect(ownerAt(...right)).toBe('Middle');
+  });
+
+  it('keeps a selected button above a hovered neighbour', async () => {
+    renderWithRoot(toggles);
+
+    await userEvent.hover(screen.getByTestId('Right'));
+
+    expect(ownerAt(...edges('Middle').right)).toBe('Middle');
+  });
+
+  it('draws a focused button above a selected neighbour', async () => {
+    renderWithRoot(toggles);
+
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+
+    expect(screen.getByTestId('Right')).toHaveFocus();
+    expect(ownerAt(...edges('Middle').right)).toBe('Right');
+  });
+
+  it('keeps the raise inside the split', () => {
+    renderWithRoot(
+      <div style={{ position: 'relative' }}>
+        {toggles}
+        {/* A layer the page puts over the split, such as a sticky header. */}
+        <div
+          data-qa="Cover"
+          style={{ position: 'absolute', inset: 0, zIndex: 1 }}
+        />
+      </div>,
+    );
+
+    const rect = screen.getByTestId('Middle').getBoundingClientRect();
+
+    expect(
+      document.elementFromPoint(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2,
+      ),
+    ).toBe(screen.getByTestId('Cover'));
+  });
+});
+
 describe('<Button /> disabled focusability', () => {
   /**
    * A truncated label turns the automatic tooltip on, and an active tooltip
