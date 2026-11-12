@@ -99,6 +99,10 @@ export const BASE_TOKENS: Styles = {
   '$scrollbar-width': '1.5x',
   '$scrollbar-outline-width': '1ow',
   '$scrollbar-radius': '1.5r',
+  // Below WCAG 1.4.11's 3:1 on purpose (about 2.5–3:1 on `#surface` and
+  // `#surface-2`). The thumb is a filled pill, which stays visible at lower
+  // contrast than a stroke, and browser-default thumbs, which 1.4.11 exempts,
+  // sit lower still. A stronger thumb was tried and declined.
   '#scrollbar-thumb': '#text.5',
   '#scrollbar-outline': '#clear',
   '#scrollbar-bg': '#surface-2',
