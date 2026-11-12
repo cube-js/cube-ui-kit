@@ -78,13 +78,13 @@ Cloud consumes the published package, so a UI Kit fix reaches users only when a 
 
 File new issues with the [`create-ticket`](.claude/skills/create-ticket/SKILL.md) skill. `implement` runs it for a task that has no issue.
 
-**Tracking a task.** The issue says where the task stands, and the PR body what its diff does now. Update them when the work moves, not on every event:
+**Tracking a task.** Update the issue and the PR body when the work moves, not on every event, and edit them in place rather than append:
 
 - **Status:** In Progress when work starts. Linear's GitHub integration attaches each PR that names the issue and moves its status when the PR opens: don't repeat that by hand or in a comment.
-- **Description:** the task as it stands now. When the scope, approach or acceptance criteria change, edit those sections in place and comment one line on what changed and why. No progress log or "Update" section.
-- **Comments:** only what a reader acts on: a scope change, a question or blocker waiting on a person or another issue (set `blockedBy` too), a follow-up issue, the screenshots, and what is left after a merge besides the release and Cloud's bump.
-- **Not tracked,** in the issue or the PR body: CI runs, reruns, flakes and outages, review rounds and their findings, pushes and rebases. When one changes the scope or approach, record that change, not the run.
-- **PR body:** what the diff does now. After a push that changes it, rewrite the lines it changes rather than appending.
+- **Description:** the task as it stands now. When the scope or approach changes, edit the sections it changes and comment one line on what changed and why. No progress log. On someone else's issue, propose the edit in a comment instead.
+- **PR body:** what the diff does now, rewritten after a push that changes it.
+- **Comments:** what a reader acts on, such as a question or blocker waiting on a person or another issue, or a follow-up issue.
+- **Not tracked:** CI runs and test failures, reruns, flakes and outages, review rounds and their findings, pushes and rebases. When one changes the scope or approach, record that change, not the event.
 
 ## Stories: Interaction-Only States
 
