@@ -31,6 +31,24 @@ it('ships the harness: uikit:tokens runs from the tarball and the docs index lin
     '#danger-accent-text',
   );
 
+  // The tool reads the aliases from the packed `dist/tokens/colors.js` too.
+  const [alias] = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        join(packageRoot, 'harness/dev.harnesspm/scripts/tokens.mjs'),
+        'dark-02',
+        '--json',
+      ],
+      { encoding: 'utf8' },
+    ),
+  );
+
+  expect(alias).toMatchObject({
+    token: '#dark-02',
+    aliasOf: '#surface-text-soft',
+  });
+
   const index = readFileSync(join(packageRoot, 'docs/llms.txt'), 'utf8');
   const links = [...index.matchAll(/\]\(([^)]+)\)/g)].map((m) => m[1]);
 

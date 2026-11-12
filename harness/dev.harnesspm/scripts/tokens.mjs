@@ -20,10 +20,10 @@ Lists UI Kit's color tokens by the names Tasty styles use, such as #surface or
 schemes. Every part you give must appear in the name.
 
 A token made against a base shows its contrast against that base, measured as
-Glaze's solver measures it: ✓ meets the token's floor and ✗ misses it. A legacy
-alias, such as #dark, shows the token it stands for and that token's values; new
-code uses the token's own name. Values are for UI Kit's default palette
-configuration.
+Glaze's solver measures it: ✓ meets the token's floor and ✗ misses it. An
+alias, such as #dark or #current-fill, shows the token or value it resolves to;
+the Usage guide says which aliases are legacy. Values are for UI Kit's default
+palette configuration.
 
 --format  how to print colors: hex (default), okhsl, okhst, rgb, hsl or oklch
 --json    print the result as JSON`;
@@ -35,8 +35,9 @@ const prefixOf = (theme) => (theme === 'default' ? '' : `${theme}-`);
  * Every emitted color token, then every alias, optionally filtered.
  * `tokenNames` are the keys of `getPaletteTokens()`, so only a color the
  * palette emits is listed. `aliases` maps each other `#name` that
- * `getColorTokens()` defines by reference (the legacy names, such as `#dark`)
- * to its value, such as `#surface-text` or `#surface-text-soft.65`.
+ * `getColorTokens()` defines by value or reference (legacy names such as
+ * `#dark`, and current ones such as `#clear` or `#current-fill`) to that value,
+ * such as `#surface-text`, `#surface-text-soft.65` or `transparent`.
  */
 export function listTokens(
   g,
@@ -84,13 +85,51 @@ export function listTokens(
     // `#surface-text-soft.65` is that token at 65% opacity.
     const target = byToken.get(/^(#[\w-]+?)(\.\d+)?$/.exec(value)?.[1]);
     const values = Object.fromEntries(
-      measure.SCHEMES.map((s) => [s.key, target?.values[s.key] ?? value]),
+      measure.SCHEMES.map((s) => [
+        s.key,
+        target?.values[s.key] ?? literal(g, measure, value, format),
+      ]),
     );
 
     return { token, aliasOf: value, values };
   });
 
   return [...all, ...aliasEntries].filter((entry) => matches(entry.token));
+}
+
+/** A literal alias value, such as `okhsl(5 100% 67%)`, in the chosen format. */
+function literal(g, measure, value, format) {
+  try {
+    return measure.formatVariant(g, measure.parseColor(g, value), format);
+  } catch {
+    // Not a color Glaze parses, such as `transparent`: print it as it is.
+    return value;
+  }
+}
+
+/**
+ * What `listTokens` reads, from UI Kit's palette and color-token modules: the
+ * built ones in the tool, the source ones in the spec.
+ */
+export function sourceFrom({
+  getPalette,
+  getCodeTheme,
+  getPaletteTokens,
+  getColorTokens,
+}) {
+  const tokenNames = new Set(Object.keys(getPaletteTokens()));
+  const aliases = new Map(
+    Object.entries(getColorTokens()).filter(
+      ([name, value]) => typeof value === 'string' && !tokenNames.has(name),
+    ),
+  );
+
+  return {
+    palette: getPalette(),
+    codeTheme: getCodeTheme(),
+    tokenNames,
+    aliases,
+  };
 }
 
 /** Glaze's measuring module, from the Glaze that resolves next to this file. */
@@ -232,22 +271,12 @@ async function main(argv) {
       return 2;
     }
 
-    const paletteModule = await import(build.href);
-    const tokenNames = new Set(Object.keys(paletteModule.getPaletteTokens()));
-    const { getColorTokens } = await import(
-      new URL('../../../dist/tokens/colors.js', import.meta.url).href
-    );
-    const aliases = new Map(
-      Object.entries(getColorTokens()).filter(
-        ([name, value]) => typeof value === 'string' && !tokenNames.has(name),
-      ),
-    );
-    const source = {
-      palette: paletteModule.getPalette(),
-      codeTheme: paletteModule.getCodeTheme(),
-      tokenNames,
-      aliases,
-    };
+    const source = sourceFrom({
+      ...(await import(build.href)),
+      ...(await import(
+        new URL('../../../dist/tokens/colors.js', import.meta.url).href
+      )),
+    });
     const tokens = listTokens(g, measure, source, { filters, format });
 
     if (json) {
@@ -258,7 +287,11 @@ async function main(argv) {
       );
     } else {
       console.log(
-        render(tokens, measure.SCHEMES, tokenNames.size + aliases.size),
+        render(
+          tokens,
+          measure.SCHEMES,
+          source.tokenNames.size + source.aliases.size,
+        ),
       );
     }
 

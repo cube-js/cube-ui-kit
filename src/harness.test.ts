@@ -13,6 +13,7 @@ import * as glazeModule from '@tenphi/glaze';
 import {
   listTokens,
   loadMeasure,
+  sourceFrom,
 } from '../harness/dev.harnesspm/scripts/tokens.mjs';
 
 import { getColorTokens } from './tokens/colors';
@@ -23,22 +24,9 @@ const HARNESS = join(ROOT, 'harness');
 const manifest = JSON.parse(readFileSync(join(HARNESS, 'plugin.json'), 'utf8'))
   .extensions['dev.harnesspm'];
 
-function source() {
-  const tokenNames = new Set(Object.keys(getPaletteTokens()));
-
-  return {
-    palette: getPalette(),
-    codeTheme: getCodeTheme(),
-    tokenNames,
-    // As the tool reads them: every other `#name` defined by reference.
-    aliases: new Map(
-      Object.entries(getColorTokens()).filter(
-        (entry): entry is [string, string] =>
-          typeof entry[1] === 'string' && !tokenNames.has(entry[0]),
-      ),
-    ),
-  };
-}
+// The same reading the tool does on `dist/`, done on `src/`.
+const source = () =>
+  sourceFrom({ getPalette, getCodeTheme, getPaletteTokens, getColorTokens });
 
 const headingsOf = (text: string) =>
   text.split('\n').filter((line) => line.startsWith('## '));
@@ -107,7 +95,7 @@ describe('uikit:tokens', () => {
     expect(names).toContain('#code-keyword');
   });
 
-  it('shows the token a legacy alias stands for, with its values', async () => {
+  it('shows what an alias resolves to, with its values', async () => {
     const measure = await loadMeasure();
     const byName = new Map<string, { aliasOf?: string; values: object }>(
       listTokens(glazeModule, measure, source()).map(
@@ -129,6 +117,12 @@ describe('uikit:tokens', () => {
       values: soft,
     });
     expect(byName.get('#clear')!.values).toMatchObject({ dark: 'transparent' });
+    // A literal color follows the format: `#pink` is `okhsl(5 100% 67%)`.
+    expect(byName.get('#pink')!.values).toMatchObject({
+      light: expect.stringMatching(/^#[0-9a-f]{6}$/),
+    });
+    // Current names are aliases too, without any "legacy" mark.
+    expect(byName.get('#current-fill')).toMatchObject({ aliasOf: '#surface' });
   });
 
   it('keeps tokens whose name has every part, with or without #', async () => {
