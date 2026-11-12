@@ -33,6 +33,7 @@ An empty state or result display with icon, title, and optional content. Support
 - **`size`** `'medium' | 'large'` (default: `'medium'`) — Visual scale: the icon size and the title and subtitle presets. Does not change the layout. Ignored when `isCompact` is set
 - **`layout`** `'default' | 'stacked'` (default: `'default'`) — Arrangement of the block. `stacked` fills the container and stacks the actions to the full width, as in a confirmation or result dialog. Ignored when `isCompact` is set
 - **`isCompact`** `boolean` (default: `false`) — Compact horizontal layout. Overrides `size` and `layout`
+- **`isQueryContainer`** `boolean` (default: `false`) — Makes the result the `result` query container (`container: result / inline-size`), so its content can respond to its width: `@(result, w < 400px)`, or `collapseState` on a `Button`. Set it only on a result whose width comes from outside, such as the `stacked` layout: a query container ignores its content's width, and a result centered by its auto margins in a flex parent is sized by its content, so it would shrink to its padding
 - **`actions`** `ReactNode` — Action buttons as `Result.Action` elements: a centered row by default, a full-width column in the `stacked` layout
 - **`children`** `ReactNode` — Free content between the text and the actions
 
@@ -94,6 +95,7 @@ The root element exposes these modifiers as `data-*` attributes:
 | `size` | `'medium' \| 'large'` | Set by `size`; `medium` when `isCompact` |
 | `layout` | `'default' \| 'stacked'` | Set by `layout`; `default` when `isCompact` |
 | `status` | `CubeResultStatus` | Set by `status`, `info` by default; drives the icon color. Not set when a custom `icon` is passed |
+| `query-container` | `boolean` | Set by `isQueryContainer`: the root is the `result` query container |
 
 ## Variants
 

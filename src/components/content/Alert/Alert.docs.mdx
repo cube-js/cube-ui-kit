@@ -23,6 +23,7 @@ An alert message with theme variants. Used for announcements, warnings, and info
 - **`theme`** `'note' | 'success' | 'danger' | 'warning' | 'special' | 'disabled'` (default: `'note'`) — Visual theme
 - **`type`** — Deprecated, use `theme` instead
 - **`shape`** `'card' | 'sharp'` (default: `'card'`) — `card` shows border radius and border; `sharp` removes both
+- **`isQueryContainer`** `boolean` (default: `false`) — Makes the alert the `alert` query container (`container: alert / inline-size`), so its content can respond to its width: `@(alert, w < 400px)`, or `collapseState` on a `Button`. Set it only on an alert whose width comes from outside, such as a block or a stretched item: a query container ignores its content's width, so an alert sized by its content shrinks to its padding
 
 ### Style Defaults
 

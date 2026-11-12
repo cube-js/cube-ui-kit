@@ -146,6 +146,10 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
   // if a function is passed as the second child, it won't appear in toArray
   let [trigger, content] = children;
 
+  // The type asked for, before a phone width swaps in `mobileType`: a popover
+  // shown as a tray still sizes to its content.
+  const requestedType = type;
+
   // Apply the mobile type at the configured breakpoint.
   let isMobile = useMediaQuery(`(max-width: ${mobileViewport}px)`);
   if (isMobile) {
@@ -315,6 +319,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
     <>
       <DialogTriggerBase
         type={type}
+        requestedType={requestedType}
         state={state}
         isDismissable={isDismissable}
         trigger={trigger}
@@ -534,6 +539,7 @@ function DialogTriggerBase(props: any) {
 
   let {
     type,
+    requestedType,
     state,
     onClose,
     isDismissable,
@@ -548,6 +554,7 @@ function DialogTriggerBase(props: any) {
 
   let context = {
     type,
+    requestedType,
     // Explicit dialog actions can close even when passive dismissal is disabled.
     onClose: (action?: string) => onClose?.(action, true),
     isDismissable,

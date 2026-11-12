@@ -35,6 +35,9 @@ const ContainerElement = tasty({
 
     Inner: {
       $: '>',
+      // The column the content gets, so `@(content, …)` reads its width as on
+      // `Layout.Content`; the root can be much wider than the column.
+      container: 'content / inline-size',
       placeSelf: 'center',
       display: 'flex',
       flow: 'column',

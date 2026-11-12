@@ -78,6 +78,14 @@ Cloud consumes the published package, so a UI Kit fix reaches users only when a 
 
 File new issues with the [`create-ticket`](.claude/skills/create-ticket/SKILL.md) skill. `implement` runs it for a task that has no issue.
 
+**Tracking a task.** Update the issue and the PR body when the work moves, not on every event, and edit them in place rather than append:
+
+- **Status:** In Progress when work starts. Linear's GitHub integration attaches each PR that names the issue and moves its status when the PR opens: don't repeat that by hand or in a comment.
+- **Description:** the task as it stands now. When the scope or approach changes, edit the sections it changes and comment one line on what changed and why. No progress log. On an issue someone else is working on, propose the edit in a comment instead.
+- **PR body:** what the diff does now, rewritten after a push that changes it.
+- **Comments:** what a reader acts on, such as a question or blocker waiting on a person or another issue, or a follow-up issue.
+- **Not tracked:** CI runs and their test failures, reruns, flakes and outages, review rounds and their findings, pushes and rebases. When one changes the scope or approach, record that change, not the event.
+
 ## Stories: Interaction-Only States
 
 A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs `play` before it snapshots, so a story whose point is such a state **must** drive it with `play` and end on a `waitFor` assertion for the state itself (that assertion is also the wait Chromatic needs). Drive one element per story — only the final state is captured. For tooltips, copy the recipe verbatim: `timeout(250)` (the trigger is wired in a mount effect), `unhover` before `hover` (React Aria ignores a hover until a mouse move sets the pointer modality), and `delay: 0` in the tooltip config. Both caveats fail silently, and a local render test can pass while the story does not — Chromatic is the check. Full pattern: [storybook.md](docs/rules/storybook.md#interaction-only-states-need-a-play-function).

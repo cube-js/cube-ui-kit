@@ -32,6 +32,7 @@ A section container with optional stretched, floating, or card styling. Renders 
 ### Style Defaults
 
 - `display` — `block`
+- `container` — `panel / inline-size`: the `panel` query container, as `Layout.Panel` is, so `@(panel, w < 400px)` reads its width. Its content is positioned over it, so its width never comes from the content
 - `position` — `relative` (switches to `absolute` when `isStretched` or `isFloating`)
 - `flexGrow` — `1`
 - `radius` — `0` (switches to `1r` when `isCard`)

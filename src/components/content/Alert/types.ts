@@ -24,4 +24,12 @@ export interface CubeAlertProps
    * @default "card"
    */
   shape?: 'card' | 'sharp';
+  /**
+   * Makes the alert the `alert` query container (`container: alert / inline-size`),
+   * so its content can respond to its width: `@(alert, w < 400px)`, or
+   * `collapseState` on a `Button`. Set it only on an alert whose width comes
+   * from outside: a container ignores its content's width, so an alert sized
+   * by its content shrinks to its padding.
+   */
+  isQueryContainer?: boolean;
 }

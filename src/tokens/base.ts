@@ -99,7 +99,12 @@ export const BASE_TOKENS: Styles = {
   '$scrollbar-width': '1.5x',
   '$scrollbar-outline-width': '1ow',
   '$scrollbar-radius': '1.5r',
-  '#scrollbar-thumb': '#text.5',
+  // Below WCAG 1.4.11's 3:1 on purpose (about 1.3–1.5:1 on `#surface` and
+  // `#surface-2`): the thumb is a filled pill, which stays visible at lower
+  // contrast than a stroke. A 3:1 thumb was tried and declined. Every thumb
+  // the `scrollbar` style draws reads this token; the `tiny` indicators in
+  // Layout and Tabs are drawn apart.
+  '#scrollbar-thumb': '#text.2',
   '#scrollbar-outline': '#clear',
   '#scrollbar-bg': '#surface-2',
   '#scrollbar-corner': '#clear',

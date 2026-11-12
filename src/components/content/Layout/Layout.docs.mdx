@@ -189,7 +189,7 @@ Horizontally centered content area with constrained width. Ideal for forms, arti
 
 **Sub-elements:**
 
-- `Inner` - Constrained width inner container
+- `Inner` - Constrained width inner container. It is the `content` query container, as `Layout.Content` is, so `@(content, …)` reads the width of the column rather than of the whole area
 
 ---
 
@@ -215,7 +215,7 @@ Centered content area for both horizontal and vertical alignment. Extends `Layou
 
 **Sub-elements:**
 
-- `Inner` - Constrained width inner container with `text-align: center`
+- `Inner` - Constrained width inner container with `text-align: center`, and the `content` query container
 
 ---
 
@@ -996,6 +996,25 @@ Panels automatically register with the Layout context and report their sizes. Th
 ### Nested Layouts
 
 Each Layout.Content and panel header uses `LayoutContextReset` internally, which resets the layout context. This prevents nested Layouts from accidentally affecting parent layouts.
+
+### Query Containers
+
+Layout names its regions as query containers (`inline-size`), so a style or a `Button`'s `collapseState` can respond to the region it sits in:
+
+- `layout` — the Layout's area, inside its panels (`Layout` and `GridLayout`)
+- `content` — `Layout.Content`, and the column of `Layout.Container` and `Layout.Center`
+- `pane` — `Layout.Pane`
+- `panel` — `Layout.Panel`
+
+The sections stacked in a region (`Layout.Header`, `Toolbar`, `Footer`, `Block`, `Flex` and `Grid`) are no containers of their own: they span the region, so `@(layout, …)` reads their width.
+
+```jsx
+<Layout.Content>
+  <Button icon={<IconShare />} collapseState="@(content, w < 600px)">
+    Share
+  </Button>
+</Layout.Content>
+```
 
 ### Transitions
 
