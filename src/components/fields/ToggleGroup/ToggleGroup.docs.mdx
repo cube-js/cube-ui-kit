@@ -222,7 +222,7 @@ const form = Form.useController({
 
 - `aria-label` / `aria-labelledby` — Name the group when it has no visible `label`
 - `aria-label` on an item — Names an icon-only item
-- `aria-required` and `aria-invalid` — Set on the `radiogroup` in `single` mode; a `toolbar` does not take them
+- `aria-required`, `aria-invalid` and `aria-readonly` — Set on the `radiogroup` in `single` mode. A `toolbar` and its toggle buttons take none of them, so in `multiple` mode the error message says the field is invalid, and nothing announces read-only
 
 ## Best Practices
 

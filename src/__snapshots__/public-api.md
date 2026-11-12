@@ -731,7 +731,6 @@ type       ToastType
 value      toFlatTree
 value      ToggleGroup
 type       ToggleGroupComponent
-type       ToggleGroupSize
 type       ToggleGroupType
 type       ToggleSelectionProps
 value      TOKENS

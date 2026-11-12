@@ -328,6 +328,12 @@ describe('<ToggleGroup />', () => {
 
     const [bar, sparkline] = screen.getAllByRole('radio');
 
+    // Said to a screen reader too, as `Radio.Group` says it.
+    expect(screen.getByRole('radiogroup')).toHaveAttribute(
+      'aria-readonly',
+      'true',
+    );
+
     await userEvent.click(sparkline);
     await userEvent.click(bar);
 

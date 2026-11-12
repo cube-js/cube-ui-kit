@@ -1,17 +1,14 @@
 import { createContext, useContext } from 'react';
 
 import type { ToggleGroupState } from 'react-stately';
-
-/** The sizes of `Radio.Group type="button"`. */
-export type ToggleGroupSize =
-  'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
+import type { SizeName } from '../../../tokens/sizes';
 
 /** The item looks a toggle can take: each draws its selected state. */
 export type ToggleGroupType = 'outline' | 'outline-2' | 'clear';
 
 export interface ToggleGroupContextValue {
   state: ToggleGroupState;
-  size: ToggleGroupSize;
+  size: SizeName;
   type: ToggleGroupType;
   isInvalid?: boolean;
   isValid?: boolean;

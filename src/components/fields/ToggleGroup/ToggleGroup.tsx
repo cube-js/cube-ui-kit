@@ -20,7 +20,8 @@ import { CubeToggleGroupItemProps, ToggleGroupItem } from './ToggleGroupItem';
 import type { AriaLabelingProps, Key } from '@react-types/shared';
 import type { ReactElement, ReactNode, Ref } from 'react';
 import type { ToggleGroupState } from 'react-stately';
-import type { ToggleGroupSize, ToggleGroupType } from './context';
+import type { SizeName } from '../../../tokens/sizes';
+import type { ToggleGroupType } from './context';
 
 export interface CubeToggleGroupProps
   extends
@@ -51,7 +52,7 @@ export interface CubeToggleGroupProps
    * The size of every item: the sizes of `Radio.Group type="button"`.
    * @default 'medium'
    */
-  size?: ToggleGroupSize;
+  size?: SizeName;
   /**
    * The look of every item.
    * @default 'outline'
@@ -224,6 +225,7 @@ function ToggleGroup(rawProps: CubeToggleGroupProps) {
       // A radiogroup takes these; a toolbar does not.
       aria-required={isSingle && isRequired ? true : undefined}
       aria-invalid={isSingle && isInvalid ? true : undefined}
+      aria-readonly={isSingle && isReadOnly ? true : undefined}
       mods={{
         joined: true,
         'fill-width': fieldLayout.fillWidth,
