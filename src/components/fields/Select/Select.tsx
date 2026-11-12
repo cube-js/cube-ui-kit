@@ -153,8 +153,9 @@ const SelectOverlayWrapper = tasty({
     // As wide as the popup, wherever React Aria puts it. Left to shrink, the
     // width ends at the screen edge, and React Aria measures that squeezed
     // width: a list that grows while open then crept a few pixels per frame
-    // instead of moving once. The cap keeps the default 8px padding.
-    width: 'initial max-content (100vw - 2x)',
+    // instead of moving once. The cap is the room React Aria leaves inside the
+    // viewport (`%`, unlike `vw`, leaves out a page scrollbar).
+    width: 'initial max-content (100% - 2 * $select-overlay-padding)',
     // React Aria writes the room left in the viewport as this element's
     // `max-height`; a flex column lets the popup shrink to it.
     display: 'flex',
@@ -726,6 +727,7 @@ function Select<T extends object>(
         overlayStyles={overlayStyles}
         optionStyles={optionStyles}
         minWidth={triggerWidth}
+        containerPadding={containerPadding}
         size={size}
         triggerRef={triggerRef}
         isDisabled={isDisabled}
@@ -759,6 +761,7 @@ export function ListBoxPopup({
   shouldUseVirtualFocus = false,
   placement,
   minWidth,
+  containerPadding = 8,
   size = 'small',
   triggerRef,
   isDisabled,
@@ -832,6 +835,7 @@ export function ListBoxPopup({
             {...overlayProps}
             {...parentOverlayProps}
             ref={mergeRefs(popoverRef, layerRef)}
+            tokens={{ '$select-overlay-padding': `${containerPadding}px` }}
             // oxlint-disable-next-line tasty/no-style-prop -- React Aria's overlay positioning computes these coordinates
             style={parentOverlayProps?.style}
             // A press on the list while it fades out must not close the
