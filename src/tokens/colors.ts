@@ -241,7 +241,7 @@ const COLOR_DEPENDENT_TOKENS: Styles = mergeStyles(SHADOW_TOKENS, {
  *
  * The shadow tokens and the scrollbar colors come along for the same reason: their
  * values embed a palette color (`$card-shadow` → `#shadow-md`, `#scrollbar-thumb`
- * → `#text.5`). They are declared on `<Root>`, so CSS has already substituted the
+ * → `#text.2`). They are declared on `<Root>`, so CSS has already substituted the
  * outer theme's colors into them by the time a region inherits — re-declaring them
  * here is what lets them re-resolve.
  *
