@@ -222,25 +222,34 @@ export const ThreeButtons: Story = {
   ),
 };
 
-const ALIGNMENTS = ['Left', 'Center', 'Right'] as const;
+const TEXT_STYLES = ['Bold', 'Italic', 'Underline'] as const;
 
-/** Joined toggles: the selected button's border shows on every side. */
+/** Independent toggles: a selected button's border shows on every side. */
 export const Toggles: Story = {
   render: function TogglesStory() {
-    const [alignment, setAlignment] =
-      useState<(typeof ALIGNMENTS)[number]>('Center');
+    const [styles, setStyles] = useState<string[]>(['Italic']);
 
     return (
-      <Button.Split size="small" aria-label="Alignment">
-        {ALIGNMENTS.map((value) => (
-          <Button
-            key={value}
-            isSelected={alignment === value}
-            onPress={() => setAlignment(value)}
-          >
-            {value}
-          </Button>
-        ))}
+      <Button.Split size="small" aria-label="Text style">
+        {TEXT_STYLES.map((value) => {
+          const isSelected = styles.includes(value);
+
+          return (
+            <Button
+              key={value}
+              isSelected={isSelected}
+              onPress={() =>
+                setStyles(
+                  isSelected
+                    ? styles.filter((style) => style !== value)
+                    : [...styles, value],
+                )
+              }
+            >
+              {value}
+            </Button>
+          );
+        })}
       </Button.Split>
     );
   },
