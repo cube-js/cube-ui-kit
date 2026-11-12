@@ -228,7 +228,8 @@ export const TabsElement = tasty({
         // TabList's outer box would be `100% + padding × 2` and overflow Scroll
         // horizontally — and the side selection indicator (positioned at
         // `right: 0` / `left: 0` of TabList) would land in that overflow region
-        // and get clipped by Scroll's `overflow-x: hidden`.
+        // and get clipped by Scroll's `overflow-x: hidden`. `useTabIndicator`
+        // also reads TabList's computed size as its full box to find its scale.
         boxSizing: 'border-box',
         flow: {
           '': 'column',
