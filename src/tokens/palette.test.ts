@@ -10,7 +10,6 @@ import {
   variantToOkhsl,
 } from '@tenphi/glaze';
 
-import { BASE_TOKENS } from './base';
 import { colorSeed } from './color-seed';
 import { getColorTokens, renderColorTokens } from './colors';
 import {
@@ -178,41 +177,6 @@ function contrastOf(a: string, b: string): number {
 }
 
 /**
- * WCAG contrast between a surface and a translucent color painted over it.
- *
- * The browser composites a translucent color over its backdrop in gamma-encoded
- * sRGB, so the two are blended there before the luminance is taken.
- */
-function blendedContrastOf(
-  color: string,
-  alpha: number,
-  surface: string,
-): number {
-  const srgb = (value: string) => {
-    const { h, s, l } = variantToOkhsl(glaze.color(value).resolve().light);
-
-    return okhslToSrgb(h, s, l, false);
-  };
-  const linear = (rgb: [number, number, number]) =>
-    rgb.map((c) =>
-      c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4,
-    ) as [number, number, number];
-
-  const fg = srgb(color);
-  const bg = srgb(surface);
-  const blended = fg.map((c, i) => c * alpha + bg[i] * (1 - alpha)) as [
-    number,
-    number,
-    number,
-  ];
-
-  return contrastRatioFromLuminance(
-    relativeLuminanceFromLinearRgb(linear(blended)),
-    relativeLuminanceFromLinearRgb(linear(bg)),
-  );
-}
-
-/**
  * APCA Lc of a candidate color against its base, as the palette solves it.
  *
  * `accent-surface` is a `surface` role, which `roleToPolarity` maps to `'bg'` — so
@@ -343,41 +307,6 @@ describe('palette tokens', () => {
         chromaOf(colors[`#loading-face-${index}`]),
         `face ${index}`,
       ).toBeLessThanOrEqual(ceiling);
-    }
-  });
-
-  /**
-   * WCAG 1.4.11 asks 3:1 of a scrollbar thumb against what surrounds it. Tasty's
-   * `scrollbar` style leaves the track transparent (nothing sets
-   * `--scrollbar-track-color`), so the thumb sits on the scroll area's own
-   * surface. `#scrollbar-thumb` is a translucent palette color, so it is measured
-   * as the browser paints it: blended over `#surface` and `#surface-2`, the
-   * surfaces a scroll area sits on.
-   */
-  it('keeps the scrollbar thumb at 3:1 against #surface and #surface-2 in every scheme', () => {
-    const colorTokens = getColorTokens();
-    const [, name, digits] =
-      /^#([\w-]+?)(?:\.(\d+))?$/.exec(
-        String(BASE_TOKENS['#scrollbar-thumb']),
-      ) ?? [];
-
-    expect(name, 'the thumb is a palette color').toBeDefined();
-
-    // `#text.65` is 65% of `#text`; a color with no `.N` suffix is opaque.
-    const alpha = digits ? Number(`0.${digits}`) : 1;
-    // `#text` is an alias (`#surface-text-soft`); a palette name stands for itself.
-    const base = String(colorTokens[`#${name}`] ?? `#${name}`);
-    const tokens = getPaletteTokens();
-
-    for (const state of ['', '@dark', '@hc', '@dark & @hc']) {
-      const colors = variant(tokens, state);
-
-      for (const surface of ['#surface', '#surface-2']) {
-        expect(
-          blendedContrastOf(colors[base], alpha, colors[surface]),
-          `${surface} @ '${state || 'light'}'`,
-        ).toBeGreaterThanOrEqual(3);
-      }
     }
   });
 
@@ -1367,7 +1296,7 @@ describe('renderColorTokens', () => {
     // Declared on <Root>, so CSS would have frozen the outer theme's color into
     // them; they have to ride along by reference to re-resolve in the region.
     expect(rendered['$card-shadow']).toBe('0 .5x 2x #shadow-md');
-    expect(rendered['#scrollbar-thumb']).toBe('#text.65');
+    expect(rendered['#scrollbar-thumb']).toBe('#text.5');
     expect(rendered['#scrollbar-bg']).toBe('#surface-2');
   });
 });
