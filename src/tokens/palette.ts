@@ -926,8 +926,8 @@ function accentTextColors(accent: AccentSeed): ColorMap {
   if (accent == null) {
     return {
       ...ACCENT_SELECTED_FILL,
-      // Stronger brand text for HOVERED selected outline/clear labels and LINK
-      // hover. Same anchor + preferred tone as `accent-text-soft`, but a higher
+      // Stronger brand text for HOVERED or KEYBOARD-FOCUSED selected
+      // outline/clear labels and LINK hover. Same anchor + preferred tone as `accent-text-soft`, but a higher
       // `contrast: [6, 11]` floor against `accent-selected-fill` so it reads as a
       // clear step up from the soft rest color while staying saturated (a bare
       // `AAA`/`7` floor over-darkens light and desaturates dark). The HC pair keeps

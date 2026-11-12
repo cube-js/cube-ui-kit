@@ -210,7 +210,7 @@ const form = Form.useController({
 
 ### Keyboard Navigation
 
-- `Tab` — Moves focus into the group, to the item focused last, and out of it again: the group is one tab stop
+- `Tab` — Moves focus into the group and out of it again: the group is one tab stop. The first time, focus lands on the first focusable item, also in `single` mode where an item is selected (React Aria's toolbar behaviour); after that it returns to the item focused last
 - `ArrowLeft` / `ArrowRight` — Move focus between the items without toggling them, skipping disabled items that have no tooltip
 - `Space` / `Enter` — Toggle the focused item
 
