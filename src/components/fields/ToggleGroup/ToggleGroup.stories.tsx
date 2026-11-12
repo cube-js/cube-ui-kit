@@ -199,6 +199,8 @@ export const Sizes: StoryFn<CubeToggleGroupProps> = () => (
   </Space>
 );
 
+// Text labels, so the a11y check measures each type's selected label against
+// its own fill.
 export const Types: StoryFn<CubeToggleGroupProps> = () => (
   <Space flow="column" gap="2x" placeItems="start">
     {(['outline', 'outline-2', 'clear'] as const).map((type) => (
@@ -210,7 +212,9 @@ export const Types: StoryFn<CubeToggleGroupProps> = () => (
         defaultSelectedKeys={['bold']}
         size="small"
       >
-        {FormatItems()}
+        <ToggleGroup.Item key="bold">Bold</ToggleGroup.Item>
+        <ToggleGroup.Item key="italic">Italic</ToggleGroup.Item>
+        <ToggleGroup.Item key="underline">Underline</ToggleGroup.Item>
       </ToggleGroup>
     ))}
   </Space>
