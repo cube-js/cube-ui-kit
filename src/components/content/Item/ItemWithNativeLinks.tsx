@@ -59,6 +59,8 @@ function nativeRowClip(
     if (styles.overflowX === 'visible' && styles.overflowY === 'visible')
       continue;
     const rect = ancestor.getBoundingClientRect();
+    // Not getLayoutScale(): this ratio rounds like the integer client sizes
+    // it scales, so the clip edges stay where the browser draws them.
     const x = rect.width / ancestor.offsetWidth || 1;
     const y = rect.height / ancestor.offsetHeight || 1;
     if (styles.overflowX !== 'visible') {

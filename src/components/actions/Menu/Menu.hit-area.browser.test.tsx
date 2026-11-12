@@ -616,8 +616,8 @@ describe('Native menu row hit area', () => {
   // A static row is not the target's containing block, so the target is
   // placed from measured rects. Unscaled, it covers the row exactly. Under a
   // scale, the scale comes from computed sizes, which keep 6 digits, so an edge
-  // may land one layout unit (1/64px) short; screen pixels used as layout
-  // pixels would miss by far more.
+  // may land a layout unit (1/64px) or two short, as the inset and the size
+  // each round down; screen pixels used as layout pixels miss by far more.
   it.each([
     [1, 2],
     [0.5, 1],
