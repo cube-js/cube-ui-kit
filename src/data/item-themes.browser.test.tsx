@@ -111,3 +111,100 @@ describe('item theme fill priority', () => {
     },
   );
 });
+
+/** The pixel a color paints over what the canvas already holds. */
+function paint(context: CanvasRenderingContext2D, color: string) {
+  context.fillStyle = color;
+  context.fillRect(0, 0, 1, 1);
+
+  return [...context.getImageData(0, 0, 1, 1).data.slice(0, 3)];
+}
+
+function luminance(rgb: number[]) {
+  const [r, g, b] = rgb.map((value) => {
+    const channel = value / 255;
+
+    return channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** WCAG contrast of an element's text against its fill over the surface. */
+function labelContrast(element: Element) {
+  const context = document.createElement('canvas').getContext('2d', {
+    willReadFrequently: true,
+  })!;
+
+  paint(context, getComputedStyle(element.parentElement!).backgroundColor);
+
+  const fill = paint(context, getComputedStyle(element).backgroundColor);
+  const text = paint(context, getComputedStyle(element).color);
+  const [light, dark] = [luminance(fill), luminance(text)].sort(
+    (a, b) => b - a,
+  );
+
+  return (light + 0.05) / (dark + 0.05);
+}
+
+const Surface = tasty({ styles: { fill: '#surface' } });
+
+// A selected label sits on a darker fill while it is hovered or keyboard
+// focused, and has to stay readable there too. Axe photographs stories at
+// rest, so only this check sees the focused state.
+describe('item theme selected label contrast', () => {
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-scheme');
+    document.documentElement.removeAttribute('data-contrast');
+  });
+
+  const SELECTED_STATES = [
+    { selected: true },
+    { selected: true, hovered: true },
+    { selected: true, focused: true },
+  ];
+
+  it.each([
+    ['light', 'normal'],
+    ['dark', 'normal'],
+    ['light', 'high'],
+    ['dark', 'high'],
+  ])(
+    'keeps AA on every selected fill in %s / %s contrast',
+    (scheme, contrast) => {
+      document.documentElement.setAttribute('data-scheme', scheme);
+      document.documentElement.setAttribute('data-contrast', contrast);
+
+      for (const variant of VARIANTS.filter(
+        (name) => !name.startsWith('special'),
+      )) {
+        const { fill, color } = ITEM_VARIANTS[variant];
+        const Chip = tasty({ styles: { fill, color, transition: 'none' } });
+
+        const view = render(
+          <>
+            {SELECTED_STATES.map((state, index) => (
+              <Surface key={index}>
+                <Chip qa={`chip-${index}`} mods={state}>
+                  Label
+                </Chip>
+              </Surface>
+            ))}
+          </>,
+          { wrapper: Root },
+        );
+
+        for (const [index, state] of SELECTED_STATES.entries()) {
+          expect(
+            labelContrast(view.getByTestId(`chip-${index}`)),
+            `${variant}: ${JSON.stringify(state)}`,
+          ).toBeGreaterThanOrEqual(4.5);
+        }
+
+        view.unmount();
+      }
+    },
+  );
+});
