@@ -1,5 +1,6 @@
 import { Ref, useCallback, useId, useLayoutEffect, useRef } from 'react';
 
+import { getLayoutScale } from '../../../utils/layout-scale';
 import { subscribeScheme } from '../../../utils/react/useScheme';
 
 import { ItemWithNativeLinksProps, ItemWithNativeSlots } from './Item';
@@ -35,23 +36,6 @@ function clearNativeRowPlacement(element: HTMLElement) {
     writeNativeRowToken(element, name, null);
 }
 
-function borderBoxSize(styles: CSSStyleDeclaration, axis: 'width' | 'height') {
-  const size = parseFloat(styles[axis]);
-  if (styles.boxSizing === 'border-box') return size;
-  const sides = axis === 'width' ? ['Left', 'Right'] : ['Top', 'Bottom'];
-  return sides.reduce(
-    (total, side) =>
-      total +
-      parseFloat(
-        styles[`padding${side}` as keyof CSSStyleDeclaration] as string,
-      ) +
-      parseFloat(
-        styles[`border${side}Width` as keyof CSSStyleDeclaration] as string,
-      ),
-    size,
-  );
-}
-
 function nativeRowClip(
   row: HTMLElement,
   containingBlock: Element | null,
@@ -75,6 +59,8 @@ function nativeRowClip(
     if (styles.overflowX === 'visible' && styles.overflowY === 'visible')
       continue;
     const rect = ancestor.getBoundingClientRect();
+    // Not getLayoutScale(): this ratio rounds like the integer client sizes
+    // it scales, so the clip edges stay where the browser draws them.
     const x = rect.width / ancestor.offsetWidth || 1;
     const y = rect.height / ancestor.offsetHeight || 1;
     if (styles.overflowX !== 'visible') {
@@ -125,8 +111,8 @@ function placeNativeRow(element: HTMLAnchorElement) {
   const helperStyles = view.getComputedStyle(element);
   const bounds = row.getBoundingClientRect();
   const current = element.getBoundingClientRect();
-  const scaleX = current.width / borderBoxSize(helperStyles, 'width') || 1;
-  const scaleY = current.height / borderBoxSize(helperStyles, 'height') || 1;
+  const scaleX = getLayoutScale(element, 'horizontal');
+  const scaleY = getLayoutScale(element, 'vertical');
   // Start at the helper's actual containing-block origin. The visual delta
   // includes intervening scrolling and retains fractional layout coordinates.
   const left =
@@ -139,15 +125,17 @@ function placeNativeRow(element: HTMLAnchorElement) {
     '--native-row-inset',
     `${top}px auto auto ${left}px`,
   );
+  // Unscaled, the rect keeps the fractional digits the computed size drops;
+  // under a scale, the scale's own 6 digits limit it (see the static-row spec).
   writeNativeRowToken(
     element,
     '--native-row-width',
-    `${borderBoxSize(rowStyles, 'width')}px`,
+    `${bounds.width / scaleX}px`,
   );
   writeNativeRowToken(
     element,
     '--native-row-height',
-    `${borderBoxSize(rowStyles, 'height')}px`,
+    `${bounds.height / scaleY}px`,
   );
   writeNativeRowToken(
     element,
