@@ -111,7 +111,8 @@ describe('uikit:tokens', () => {
       aliasOf: '#surface-text-soft',
       values: soft,
     });
-    // An alias at an opacity shows its token's values; a literal shows itself.
+    // An alias at an opacity shows its token's values; a value Glaze cannot
+    // parse, such as `transparent`, shows itself.
     expect(byName.get('#minor')).toMatchObject({
       aliasOf: '#surface-text-soft.65',
       values: soft,
@@ -121,7 +122,7 @@ describe('uikit:tokens', () => {
     expect(byName.get('#pink')!.values).toMatchObject({
       light: expect.stringMatching(/^#[0-9a-f]{6}$/),
     });
-    // Current names are aliases too, without any "legacy" mark.
+    // A context hook shows its default.
     expect(byName.get('#current-fill')).toMatchObject({ aliasOf: '#surface' });
   });
 

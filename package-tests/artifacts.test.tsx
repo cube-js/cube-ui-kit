@@ -16,35 +16,26 @@ it('ships React 19 peers and the intended native compiler output in the npm tarb
   });
 });
 
-it('ships the harness: uikit:tokens runs from the tarball and the docs index links resolve', () => {
-  const output = execFileSync(
-    process.execPath,
-    [
-      join(packageRoot, 'harness/dev.harnesspm/scripts/tokens.mjs'),
-      'danger-accent-text',
-      '--json',
-    ],
-    { encoding: 'utf8' },
-  );
-
-  expect(JSON.parse(output).map((t: { token: string }) => t.token)).toContain(
-    '#danger-accent-text',
-  );
-
-  // The tool reads the aliases from the packed `dist/tokens/colors.js` too.
-  const [alias] = JSON.parse(
+/** Runs the packed `uikit:tokens` and returns its JSON. */
+const tokens = (...args: string[]) =>
+  JSON.parse(
     execFileSync(
       process.execPath,
       [
         join(packageRoot, 'harness/dev.harnesspm/scripts/tokens.mjs'),
-        'dark-02',
+        ...args,
         '--json',
       ],
       { encoding: 'utf8' },
     ),
   );
 
-  expect(alias).toMatchObject({
+it('ships the harness: uikit:tokens runs from the tarball and the docs index links resolve', () => {
+  expect(
+    tokens('danger-accent-text').map((t: { token: string }) => t.token),
+  ).toContain('#danger-accent-text');
+  // The tool reads the aliases from the packed `dist/tokens/colors.js` too.
+  expect(tokens('dark-02')[0]).toMatchObject({
     token: '#dark-02',
     aliasOf: '#surface-text-soft',
   });

@@ -21,9 +21,10 @@ schemes. Every part you give must appear in the name.
 
 A token made against a base shows its contrast against that base, measured as
 Glaze's solver measures it: ✓ meets the token's floor and ✗ misses it. An
-alias, such as #dark or #current-fill, shows the token or value it resolves to;
-the Usage guide says which aliases are legacy. Values are for UI Kit's default
-palette configuration.
+alias, such as #dark or #clear, shows the token or value it resolves to; the
+Usage guide says which aliases are legacy. A context hook, such as
+#current-fill, shows its default, which a container may replace. Values are
+for UI Kit's default palette configuration.
 
 --format  how to print colors: hex (default), okhsl, okhst, rgb, hsl or oklch
 --json    print the result as JSON`;
@@ -36,13 +37,14 @@ const prefixOf = (theme) => (theme === 'default' ? '' : `${theme}-`);
  * `tokenNames` are the keys of `getPaletteTokens()`, so only a color the
  * palette emits is listed. `aliases` maps each other `#name` that
  * `getColorTokens()` defines by value or reference (legacy names such as
- * `#dark`, and current ones such as `#clear` or `#current-fill`) to that value,
- * such as `#surface-text`, `#surface-text-soft.65` or `transparent`.
+ * `#dark`, current ones such as `#clear`, and the context hook `#current-fill`,
+ * by its default) to that value, such as `#surface-text`,
+ * `#surface-text-soft.65` or `transparent`.
  */
 export function listTokens(
   g,
   measure,
-  { palette, codeTheme, tokenNames, aliases = new Map() },
+  { palette, codeTheme, tokenNames, aliases },
   { filters = [], format = 'hex' } = {},
 ) {
   const parts = filters.map((f) => f.replace(/^#/, '').toLowerCase());

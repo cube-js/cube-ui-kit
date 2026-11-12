@@ -258,27 +258,30 @@ Full contract, caveats and a live playground: [Theming](/docs/getting-started-th
 
 The previous token names continue to work as aliases (defined at the bottom of `src/tokens/colors.ts`). New code should prefer the Glaze tokens, but existing components do not need to be migrated:
 
-| Legacy                           | Resolves to                |
-| -------------------------------- | -------------------------- |
-| `#text`                          | `#surface-text-soft`       |
-| `#dark` / `#dark-01`             | `#surface-text`            |
-| `#dark-02`                       | `#surface-text-soft`       |
-| `#dark-03`                       | `#surface-text-soft-2`     |
-| `#dark-04`                       | `#placeholder`             |
-| `#dark-05`                       | `#border`                  |
-| `#minor`                         | `#surface-text-soft.65`    |
-| `#shadow`                        | `#shadow-md`               |
-| `#light`                         | `#surface-3`               |
-| `#dark-bg`                       | `#surface-2`               |
-| `#primary` / `#purple`           | `#primary-accent-surface`  |
-| `#primary-text` / `#purple-text` | `#primary-accent-text`     |
-| `#primary-bg` / `#purple-bg`     | `#primary-surface`         |
-| `#primary-icon` / `#purple-icon` | `#primary-accent-icon`     |
-| `#<status>`                      | `#<status>-accent-surface` |
-| `#<status>-text`                 | `#<status>-accent-text`    |
-| `#<status>-bg`                   | `#<status>-surface`        |
-| `#<status>-icon`                 | `#<status>-accent-icon`    |
-| `#<status>-disabled`             | `#disabled`                |
+| Legacy | Resolves to |
+| --- | --- |
+| `#text` | `#surface-text-soft` |
+| `#dark` / `#dark-01` | `#surface-text` |
+| `#dark-02` | `#surface-text-soft` |
+| `#dark-03` | `#surface-text-soft-2` |
+| `#dark-04` | `#placeholder` |
+| `#dark-05` | `#border` |
+| `#minor` | `#surface-text-soft.65` |
+| `#shadow` | `#shadow-md` |
+| `#light` | `#surface-3` |
+| `#dark-bg` | `#surface-2` |
+| `#<theme>` | `#<theme>-accent-surface` |
+| `#<theme>-text` | `#<theme>-accent-text` |
+| `#<theme>-text-soft` | `#<theme>-accent-text-soft` |
+| `#<theme>-bg` | `#<theme>-surface` |
+| `#<theme>-icon` | `#<theme>-accent-icon` |
+| `#<theme>-hover` | `#<theme>-accent-surface-hover` |
+| `#<theme>-desaturated` (all but `purple`) | `#<theme>-accent-surface-2` |
+| `#<theme>-disabled` | `#disabled` |
+| `#purple-01` / `#purple-02` / `#purple-03` | `#purple-accent-surface` / `-2` / `-3` |
+| `#purple-04` | `#purple-surface` |
+
+`<theme>` is `primary`, `purple`, `success`, `danger`, `warning` or `note`; the `purple-*` tokens are the legacy name of the `primary-*` ones and resolve to the same colors.
 
 `#white`, `#black`, and `#clear` are not defined in the palette — `#white` and `#black` are tasty's built-in named colors, and `#clear` is an alias for `transparent`.
 
