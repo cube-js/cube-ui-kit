@@ -1,3 +1,4 @@
+import { IconBold } from '@tabler/icons-react';
 import { userEvent } from 'vitest/browser';
 
 import { renderWithRoot, screen } from '../../../test';
@@ -166,6 +167,43 @@ describe.each(CASES)(
     });
   },
 );
+
+// A neighbour covers one border width of each side of a joined button, so an
+// xsmall one is two border widths wider than its height: what is left of it is
+// the 24px target WCAG 2.5.8 asks for, in both controls.
+it('keeps a 24px target for every xsmall button', async () => {
+  renderWithRoot(
+    <>
+      <Radio.ButtonGroup aria-label="Align" qa="Radios" size="xsmall">
+        <Radio.Button value="left" aria-label="Left" icon={<IconBold />} />
+        <Radio.Button value="center" aria-label="Center" icon={<IconBold />} />
+        <Radio.Button value="right" aria-label="Right" icon={<IconBold />} />
+      </Radio.ButtonGroup>
+      <ToggleGroup aria-label="Align" qa="Toggles" size="xsmall">
+        <ToggleGroup.Item key="left" aria-label="Left" icon={<IconBold />} />
+        <ToggleGroup.Item
+          key="center"
+          aria-label="Center"
+          icon={<IconBold />}
+        />
+        <ToggleGroup.Item key="right" aria-label="Right" icon={<IconBold />} />
+      </ToggleGroup>
+    </>,
+  );
+
+  await settle();
+
+  for (let qa of ['RadioButton', 'ToggleGroupItem']) {
+    let [first, middle, last] = screen.getAllByTestId(qa);
+    let { left, right, height } = middle.getBoundingClientRect();
+    let visible =
+      Math.min(right, last.getBoundingClientRect().left) -
+      Math.max(left, first.getBoundingClientRect().right);
+
+    expect(height).toBe(24);
+    expect(visible).toBeGreaterThanOrEqual(24);
+  }
+});
 
 describe('ToggleGroup keyboard focus', () => {
   // A toggle draws its own ring. Raised above the selected button, it is

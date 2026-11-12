@@ -90,6 +90,18 @@ export const JOINED_ITEM_STYLES: Styles = {
     '': 0,
     'joined & !:first-child': '-1bw left',
   },
+  // `Item`'s `width`, repeated because a map here replaces it whole, plus one
+  // state. A neighbour covers one border width of each side, so a joined xsmall
+  // button (24px) would keep less than the 24px target WCAG 2.5.8 asks for; two
+  // border widths more keep it whole. The wider minimum for an icon with a right
+  // icon comes after it, so it still wins.
+  width: {
+    '': 'min $size',
+    'joined & size=xsmall': 'min ($size + 2bw)',
+    'has-icon & (has-right-icon | (has-actions & inside-wrapper))':
+      'min ($size * 2)',
+    'size=inline': 'min (1lh + 2bw)',
+  },
   zIndex: {
     '': 'auto',
     'joined & selected': 1,
