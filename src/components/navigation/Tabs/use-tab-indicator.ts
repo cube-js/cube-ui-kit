@@ -9,6 +9,8 @@ import {
 
 import { chainRaf } from '../../../utils/raf';
 
+import { getLayoutScale } from './layout-scale';
+
 import type { Key } from '@react-types/shared';
 
 // =============================================================================
@@ -80,20 +82,8 @@ export function useTabIndicator(
     // Only update if dimensions are valid (element has been painted)
     if (tabSize <= 0) return;
 
-    // Rects are in screen pixels, scaled by any ancestor's `transform`, while
-    // the indicator is laid out in the list's own pixels. The list's computed
-    // size is its fractional layout size (it is `border-box`); `offsetWidth`
-    // would round it to whole pixels.
-    const layoutSize = parseFloat(
-      getComputedStyle(container)[isVertical ? 'height' : 'width'],
-    );
-    const screenSize = isVertical ? containerRect.height : containerRect.width;
-    let scale = layoutSize > 0 ? screenSize / layoutSize : 1;
-
-    // The computed size keeps 6 significant digits, so a ratio this close to 1
-    // is no scale: unscaled tabs keep their exact measurements.
-    if (Math.abs(scale - 1) < 1e-5) scale = 1;
-
+    // Rects are in screen pixels; the indicator is laid out in the list's own.
+    const scale = getLayoutScale(container, orientation);
     const offset = isVertical
       ? tabRect.top - containerRect.top
       : tabRect.left - containerRect.left;
