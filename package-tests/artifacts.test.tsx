@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 
 import { checkReactPackage } from '../scripts/compiler/check-package.mjs';
 
@@ -30,7 +30,7 @@ const tokens = (...args: string[]) =>
     ),
   );
 
-it('ships the harness: uikit:tokens runs from the tarball and the docs index links resolve', () => {
+it('ships the harness: uikit:tokens runs from the tarball', () => {
   expect(
     tokens('danger-accent-text').map((t: { token: string }) => t.token),
   ).toContain('#danger-accent-text');
@@ -39,15 +39,32 @@ it('ships the harness: uikit:tokens runs from the tarball and the docs index lin
     token: '#dark-02',
     aliasOf: '#surface-text-soft',
   });
+});
 
-  const index = readFileSync(join(packageRoot, 'docs/llms.txt'), 'utf8');
-  const links = [...index.matchAll(/\]\(([^)]+)\)/g)].map((m) => m[1]);
+it('ships only doc pages in src/, which the harness indexes as its docs', () => {
+  const manifest = JSON.parse(
+    readFileSync(join(packageRoot, 'harness/plugin.json'), 'utf8'),
+  );
+  const docs = resolve(
+    packageRoot,
+    'harness',
+    manifest.extensions['dev.harnesspm'].docs,
+  );
+  const pages = readdirSync(docs, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => relative(docs, join(entry.parentPath, entry.name)));
 
-  expect(links.length).toBeGreaterThan(100);
-
-  for (const link of links) {
-    expect(existsSync(join(packageRoot, 'docs', link)), link).toBe(true);
+  expect(docs).toBe(join(packageRoot, 'src'));
+  expect(pages.length).toBeGreaterThan(100);
+  // harnesspm lists every page in this folder, so nothing contributor-only
+  // (AGENTS.md, specs, READMEs) and no code may ship here.
+  for (const page of pages) {
+    expect(page).toMatch(
+      /\.docs\.mdx$|^components\/form\/Form\/modern-form-[a-z-]+\.md$/,
+    );
   }
+  expect(pages).toContain('stories/Usage.docs.mdx');
+  expect(pages).toContain('components/form/Form/modern-form-guide.md');
 });
 
 it("ships the setup the Tasty patch names: tasty:styles loads UI Kit's config from the tarball", () => {

@@ -53,11 +53,12 @@ export const KINDS = [
     reads: [],
     test: /^(\.changeset|\.husky|\.claude|\.cursor|\.agents|docs\/rules)\//,
   },
-  // Shipped in the package, and `ModernForm.docs.mdx` imports one.
+  // Shipped in the package, and `ModernForm.docs.mdx` imports one. Before the
+  // catch-all `notes`, which takes every other `.md`.
   {
     kind: 'docs-guide',
     reads: ['chromatic', 'canary'],
-    test: /^docs\/[^/]+\.md$/,
+    test: /^src\/components\/form\/Form\/modern-form-[a-z-]+\.md$/,
   },
   // `tsdown` copies both into `dist/`.
   {
@@ -88,7 +89,7 @@ export const KINDS = [
     reads: ['tests', 'browser'],
     test: /^src\/.*\.fixture\.tsx?$/,
   },
-  // `prepare-docs.mjs` ships each page as `docs/components/**/*.md`.
+  // Shipped as is: harnesspm indexes the package's pages for agents.
   {
     kind: 'docs-page',
     reads: ['chromatic', 'canary'],

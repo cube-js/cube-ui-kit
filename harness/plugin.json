@@ -8,7 +8,7 @@
   "extensions": {
     "dev.harnesspm": {
       "extends": ["@tenphi/glaze", "@tenphi/tasty"],
-      "docs": "../docs",
+      "docs": "../src",
       "patch": {
         "glaze:rules/colors": "./dev.harnesspm/patches/glaze-colors.patch.md",
         "tasty:rules/usage": "./dev.harnesspm/patches/tasty-usage.patch.md"

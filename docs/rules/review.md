@@ -19,7 +19,7 @@ Actively try to disprove each candidate. Check surrounding branches, provider de
 - **Styles:** read the relevant [Tasty docs](../../AGENTS.md#tasty-documentation), then use [the probe](probe.md). `pnpm probe styles '{"gap":"2x"}'` checks generated CSS with Root's config loaded. A bare `renderStyles` import misses that config. Use `pnpm probe:browser render` for computed values, geometry, truncation, pointer behavior or screenshots; jsdom cannot establish those claims. Match viewport, state, font and scheme when comparing renders.
 - **Colors:** inspect [Usage](../../src/stories/Usage.docs.mdx#color-tokens), `src/tokens/palette.ts` and the installed [Glaze methodology](../glaze/methodology.mdx). Resolve aliases rather than treating references as literal colors. Check light/dark and both high-contrast variants when changing palette behavior; `pnpm probe tokens --scheme dark --hc` and browser renders can verify the affected pair.
 - **Accessibility:** hear the control with `pnpm probe render --sr` before reporting a name, description, state, reading-order or announcement defect; export `play` to drive focus and keys. Check [its limits](screen-reader.md#limits) before treating a silence as a bug, and say when a claim needs a real screen reader. For changed stories, `pnpm diagnostics:a11y --filter <title> --verbose` lists what axe-core finds in real Chromium, including contrast and target size; see [the accessibility baseline](storybook.md#the-accessibility-baseline).
-- **Forms and timing:** trace event ordering, cleanup and the selected backend. Follow [input rules](input-components.md) and [modern Form migration](../modern-form-migration.md) rather than applying legacy contracts to controllers. Use relevant existing behavior tests when needed to establish a candidate. Documentation-only reviews do not require component tests.
+- **Forms and timing:** trace event ordering, cleanup and the selected backend. Follow [input rules](input-components.md) and [modern Form migration](../../src/components/form/Form/modern-form-migration.md) rather than applying legacy contracts to controllers. Use relevant existing behavior tests when needed to establish a candidate. Documentation-only reviews do not require component tests.
 
 Attach verification limits to each affected finding. Say what code proves and what a probe or test established; if runtime behavior was inferred only, label it `not verified — read-only`. Drop candidates whose premise cannot be established. Do not turn a missing tool or failing environment into a component bug.
 
@@ -125,7 +125,7 @@ Flag duplicate validation icons, missing `wrapWithField` wiring, stale label/con
 
 ### Preserve the selected form backend
 
-Flag implicit legacy-to-modern migrations, controller casts through legacy wrappers or backend changes on a mounted root. Modern Form is opt-in per form; `Form.Item` stays legacy-only. Preserve existing compatibility contracts; see [migration](../modern-form-migration.md).
+Flag implicit legacy-to-modern migrations, controller casts through legacy wrappers or backend changes on a mounted root. Modern Form is opt-in per form; `Form.Item` stays legacy-only. Preserve existing compatibility contracts; see [migration](../../src/components/form/Form/modern-form-migration.md).
 
 ### Subscribe to modern form state during render
 
@@ -133,11 +133,11 @@ Flag controller getters or mutable legacy flags used as reactive modern render s
 
 ### Declare validator dependencies by their meaning
 
-Flag external captures missing `deps`, or sibling-path revalidation missing `dependsOn`. Reads cancel stale work but do not schedule dependencies; `rulesKey` is optional manual versioning. Do not restart equivalent inline rules; see [migration](../modern-form-migration.md).
+Flag external captures missing `deps`, or sibling-path revalidation missing `dependsOn`. Reads cancel stale work but do not schedule dependencies; `rulesKey` is optional manual versioning. Do not restart equivalent inline rules; see [migration](../../src/components/form/Form/modern-form-migration.md).
 
 ### Verify reset, defaults and submission together
 
-Flag changed form behavior that loses drafts, defaults, active-field payloads or cancellation. Check both backends where shared code changes. Form action helpers own submit/reset state unless an independent condition is needed; see [migration](../modern-form-migration.md).
+Flag changed form behavior that loses drafts, defaults, active-field payloads or cancellation. Check both backends where shared code changes. Form action helpers own submit/reset state unless an independent condition is needed; see [migration](../../src/components/form/Form/modern-form-migration.md).
 
 ## Translation, stories and maintenance
 

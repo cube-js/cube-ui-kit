@@ -18,7 +18,7 @@ describe('kindOf', () => {
     ['.changeset/brave-owls.md', 'repo-notes'],
     ['.claude/skills/ui-review/SKILL.md', 'repo-notes'],
     ['docs/rules/coding.md', 'repo-notes'],
-    ['docs/modern-form-guide.md', 'docs-guide'],
+    ['src/components/form/Form/modern-form-guide.md', 'docs-guide'],
     ['README.md', 'package-readme'],
     ['AGENTS.md', 'notes'],
     ['harness/plugin.json', 'harness'],
