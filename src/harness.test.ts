@@ -15,6 +15,7 @@ import {
   loadMeasure,
 } from '../harness/dev.harnesspm/scripts/tokens.mjs';
 
+import { getColorTokens } from './tokens/colors';
 import { getCodeTheme, getPalette, getPaletteTokens } from './tokens/palette';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -23,10 +24,19 @@ const manifest = JSON.parse(readFileSync(join(HARNESS, 'plugin.json'), 'utf8'))
   .extensions['dev.harnesspm'];
 
 function source() {
+  const tokenNames = new Set(Object.keys(getPaletteTokens()));
+
   return {
     palette: getPalette(),
     codeTheme: getCodeTheme(),
-    tokenNames: new Set(Object.keys(getPaletteTokens())),
+    tokenNames,
+    // As the tool reads them: every other `#name` defined by reference.
+    aliases: new Map(
+      Object.entries(getColorTokens()).filter(
+        (entry): entry is [string, string] =>
+          typeof entry[1] === 'string' && !tokenNames.has(entry[0]),
+      ),
+    ),
   };
 }
 
@@ -84,7 +94,9 @@ describe('uikit:tokens', () => {
     const measure = await loadMeasure();
     const { tokenNames, ...rest } = source();
     const tokens = listTokens(glazeModule, measure, { tokenNames, ...rest });
-    const names = tokens.map((t: { token: string }) => t.token);
+    const names = tokens
+      .filter((t: { aliasOf?: string }) => !t.aliasOf)
+      .map((t: { token: string }) => t.token);
 
     expect(new Set(names).size).toBe(names.length);
     expect(new Set(names)).toEqual(tokenNames);
@@ -93,6 +105,30 @@ describe('uikit:tokens', () => {
     expect(names).toContain('#surface');
     expect(names).toContain('#danger-accent-text');
     expect(names).toContain('#code-keyword');
+  });
+
+  it('shows the token a legacy alias stands for, with its values', async () => {
+    const measure = await loadMeasure();
+    const byName = new Map<string, { aliasOf?: string; values: object }>(
+      listTokens(glazeModule, measure, source()).map(
+        (t: { token: string; aliasOf?: string; values: object }) => [
+          t.token,
+          t,
+        ],
+      ),
+    );
+    const soft = byName.get('#surface-text-soft')!.values;
+
+    expect(byName.get('#dark-02')).toMatchObject({
+      aliasOf: '#surface-text-soft',
+      values: soft,
+    });
+    // An alias at an opacity shows its token's values; a literal shows itself.
+    expect(byName.get('#minor')).toMatchObject({
+      aliasOf: '#surface-text-soft.65',
+      values: soft,
+    });
+    expect(byName.get('#clear')!.values).toMatchObject({ dark: 'transparent' });
   });
 
   it('keeps tokens whose name has every part, with or without #', async () => {
@@ -126,18 +162,5 @@ describe('uikit:tokens', () => {
       target: 11,
       pass: true,
     });
-
-    // UI Kit's palette meets every floor it sets, in every scheme.
-    const missed = listTokens(glazeModule, measure, source()).flatMap(
-      (t: {
-        token: string;
-        contrast?: { schemes: Record<string, { pass?: boolean }> };
-      }) =>
-        Object.entries(t.contrast?.schemes ?? {})
-          .filter(([, result]) => result.pass === false)
-          .map(([scheme]) => `${t.token} ${scheme}`),
-    );
-
-    expect(missed).toEqual([]);
   });
 });

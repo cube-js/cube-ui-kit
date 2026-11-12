@@ -21,6 +21,8 @@ describe('kindOf', () => {
     ['docs/modern-form-guide.md', 'docs-guide'],
     ['README.md', 'package-readme'],
     ['AGENTS.md', 'notes'],
+    ['harness/plugin.json', 'harness'],
+    ['harness/dev.harnesspm/patches/glaze-colors.patch.md', 'harness'],
     ['src/components/fields/README.md', 'notes'],
     ['src/components/form/Form/form-types.test-d.tsx', 'type-fixture'],
     ['src/components/overlays/Dialog/Dialog.browser.test.tsx', 'browser-spec'],

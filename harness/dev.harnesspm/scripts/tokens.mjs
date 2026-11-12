@@ -20,8 +20,9 @@ Lists UI Kit's color tokens by the names Tasty styles use, such as #surface or
 schemes. Every part you give must appear in the name.
 
 A token made against a base shows its contrast against that base, measured as
-Glaze's solver measures it: ✓ meets the token's floor, ✗ misses it, and a bare
-number means the token has no floor. Values are for UI Kit's default palette
+Glaze's solver measures it: ✓ meets the token's floor and ✗ misses it. A legacy
+alias, such as #dark, shows the token it stands for and that token's values; new
+code uses the token's own name. Values are for UI Kit's default palette
 configuration.
 
 --format  how to print colors: hex (default), okhsl, okhst, rgb, hsl or oklch
@@ -31,13 +32,16 @@ configuration.
 const prefixOf = (theme) => (theme === 'default' ? '' : `${theme}-`);
 
 /**
- * Every emitted color token, optionally filtered. `tokenNames` are the keys of
- * `getPaletteTokens()`, so only a color the palette emits is listed.
+ * Every emitted color token, then every alias, optionally filtered.
+ * `tokenNames` are the keys of `getPaletteTokens()`, so only a color the
+ * palette emits is listed. `aliases` maps each other `#name` that
+ * `getColorTokens()` defines by reference (the legacy names, such as `#dark`)
+ * to its value, such as `#surface-text` or `#surface-text-soft.65`.
  */
 export function listTokens(
   g,
   measure,
-  { palette, codeTheme, tokenNames },
+  { palette, codeTheme, tokenNames, aliases = new Map() },
   { filters = [], format = 'hex' } = {},
 ) {
   const parts = filters.map((f) => f.replace(/^#/, '').toLowerCase());
@@ -45,7 +49,8 @@ export function listTokens(
     ...palette.list().map((name) => [name, palette.theme(name)]),
     ['code', codeTheme],
   ];
-  const tokens = [];
+  const matches = (token) => parts.every((part) => token.includes(part));
+  const all = [];
 
   for (const [themeName, theme] of sources) {
     const prefix = themeName === 'code' ? '' : prefixOf(themeName);
@@ -57,9 +62,8 @@ export function listTokens(
       // Like `pickCodeTokens` in palette.ts: the code theme emits only `code-*`.
       if (themeName === 'code' && !color.name.startsWith('code-')) continue;
       if (!tokenNames.has(token)) continue;
-      if (!parts.every((part) => token.includes(part))) continue;
 
-      tokens.push({
+      all.push({
         token,
         theme: themeName,
         values: color.values,
@@ -75,7 +79,18 @@ export function listTokens(
     }
   }
 
-  return tokens;
+  const byToken = new Map(all.map((entry) => [entry.token, entry]));
+  const aliasEntries = [...aliases].map(([token, value]) => {
+    // `#surface-text-soft.65` is that token at 65% opacity.
+    const target = byToken.get(/^(#[\w-]+?)(\.\d+)?$/.exec(value)?.[1]);
+    const values = Object.fromEntries(
+      measure.SCHEMES.map((s) => [s.key, target?.values[s.key] ?? value]),
+    );
+
+    return { token, aliasOf: value, values };
+  });
+
+  return [...all, ...aliasEntries].filter((entry) => matches(entry.token));
 }
 
 /** Glaze's measuring module, from the Glaze that resolves next to this file. */
@@ -102,7 +117,7 @@ function floorLabel(pair) {
   const high = pair.schemes.lightContrast?.target;
   const metric = pair.metric.toUpperCase();
 
-  if (normal === undefined && high === undefined) return metric;
+  if (normal === undefined && high === undefined) return `${metric}, no floor`;
 
   const short = (target) => String(Number(target.toFixed(2)));
 
@@ -144,7 +159,11 @@ export function render(tokens, schemes, total) {
   const rows = [['token', '', ...schemes.map((s) => s.label)]];
 
   for (const entry of tokens) {
-    rows.push([entry.token, '', ...schemes.map((s) => entry.values[s.key])]);
+    rows.push([
+      entry.token,
+      entry.aliasOf ? `→ ${entry.aliasOf}` : '',
+      ...schemes.map((s) => entry.values[s.key]),
+    ]);
 
     const pair = entry.contrast;
 
@@ -215,10 +234,19 @@ async function main(argv) {
 
     const paletteModule = await import(build.href);
     const tokenNames = new Set(Object.keys(paletteModule.getPaletteTokens()));
+    const { getColorTokens } = await import(
+      new URL('../../../dist/tokens/colors.js', import.meta.url).href
+    );
+    const aliases = new Map(
+      Object.entries(getColorTokens()).filter(
+        ([name, value]) => typeof value === 'string' && !tokenNames.has(name),
+      ),
+    );
     const source = {
       palette: paletteModule.getPalette(),
       codeTheme: paletteModule.getCodeTheme(),
       tokenNames,
+      aliases,
     };
     const tokens = listTokens(g, measure, source, { filters, format });
 
@@ -229,7 +257,9 @@ async function main(argv) {
         `No token matches ${filters.map((f) => `"${f}"`).join(' and ')}. Try a shorter part of the name.`,
       );
     } else {
-      console.log(render(tokens, measure.SCHEMES, tokenNames.size));
+      console.log(
+        render(tokens, measure.SCHEMES, tokenNames.size + aliases.size),
+      );
     }
 
     return 0;

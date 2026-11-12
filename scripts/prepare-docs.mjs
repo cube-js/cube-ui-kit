@@ -515,11 +515,19 @@ const guides = (await fs.readdir(DOCS_DIR))
   .filter((name) => name.endsWith('.md'))
   .sort()
   .map((name) => path.join(DOCS_DIR, name));
+// A component page that only embeds a guide (`ModernForm` embeds
+// `modern-form-guide.md`) would list the same text twice: keep the guide.
+const guideTexts = new Set(
+  await Promise.all(guides.map((file) => fs.readFile(file, 'utf8'))),
+);
+// Pages directly in `components/` (Root, Block, …) under '', then each category.
 const componentsByCategory = new Map();
 
 for (const file of (await glob(COMPONENT_OUT, /\.md$/)).sort()) {
-  const category = path.relative(COMPONENT_OUT, file).split(path.sep)[0];
-  const key = category.endsWith('.md') ? 'other' : category;
+  if (guideTexts.has(await fs.readFile(file, 'utf8'))) continue;
+
+  const parts = path.relative(COMPONENT_OUT, file).split(path.sep);
+  const key = parts.length === 1 ? '' : parts[0];
   componentsByCategory.set(key, [
     ...(componentsByCategory.get(key) ?? []),
     file,
@@ -536,18 +544,12 @@ const llms = [
   ...(await Promise.all(guides.map(indexLine))),
 ];
 
-// Category folders in order, then the pages directly in `components/`.
-const categories = [...componentsByCategory.keys()].sort(
-  (a, b) => Number(a === 'other') - Number(b === 'other') || a.localeCompare(b),
-);
-
-for (const category of categories) {
-  const files = componentsByCategory.get(category);
+for (const category of [...componentsByCategory.keys()].sort()) {
   llms.push(
     '',
-    `## Components: ${category}`,
+    category ? `## Components: ${category}` : '## Components',
     '',
-    ...(await Promise.all(files.map(indexLine))),
+    ...(await Promise.all(componentsByCategory.get(category).map(indexLine))),
   );
 }
 
