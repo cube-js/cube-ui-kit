@@ -35,6 +35,8 @@
     "docs/tasty",
     "docs/glaze",
     "docs/*.md",
+    "docs/llms.txt",
+    "harness",
     "tasty.config.ts",
     "tasty.config.generated.ts"
   ],

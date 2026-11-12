@@ -486,8 +486,86 @@ for (const { docPath, outputPath, content } of allEntries) {
   processed++;
 }
 
+// Docs index for harnesspm: `harness/plugin.json` points `docs` at this folder,
+// and harnesspm uses an `llms.txt` there as its index. It lists UI Kit's pages and
+// the Tasty pages consumers need (the list "Tasty Documentation" in AGENTS.md
+// names). Glaze's pages are left out: UI Kit's harness extends Glaze's, which
+// brings Glaze's own index.
+const TASTY_PAGES = [
+  'getting-started',
+  'methodology',
+  'design-system',
+  'react-api',
+  'dsl',
+  'styles',
+  'configuration',
+  'debug',
+];
+const LLMS_TXT = path.join(DOCS_DIR, 'llms.txt');
+
+async function indexLine(file) {
+  const text = await fs.readFile(file, 'utf8');
+  const title =
+    text.match(/^#\s+(.+?)\s*$/m)?.[1] ?? path.basename(file, '.md');
+
+  return `- [${title}](${path.relative(DOCS_DIR, file).split(path.sep).join('/')})`;
+}
+
+const guides = (await fs.readdir(DOCS_DIR))
+  .filter((name) => name.endsWith('.md'))
+  .sort()
+  .map((name) => path.join(DOCS_DIR, name));
+const componentsByCategory = new Map();
+
+for (const file of (await glob(COMPONENT_OUT, /\.md$/)).sort()) {
+  const category = path.relative(COMPONENT_OUT, file).split(path.sep)[0];
+  const key = category.endsWith('.md') ? 'other' : category;
+  componentsByCategory.set(key, [
+    ...(componentsByCategory.get(key) ?? []),
+    file,
+  ]);
+}
+
+const llms = [
+  '# Cube UI Kit docs',
+  '',
+  "> Guides, components and the Tasty pages for `@cube-dev/ui-kit`. Glaze's docs have their own index.",
+  '',
+  '## Guides',
+  '',
+  ...(await Promise.all(guides.map(indexLine))),
+];
+
+// Category folders in order, then the pages directly in `components/`.
+const categories = [...componentsByCategory.keys()].sort(
+  (a, b) => Number(a === 'other') - Number(b === 'other') || a.localeCompare(b),
+);
+
+for (const category of categories) {
+  const files = componentsByCategory.get(category);
+  llms.push(
+    '',
+    `## Components: ${category}`,
+    '',
+    ...(await Promise.all(files.map(indexLine))),
+  );
+}
+
+llms.push(
+  '',
+  '## Tasty',
+  '',
+  ...(await Promise.all(
+    TASTY_PAGES.map((name) =>
+      indexLine(path.join(DOCS_DIR, 'tasty', `${name}.md`)),
+    ),
+  )),
+);
+await fs.writeFile(LLMS_TXT, `${llms.join('\n')}\n`);
+log(`Wrote ${LLMS_TXT}`);
+
 // Write manifest for cleanup (outside docs/ so it's never published)
-const generatedPaths = allEntries.map((e) => e.outputPath);
+const generatedPaths = [...allEntries.map((e) => e.outputPath), LLMS_TXT];
 await fs.writeFile('.docs-generated', generatedPaths.join('\n') + '\n');
 
 log(`Wrote ${processed} markdown files to ${DOCS_DIR}`);

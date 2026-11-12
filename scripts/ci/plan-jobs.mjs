@@ -65,6 +65,9 @@ export const KINDS = [
     reads: ['canary'],
     test: /^(README|CHANGELOG)\.md$/,
   },
+  // Shipped in the package for harnesspm, and `src/harness.test.ts` imports its
+  // script, so it comes before the catch-all `notes`.
+  { kind: 'harness', reads: ['tests', 'canary'], test: /^harness\// },
   { kind: 'notes', reads: [], test: /\.md$/ },
   // Read only by `pnpm test:types`, in `Lint, types & diagnostics`.
   { kind: 'type-fixture', reads: [], test: /^src\/.*\.test-d\.tsx?$/ },

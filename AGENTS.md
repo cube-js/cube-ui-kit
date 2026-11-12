@@ -216,6 +216,16 @@ Bundled in `docs/glaze/` (same symlink/copy mechanism). Consult when working on 
 
 - [`methodology.mdx`](docs/glaze/methodology.mdx), [`shadows-and-glows.mdx`](docs/glaze/shadows-and-glows.mdx), [API reference](docs/glaze/reference/index.md), [`migration.md`](docs/glaze/migration.md)
 
+## Harness for Coding Agents — `harness/`
+
+`harness/` ships in the package for projects that use [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm). It is for agents that **use** UI Kit; the rules for working on UI Kit stay in this file.
+
+- [`plugin.json`](harness/plugin.json) extends `@tenphi/glaze`, so a project gets Glaze's colors rule, docs, `glaze-theme` skill and `glaze:*` tools through UI Kit. Its `docs` is `docs/`, indexed by the `docs/llms.txt` that `scripts/prepare-docs.mjs` writes at pack time: the guides, the components and the Tasty pages listed above. Glaze's pages are not in it, because Glaze's own index comes with Glaze's harness.
+- [`rules/ui-kit.md`](harness/dev.harnesspm/rules/ui-kit.md) is the one always-on rule. Keep it short: it is in every consumer's `AGENTS.md`.
+- [`patches/glaze-colors.patch.md`](harness/dev.harnesspm/patches/glaze-colors.patch.md) replaces the "Where colors come from" section of Glaze's colors rule for apps on UI Kit: their colors are this palette's `#name` tokens.
+- `uikit:tokens` ([`scripts/tokens.mjs`](harness/dev.harnesspm/scripts/tokens.mjs)) lists palette tokens by their Tasty names, with their values in all four schemes and their contrast against their base, measured by Glaze's own measuring module from the pinned Glaze. It reads `dist/`, so run `pnpm build` first here: `node harness/dev.harnesspm/scripts/tokens.mjs danger text`.
+- harnesspm does not run in CI yet. [`src/harness.test.ts`](src/harness.test.ts) guards what would break silently: the manifest's files, the Glaze section the patch replaces, and the tool. `npx -y @tenphi/harnesspm check` validates the whole harness.
+
 ## Stack
 
 - **Styling:** `@tenphi/tasty` (declarative token-aware CSS-in-JS)

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "uikit",
+  "description": "Cube UI Kit: the component and Tasty docs, a rule for building with UI Kit, Glaze's color harness adapted to UI Kit's palette, and a tool that looks up palette tokens",
+  "homepage": "https://cube-ui-kit.vercel.app/",
+  "repository": "https://github.com/cube-js/cube-ui-kit",
+  "keywords": ["ui-kit", "react", "tasty", "glaze", "design-system"],
+  "extensions": {
+    "dev.harnesspm": {
+      "extends": ["@tenphi/glaze"],
+      "docs": "../docs",
+      "patch": {
+        "glaze:rules/colors": "./dev.harnesspm/patches/glaze-colors.patch.md"
+      },
+      "scripts": {
+        "tokens": {
+          "file": "./dev.harnesspm/scripts/tokens.mjs",
+          "description": "Look up UI Kit color tokens by name: values in light, dark and high contrast, and contrast against their base",
+          "allow": true
+        }
+      }
+    }
+  }
+}
