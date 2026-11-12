@@ -174,7 +174,7 @@ More than two buttons are supported. Middle buttons have no border radius.
 
 A split can also join independent toggle buttons, each on or off by itself. A selected button (`isSelected`) draws above its neighbours, so its border shows on every side, and a focused one draws above it. The split is a stacking context of its own, so a raised button never paints over the page around it.
 
-For one choice among several, use [`Radio.Group type="button"`](/docs/forms-radiogroup--docs) for a value the user sets in a form, or [`Tabs type="radio"`](/docs/navigation-tabs--docs) outside one. Both draw the same joined look and expose a single choice to assistive technology, which separate toggles don't.
+For one choice among several, use [`Radio.Group type="button"`](/docs/forms-radiogroup--docs) when the choice is a value the user sets (it draws this joined look), or [`Tabs type="radio"`](/docs/navigation-tabs--docs), a segmented control, when it switches the view on screen. Both expose a single choice to assistive technology, which separate toggles don't.
 
 ```jsx
 <Button.Split size="small" aria-label="Text style">
