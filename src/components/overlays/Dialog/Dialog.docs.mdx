@@ -136,7 +136,7 @@ To clamp the width yourself, set `styles.width` (`styles={{ width: 'initial 520p
 <Dialog styles={{ width: 'initial 520px 100dvw' }}>…</Dialog>
 ```
 
-A dialog's width never comes from its content: it is the `dialog` query container, which ignores its content's width, so `@(dialog, …)` conditions and `collapseState` read the dialog's own width. A dialog sized by its content (`width="max-content"`, or a `styles.width` with no width of its own, such as `'max 70vw'`) would shrink to its padding, so give it a size or a length. A `type="panel"` dialog takes its width from `size` too, unless `width` or `styles` set one. A popover is the exception: it sizes to what it holds, as a picker's does, so it is no container unless you set `isQueryContainer`, which only a fixed-width popover can take.
+A dialog's width never comes from its content: it is the `dialog` query container, which ignores its content's width, so `@(dialog, …)` conditions and `collapseState` read the dialog's own width. A dialog sized by its content (`width="max-content"`, or a `styles.width` with no width of its own, such as `'max 70vw'`) would shrink to its padding, so give it a size or a length. A `type="panel"` dialog takes its width from `size` too, unless `width` or `styles` set one. A popover is the exception: it sizes to what it holds, as a picker's does, so it is no container unless you set `isQueryContainer`, which only a fixed-width popover can take. It stays one when its trigger's `mobileType` shows it as a tray or modal on a phone.
 
 ## Examples
 

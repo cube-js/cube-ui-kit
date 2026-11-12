@@ -227,6 +227,27 @@ describe('query containers', () => {
     ).toBe('dialog');
   });
 
+  it('keeps a popover shown as a tray on a phone sized to its content', async () => {
+    // Below `DialogTrigger`'s 700px `mobileViewport`, `mobileType` applies.
+    await page.viewport(414, 896);
+
+    renderWithRoot(
+      <DialogTrigger defaultOpen type="popover" mobileType="tray">
+        <Button>Open</Button>
+        <Dialog qa="TrayPopover" width="max-content">
+          A popover shown as a tray, as wide as this line
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    await settle();
+
+    const dialog = screen.getByTestId('TrayPopover');
+
+    expect(getComputedStyle(dialog).containerType).toBe('normal');
+    expect(dialog.getBoundingClientRect().width).toBeGreaterThan(80);
+  });
+
   it('gives a panel dialog without a width its size, not its content width', async () => {
     renderWithRoot(
       <DialogContainer isOpen type="panel">

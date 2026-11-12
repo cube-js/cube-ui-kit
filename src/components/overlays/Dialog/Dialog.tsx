@@ -189,7 +189,8 @@ export interface CubeDialogProps
    * Whether the dialog is the `dialog` query container
    * (`container: dialog / inline-size`), so its content can respond to its
    * width: `@(dialog, w < 400px)`, or `collapseState` on a `Button`. On by
-   * default, except in a popover, which sizes to its content: a container
+   * default, except in a popover, which sizes to its content, also when its
+   * trigger's `mobileType` shows it as a tray or modal on a phone: a container
    * ignores its content's width, so a dialog sized by its content shrinks to
    * its padding.
    */
@@ -266,7 +267,12 @@ const DialogContent = forwardRef(function DialogContent(
   props: CubeDialogProps,
   ref: Ref<HTMLDivElement>,
 ) {
-  let { type = 'modal', requestDismiss, ...contextProps } = useDialogContext();
+  let {
+    type = 'modal',
+    requestedType,
+    requestDismiss,
+    ...contextProps
+  } = useDialogContext();
 
   let {
     qa,
@@ -287,8 +293,9 @@ const DialogContent = forwardRef(function DialogContent(
 
   size = sizeMap[size.toUpperCase()] || size;
 
-  // A popover sizes to what it holds, so it is a container only on request.
-  const isContainer = isQueryContainer ?? type !== 'popover';
+  // A popover sizes to what it holds, also as a phone's tray or modal, so it is
+  // a container only on request.
+  const isContainer = isQueryContainer ?? (requestedType ?? type) !== 'popover';
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
 
