@@ -544,6 +544,21 @@ const Toolbar = tasty({
 
 An app that defines `@mobile` itself in `configure({ states })` replaces this one; Tasty warns in development when the two values differ. For a breakpoint of a container rather than the viewport, use a container query, such as `@(page, w < 864px)`.
 
+### Query Containers
+
+A container query, `@(name, w < 600px)` in a style map or a `Button`'s `collapseState`, reads the nearest ancestor with that name. These UI Kit components are named `inline-size` query containers:
+
+| Name | Component |
+| --- | --- |
+| `layout` | `Layout` and `GridLayout`: the area inside their panels |
+| `content` | `Layout.Content`, and the column of `Layout.Container` and `Layout.Center` |
+| `pane` | `Layout.Pane` |
+| `panel` | `Layout.Panel`, `Panel` and `ResizablePanel` |
+| `dialog` | `Dialog`, except a popover (also one its `mobileType` shows as a tray or modal), which sizes to its content; `isQueryContainer` turns it on or off |
+| `card`, `alert`, `result` | `Card`, `Alert` and `Result` with `isQueryContainer` |
+
+A query container ignores its content's width when it sizes itself, so a component that can be as wide as its content (a card in a horizontal `Space`, or a centered one) is a container only on request. Set `isQueryContainer` where its width comes from outside: a block, a stretched item, or a set `width`. Name your own regions with `styles={{ container: 'page / inline-size' }}`.
+
 ## Icons
 
 Icons live in `src/icons/`. Use existing icons when possible; otherwise use `@tabler/icons-react`.

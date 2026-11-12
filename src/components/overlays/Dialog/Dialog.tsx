@@ -60,6 +60,10 @@ const DialogElement = tasty({
     fill: '#surface',
     pointerEvents: 'auto',
     outline: 0,
+    // The `dialog` query container. A dialog's width comes from its size or
+    // `width`, never from its content; a popover sizes to what it holds, as a
+    // picker's does, so it is one only with `isQueryContainer`.
+    container: { '': false, 'query-container': 'dialog / inline-size' },
     position: {
       '': 'relative',
       'type=panel': 'absolute',
@@ -76,7 +80,6 @@ const DialogElement = tasty({
       '': '$min-dialog-size $dialog-size $dialog-width-limit',
       'type=fullscreen': '$dialog-max-size $dialog-max-size',
       'type=fullscreenTakeover': '100dvw 100dvw',
-      'type=panel': 'auto',
       // A `width` is the preferred width in `$dialog-size`: it keeps the
       // limit, and replaces the floor.
       'custom-width': 'initial $dialog-size $dialog-width-limit',
@@ -164,7 +167,9 @@ export interface CubeDialogProps
   /**
    * The dialog's preferred width, one value (`520px`, `65x`, `600`). It keeps
    * the type's maximum, so the dialog still fits a phone, and replaces
-   * `$min-dialog-size`. To clamp the width yourself, set `styles.width`.
+   * `$min-dialog-size`. To clamp the width yourself, set `styles.width`. A
+   * content keyword such as `max-content` suits a popover only: a dialog that
+   * is a query container would shrink to its padding.
    */
   width?: string | number;
   /** The size of the dialog */
@@ -180,6 +185,16 @@ export interface CubeDialogProps
   closeIcon?: ReactElement;
   closeButtonStyles?: Styles;
   role?: 'dialog' | 'alertdialog';
+  /**
+   * Whether the dialog is the `dialog` query container
+   * (`container: dialog / inline-size`), so its content can respond to its
+   * width: `@(dialog, w < 400px)`, or `collapseState` on a `Button`. On by
+   * default, except in a popover, which sizes to its content, also when its
+   * trigger's `mobileType` shows it as a tray or modal on a phone: a container
+   * ignores its content's width, so a dialog sized by its content shrinks to
+   * its padding.
+   */
+  isQueryContainer?: boolean;
 }
 
 /**
@@ -252,7 +267,12 @@ const DialogContent = forwardRef(function DialogContent(
   props: CubeDialogProps,
   ref: Ref<HTMLDivElement>,
 ) {
-  let { type = 'modal', requestDismiss, ...contextProps } = useDialogContext();
+  let {
+    type = 'modal',
+    requestedType,
+    requestDismiss,
+    ...contextProps
+  } = useDialogContext();
 
   let {
     qa,
@@ -267,10 +287,15 @@ const DialogContent = forwardRef(function DialogContent(
     width,
     tokens,
     style,
+    isQueryContainer,
     ...otherProps
   } = props;
 
   size = sizeMap[size.toUpperCase()] || size;
+
+  // A popover sizes to what it holds, also as a phone's tray or modal, so it is
+  // a container only on request.
+  const isContainer = isQueryContainer ?? (requestedType ?? type) !== 'popover';
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
 
@@ -505,7 +530,11 @@ const DialogContent = forwardRef(function DialogContent(
           if (isRefocusingRef.current) event.stopPropagation();
         },
       })}
-      mods={{ dismissable: isDismissable, 'custom-width': width != null }}
+      mods={{
+        dismissable: isDismissable,
+        'custom-width': width != null,
+        'query-container': isContainer,
+      }}
       tokens={{
         '$dialog-size':
           width == null

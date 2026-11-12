@@ -67,6 +67,14 @@ export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   layout?: CubeResultLayout;
   /** Whether the result component has a compact presentation. Overrides `size` and `layout` */
   isCompact?: boolean;
+  /**
+   * Makes the result the `result` query container (`container: result / inline-size`),
+   * so its content can respond to its width: `@(result, w < 400px)`, or
+   * `collapseState` on a `Button`. Set it only on a result whose width comes
+   * from outside, such as the `stacked` layout: a container ignores its
+   * content's width, so a result sized by its content shrinks to its padding.
+   */
+  isQueryContainer?: boolean;
 }
 
 export type CubeResultSize = 'medium' | 'large';
@@ -128,6 +136,9 @@ const Container = tasty({
       '': '0 auto',
       compact: '0',
     },
+    // Only on request, as on `Card`: a result sized by its content, such as
+    // one centered in a row, would shrink to its padding.
+    container: { '': false, 'query-container': 'result / inline-size' },
     '--icon-size': {
       '': '6x',
       'size=large': '10x',
@@ -254,6 +265,7 @@ function Result(props: CubeResultProps, ref) {
     actions,
     size = 'medium',
     layout = 'default',
+    isQueryContainer,
     ...otherProps
   } = props;
 
@@ -293,6 +305,7 @@ function Result(props: CubeResultProps, ref) {
           size,
           layout,
           status: icon ? undefined : knownStatus,
+          'query-container': !!isQueryContainer,
         },
       })}
       ref={ref}

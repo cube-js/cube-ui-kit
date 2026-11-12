@@ -100,6 +100,16 @@ const insideHorizontalForm = {
 };
 
 /**
+ * A dialog's `isQueryContainer` defaults to `type !== 'popover'`, the type
+ * coming from its trigger. The `AlertDialog` and `DialogForm` fixtures open
+ * their own modal trigger, so no condition can put them in a popover.
+ */
+const DIALOG_QUERY_CONTAINER_SKIP = {
+  reason: 'context' as const,
+  note: 'Defaults to `true` except in a popover, where `isQueryContainer` is what makes the dialog a query container. Not safe to strip.',
+};
+
+/**
  * `Item` and `Badge` render `aria-selected={isSelected}`, so omitting the prop
  * drops the attribute entirely while `isSelected={false}` emits
  * `aria-selected="false"`. Assistive tech treats those differently, so the
@@ -218,6 +228,18 @@ export const FIXTURES: Fixture[] = [
         label: 'inside <DialogContext isDismissable>',
         wrap: (ui) => (
           <DialogContext.Provider value={{ isDismissable: true }}>
+            {ui}
+          </DialogContext.Provider>
+        ),
+      },
+      /**
+       * `isQueryContainer` defaults to `type !== 'popover'`, the type coming
+       * from context: in a popover, `isQueryContainer` is what opts in.
+       */
+      {
+        label: 'inside <DialogContext type="popover">',
+        wrap: (ui) => (
+          <DialogContext.Provider value={{ type: 'popover' }}>
             {ui}
           </DialogContext.Provider>
         ),
@@ -685,6 +707,7 @@ export const FIXTURES: Fixture[] = [
       </DialogTrigger>
     ),
     ignoreProps: ['title', 'content'],
+    curatedSkips: { isQueryContainer: DIALOG_QUERY_CONTAINER_SKIP },
   },
   {
     name: 'DialogForm',
@@ -697,6 +720,7 @@ export const FIXTURES: Fixture[] = [
       </DialogTrigger>
     ),
     ignoreProps: ['children', 'title', 'onSubmit'],
+    curatedSkips: { isQueryContainer: DIALOG_QUERY_CONTAINER_SKIP },
   },
   {
     name: 'ButtonSplit',

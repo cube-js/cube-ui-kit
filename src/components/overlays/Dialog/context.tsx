@@ -9,6 +9,12 @@ export interface DialogContextValue extends HTMLAttributes<HTMLElement> {
     | 'fullscreen'
     | 'fullscreenTakeover'
     | 'panel';
+  /**
+   * The type its `DialogTrigger` was given, when a phone width replaced it
+   * with `mobileType`. A popover shown as a tray still sizes to its content, so
+   * `Dialog` reads this to decide whether it is a query container.
+   */
+  requestedType?: DialogContextValue['type'];
   isDismissable?: boolean;
   onClose?: (arg?: string) => void;
   isOpen?: boolean;

@@ -16,7 +16,7 @@ A container with rounded corners, border, and padding. Renders as a `<div role="
 
 ## Properties
 
-No component-specific props. Use style props directly.
+- **`isQueryContainer`** `boolean` (default: `false`) — Makes the card the `card` query container (`container: card / inline-size`), so its content can respond to its width: `@(card, w < 400px)` in `styles`, or `collapseState` on a `Button`. See [Query container](#query-container)
 
 ### Style Defaults
 
@@ -55,3 +55,17 @@ These properties allow direct style application without using the `styles` prop:
   Styled card with custom padding and background
 </Card>
 ```
+
+### Query container
+
+With `isQueryContainer`, the card is the `card` container, so a button in it can collapse while the card is narrow:
+
+```jsx
+<Card isQueryContainer>
+  <Button icon={<IconShare />} collapseState="@(card, w < 400px)">
+    Share
+  </Button>
+</Card>
+```
+
+A query container ignores its content's width, so set the prop only on a card whose width comes from outside: a block, an item a flex column or grid stretches, or a set `width`. A card sized by its content, in a horizontal `Space`, centered, or with `width="max-content"`, would shrink to its padding. Without the prop, a card's `@(card, …)` condition finds no container, and the button keeps its full look.

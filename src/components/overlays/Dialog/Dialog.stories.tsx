@@ -80,6 +80,14 @@ export default {
         defaultValue: { summary: 'dialog' },
       },
     },
+    isQueryContainer: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the dialog is the `dialog` query container, for `@(dialog, …)` conditions',
+      table: {
+        defaultValue: { summary: 'true, false in a popover' },
+      },
+    },
     /* Events */
     onBlur: {
       action: 'blur',
