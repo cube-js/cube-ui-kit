@@ -71,27 +71,35 @@ export function useTabIndicator(
       return;
     }
 
-    const containerRect = containerRef.current.getBoundingClientRect();
+    const container = containerRef.current;
+    const isVertical = orientation === 'vertical';
+    const containerRect = container.getBoundingClientRect();
     const tabRect = selectedTab.getBoundingClientRect();
+    const tabSize = isVertical ? tabRect.height : tabRect.width;
 
-    if (orientation === 'vertical') {
-      // Only update if dimensions are valid (element has been painted)
-      if (tabRect.height > 0) {
-        setStyle({
-          start:
-            tabRect.top - containerRect.top + containerRef.current.scrollTop,
-          size: tabRect.height,
-        });
-      }
-    } else {
-      if (tabRect.width > 0) {
-        setStyle({
-          start:
-            tabRect.left - containerRect.left + containerRef.current.scrollLeft,
-          size: tabRect.width,
-        });
-      }
-    }
+    // Only update if dimensions are valid (element has been painted)
+    if (tabSize <= 0) return;
+
+    // Rects are in screen pixels, scaled by any ancestor's `transform`, while
+    // the indicator is laid out in the list's own pixels. The list's computed
+    // size is its fractional layout size (it is `border-box`); `offsetWidth`
+    // would round it to whole pixels.
+    const layoutSize = parseFloat(
+      getComputedStyle(container)[isVertical ? 'height' : 'width'],
+    );
+    const screenSize = isVertical ? containerRect.height : containerRect.width;
+    let scale = layoutSize > 0 ? screenSize / layoutSize : 1;
+
+    // The computed size keeps 6 significant digits, so a ratio this close to 1
+    // is no scale: unscaled tabs keep their exact measurements.
+    if (Math.abs(scale - 1) < 1e-5) scale = 1;
+
+    const offset = isVertical
+      ? tabRect.top - containerRect.top
+      : tabRect.left - containerRect.left;
+    const scroll = isVertical ? container.scrollTop : container.scrollLeft;
+
+    setStyle({ start: offset / scale + scroll, size: tabSize / scale });
   }, [containerRef, selectedKey, enabled, orientation, orderToken]);
 
   // Update on selectedKey change - use chainRaf to ensure DOM is fully painted
