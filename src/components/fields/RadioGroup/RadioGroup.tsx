@@ -56,9 +56,6 @@ const RadioGroupElement = tasty({
   qa: 'RadioGroup',
   styles: mergeStyles(
     {
-      display: 'flex',
-      placeItems: 'stretch',
-      placeContent: 'stretch',
       flow: {
         '': 'column',
         horizontal: 'row wrap',
@@ -75,15 +72,7 @@ const RadioGroupElement = tasty({
         '': '#clear',
         disabled: '#surface-4',
       },
-      width: {
-        '': 'max-content max-content initial',
-        // In a field its style props size, the group fills the field as every
-        // other input does.
-        'fill-width': 'auto',
-      },
-      flexShrink: 0,
       gap: '1x',
-      whiteSpace: 'nowrap',
       // Keyboard focus ring on the group, shown only for the button layout,
       // where the items merge into one control. A classic radio shows a ring
       // on its circle, and a tabs segment one of its own, as a tab does.

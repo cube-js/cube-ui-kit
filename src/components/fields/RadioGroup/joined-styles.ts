@@ -37,8 +37,12 @@ const BUTTON_BLOCK_COLUMNS =
   'max-content max-content max-content max-content max-content max-content';
 
 /**
- * The group: no gap, so the buttons can overlap by one border width (see
- * `JOINED_ITEM_STYLES`). It isolates its stacking, so a raised button stays
+ * The group: a row of buttons sized by their content, with the join on top.
+ * The row layout is not keyed: RadioGroup uses it for its other layouts too,
+ * and sets their `flow` itself.
+ *
+ * Joined, it has no gap, so the buttons can overlap by one border width (see
+ * `JOINED_ITEM_STYLES`), and it isolates its stacking, so a raised button stays
  * inside the group and never paints over a consumer's sticky header or overlay
  * — a selected button stays raised for as long as it is selected.
  *
@@ -46,6 +50,17 @@ const BUTTON_BLOCK_COLUMNS =
  * to the group's own map, which keeps its default for the other layouts.
  */
 export const JOINED_GROUP_STYLES: Styles = {
+  display: 'flex',
+  placeItems: 'stretch',
+  placeContent: 'stretch',
+  width: {
+    '': 'max-content max-content initial',
+    // In a field its style props size, the group fills the field as every
+    // other input does.
+    'fill-width': 'auto',
+  },
+  flexShrink: 0,
+  whiteSpace: 'nowrap',
   // oxlint-disable-next-line tasty/require-default-state -- extends the group's own map (see above)
   gap: { joined: 0 },
   isolation: { '': 'auto', joined: 'isolate' },
