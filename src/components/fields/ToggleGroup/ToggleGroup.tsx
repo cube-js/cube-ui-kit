@@ -1,5 +1,5 @@
 import { useObjectRef } from '@react-aria/utils';
-import { BaseProps, mergeStyles, tasty } from '@tenphi/tasty';
+import { BaseProps, filterBaseProps, mergeStyles, tasty } from '@tenphi/tasty';
 import { Children, cloneElement, isValidElement } from 'react';
 import { useFocusWithin, useLabel, useToggleButtonGroup } from 'react-aria';
 import { useToggleGroupState } from 'react-stately';
@@ -67,20 +67,7 @@ export interface CubeToggleGroupProps
 const ToggleGroupElement = tasty({
   qa: 'ToggleGroup',
   styles: mergeStyles(
-    {
-      display: 'flex',
-      flow: 'row',
-      placeItems: 'stretch',
-      placeContent: 'stretch',
-      width: {
-        '': 'max-content max-content initial',
-        // In a field its style props size, the group fills the field as every
-        // other input does.
-        'fill-width': 'auto',
-      },
-      flexShrink: 0,
-      whiteSpace: 'nowrap',
-    },
+    { flow: 'row' },
     // The row `Radio.Group type="button"` shares (`joined-styles.ts`).
     JOINED_GROUP_STYLES,
   ),
@@ -161,6 +148,8 @@ function ToggleGroup(rawProps: CubeToggleGroupProps) {
     'aria-describedby': ariaDescribedBy,
     onFocus,
     onBlur,
+    mods,
+    ...otherProps
   } = props;
 
   const isSingle = selectionMode === 'single';
@@ -224,7 +213,13 @@ function ToggleGroup(rawProps: CubeToggleGroupProps) {
 
   const group = (
     <ToggleGroupElement
-      {...mergeProps(groupProps, focusWithinProps)}
+      // The caller's base props (`qaVal`, `className`, `style`, `data-*`, event
+      // handlers), as every field forwards them; the group's own wiring wins.
+      {...mergeProps(
+        filterBaseProps(otherProps, { eventProps: true }),
+        groupProps,
+        focusWithinProps,
+      )}
       ref={domRef}
       // The current id: `useLabel` follows it, the form binding may change it.
       id={id}
@@ -239,6 +234,7 @@ function ToggleGroup(rawProps: CubeToggleGroupProps) {
       mods={{
         joined: true,
         'fill-width': fieldLayout.fillWidth,
+        ...mods,
       }}
     >
       <ToggleGroupContext.Provider

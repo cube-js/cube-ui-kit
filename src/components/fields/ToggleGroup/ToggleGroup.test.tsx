@@ -540,6 +540,28 @@ describe('<ToggleGroup />', () => {
     });
   });
 
+  it("puts the caller's base props on the group", () => {
+    renderWithRoot(
+      <ToggleGroup
+        aria-label="Display"
+        qaVal="display"
+        className="custom"
+        data-section="style"
+        mods={{ compact: true }}
+      >
+        {options()}
+      </ToggleGroup>,
+    );
+
+    const group = screen.getByRole('radiogroup');
+
+    expect(group).toHaveAttribute('data-qaval', 'display');
+    expect(group).toHaveAttribute('data-section', 'style');
+    expect(group).toHaveAttribute('data-compact');
+    expect(group).toHaveAttribute('data-joined');
+    expect(group).toHaveClass('custom');
+  });
+
   it('throws when an item is rendered outside a group', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
