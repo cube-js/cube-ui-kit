@@ -21,6 +21,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
+import { getLayoutScale } from '../../../utils/layout-scale';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   CubeItemActionProps,
@@ -37,7 +38,6 @@ import {
 import { createMockDragState } from '../../shared/DraggableCollection';
 
 import { useBoardDragActive } from './BoardDragActiveProvider';
-import { getLayoutScale } from './layout-scale';
 import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
 import { TabContainer, TabElement } from './styled';
 import { TabDropIndicator } from './TabDropIndicator';

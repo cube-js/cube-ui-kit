@@ -7,9 +7,8 @@ import {
   useState,
 } from 'react';
 
+import { getLayoutScale } from '../../../utils/layout-scale';
 import { chainRaf } from '../../../utils/raf';
-
-import { getLayoutScale } from './layout-scale';
 
 import type { Key } from '@react-types/shared';
 

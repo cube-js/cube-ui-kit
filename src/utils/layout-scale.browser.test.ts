@@ -3,8 +3,8 @@ import { getLayoutScale } from './layout-scale';
 /**
  * `getLayoutScale` divides an element's on-screen size by its layout size.
  * jsdom has no layout, so only a browser measures either. The element has a
- * fractional size, padding and a border, as a tab strip does: a `content-box`
- * one leaves the padding and border out of its computed size.
+ * fractional size, padding and a border: a `content-box` one, such as a tab
+ * strip a consumer pads through `styles`, leaves them out of its computed size.
  */
 describe('getLayoutScale', () => {
   const mounted: HTMLElement[] = [];
