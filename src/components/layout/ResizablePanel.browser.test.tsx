@@ -98,3 +98,21 @@ it('notifies the current callback after drag completion without notifying for ca
   await vi.waitFor(() => expect(second).toHaveBeenCalledWith(250));
   expect(first).not.toHaveBeenCalled();
 });
+
+it("keeps a consumer's innerStyles alongside the handle's margin compensation", async () => {
+  renderWithRoot(
+    <ResizablePanel
+      qa="Resizable"
+      size={240}
+      innerStyles={{ padding: '2x' }}
+    />,
+  );
+  const inner = screen.getByTestId('Resizable').firstElementChild!;
+
+  await vi.waitFor(() => {
+    const style = getComputedStyle(inner);
+
+    expect(style.paddingTop).toBe('16px');
+    expect(style.marginRight).toBe('3px');
+  });
+});

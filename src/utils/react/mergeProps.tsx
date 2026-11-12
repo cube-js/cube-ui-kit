@@ -18,6 +18,8 @@ type Merge<T> = T extends [infer F, ...infer R]
  * Merges multiple props objects together. Event handlers are chained,
  * classNames are combined, and ids are deduplicated - different ids
  * will trigger a side-effect and re-render components hooked up with `useId`.
+ * `styles` and every `*Styles` key (`innerStyles`, `inputStyles`, …) merge with
+ * `mergeStyles` when both objects hold one for that key, and `mods` merge too.
  * For all other props, the last prop object overrides all previous ones.
  * @param args - Multiple sets of props to merge together.
  */
@@ -47,9 +49,10 @@ export function mergeProps<T extends (Props | undefined)[], K = Merge<T>>(
         result[key] = clsx(result.className, props.className);
       } else if (
         (key === 'styles' || key.endsWith('Styles')) &&
-        typeof result.styles === 'object' &&
-        props &&
-        typeof props.styles === 'object'
+        result[key] &&
+        typeof result[key] === 'object' &&
+        props?.[key] &&
+        typeof props[key] === 'object'
       ) {
         result[key] = mergeStyles(result[key], props[key]);
       } else if (key === 'mods' && result.mods && props?.mods) {
