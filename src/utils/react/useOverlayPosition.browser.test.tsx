@@ -22,35 +22,35 @@ import type { MockInstance } from 'vitest';
  *
  * React Aria's `useOverlayPosition` re-places the overlay when it resizes, but
  * only if its `ResizeObserver` attached to the overlay element, and the
- * observer is attached once, when the hook first runs. Every kit trigger
- * outlives its overlay, so the overlay was never there to observe: an
- * overlay that grew while open kept its old place, on every opening. Each
- * case below places its trigger where that old place no longer fits once the
- * overlay has grown.
+ * observer is attached once, when the hook first runs. Most kit triggers
+ * outlive their overlay (all but the tooltip's), so the overlay was never
+ * there to observe: an overlay that grew while open kept its old place, on
+ * every opening. Each case below places its trigger where that old place no
+ * longer fits once the overlay has grown.
  */
 
 // Widens an overlay well past the space beside its trigger, but leaves it
 // narrower than a phone's screen, so a place that fits exists.
 const LONG_ITEM = 'Request a review of this dashboard';
 
-// Re-placing an overlay inside a ResizeObserver callback changes its size
-// again, which the browser reports as a window error that consumers' error
-// trackers collect. No case may cause one.
-let loopErrors: string[] = [];
+// No case may raise a window error. Re-placing an overlay inside a
+// ResizeObserver callback changes its size again, which the browser reports
+// as a "ResizeObserver loop" error that consumers' error trackers collect.
+// Every error is recorded: while a listener is attached, Vitest no longer
+// fails the test on an uncaught one itself.
+let windowErrors: string[] = [];
 
-const recordLoopError = (event: ErrorEvent) => {
-  if (event.message.includes('ResizeObserver loop')) {
-    loopErrors.push(event.message);
-  }
+const recordWindowError = (event: ErrorEvent) => {
+  windowErrors.push(event.message);
 };
 
 beforeEach(() => {
-  loopErrors = [];
-  window.addEventListener('error', recordLoopError);
+  windowErrors = [];
+  window.addEventListener('error', recordWindowError);
 });
 
 afterEach(async () => {
-  window.removeEventListener('error', recordLoopError);
+  window.removeEventListener('error', recordWindowError);
   await page.viewport(1000, 800);
 });
 
@@ -154,7 +154,8 @@ describe('useOverlayPosition', () => {
         await nextFrames(2);
         view.rerender(<Host isOpen overlayWidth={300} />);
 
-        await waitFor(() => expectInsideScreen(overlay), { timeout: 2000 });
+        await nextFrames(4);
+        expectInsideScreen(overlay);
 
         const observers = observersOf(observe, overlay);
 
@@ -171,7 +172,7 @@ describe('useOverlayPosition', () => {
       view.unmount();
 
       expectDisconnected(observers);
-      expect(loopErrors).toEqual([]);
+      expect(windowErrors).toEqual([]);
     } finally {
       observe.mockRestore();
       disconnect.mockRestore();
@@ -366,20 +367,16 @@ describe.each(overlayCases)(
         if (grow) await grow(user);
         else view.rerender(render(true));
 
-        // Shorter than the suite's 15s default, so an overlay that never
-        // moves fails on its position rather than on the test's timeout.
-        await waitFor(
-          () => {
-            expectInsideScreen(overlay());
-            expectGrown?.();
-          },
-          { timeout: 2000 },
-        );
+        // A few frames, not a `waitFor`: an overlay that creeps into place a
+        // step per frame must fail as surely as one that never moves.
+        await nextFrames(4);
+        expectInsideScreen(overlay());
+        expectGrown?.();
 
         await closeAll(user);
       }
 
-      expect(loopErrors).toEqual([]);
+      expect(windowErrors).toEqual([]);
     });
   },
 );

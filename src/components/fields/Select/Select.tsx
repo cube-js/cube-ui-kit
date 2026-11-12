@@ -150,6 +150,11 @@ const SelectOverlayWrapper = tasty({
   styles: {
     position: 'absolute',
     zIndex: 1000,
+    // As wide as the popup, wherever React Aria puts it. Left to shrink, the
+    // width ends at the screen edge, and React Aria measures that squeezed
+    // width: a list that grows while open then crept a few pixels per frame
+    // instead of moving once. The cap keeps the default 8px padding.
+    width: 'initial max-content (100vw - 2x)',
     // React Aria writes the room left in the viewport as this element's
     // `max-height`; a flex column lets the popup shrink to it.
     display: 'flex',
