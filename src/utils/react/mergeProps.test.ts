@@ -53,26 +53,34 @@ describe('mergeProps', () => {
       ).toEqual({ padding: '2x' });
     });
 
+    // Typed loosely: the literal types of these pairs don't intersect.
+    const loose = (props: object): object => props;
+
     it('keeps the side that holds the only *Styles object', () => {
       expect(
         mergeProps({ innerStyles: { padding: '1x' } }, {}).innerStyles,
       ).toEqual({ padding: '1x' });
-
-      // Typed loosely: the literal types of these pairs don't intersect.
-      const loose = (props: object): object => props;
-
       expect(
         mergeProps(
           loose({ innerStyles: undefined }),
           loose({ innerStyles: { margin: '2x' } }),
         ),
       ).toEqual({ innerStyles: { margin: '2x' } });
+    });
+
+    it('ignores a null styles object on either side, as mergeStyles does', () => {
       expect(
         mergeProps(
-          loose({ innerStyles: { padding: '1x' } }),
-          loose({ innerStyles: null }),
+          loose({ styles: { padding: '1x' }, innerStyles: { padding: '1x' } }),
+          loose({ styles: null, innerStyles: null }),
         ),
-      ).toEqual({ innerStyles: null });
+      ).toEqual({ styles: { padding: '1x' }, innerStyles: { padding: '1x' } });
+      expect(
+        mergeProps(
+          loose({ innerStyles: null }),
+          loose({ innerStyles: { margin: '2x' } }),
+        ),
+      ).toEqual({ innerStyles: { margin: '2x' } });
     });
   });
 });

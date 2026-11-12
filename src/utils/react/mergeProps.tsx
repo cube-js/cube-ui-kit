@@ -49,9 +49,8 @@ export function mergeProps<T extends (Props | undefined)[], K = Merge<T>>(
         result[key] = clsx(result.className, props.className);
       } else if (
         (key === 'styles' || key.endsWith('Styles')) &&
-        result[key] &&
         typeof result[key] === 'object' &&
-        props?.[key] &&
+        props &&
         typeof props[key] === 'object'
       ) {
         result[key] = mergeStyles(result[key], props[key]);

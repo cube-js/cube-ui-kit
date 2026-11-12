@@ -2,4 +2,4 @@
 "@cube-dev/ui-kit": patch
 ---
 
-A component's `*Styles` props, such as `ResizablePanel`'s `innerStyles`, now merge with the component's own styles instead of replacing them. `mergeProps` now merges `styles` and every `*Styles` key whenever both objects hold that key, whether or not they also pass `styles`.
+`ResizablePanel`'s `innerStyles` now merges with the panel's own inner styles instead of replacing them. The fix is in `mergeProps`, which now merges `styles` and every `*Styles` key (`innerStyles`, `inputStyles`, …) whenever both objects hold a styles object for that key, whether or not they also pass `styles`.
