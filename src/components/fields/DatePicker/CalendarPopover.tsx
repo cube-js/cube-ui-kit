@@ -14,13 +14,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  DismissButton,
-  FocusScope,
-  Placement,
-  useOverlayPosition,
-} from 'react-aria';
+import { DismissButton, FocusScope, Placement } from 'react-aria';
 
+import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Popover } from '../../overlays/Modal/Popover';
 

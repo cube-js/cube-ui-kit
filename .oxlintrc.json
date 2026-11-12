@@ -138,6 +138,13 @@
     "no-restricted-imports": [
       "error",
       {
+        "paths": [
+          {
+            "name": "react-aria",
+            "importNames": ["useOverlayPosition"],
+            "message": "Import `useOverlayPosition` from `utils/react/useOverlayPosition`. React Aria's re-places an overlay that changes size only when the overlay is already mounted when the hook first runs, and a trigger that outlives its overlay runs it before: the open overlay then grows past the edge of the screen."
+          }
+        ],
         "patterns": [
           {
             "group": ["**/icons", "**/icons/index"],

@@ -27,7 +27,6 @@ import {
   useListBoxSection,
   useOption,
   useOverlay,
-  useOverlayPosition,
   useSelect,
 } from 'react-aria';
 import {
@@ -50,6 +49,7 @@ import {
   useCombinedRefs,
 } from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
+import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { mergeStyleLayers } from '../../../utils/styles';
 import { isOwnActionsPress } from '../../actions/actions-run';

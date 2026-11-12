@@ -17,6 +17,7 @@ import {
 import {
   Placement,
   TooltipTriggerProps,
+  // oxlint-disable-next-line no-restricted-imports -- `PositionedTooltip` mounts with the tooltip, so React Aria's own resize observer attaches
   useOverlayPosition,
   useTooltipTrigger,
 } from 'react-aria';

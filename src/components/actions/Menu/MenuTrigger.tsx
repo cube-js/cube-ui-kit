@@ -19,13 +19,13 @@ import {
   Placement,
   PositionProps,
   useMenuTrigger,
-  useOverlayPosition,
 } from 'react-aria';
 import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
 import { SlotProvider } from '../../../utils/react/Slots';
+import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Popover } from '../../overlays/Modal/Popover';
 import { Tray } from '../../overlays/Modal/Tray';
