@@ -1296,7 +1296,7 @@ describe('renderColorTokens', () => {
     // Declared on <Root>, so CSS would have frozen the outer theme's color into
     // them; they have to ride along by reference to re-resolve in the region.
     expect(rendered['$card-shadow']).toBe('0 .5x 2x #shadow-md');
-    expect(rendered['#scrollbar-thumb']).toBe('#text.5');
+    expect(rendered['#scrollbar-thumb']).toBe('#text.2');
     expect(rendered['#scrollbar-bg']).toBe('#surface-2');
   });
 });
