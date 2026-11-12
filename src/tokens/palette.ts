@@ -940,19 +940,19 @@ function accentTextColors(accent: AccentSeed): ColorMap {
         contrast: [6, 11],
       },
       // Rest brand text for selected outline/clear labels and LINK base color.
-      // Anchored to `accent-selected-fill` at 4.6:1: AA plus headroom, because
-      // that anchor reads lighter in light mode than the fills `fill` paints
-      // (see ACCENT_SELECTED_FILL). Glaze 3 lands on the floor itself, so with a
-      // bare 'AA' the focused clear-selected label fell to 4.47:1. Outline and
-      // outline-2 selected fills sit on the darker `surface-2` / `surface-3` and
-      // stay below AA, as they did on Glaze 2. Sits visibly less prominent than
-      // `accent-text` (lighter in light, darker in dark) so the rest→hover
-      // intensify is real.
+      // Anchored to `accent-selected-fill` at 5:1, because that anchor reads
+      // lighter in light mode than the fills `fill` paints (see
+      // ACCENT_SELECTED_FILL), and Glaze 3 lands on the floor itself. 5:1 keeps
+      // AA on the darkest of them: in light, the outline-2 selected label
+      // measures 4.59:1 on `surface-3`, outline 4.89:1 on `surface-2`, clear
+      // 5.17:1 (4.6:1 left outline at 4.47 and outline-2 at 4.20). Still visibly
+      // less prominent than `accent-text` (lighter in light, darker in dark), so
+      // the rest→hover intensify is real.
       'accent-text-soft': {
         base: 'accent-selected-fill',
         tone: '-49',
         saturation: 1,
-        contrast: [4.6, 'AAA'],
+        contrast: [5, 'AAA'],
       },
       'accent-icon': {
         base: 'surface',
