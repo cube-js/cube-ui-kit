@@ -144,20 +144,19 @@ const Template: StoryFn<CubeToggleGroupProps> = (args) => (
 /** One item or none: press the selected item again to clear it. */
 export const Default = Template.bind({});
 
-const FormatItems = () => [
-  <ToggleGroup.Item key="bold" icon={<IconBold />} aria-label="Bold" />,
-  <ToggleGroup.Item key="italic" icon={<IconItalic />} aria-label="Italic" />,
-  <ToggleGroup.Item
-    key="underline"
-    icon={<IconUnderline />}
-    aria-label="Underline"
-  />,
-  <ToggleGroup.Item
-    key="strikethrough"
-    icon={<IconStrikethrough />}
-    aria-label="Strikethrough"
-  />,
-];
+// Icon-only items name themselves with `aria-label` and show the same text
+// as a tooltip.
+const FormatItems = () =>
+  (
+    [
+      ['bold', 'Bold', <IconBold key="icon" />],
+      ['italic', 'Italic', <IconItalic key="icon" />],
+      ['underline', 'Underline', <IconUnderline key="icon" />],
+      ['strikethrough', 'Strikethrough', <IconStrikethrough key="icon" />],
+    ] as const
+  ).map(([key, name, icon]) => (
+    <ToggleGroup.Item key={key} icon={icon} aria-label={name} tooltip={name} />
+  ));
 
 /** Several at once: each item toggles on its own. */
 export const Multiple: StoryFn<CubeToggleGroupProps> = (args) => (
@@ -236,7 +235,12 @@ export const Disabled: StoryFn<CubeToggleGroupProps> = () => (
       size="small"
       defaultSelectedKeys={['bold']}
     >
-      <ToggleGroup.Item key="bold" icon={<IconBold />} aria-label="Bold" />
+      <ToggleGroup.Item
+        key="bold"
+        icon={<IconBold />}
+        aria-label="Bold"
+        tooltip="Bold"
+      />
       <ToggleGroup.Item
         key="italic"
         isDisabled

@@ -43,8 +43,6 @@ A single on/off setting is a [Switch](/docs/forms-switch--docs) or a [Checkbox](
 - **`onFocus`** / **`onBlur`** `(e: FocusEvent) => void` — Called when focus enters or leaves the group, not when it moves between items. In a form, leaving the group marks the field touched and runs `validateTrigger="onBlur"` rules
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `'medium'`) — Size of every item, the sizes of `Radio.Group type="button"`
 - **`type`** `'outline' | 'outline-2' | 'clear'` (default: `'outline'`) — Look of every item. `outline-2` uses `#surface-3` as its base fill, so it stands out on a `#surface-2` container
-- **`isDisabled`** `boolean` — Disables every item. The selected items keep showing that they are on
-- **`isReadOnly`** `boolean` — The items can be focused, but no press or key changes the selection
 - **`children`** — `ToggleGroup.Item` elements
 
 ### ToggleGroup.Item Properties
@@ -65,7 +63,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 
 ### Field Properties
 
-Supports all [Field properties](/docs/getting-started-field-properties--docs). In a form, the field's value is a key or `null` in `single` mode, and an array of keys in `multiple` mode. Given more room than their content, through the field's width or `controlWidth`, the items share it.
+Supports all [Field properties](/docs/getting-started-field-properties--docs). In a form, the field's value is a key or `null` in `single` mode, and an array of keys in `multiple` mode. Given more room than their content, through the field's width or `controlWidth`, the items share it. A disabled group still shows which items are on; a read-only one can be focused, but no press or key changes its selection.
 
 ### Styling Properties
 
@@ -139,9 +137,9 @@ Pressing the selected item calls `onSelectionChange(null)`.
   defaultSelectedKeys={['bold']}
   onSelectionChange={(keys) => console.log(keys)} // ['bold', 'italic']
 >
-  <ToggleGroup.Item key="bold" icon={<IconBold />} aria-label="Bold" />
-  <ToggleGroup.Item key="italic" icon={<IconItalic />} aria-label="Italic" />
-  <ToggleGroup.Item key="underline" icon={<IconUnderline />} aria-label="Underline" />
+  <ToggleGroup.Item key="bold" icon={<IconBold />} aria-label="Bold" tooltip="Bold" />
+  <ToggleGroup.Item key="italic" icon={<IconItalic />} aria-label="Italic" tooltip="Italic" />
+  <ToggleGroup.Item key="underline" icon={<IconUnderline />} aria-label="Underline" tooltip="Underline" />
 </ToggleGroup>
 ```
 
@@ -210,7 +208,7 @@ const form = Form.useController({
 
 ### Keyboard Navigation
 
-- `Tab` — Moves focus into the group and out of it again: the group is one tab stop. The first time, focus lands on the first focusable item, also in `single` mode where an item is selected (React Aria's toolbar behaviour); after that it returns to the item focused last
+- `Tab` — Moves focus into the group and out of it again: the group is one tab stop. The first time, focus lands on the item at the edge it enters from — the first focusable item with `Tab`, the last with `Shift+Tab` — also in `single` mode where an item is selected (React Aria's toolbar behaviour); after that it returns to the item focused last
 - `ArrowLeft` / `ArrowRight` — Move focus between the items without toggling them, skipping disabled items that have no tooltip
 - `Space` / `Enter` — Toggle the focused item
 
