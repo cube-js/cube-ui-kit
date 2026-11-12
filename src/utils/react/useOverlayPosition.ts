@@ -11,10 +11,10 @@ import type { AriaPositionProps, PositionAria } from 'react-aria';
  *
  * React Aria does observe the overlay's size, but it attaches that observer
  * only once, when the hook first runs, and only if the overlay is already in
- * the DOM then. Every kit trigger outlives its overlay, so it runs the hook
- * before the overlay exists: no observer ever attached, and an open overlay
- * that grew kept its old place, past the edge of the screen. This observer
- * attaches on every opening instead.
+ * the DOM then. A trigger that outlives its overlay (every kit overlay but the
+ * tooltip) runs the hook before the overlay exists, so no observer attached,
+ * and an open overlay that grew kept its old place, past the edge of the
+ * screen. This observer attaches on every opening instead.
  */
 export function useOverlayPosition(props: AriaPositionProps): PositionAria {
   const position = useAriaOverlayPosition(props);
@@ -31,11 +31,36 @@ export function useOverlayPosition(props: AriaPositionProps): PositionAria {
 
     if (!isOpen || !overlay || typeof ResizeObserver === 'undefined') return;
 
-    const observer = new ResizeObserver(() => onResize());
+    let observed: Element = overlay;
+    let frame = 0;
+
+    // Re-placing the overlay changes its size again, and changing an observed
+    // size inside the observer's callback reports a ResizeObserver loop as a
+    // window error. So re-place on the next frame, once per frame.
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const current = overlayRef.current;
+
+        // A `Portal` renders inline until its own effect finds its root, then
+        // moves the overlay there as a new element (removing the old one
+        // fires this observer): follow the element the ref holds now.
+        if (current && current !== observed) {
+          observer.unobserve(observed);
+          observer.observe(current);
+          observed = current;
+        }
+
+        onResize();
+      });
+    });
 
     observer.observe(overlay);
 
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, [isOpen, overlayRef]);
 
   return position;

@@ -33,7 +33,33 @@ import type { MockInstance } from 'vitest';
 // narrower than a phone's screen, so a place that fits exists.
 const LONG_ITEM = 'Request a review of this dashboard';
 
-afterEach(async () => page.viewport(1000, 800));
+// Re-placing an overlay inside a ResizeObserver callback changes its size
+// again, which the browser reports as a window error that consumers' error
+// trackers collect. No case may cause one.
+let loopErrors: string[] = [];
+
+const recordLoopError = (event: ErrorEvent) => {
+  if (event.message.includes('ResizeObserver loop')) {
+    loopErrors.push(event.message);
+  }
+};
+
+beforeEach(() => {
+  loopErrors = [];
+  window.addEventListener('error', recordLoopError);
+});
+
+afterEach(async () => {
+  window.removeEventListener('error', recordLoopError);
+  await page.viewport(1000, 800);
+});
+
+/** Waits for the browser to paint `count` frames. */
+async function nextFrames(count: number) {
+  for (let frame = 0; frame < count; frame++) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+}
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -47,7 +73,13 @@ function expectInsideScreen(element: Element) {
 }
 
 /** Pins its child to a spot on the screen. */
-function At({ children, ...spot }: CSSProperties & { children: ReactElement }) {
+function At({
+  spot,
+  children,
+}: {
+  spot: CSSProperties;
+  children: ReactElement;
+}) {
   return <div style={{ position: 'absolute', ...spot }}>{children}</div>;
 }
 
@@ -55,8 +87,14 @@ const items = (count: number) =>
   Array.from({ length: count }, (_, index) => `Item ${index + 1}`);
 
 describe('useOverlayPosition', () => {
-  /** A trigger that outlives its overlay, as every kit trigger does. */
-  function Host({ isOpen, width }: { isOpen: boolean; width: number }) {
+  /** A trigger that outlives its overlay, as most kit triggers do. */
+  function Host({
+    isOpen,
+    overlayWidth,
+  }: {
+    isOpen: boolean;
+    overlayWidth: number;
+  }) {
     const targetRef = useRef<HTMLButtonElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
     const { overlayProps } = useOverlayPosition({
@@ -71,14 +109,14 @@ describe('useOverlayPosition', () => {
     // puts a kit overlay.
     return (
       <>
-        <At top={8} right={8}>
+        <At spot={{ top: 8, right: 8 }}>
           <button ref={targetRef}>Open</button>
         </At>
         {isOpen ? (
           <div
             ref={overlayRef}
             data-qa="Overlay"
-            style={{ ...overlayProps.style, width, height: 40 }}
+            style={{ ...overlayProps.style, width: overlayWidth, height: 40 }}
           />
         ) : null}
       </>
@@ -98,14 +136,23 @@ describe('useOverlayPosition', () => {
     await page.viewport(390, 800);
     const observe = vi.spyOn(ResizeObserver.prototype, 'observe');
     const disconnect = vi.spyOn(ResizeObserver.prototype, 'disconnect');
-    const view = renderWithRoot(<Host isOpen={false} width={100} />);
+    const view = renderWithRoot(<Host isOpen={false} overlayWidth={100} />);
+    // By identity: every `ResizeObserver` deep-equals every other.
+    const expectDisconnected = (observers: unknown[]) => {
+      for (const observer of observers) {
+        expect(disconnect.mock.contexts).toContain(observer);
+      }
+    };
 
     try {
       for (let opening = 1; opening <= 3; opening++) {
-        view.rerender(<Host isOpen width={100} />);
+        view.rerender(<Host isOpen overlayWidth={100} />);
         const overlay = screen.getByTestId('Overlay');
 
-        view.rerender(<Host isOpen width={300} />);
+        // Grows once the opening has settled, so the overlay has to stay
+        // observed while open rather than be measured once after opening.
+        await nextFrames(2);
+        view.rerender(<Host isOpen overlayWidth={300} />);
 
         await waitFor(() => expectInsideScreen(overlay), { timeout: 2000 });
 
@@ -113,21 +160,18 @@ describe('useOverlayPosition', () => {
 
         expect(observers).not.toHaveLength(0);
 
-        view.rerender(<Host isOpen={false} width={300} />);
+        view.rerender(<Host isOpen={false} overlayWidth={300} />);
 
-        expect(disconnect.mock.contexts).toEqual(
-          expect.arrayContaining(observers),
-        );
+        expectDisconnected(observers);
       }
 
-      view.rerender(<Host isOpen width={100} />);
+      view.rerender(<Host isOpen overlayWidth={100} />);
       const observers = observersOf(observe, screen.getByTestId('Overlay'));
 
       view.unmount();
 
-      expect(disconnect.mock.contexts).toEqual(
-        expect.arrayContaining(observers),
-      );
+      expectDisconnected(observers);
+      expect(loopErrors).toEqual([]);
     } finally {
       observe.mockRestore();
       disconnect.mockRestore();
@@ -154,13 +198,58 @@ interface OverlayCase {
 
 const RANGE_START = parseDate('2026-02-02');
 
+/**
+ * A `Select` growing wider against the screen edge, which squeezed it and cut
+ * the new option's label short. Mounted open, its list first renders inline,
+ * until its `Portal` moves it into the portal root as a new element.
+ */
+function selectCase({
+  isMountedOpen,
+}: {
+  isMountedOpen: boolean;
+}): OverlayCase {
+  return {
+    name: isMountedOpen ? 'Select mounted open' : 'Select',
+    viewport: [390, 800],
+    render: (hasGrown) => (
+      <At spot={{ top: 8, right: 8 }}>
+        <Select
+          aria-label="Colour"
+          qa="Trigger"
+          width="10x"
+          defaultOpen={isMountedOpen}
+        >
+          <Select.Item key="blue">Blue</Select.Item>
+          {hasGrown ? <Select.Item key="long">{LONG_ITEM}</Select.Item> : null}
+        </Select>
+      </At>
+    ),
+    open: async (user) => {
+      // Mounted open, the first opening is the mount.
+      if (!screen.queryByRole('listbox')) {
+        await user.click(screen.getByTestId('Trigger'));
+      }
+
+      await screen.findByRole('listbox');
+    },
+    overlay: () => screen.getByRole('listbox'),
+    expectGrown: () => {
+      const label = screen
+        .getByRole('option', { name: LONG_ITEM })
+        .querySelector('[data-element="Label"]')!;
+
+      expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth);
+    },
+  };
+}
+
 const overlayCases: OverlayCase[] = [
   {
     // Grows wider, to the right, past the screen edge.
     name: 'MenuTrigger',
     viewport: [390, 800],
     render: (hasGrown) => (
-      <At top={8} right={8}>
+      <At spot={{ top: 8, right: 8 }}>
         <MenuTrigger>
           <Button qa="Trigger">⋮</Button>
           <Menu aria-label="Actions">
@@ -182,7 +271,7 @@ const overlayCases: OverlayCase[] = [
     name: 'SubMenuTrigger',
     viewport: [390, 400],
     render: (hasGrown) => (
-      <At bottom={8} left={8}>
+      <At spot={{ bottom: 8, left: 8 }}>
         <MenuTrigger>
           <Button qa="Trigger">⋮</Button>
           <Menu aria-label="Actions">
@@ -211,7 +300,7 @@ const overlayCases: OverlayCase[] = [
     name: 'DialogTrigger popover',
     viewport: [390, 400],
     render: (hasGrown) => (
-      <At top={250} left={8}>
+      <At spot={{ top: 250, left: 8 }}>
         <DialogTrigger type="popover">
           <Button qa="Trigger">Open</Button>
           <Dialog aria-label="Details">
@@ -228,39 +317,15 @@ const overlayCases: OverlayCase[] = [
     },
     overlay: () => screen.getByRole('dialog'),
   },
-  {
-    // Grows wider against the screen edge, which squeezed it and cut the
-    // new option's label short.
-    name: 'Select',
-    viewport: [390, 800],
-    render: (hasGrown) => (
-      <At top={8} right={8}>
-        <Select aria-label="Colour" qa="Trigger" width="80px">
-          <Select.Item key="blue">Blue</Select.Item>
-          {hasGrown ? <Select.Item key="long">{LONG_ITEM}</Select.Item> : null}
-        </Select>
-      </At>
-    ),
-    open: async (user) => {
-      await user.click(screen.getByTestId('Trigger'));
-      await screen.findByRole('listbox');
-    },
-    overlay: () => screen.getByRole('listbox'),
-    expectGrown: () => {
-      const label = screen
-        .getByRole('option', { name: LONG_ITEM })
-        .querySelector('[data-element="Label"]')!;
-
-      expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth);
-    },
-  },
+  selectCase({ isMountedOpen: false }),
+  selectCase({ isMountedOpen: true }),
   {
     // Paging from a four-week month to a six-week one grows the calendar
     // taller, past the screen bottom.
     name: 'DateRangePicker hideTrigger',
     viewport: [390, 580],
     render: () => (
-      <At top={330} left={8} width={300}>
+      <At spot={{ top: 330, left: 8, width: 300 }}>
         <DateRangePicker
           hideTrigger
           aria-label="Range"
@@ -313,6 +378,8 @@ describe.each(overlayCases)(
 
         await closeAll(user);
       }
+
+      expect(loopErrors).toEqual([]);
     });
   },
 );
