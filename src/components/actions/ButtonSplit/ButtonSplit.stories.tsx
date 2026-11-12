@@ -1,9 +1,12 @@
 import {
+  IconBold,
   IconCopy,
   IconDownload,
+  IconItalic,
   IconPlayerPlay,
   IconPlus,
   IconSend,
+  IconUnderline,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 
@@ -222,7 +225,11 @@ export const ThreeButtons: Story = {
   ),
 };
 
-const TEXT_STYLES = ['Bold', 'Italic', 'Underline'] as const;
+const TEXT_STYLES = [
+  { value: 'Bold', icon: <IconBold /> },
+  { value: 'Italic', icon: <IconItalic /> },
+  { value: 'Underline', icon: <IconUnderline /> },
+] as const;
 
 /** Independent toggles: a selected button's border shows on every side. */
 export const Toggles: Story = {
@@ -231,12 +238,14 @@ export const Toggles: Story = {
 
     return (
       <Button.Split size="small" aria-label="Text style">
-        {TEXT_STYLES.map((value) => {
+        {TEXT_STYLES.map(({ value, icon }) => {
           const isSelected = styles.includes(value);
 
           return (
             <Button
               key={value}
+              icon={icon}
+              aria-label={value}
               isSelected={isSelected}
               onPress={() =>
                 setStyles(
@@ -245,9 +254,7 @@ export const Toggles: Story = {
                     : [...styles, value],
                 )
               }
-            >
-              {value}
-            </Button>
+            />
           );
         })}
       </Button.Split>

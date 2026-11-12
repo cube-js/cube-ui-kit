@@ -178,15 +178,14 @@ For one choice among several, use [`Radio.Group type="button"`](/docs/forms-radi
 
 ```jsx
 <Button.Split size="small" aria-label="Text style">
-  {['Bold', 'Italic', 'Underline'].map((value) => (
-    <Button
-      key={value}
-      isSelected={styles.includes(value)}
-      onPress={() => toggleStyle(value)}
-    >
-      {value}
-    </Button>
-  ))}
+  <Button icon={<IconBold />} aria-label="Bold" isSelected={isBold} onPress={toggleBold} />
+  <Button icon={<IconItalic />} aria-label="Italic" isSelected={isItalic} onPress={toggleItalic} />
+  <Button
+    icon={<IconUnderline />}
+    aria-label="Underline"
+    isSelected={isUnderline}
+    onPress={toggleUnderline}
+  />
 </Button.Split>
 ```
 
