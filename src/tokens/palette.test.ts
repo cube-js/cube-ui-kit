@@ -351,9 +351,10 @@ describe('palette tokens', () => {
    * `scrollbar` style leaves the track transparent (nothing sets
    * `--scrollbar-track-color`), so the thumb sits on the scroll area's own
    * surface. `#scrollbar-thumb` is a translucent palette color, so it is measured
-   * as the browser paints it: blended over each of the page surfaces.
+   * as the browser paints it: blended over `#surface` and `#surface-2`, the
+   * surfaces a scroll area sits on.
    */
-  it('keeps the scrollbar thumb at 3:1 against #surface to #surface-4 in every scheme', () => {
+  it('keeps the scrollbar thumb at 3:1 against #surface and #surface-2 in every scheme', () => {
     const colorTokens = getColorTokens();
     const [, name, digits] =
       /^#([\w-]+?)(?:\.(\d+))?$/.exec(
@@ -362,7 +363,7 @@ describe('palette tokens', () => {
 
     expect(name, 'the thumb is a palette color').toBeDefined();
 
-    // `#text.7` is 70% of `#text`; a color with no `.N` suffix is opaque.
+    // `#text.65` is 65% of `#text`; a color with no `.N` suffix is opaque.
     const alpha = digits ? Number(`0.${digits}`) : 1;
     // `#text` is an alias (`#surface-text-soft`); a palette name stands for itself.
     const base = String(colorTokens[`#${name}`] ?? `#${name}`);
@@ -371,12 +372,7 @@ describe('palette tokens', () => {
     for (const state of ['', '@dark', '@hc', '@dark & @hc']) {
       const colors = variant(tokens, state);
 
-      for (const surface of [
-        '#surface',
-        '#surface-2',
-        '#surface-3',
-        '#surface-4',
-      ]) {
+      for (const surface of ['#surface', '#surface-2']) {
         expect(
           blendedContrastOf(colors[base], alpha, colors[surface]),
           `${surface} @ '${state || 'light'}'`,
@@ -1371,7 +1367,7 @@ describe('renderColorTokens', () => {
     // Declared on <Root>, so CSS would have frozen the outer theme's color into
     // them; they have to ride along by reference to re-resolve in the region.
     expect(rendered['$card-shadow']).toBe('0 .5x 2x #shadow-md');
-    expect(rendered['#scrollbar-thumb']).toBe('#text.7');
+    expect(rendered['#scrollbar-thumb']).toBe('#text.65');
     expect(rendered['#scrollbar-bg']).toBe('#surface-2');
   });
 });
