@@ -81,10 +81,10 @@ File new issues with the [`create-ticket`](.claude/skills/create-ticket/SKILL.md
 **Tracking a task.** Update the issue and the PR body when the work moves, not on every event, and edit them in place rather than append:
 
 - **Status:** In Progress when work starts. Linear's GitHub integration attaches each PR that names the issue and moves its status when the PR opens: don't repeat that by hand or in a comment.
-- **Description:** the task as it stands now. When the scope or approach changes, edit the sections it changes and comment one line on what changed and why. No progress log. On someone else's issue, propose the edit in a comment instead.
+- **Description:** the task as it stands now. When the scope or approach changes, edit the sections it changes and comment one line on what changed and why. No progress log. On an issue someone else is working on, propose the edit in a comment instead.
 - **PR body:** what the diff does now, rewritten after a push that changes it.
 - **Comments:** what a reader acts on, such as a question or blocker waiting on a person or another issue, or a follow-up issue.
-- **Not tracked:** CI runs and test failures, reruns, flakes and outages, review rounds and their findings, pushes and rebases. When one changes the scope or approach, record that change, not the event.
+- **Not tracked:** CI runs and their test failures, reruns, flakes and outages, review rounds and their findings, pushes and rebases. When one changes the scope or approach, record that change, not the event.
 
 ## Stories: Interaction-Only States
 
