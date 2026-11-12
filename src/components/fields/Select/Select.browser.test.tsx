@@ -2,7 +2,7 @@ import { cleanup } from '@testing-library/react';
 import { useState } from 'react';
 import { useContextMenu } from 'react-aria';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
@@ -719,6 +719,72 @@ describe('Select press on a list that moves', () => {
       await waitFor(() => {
         expect(onSelectionChange).toHaveBeenCalledWith('banana');
       });
+    });
+  });
+});
+
+/**
+ * Above or below its trigger, the list is as wide as its content, so React
+ * Aria measures its real width and a list that grows moves once (see
+ * `utils/react/useOverlayPosition.browser.test.tsx`). Beside its trigger it
+ * still shrinks to the room there, because React Aria never moves a list
+ * along the edge it would cross.
+ */
+describe('Select popup width', () => {
+  const OPTION = 'An option about three hundred pixels wide';
+
+  afterEach(async () => {
+    cleanup();
+    await page.viewport(1000, 800);
+  });
+
+  const openAt = async (
+    spot: Record<string, number>,
+    props: Record<string, unknown>,
+    option: string,
+  ) => {
+    renderWithRoot(
+      <div style={{ position: 'absolute', top: 100, ...spot }}>
+        <Select aria-label="Colour" qa="Trigger" width="14x" {...props}>
+          <Select.Item key="short">Short</Select.Item>
+          <Select.Item key="long">{option}</Select.Item>
+        </Select>
+      </div>,
+    );
+
+    await act(() => userEvent.click(screen.getByTestId('Trigger')));
+    await screen.findByRole('listbox');
+
+    return () => screen.getByTestId('SelectOverlay').getBoundingClientRect();
+  };
+
+  it.each([
+    ['right top', { left: 8 }],
+    ['left top', { right: 8 }],
+  ] as const)(
+    'stays on screen when placed %s of its trigger with too little room there',
+    async (placement, spot) => {
+      await page.viewport(390, 800);
+      const popupRect = await openAt(spot, { placement }, OPTION);
+
+      await waitFor(() => {
+        expect(popupRect().left).toBeGreaterThanOrEqual(0);
+        expect(popupRect().right).toBeLessThanOrEqual(390);
+      });
+    },
+  );
+
+  it('keeps its containerPadding from the screen edges when wider than the screen', async () => {
+    await page.viewport(390, 800);
+    const popupRect = await openAt(
+      { right: 8 },
+      { containerPadding: 24 },
+      `${OPTION}, and then quite a bit more than that`,
+    );
+
+    await waitFor(() => {
+      expect(popupRect().left).toBeGreaterThanOrEqual(24);
+      expect(popupRect().right).toBeLessThanOrEqual(390 - 24);
     });
   });
 });

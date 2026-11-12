@@ -14,12 +14,12 @@ import {
   DismissButton,
   Placement,
   useMenuTrigger,
-  useOverlayPosition,
 } from 'react-aria';
 import { useMenuTriggerState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
+import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Popover } from '../../overlays/Modal/Popover';
 
