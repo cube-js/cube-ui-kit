@@ -8,7 +8,7 @@
     "aria-required-attr": 15,
     "aria-required-children": 14,
     "button-name": 35,
-    "color-contrast": 675,
+    "color-contrast": 648,
     "empty-table-header": 6,
     "heading-order": 8,
     "label": 24,
@@ -24,12 +24,8 @@
     "actions-banner--with-links": { "color-contrast": 3 },
     "actions-button--current-states": { "color-contrast": 7 },
     "actions-button--current-theme": { "button-name": 7, "color-contrast": 3 },
-    "actions-button--danger-states": { "color-contrast": 2 },
-    "actions-button--default-states": { "color-contrast": 7 },
-    "actions-button--note-states": { "color-contrast": 3 },
+    "actions-button--default-states": { "color-contrast": 3 },
     "actions-button--only-icon": { "button-name": 5 },
-    "actions-button--success-states": { "color-contrast": 3 },
-    "actions-button--warning-states": { "color-contrast": 3 },
     "actions-commandmenu--items-with-actions": { "aria-required-children": 1 },
     "actions-commandmenu--multiple-selection": { "aria-allowed-attr": 6 },
     "actions-commandmenu--navigation-links": { "color-contrast": 1 },
@@ -43,7 +39,6 @@
     "actions-itembutton--actions-vertical-alignment": { "target-size": 10 },
     "actions-itembutton--with-actions-hover-behavior": { "target-size": 10 },
     "actions-itembutton--with-actions-layouts": { "target-size": 42 },
-    "actions-itembutton--with-checkbox": { "color-contrast": 1 },
     "actions-itembutton--with-highlight": {
       "color-contrast": 1,
       "target-size": 2
@@ -100,7 +95,7 @@
     "content-inlineinput--single-click-trigger": { "label": 1 },
     "content-item--combined-features": {
       "aria-allowed-attr": 3,
-      "color-contrast": 3
+      "color-contrast": 1
     },
     "content-item--current-states": { "color-contrast": 26 },
     "content-item--current-theme": {
@@ -111,15 +106,11 @@
     "content-item--description-with-complex-content": { "target-size": 4 },
     "content-item--description-with-types": {
       "aria-allowed-attr": 2,
-      "color-contrast": 7
+      "color-contrast": 5
     },
     "content-item--disabled": { "aria-allowed-attr": 1 },
     "content-item--types-and-themes": { "heading-order": 1 },
-    "content-item--with-actions": {
-      "aria-allowed-attr": 1,
-      "color-contrast": 1,
-      "target-size": 30
-    },
+    "content-item--with-actions": { "aria-allowed-attr": 1, "target-size": 30 },
     "content-item--with-actions-on-hover": { "target-size": 2 },
     "content-item--with-checkbox": { "aria-allowed-attr": 11 },
     "content-item--with-highlight": { "color-contrast": 1, "target-size": 2 },
@@ -394,7 +385,7 @@
       "aria-input-field-name": 1,
       "color-contrast": 2
     },
-    "forms-listbox--option-gap": { "color-contrast": 7 },
+    "forms-listbox--option-gap": { "color-contrast": 4 },
     "forms-listbox--tooltips-with-actions": { "color-contrast": 2 },
     "forms-listbox--with-header-and-footer": { "color-contrast": 1 },
     "forms-listbox--with-icons": { "color-contrast": 2 },
@@ -514,10 +505,9 @@
     "getting-started-theming--status-themes": { "color-contrast": 8 },
     "getting-started-theming--theme-builder": {
       "aria-allowed-attr": 14,
-      "color-contrast": 7,
+      "color-contrast": 5,
       "scrollable-region-focusable": 1
     },
-    "helpers-iconswitch--multiple-states": { "color-contrast": 1 },
     "helpers-rendercache--default": { "aria-allowed-attr": 5 },
     "navigation-tabs--deletable": { "aria-required-children": 1 },
     "navigation-tabs--reorderable": { "aria-required-children": 1 },
