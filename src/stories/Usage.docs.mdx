@@ -6,14 +6,14 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 This guide covers the design system foundations — tokens, presets, colors, units, and patterns — needed to build and maintain components in Cube UI Kit.
 
-For styling engine internals see the [Tasty documentation](https://github.com/tenphi/tasty). Tasty docs are also bundled with this package in `docs/tasty/`:
+For styling engine internals see the [Tasty documentation](https://github.com/tenphi/tasty/tree/main/docs). Agents in projects that use [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm) get these pages for the installed Tasty through UI Kit's harness.
 
-- **usage.md** — `tasty()` component creation, state mappings, sub-elements, variants, extending components, hooks.
-- **configuration.md** — `configure()` options: tokens, recipes, custom units, style handlers, TypeScript module augmentation.
-- **styles.md** — Complete reference for all enhanced style properties (`fill`, `flow`, `preset`, `border`, `radius`, `transition`, etc.).
-- **debug.md** — `tastyDebug` runtime API for inspecting injected CSS and troubleshooting.
-- **injector.md** — Low-level style injector: `inject()`, `injectGlobal()`, deduplication, SSR.
-- **tasty-static.md** — Zero-runtime `tastyStatic()`, Babel plugin, Next.js/Vite integration.
+- [React API](https://github.com/tenphi/tasty/blob/main/docs/react-api.md) — `tasty()` component creation, state mappings, sub-elements, variants, extending components, style functions.
+- [Configuration](https://github.com/tenphi/tasty/blob/main/docs/configuration.md) — `configure()` options: tokens, recipes, custom units, style handlers, TypeScript module augmentation.
+- [Style properties](https://github.com/tenphi/tasty/blob/main/docs/styles.md) — Complete reference for all enhanced style properties (`fill`, `flow`, `preset`, `border`, `radius`, `transition`, etc.).
+- [Debug utilities](https://github.com/tenphi/tasty/blob/main/docs/debug.md) — `tastyDebug` runtime API for inspecting injected CSS and troubleshooting.
+- [Injector](https://github.com/tenphi/tasty/blob/main/docs/injector.md) — Low-level style injector: `inject()`, `injectGlobal()`, deduplication, SSR.
+- [Zero-runtime mode](https://github.com/tenphi/tasty/blob/main/docs/tasty-static.md) — Zero-runtime `tastyStatic()`, Babel plugin, Next.js/Vite integration.
 
 ## Navigation
 

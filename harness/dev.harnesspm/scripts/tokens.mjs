@@ -3,15 +3,12 @@
  * their values in light, dark and both high-contrast schemes, and each token's
  * contrast against its base.
  *
- * Built on Glaze's own inspector (the `glaze:inspect` tool's measuring module,
- * shipped in `@tenphi/glaze/harness`), so a ✓ or ✗ here means what a Glaze
- * warning means. UI Kit pins Glaze exactly, and `src/harness.test.ts` imports
- * the module the same way, so a Glaze release that moves it fails there first.
+ * Built on Glaze's public measuring module, `@tenphi/glaze/harness/measure`
+ * (the one behind `glaze:inspect`), so a ✓ or ✗ here means what a Glaze
+ * warning means.
  */
 import { existsSync, realpathSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 const USAGE = `Usage: npx harnesspm run uikit:tokens [<part of a name>...] [--format <format>] [--json]
 
@@ -134,19 +131,12 @@ export function sourceFrom({
   };
 }
 
-/** Glaze's measuring module, from the Glaze that resolves next to this file. */
-export async function loadMeasure(from = import.meta.url) {
-  const entry = createRequire(from).resolve('@tenphi/glaze');
-  const file = join(
-    dirname(entry),
-    '..',
-    'harness',
-    'dev.harnesspm',
-    'scripts',
-    'measure.mjs',
-  );
-
-  return import(pathToFileURL(file).href);
+/**
+ * Glaze's measuring module. It resolves like the `@tenphi/glaze` import in
+ * `main()`, so both come from the same Glaze.
+ */
+export function loadMeasure() {
+  return import('@tenphi/glaze/harness/measure');
 }
 
 function number(metric, value) {

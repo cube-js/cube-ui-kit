@@ -212,15 +212,15 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 
 ## Tasty Documentation
 
-Bundled in `docs/tasty/` (symlinked from `node_modules/@tenphi/tasty/docs` in dev, copied at pack time by `scripts/prepare-docs.mjs`). Consult these when authoring components or working with style props:
+Symlinked in `docs/tasty/` from `node_modules/@tenphi/tasty/docs`, for working on this repo. The package does not ship them: consumers get Tasty's docs through Tasty's harness, which UI Kit's extends. Consult these when authoring components or working with style props:
 
 - [`getting-started.md`](docs/tasty/getting-started.md), [`methodology.md`](docs/tasty/methodology.md), [`design-system.md`](docs/tasty/design-system.md), [`react-api.md`](docs/tasty/react-api.md), [`dsl.md`](docs/tasty/dsl.md), [`styles.md`](docs/tasty/styles.md), [`configuration.md`](docs/tasty/configuration.md), [`debug.md`](docs/tasty/debug.md)
 
-Internal-only references (`pipeline.md`, `injector.md`), positioning material (`comparison.md`, `adoption.md`), and modes the UI Kit does not ship (`tasty-static.md`, `ssr.md`) are intentionally omitted; read them directly in `docs/tasty/` if needed. `TASTY_PAGES` in `scripts/prepare-docs.mjs` indexes the same list for consumers: change both together.
+Internal-only references (`pipeline.md`, `injector.md`), positioning material (`comparison.md`, `adoption.md`), and modes the UI Kit does not ship (`tasty-static.md`, `ssr.md`) are intentionally omitted; read them directly in `docs/tasty/` if needed.
 
 ## Glaze Documentation
 
-Bundled in `docs/glaze/` (same symlink/copy mechanism). Consult when working on color tokens, theme generation, or contrast tuning — Glaze powers `src/tokens/palette.ts`.
+Symlinked in `docs/glaze/` the same way, and not shipped either: consumers get them through Glaze's harness. Consult when working on color tokens, theme generation, or contrast tuning — Glaze powers `src/tokens/palette.ts`.
 
 - [`methodology.mdx`](docs/glaze/methodology.mdx), [`shadows-and-glows.mdx`](docs/glaze/shadows-and-glows.mdx), [API reference](docs/glaze/reference/index.md), [`migration.md`](docs/glaze/migration.md)
 
@@ -228,11 +228,12 @@ Bundled in `docs/glaze/` (same symlink/copy mechanism). Consult when working on 
 
 `harness/` ships in the package for projects that use [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm). It is for agents that **use** UI Kit; the rules for working on UI Kit stay in this file.
 
-- [`plugin.json`](harness/plugin.json) extends `@tenphi/glaze`, so a project gets Glaze's colors rule, docs and `glaze-theme` skill through UI Kit. Scripts run only in projects that trust their package: `uikit:tokens` needs `@cube-dev/ui-kit` trusted, and Glaze's `glaze:*` tools need `@tenphi/glaze` trusted too. Its `docs` is `docs/`, indexed by the `docs/llms.txt` that `scripts/prepare-docs.mjs` writes at pack time: the guides, the components and the Tasty pages listed above. Glaze's pages are not in it, because Glaze's own index comes with Glaze's harness.
+- [`plugin.json`](harness/plugin.json) extends `@tenphi/glaze` and `@tenphi/tasty`, so a project gets Glaze's colors rule, docs and `glaze-theme` skill, and Tasty's styles rule and docs, through UI Kit. Scripts run only in projects that trust their package: `uikit:tokens` needs `@cube-dev/ui-kit` trusted, Glaze's `glaze:*` tools need `@tenphi/glaze`, and `tasty:styles` needs `@tenphi/tasty`. Its `docs` is `docs/`, indexed by the `docs/llms.txt` that `scripts/prepare-docs.mjs` writes at pack time: UI Kit's guides and components only, since Tasty's and Glaze's indexes come with their harnesses.
 - [`rules/usage.md`](harness/dev.harnesspm/rules/usage.md) (`uikit:rules/usage`) is the one always-on rule, with UI Kit's color guidance. Keep it short: it is in every consumer's `AGENTS.md`. Its ID is public, since consumers name it to patch or exclude it.
 - [`patches/glaze-colors.patch.md`](harness/dev.harnesspm/patches/glaze-colors.patch.md) replaces only the "Where colors come from" section of Glaze's colors rule, which would otherwise send an app on UI Kit to a Glaze theme of its own.
-- `uikit:tokens` ([`scripts/tokens.mjs`](harness/dev.harnesspm/scripts/tokens.mjs)) is for consumers: palette tokens and their aliases by their Tasty names (which aliases are legacy is the Usage guide's call, not the tool's), with values in all four schemes and contrast against their base, measured by Glaze's own measuring module from the pinned Glaze. It reads `dist/`. While you edit the palette here, use `pnpm probe tokens`, which reads `src/`.
-- harnesspm does not run in CI yet. [`src/harness.test.ts`](src/harness.test.ts) guards what would break silently: the manifest's files, the Glaze section the patch replaces, and the tool; `package-tests/artifacts.test.tsx` runs the tool and checks the docs index in the packed build. `npx -y @tenphi/harnesspm check` validates the whole harness.
+- [`patches/tasty-usage.patch.md`](harness/dev.harnesspm/patches/tasty-usage.patch.md) replaces only the "Checking styles" section of Tasty's rule, so `tasty:styles` loads UI Kit's `configure()` through `--setup @cube-dev/ui-kit/dist/components/Root.js`. Without it, the CSS uses Tasty's default units and none of UI Kit's states or recipes.
+- `uikit:tokens` ([`scripts/tokens.mjs`](harness/dev.harnesspm/scripts/tokens.mjs)) is for consumers: palette tokens and their aliases by their Tasty names (which aliases are legacy is the Usage guide's call, not the tool's), with values in all four schemes and contrast against their base, measured by Glaze's public measuring module, `@tenphi/glaze/harness/measure`, from the pinned Glaze. It reads `dist/`. While you edit the palette here, use `pnpm probe tokens`, which reads `src/`.
+- harnesspm does not run in CI yet. [`src/harness.test.ts`](src/harness.test.ts) guards what would break silently: the manifest's files, the Glaze and Tasty sections the patches replace, and the tool; `package-tests/artifacts.test.tsx` runs the tool, checks the docs index, and runs `tasty:styles` with the setup the Tasty patch names, all on the packed build. `npx -y @tenphi/harnesspm check` validates the whole harness.
 
 ## Stack
 

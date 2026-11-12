@@ -1,8 +1,9 @@
 /**
  * UI Kit's harness for coding agents (`harness/`, shared through harnesspm).
  * harnesspm does not run in CI yet, so these specs guard what its `check`
- * would: the files the manifest names, the Glaze rule section UI Kit patches,
- * and the `uikit:tokens` tool, which builds on Glaze's inspector.
+ * would: the files the manifest names, the Glaze and Tasty rule sections UI Kit
+ * patches, and the `uikit:tokens` tool, which builds on Glaze's measuring
+ * module.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -42,31 +43,44 @@ describe('harness', () => {
     }
   });
 
-  it('patches sections that the pinned Glaze rule has', () => {
+  it('patches sections that the pinned upstream rules have', () => {
     // harnesspm replaces each `##` section of a patch by heading. A section
-    // Glaze renames stops applying, so pin the names here.
-    const glazeRule = readFileSync(
-      join(
-        ROOT,
-        'node_modules/@tenphi/glaze/harness/dev.harnesspm/rules/colors.md',
-      ),
-      'utf8',
-    );
-    const patch = readFileSync(
-      join(HARNESS, manifest.patch['glaze:rules/colors']),
-      'utf8',
-    );
+    // Glaze or Tasty renames stops applying, so pin the names here.
+    const packageOf: Record<string, string> = {
+      glaze: '@tenphi/glaze',
+      tasty: '@tenphi/tasty',
+    };
 
-    expect(headingsOf(patch).length).toBeGreaterThan(0);
+    expect(Object.keys(manifest.patch).sort()).toEqual([
+      'glaze:rules/colors',
+      'tasty:rules/usage',
+    ]);
 
-    for (const heading of headingsOf(patch)) {
-      expect(headingsOf(glazeRule)).toContain(heading);
+    for (const [id, file] of Object.entries<string>(manifest.patch)) {
+      const [plugin, unit] = id.split(':');
+      const rule = readFileSync(
+        join(
+          ROOT,
+          'node_modules',
+          packageOf[plugin],
+          'harness/dev.harnesspm',
+          `${unit}.md`,
+        ),
+        'utf8',
+      );
+      const patch = readFileSync(join(HARNESS, file), 'utf8');
+
+      expect(headingsOf(patch).length, id).toBeGreaterThan(0);
+
+      for (const heading of headingsOf(patch)) {
+        expect(headingsOf(rule), id).toContain(heading);
+      }
     }
   });
 });
 
 describe('uikit:tokens', () => {
-  it("finds Glaze's measuring module next to the pinned Glaze", async () => {
+  it("loads Glaze's public measuring module from the pinned Glaze", async () => {
     const measure = await loadMeasure();
 
     expect(typeof measure.inspectTheme).toBe('function');

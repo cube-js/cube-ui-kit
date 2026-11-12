@@ -46,11 +46,7 @@ async function glob(dir, pattern) {
  */
 function titleToStoryId(title) {
   return (
-    title
-      .toLowerCase()
-      .replace(/[/.]/g, '-')
-      .replace(/\s+/g, '-') +
-    '--docs'
+    title.toLowerCase().replace(/[/.]/g, '-').replace(/\s+/g, '-') + '--docs'
   );
 }
 
@@ -216,7 +212,10 @@ function stripJsx(content) {
     result.push(line);
   }
 
-  return result.join('\n').replace(/\n{3,}/g, '\n\n').replace(/^\n+/, '');
+  return result
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/^\n+/, '');
 }
 
 /* ── link fixing ─────────────────────────────────────────────────────── */
@@ -284,60 +283,6 @@ function fixRelativeMdxLinks(content) {
       // Extract just the filename without extension from the relative path
       const baseName = path.basename(relativePath);
       return `[${linkText}](./${baseName}.md)`;
-    },
-  );
-}
-
-/**
- * Convert tasty GitHub URLs to local docs/tasty/ paths.
- *   https://github.com/tenphi/tasty/blob/main/docs/X.md -> {rel}/tasty/X.md
- *   https://github.com/tenphi/tasty                      -> {rel}/tasty/usage.md
- */
-function fixTastyLinks(content, currentOutputPath) {
-  const currentDir = path.dirname(currentOutputPath);
-  const tastyDir = path.join(DOCS_DIR, 'tasty');
-
-  // Specific doc page links: .../blob/main/docs/X.md
-  content = content.replace(
-    /\[([^\]]*)\]\(https:\/\/github\.com\/tenphi\/tasty\/blob\/main\/docs\/([^)]+)\)/g,
-    (match, linkText, docFile) => {
-      let rel = path.relative(currentDir, path.join(tastyDir, docFile));
-      if (!rel.startsWith('.')) rel = './' + rel;
-      return `[${linkText}](${rel})`;
-    },
-  );
-
-  // Root repo link: https://github.com/tenphi/tasty
-  content = content.replace(
-    /\[([^\]]*)\]\(https:\/\/github\.com\/tenphi\/tasty\)/g,
-    (match, linkText) => {
-      let rel = path.relative(currentDir, path.join(tastyDir, 'usage.md'));
-      if (!rel.startsWith('.')) rel = './' + rel;
-      return `[${linkText}](${rel})`;
-    },
-  );
-
-  return content;
-}
-
-/**
- * Convert glaze GitHub URLs to local docs/glaze/ paths.
- *   https://github.com/tenphi/glaze/blob/main/docs/X.md -> {rel}/glaze/X.md
- *
- * Glaze's published docs/ folder doesn't include a README/index page, so the
- * bare repo URL (https://github.com/tenphi/glaze) is intentionally left
- * untouched and resolves to GitHub.
- */
-function fixGlazeLinks(content, currentOutputPath) {
-  const currentDir = path.dirname(currentOutputPath);
-  const glazeDir = path.join(DOCS_DIR, 'glaze');
-
-  return content.replace(
-    /\[([^\]]*)\]\(https:\/\/github\.com\/tenphi\/glaze\/blob\/main\/docs\/([^)]+)\)/g,
-    (match, linkText, docFile) => {
-      let rel = path.relative(currentDir, path.join(glazeDir, docFile));
-      if (!rel.startsWith('.')) rel = './' + rel;
-      return `[${linkText}](${rel})`;
     },
   );
 }
@@ -430,10 +375,7 @@ const componentEntries = await collectDocs(
   COMPONENT_SRC,
   computeComponentOutputPath,
 );
-const storiesEntries = await collectDocs(
-  STORIES_SRC,
-  computeStoriesOutputPath,
-);
+const storiesEntries = await collectDocs(STORIES_SRC, computeStoriesOutputPath);
 
 const allEntries = [...componentEntries, ...storiesEntries];
 
@@ -442,20 +384,10 @@ log(
 );
 log(`Mapped ${storyIdToOutputPath.size} storybook IDs`);
 
-// Copy vendored docs from node_modules (replacing symlinks with real files for publishing)
-const VENDORED_DOCS = [
-  { name: 'tasty', source: path.join('node_modules', '@tenphi', 'tasty', 'docs') },
-  { name: 'glaze', source: path.join('node_modules', '@tenphi', 'glaze', 'docs') },
-];
+// Tasty's and Glaze's docs are not copied: the package does not ship them.
+// Their harnesses, which UI Kit's extends, index them for the installed versions.
 
-for (const { name, source } of VENDORED_DOCS) {
-  const target = path.join(DOCS_DIR, name);
-  await fs.rm(target, { recursive: true, force: true });
-  await fs.cp(source, target, { recursive: true });
-  log(`Copied ${name} docs from node_modules`);
-}
-
-// Clean output directory for components (stories go top-level alongside tasty/)
+// Clean output directory for components (stories go top-level)
 await fs.rm(COMPONENT_OUT, { recursive: true, force: true });
 
 // Process each file
@@ -471,8 +403,6 @@ for (const { docPath, outputPath, content } of allEntries) {
     brokenLinks,
   );
   result = fixRelativeMdxLinks(result);
-  result = fixTastyLinks(result, outputPath);
-  result = fixGlazeLinks(result, outputPath);
   result = fixBasePropertiesLinks(result, outputPath);
   result = fixFieldPropertiesLinks(result, outputPath);
 
@@ -487,20 +417,8 @@ for (const { docPath, outputPath, content } of allEntries) {
 }
 
 // Docs index for harnesspm: `harness/plugin.json` points `docs` at this folder,
-// and harnesspm uses an `llms.txt` there as its index. It lists UI Kit's pages and
-// the Tasty pages consumers need (the list "Tasty Documentation" in AGENTS.md
-// names). Glaze's pages are left out: UI Kit's harness extends Glaze's, which
-// brings Glaze's own index.
-const TASTY_PAGES = [
-  'getting-started',
-  'methodology',
-  'design-system',
-  'react-api',
-  'dsl',
-  'styles',
-  'configuration',
-  'debug',
-];
+// and harnesspm uses an `llms.txt` there as its index. It lists UI Kit's pages
+// only: UI Kit's harness extends Tasty's and Glaze's, which bring their own.
 const LLMS_TXT = path.join(DOCS_DIR, 'llms.txt');
 
 async function indexLine(file) {
@@ -537,7 +455,7 @@ for (const file of (await glob(COMPONENT_OUT, /\.md$/)).sort()) {
 const llms = [
   '# Cube UI Kit docs',
   '',
-  "> Guides, components and the Tasty pages for `@cube-dev/ui-kit`. Glaze's docs have their own index.",
+  "> Guides and components for `@cube-dev/ui-kit`. Tasty's and Glaze's docs have their own indexes.",
   '',
   '## Guides',
   '',
@@ -553,16 +471,6 @@ for (const category of [...componentsByCategory.keys()].sort()) {
   );
 }
 
-llms.push(
-  '',
-  '## Tasty',
-  '',
-  ...(await Promise.all(
-    TASTY_PAGES.map((name) =>
-      indexLine(path.join(DOCS_DIR, 'tasty', `${name}.md`)),
-    ),
-  )),
-);
 await fs.writeFile(LLMS_TXT, `${llms.join('\n')}\n`);
 log(`Wrote ${LLMS_TXT}`);
 

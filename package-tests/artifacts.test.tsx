@@ -49,3 +49,33 @@ it('ships the harness: uikit:tokens runs from the tarball and the docs index lin
     expect(existsSync(join(packageRoot, 'docs', link)), link).toBe(true);
   }
 });
+
+it("ships the setup the Tasty patch names: tasty:styles loads UI Kit's config from the tarball", () => {
+  const patch = readFileSync(
+    join(packageRoot, 'harness/dev.harnesspm/patches/tasty-usage.patch.md'),
+    'utf8',
+  );
+  const setup = patch.match(/--setup @cube-dev\/ui-kit\/(\S+?)`/)?.[1];
+
+  expect(setup).toBeDefined();
+
+  const result = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        resolve(
+          'node_modules/@tenphi/tasty/harness/dev.harnesspm/scripts/styles.mjs',
+        ),
+        '{"padding":"2x","fill":"#surface"}',
+        '--setup',
+        join(packageRoot, setup!),
+        '--json',
+      ],
+      { encoding: 'utf8' },
+    ),
+  );
+
+  expect(result.config.units.x).toBe('var(--gap)');
+  expect(result.css).toContain('padding: calc(2 * var(--gap))');
+  expect(result.warnings).toEqual([]);
+});
