@@ -19,6 +19,9 @@ const AlertElement = tasty({
     },
     padding: '1.5x',
     preset: 't3',
+    // Only on request, as on `Card`: an alert sized by its content would
+    // shrink to its padding.
+    container: { '': false, 'query-container': 'alert / inline-size' },
     color: {
       '': '#dark-02',
       // `color` in THEMES is Badge's fill for the status themes, so only these

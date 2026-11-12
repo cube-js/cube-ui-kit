@@ -29,6 +29,9 @@ const PanelElement = tasty({
       stretched: true,
     },
     display: 'block',
+    // Its content is positioned over it, so its width never comes from the
+    // content and the container costs nothing. Shares `Layout.Panel`'s name.
+    container: 'panel / inline-size',
     radius: {
       '': '0',
       card: '1r',

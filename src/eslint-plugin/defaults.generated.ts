@@ -13,6 +13,7 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         display: { kind: 'default', value: 'block' },
         flow: { kind: 'default', value: 'column' },
+        isQueryContainer: { kind: 'default', value: false },
         preset: { kind: 'default', value: 't3' },
         shape: { kind: 'default', value: 'card' },
         theme: { kind: 'default', value: 'note' },
@@ -21,6 +22,11 @@ export const DEFAULTS: DefaultsRegistry = {
     AlertDialog: {
       props: {
         isDismissable: { kind: 'default', value: false },
+        isQueryContainer: {
+          kind: 'skip',
+          reason: 'context',
+          note: 'Defaults to `true` except in a popover, where `isQueryContainer` is what makes the dialog a query container. Not safe to strip.',
+        },
       },
     },
     Avatar: {
@@ -194,6 +200,11 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Dialog: {
       props: {
+        isQueryContainer: {
+          kind: 'skip',
+          reason: 'context',
+          note: 'Redundant in a bare tree but load-bearing under "inside <DialogContext type="popover">", so removing it would change behaviour there.',
+        },
         role: { kind: 'default', value: 'dialog' },
         size: { kind: 'default', value: 'M', aliases: ['medium'] },
       },
@@ -208,6 +219,11 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     DialogForm: {
       props: {
+        isQueryContainer: {
+          kind: 'skip',
+          reason: 'context',
+          note: 'Defaults to `true` except in a popover, where `isQueryContainer` is what makes the dialog a query container. Not safe to strip.',
+        },
         preserve: { kind: 'default', value: false },
         submitValues: { kind: 'default', value: 'active' },
       },
@@ -596,6 +612,7 @@ export const DEFAULTS: DefaultsRegistry = {
         boxSizing: { kind: 'default', value: 'border-box' },
         flow: { kind: 'default', value: 'column' },
         isCompact: { kind: 'default', value: false },
+        isQueryContainer: { kind: 'default', value: false },
         layout: { kind: 'default', value: 'default' },
         size: { kind: 'default', value: 'medium' },
         status: { kind: 'default', value: 'info' },

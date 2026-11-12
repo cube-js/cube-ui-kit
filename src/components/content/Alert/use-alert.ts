@@ -8,7 +8,14 @@ import { CubeAlertProps } from './types';
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES] as const;
 
 export function useAlert(props: CubeAlertProps) {
-  const { type, isDisabled = false, theme, shape = 'card', mods } = props;
+  const {
+    type,
+    isDisabled = false,
+    theme,
+    shape = 'card',
+    isQueryContainer,
+    mods,
+  } = props;
 
   const styles = extractStyles(props, STYLE_LIST);
 
@@ -23,13 +30,18 @@ export function useAlert(props: CubeAlertProps) {
   // `theme` is the kit's status theme, rendered through the `type` mod. Tasty's
   // `filterBaseProps` keeps its own `theme` prop and renders it as
   // `data-theme`, so it comes out before filtering.
-  const { theme: _statusTheme, ...domProps } = props;
+  const {
+    theme: _statusTheme,
+    isQueryContainer: _isQueryContainer,
+    ...domProps
+  } = props;
 
   return {
     styles,
     mods: {
       shape,
       type: _theme,
+      'query-container': !!isQueryContainer,
       ...mods,
     },
     filteredProps: filterBaseProps(domProps, { eventProps: true }),
