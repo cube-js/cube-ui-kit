@@ -613,6 +613,56 @@ describe('Native menu row hit area', () => {
     ).toBeNull();
   });
 
+  // A static row is not the target's containing block, so the target is
+  // placed from measured rects. Unscaled, it covers the row exactly. Under a
+  // scale, the scale comes from computed sizes, which keep 6 digits, so an edge
+  // may land one layout unit (1/64px) short; screen pixels used as layout
+  // pixels would miss by far more.
+  it.each([
+    [1, 2],
+    [0.5, 1],
+    [0.57, 1],
+  ])(
+    'covers a static row with fractional sizes at scale %s',
+    async (scale, digits) => {
+      render(
+        <Root>
+          <div style={{ transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+            <Menu aria-label="Workbooks" styles={{ width: '36.3x' }}>
+              <Menu.Item key="before" tooltip={false}>
+                Before
+              </Menu.Item>
+              <Menu.Item
+                key="browse"
+                to="/__menu-link-test/fractional"
+                tooltip={false}
+                styles={{ position: 'static', padding: '1.3x' }}
+              >
+                Browse all
+              </Menu.Item>
+            </Menu>
+          </div>
+        </Root>,
+      );
+      const target = screen.getByRole('menuitem', { name: 'Browse all' });
+      const row = target.closest('li')!;
+
+      // Shorter than the test timeout, so a miss reports the edges.
+      await waitFor(
+        () => {
+          const bounds = row.getBoundingClientRect();
+          const nativeBounds = target.getBoundingClientRect();
+
+          expect(nativeBounds.left).toBeCloseTo(bounds.left, digits);
+          expect(nativeBounds.right).toBeCloseTo(bounds.right, digits);
+          expect(nativeBounds.top).toBeCloseTo(bounds.top, digits);
+          expect(nativeBounds.bottom).toBeCloseTo(bounds.bottom, digits);
+        },
+        { timeout: 2000 },
+      );
+    },
+  );
+
   it('keeps controls in prefix and suffix clickable and yields to an already mounted consumer pointer override', async () => {
     const prefix = vi.fn();
     const suffix = vi.fn();
