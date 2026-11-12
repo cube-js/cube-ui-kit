@@ -125,7 +125,8 @@ function placeNativeRow(element: HTMLAnchorElement) {
     '--native-row-inset',
     `${top}px auto auto ${left}px`,
   );
-  // The rect, unlike the computed size, keeps every fractional digit.
+  // Unscaled, the rect keeps the fractional digits the computed size drops;
+  // under a scale, the scale's own 6 digits limit it (see the static-row spec).
   writeNativeRowToken(
     element,
     '--native-row-width',
