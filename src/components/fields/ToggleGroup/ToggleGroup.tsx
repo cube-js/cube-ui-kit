@@ -1,7 +1,7 @@
 import { useObjectRef } from '@react-aria/utils';
 import { BaseProps, mergeStyles, tasty } from '@tenphi/tasty';
 import { Children, cloneElement, isValidElement } from 'react';
-import { useLabel, useToggleButtonGroup } from 'react-aria';
+import { useFocusWithin, useLabel, useToggleButtonGroup } from 'react-aria';
 import { useToggleGroupState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared/form';
@@ -17,7 +17,7 @@ import { JOINED_GROUP_STYLES } from '../RadioGroup/joined-styles';
 import { ToggleGroupContext } from './context';
 import { CubeToggleGroupItemProps, ToggleGroupItem } from './ToggleGroupItem';
 
-import type { AriaLabelingProps, Key } from '@react-types/shared';
+import type { AriaLabelingProps, FocusEvents, Key } from '@react-types/shared';
 import type { ReactElement, ReactNode, Ref } from 'react';
 import type { ToggleGroupState } from 'react-stately';
 import type { SizeName } from '../../../tokens/sizes';
@@ -27,6 +27,7 @@ export interface CubeToggleGroupProps
   extends
     Omit<BaseProps, 'children' | 'role' | 'as'>,
     AriaLabelingProps,
+    Pick<FocusEvents, 'onFocus' | 'onBlur'>,
     FieldLayoutStyleProps,
     FieldBaseProps<Key | readonly Key[] | null | undefined> {
   /**
@@ -158,6 +159,8 @@ function ToggleGroup(rawProps: CubeToggleGroupProps) {
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledBy,
     'aria-describedby': ariaDescribedBy,
+    onFocus,
+    onBlur,
   } = props;
 
   const isSingle = selectionMode === 'single';
@@ -212,9 +215,16 @@ function ToggleGroup(rawProps: CubeToggleGroupProps) {
     domRef,
   );
 
+  // Focus entering and leaving the group, not moving between its items: the
+  // field's `onBlur` is how a form validates on blur and marks it touched.
+  const { focusWithinProps } = useFocusWithin({
+    onFocusWithin: onFocus,
+    onBlurWithin: onBlur,
+  });
+
   const group = (
     <ToggleGroupElement
-      {...groupProps}
+      {...mergeProps(groupProps, focusWithinProps)}
       ref={domRef}
       // The current id: `useLabel` follows it, the form binding may change it.
       id={id}

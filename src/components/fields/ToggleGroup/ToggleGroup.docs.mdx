@@ -40,6 +40,7 @@ A single on/off setting is a [Switch](/docs/forms-switch--docs) or a [Checkbox](
 - **`selectedKeys`** `Key[]` — The keys of the items that are on (controlled, `multiple` mode)
 - **`defaultSelectedKeys`** `Key[]` — The keys of the items that start on (uncontrolled, `multiple` mode)
 - **`onSelectionChange`** `(key: Key | null | Key[]) => void` — Called with a key or `null` in `single` mode, and with an array of keys in `multiple` mode
+- **`onFocus`** / **`onBlur`** `(e: FocusEvent) => void` — Called when focus enters or leaves the group, not when it moves between items. In a form, leaving the group marks the field touched and runs `validateTrigger="onBlur"` rules
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `'medium'`) — Size of every item, the sizes of `Radio.Group type="button"`
 - **`type`** `'outline' | 'outline-2' | 'clear'` (default: `'outline'`) — Look of every item. `outline-2` uses `#surface-3` as its base fill, so it stands out on a `#surface-2` container
 - **`isDisabled`** `boolean` — Disables every item. The selected items keep showing that they are on

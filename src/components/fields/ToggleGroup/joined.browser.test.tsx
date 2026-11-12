@@ -140,6 +140,9 @@ describe.each(CASES)(
     it('on hover over an idle button', async () => {
       let { radios, toggles } = renderBoth({ size });
 
+      await settle();
+      let idleFill = buttonLook(toggles[0]).fill;
+
       await userEvent.hover(radios[0]);
       await settle();
       let radioLook = buttonLook(radios[0]);
@@ -147,7 +150,8 @@ describe.each(CASES)(
       await userEvent.hover(toggles[0]);
       await settle();
 
-      expect(radioLook.fill).not.toBe(buttonLook(radios[2]).fill);
+      // The hover style applied, so the comparison below is of two hovers.
+      expect(buttonLook(toggles[0]).fill).not.toBe(idleFill);
       expect(buttonLook(toggles[0])).toEqual(radioLook);
     });
 

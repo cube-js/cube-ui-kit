@@ -423,6 +423,60 @@ describe('<ToggleGroup />', () => {
     });
   });
 
+  describe('focus and blur', () => {
+    it('reports focus entering and leaving the group, not moving inside it', async () => {
+      const onFocus = vi.fn();
+      const onBlur = vi.fn();
+
+      renderWithRoot(
+        <>
+          <ToggleGroup aria-label="Display" onFocus={onFocus} onBlur={onBlur}>
+            {options()}
+          </ToggleGroup>
+          <button type="button">After</button>
+        </>,
+      );
+
+      await userEvent.tab();
+      await userEvent.keyboard('{ArrowRight}{ArrowRight}');
+
+      expect(onFocus).toHaveBeenCalledTimes(1);
+      expect(onBlur).not.toHaveBeenCalled();
+
+      await userEvent.click(screen.getByRole('button', { name: 'After' }));
+
+      expect(onBlur).toHaveBeenCalledTimes(1);
+    });
+
+    it('validates on blur and marks the field touched (modern form)', async () => {
+      const form = createFormController({
+        defaultValues: { display: null as Key | null },
+      });
+
+      renderWithRoot(
+        <>
+          <Form form={form}>
+            <ToggleGroup
+              name="display"
+              label="Display"
+              validateTrigger="onBlur"
+              rules={[{ required: true, message: 'Pick a display' }]}
+            >
+              {options()}
+            </ToggleGroup>
+          </Form>
+          <button type="button">After</button>
+        </>,
+      );
+
+      await userEvent.tab();
+      await userEvent.click(screen.getByRole('button', { name: 'After' }));
+
+      expect(await screen.findByText('Pick a display')).toBeInTheDocument();
+      expect(form.getSnapshot().touchedFields.has('display')).toBe(true);
+    });
+  });
+
   describe('form', () => {
     it('binds a single selection to a key or null (legacy form)', async () => {
       const { formInstance } = renderWithForm(

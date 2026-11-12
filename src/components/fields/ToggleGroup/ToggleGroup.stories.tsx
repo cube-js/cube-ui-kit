@@ -118,6 +118,16 @@ const meta = {
         'Called with a key or `null` in single mode, and with an array of keys in multiple mode',
       control: { type: null },
     },
+    onFocus: {
+      action: 'focus',
+      description: 'Called when focus enters the group',
+      control: { type: null },
+    },
+    onBlur: {
+      action: 'blur',
+      description: 'Called when focus leaves the group',
+      control: { type: null },
+    },
   },
 } satisfies Meta<typeof ToggleGroup>;
 
