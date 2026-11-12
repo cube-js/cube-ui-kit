@@ -86,6 +86,14 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    isQueryContainer: {
+      control: 'boolean',
+      description:
+        'Makes the result the `result` query container, for `@(result, …)` conditions',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
   },
 } as Meta<typeof Result>;
 

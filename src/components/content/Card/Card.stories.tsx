@@ -4,6 +4,14 @@ export default {
   title: 'Content/Card',
   component: Card,
   argTypes: {
+    isQueryContainer: {
+      control: 'boolean',
+      description:
+        'Makes the card the `card` query container, for `@(card, …)` conditions',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     shadow: {
       defaultValue: undefined,
       control: {

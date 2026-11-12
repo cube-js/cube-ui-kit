@@ -32,6 +32,7 @@ Dialogs are windows containing contextual information, tasks, or workflows that 
 - **`onDismiss`** `function` — Callback fired when the dialog is dismissed. The close button calls it, after "Discard changes?" when its trigger or container asks first (`confirmDismiss`)
 - **`closeIcon`** — Custom close icon element
 - **`role`** `'dialog' | 'alertdialog'` (default: `dialog`) — ARIA role for the dialog
+- **`isQueryContainer`** `boolean` (default: `true`, `false` in a popover) — Whether the dialog is the `dialog` query container (`container: dialog / inline-size`), so its content can respond to its width: `@(dialog, w < 400px)`, or `collapseState` on a `Button`. See [Width](#width)
 
 ### Base Properties
 
@@ -123,7 +124,7 @@ The body is the `Content` that is a direct child of the dialog or of a direct-ch
 
 Every size stays inside the screen: a dialog is at most `$dialog-max-size` wide, the viewport less a `4x` gutter on each side, or a `2x` one on screens up to 700px wide.
 
-`width` takes one value (`width="520px"`, `width="65x"`, `width={600}`, `width="max-content"`). It sets the dialog's preferred width, the `$dialog-size` token that `size` sets otherwise, and keeps that limit, so a fixed-width dialog still fits a phone. The limit follows the dialog's type: a modal, popover or fullscreen dialog keeps the `$dialog-max-size` gutter; a tray stays inside its shell (widen it with the container's `styles`), while a takeover or panel may span the viewport. A `width` also replaces the `$min-dialog-size` floor.
+`width` takes one value (`width="520px"`, `width="65x"`, `width={600}`). It sets the dialog's preferred width, the `$dialog-size` token that `size` sets otherwise, and keeps that limit, so a fixed-width dialog still fits a phone. The limit follows the dialog's type: a modal, popover or fullscreen dialog keeps the `$dialog-max-size` gutter; a tray stays inside its shell (widen it with the container's `styles`), while a takeover or panel may span the viewport. A `width` also replaces the `$min-dialog-size` floor.
 
 To clamp the width yourself, set `styles.width` (`styles={{ width: 'initial 520px 100dvw' }}`). It replaces the whole width, limit included.
 
@@ -134,6 +135,8 @@ To clamp the width yourself, set `styles.width` (`styles={{ width: 'initial 520p
 {/* Exactly as written: min `initial`, width 520px, max the whole viewport */}
 <Dialog styles={{ width: 'initial 520px 100dvw' }}>…</Dialog>
 ```
+
+A dialog's width never comes from its content: it is the `dialog` query container, which ignores its content's width, so `@(dialog, …)` conditions and `collapseState` read the dialog's own width. A dialog sized by its content (`width="max-content"`, or a `styles.width` with no width of its own, such as `'max 70vw'`) would shrink to its padding, so give it a size or a length. A `type="panel"` dialog takes its width from `size` too, unless `width` or `styles` set one. A popover is the exception: it sizes to what it holds, as a picker's does, so it is no container unless you set `isQueryContainer`, which only a fixed-width popover can take.
 
 ## Examples
 
