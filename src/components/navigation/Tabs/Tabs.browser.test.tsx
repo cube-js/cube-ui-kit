@@ -294,28 +294,37 @@ describe('Active tab at the end of a crowded strip', () => {
     );
   }
 
-  it('keeps the active tab fully in view once the tabs reach their final size', async () => {
-    renderWithRoot(<CrowdedTabs />);
+  // At 0.5 the strip sits on a zoomed-out canvas: the tab's overflow is
+  // measured in screen pixels, while the strip scrolls in its own.
+  it.each([1, 0.5])(
+    'keeps the active tab fully in view once the tabs reach their final size, at scale %s',
+    async (scale) => {
+      renderWithRoot(
+        <div style={{ transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+          <CrowdedTabs />
+        </div>,
+      );
 
-    const tab = screen.getByTestId('Tab-preset2');
-    const scroller = tab.closest('[data-element="Scroll"]') as HTMLElement;
-    const addButton = screen.getByTestId('AddTab');
+      const tab = screen.getByTestId('Tab-preset2');
+      const scroller = tab.closest('[data-element="Scroll"]') as HTMLElement;
+      const addButton = screen.getByTestId('AddTab');
 
-    // Let the actions runs publish their widths and the strip settle.
-    await settle();
+      // Let the actions runs publish their widths and the strip settle.
+      await settle();
 
-    // Guard the guard: the strip must overflow, or nothing needs scrolling and
-    // the assertions below pass trivially.
-    expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+      // Guard the guard: the strip must overflow, or nothing needs scrolling and
+      // the assertions below pass trivially.
+      expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
 
-    const tabRect = tab.parentElement!.getBoundingClientRect();
-    const scrollRect = scroller.getBoundingClientRect();
-    const addRect = addButton.getBoundingClientRect();
+      const tabRect = tab.parentElement!.getBoundingClientRect();
+      const scrollRect = scroller.getBoundingClientRect();
+      const addRect = addButton.getBoundingClientRect();
 
-    expect(tabRect.left).toBeGreaterThanOrEqual(scrollRect.left - 0.5);
-    expect(tabRect.right).toBeLessThanOrEqual(scrollRect.right + 0.5);
-    expect(tabRect.right).toBeLessThanOrEqual(addRect.left + 0.5);
-  });
+      expect(tabRect.left).toBeGreaterThanOrEqual(scrollRect.left - 0.5);
+      expect(tabRect.right).toBeLessThanOrEqual(scrollRect.right + 0.5);
+      expect(tabRect.right).toBeLessThanOrEqual(addRect.left + 0.5);
+    },
+  );
 
   /** Grow the active tab after the strip has settled, as a counter in its title would. */
   async function growActiveTab(

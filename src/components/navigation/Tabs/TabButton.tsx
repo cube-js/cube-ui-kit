@@ -37,6 +37,7 @@ import {
 import { createMockDragState } from '../../shared/DraggableCollection';
 
 import { useBoardDragActive } from './BoardDragActiveProvider';
+import { getLayoutScale } from './layout-scale';
 import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
 import { TabContainer, TabElement } from './styled';
 import { TabDropIndicator } from './TabDropIndicator';
@@ -220,8 +221,12 @@ function scrollTabIntoStrip(tab: HTMLElement, placement: TabPlacement) {
 
   if (!delta) return;
 
-  if (isVertical) strip.scrollTop += delta;
-  else strip.scrollLeft += delta;
+  // `delta` is in screen pixels; the strip scrolls in its own.
+  const scroll =
+    delta / getLayoutScale(strip, isVertical ? 'vertical' : 'horizontal');
+
+  if (isVertical) strip.scrollTop += scroll;
+  else strip.scrollLeft += scroll;
 }
 
 /**
