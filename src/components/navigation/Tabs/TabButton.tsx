@@ -21,6 +21,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
+import { getLayoutScale } from '../../../utils/layout-scale';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   CubeItemActionProps,
@@ -220,8 +221,12 @@ function scrollTabIntoStrip(tab: HTMLElement, placement: TabPlacement) {
 
   if (!delta) return;
 
-  if (isVertical) strip.scrollTop += delta;
-  else strip.scrollLeft += delta;
+  // `delta` is in screen pixels; the strip scrolls in its own.
+  const scroll =
+    delta / getLayoutScale(strip, isVertical ? 'vertical' : 'horizontal');
+
+  if (isVertical) strip.scrollTop += scroll;
+  else strip.scrollLeft += scroll;
 }
 
 /**

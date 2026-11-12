@@ -65,6 +65,12 @@ function EditableTabs({
   );
 }
 
+/** The selection indicator: the one child of the tab list that holds no tab. */
+const tabIndicator = () =>
+  [...screen.getByRole('tablist').children].find(
+    (child) => !child.querySelector('[role="tab"]'),
+  );
+
 /** The ⋮ button that opens a tab's menu. */
 const menuTriggerFor = (tabName: string) => {
   const tab = screen.getByRole('tab', { name: tabName });
@@ -288,28 +294,37 @@ describe('Active tab at the end of a crowded strip', () => {
     );
   }
 
-  it('keeps the active tab fully in view once the tabs reach their final size', async () => {
-    renderWithRoot(<CrowdedTabs />);
+  // At 0.5 the strip sits on a zoomed-out canvas: the tab's overflow is
+  // measured in screen pixels, while the strip scrolls in its own.
+  it.each([1, 0.5])(
+    'keeps the active tab fully in view once the tabs reach their final size, at scale %s',
+    async (scale) => {
+      renderWithRoot(
+        <div style={{ transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+          <CrowdedTabs />
+        </div>,
+      );
 
-    const tab = screen.getByTestId('Tab-preset2');
-    const scroller = tab.closest('[data-element="Scroll"]') as HTMLElement;
-    const addButton = screen.getByTestId('AddTab');
+      const tab = screen.getByTestId('Tab-preset2');
+      const scroller = tab.closest('[data-element="Scroll"]') as HTMLElement;
+      const addButton = screen.getByTestId('AddTab');
 
-    // Let the actions runs publish their widths and the strip settle.
-    await settle();
+      // Let the actions runs publish their widths and the strip settle.
+      await settle();
 
-    // Guard the guard: the strip must overflow, or nothing needs scrolling and
-    // the assertions below pass trivially.
-    expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+      // Guard the guard: the strip must overflow, or nothing needs scrolling and
+      // the assertions below pass trivially.
+      expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
 
-    const tabRect = tab.parentElement!.getBoundingClientRect();
-    const scrollRect = scroller.getBoundingClientRect();
-    const addRect = addButton.getBoundingClientRect();
+      const tabRect = tab.parentElement!.getBoundingClientRect();
+      const scrollRect = scroller.getBoundingClientRect();
+      const addRect = addButton.getBoundingClientRect();
 
-    expect(tabRect.left).toBeGreaterThanOrEqual(scrollRect.left - 0.5);
-    expect(tabRect.right).toBeLessThanOrEqual(scrollRect.right + 0.5);
-    expect(tabRect.right).toBeLessThanOrEqual(addRect.left + 0.5);
-  });
+      expect(tabRect.left).toBeGreaterThanOrEqual(scrollRect.left - 0.5);
+      expect(tabRect.right).toBeLessThanOrEqual(scrollRect.right + 0.5);
+      expect(tabRect.right).toBeLessThanOrEqual(addRect.left + 0.5);
+    },
+  );
 
   /** Grow the active tab after the strip has settled, as a counter in its title would. */
   async function growActiveTab(
@@ -372,6 +387,66 @@ describe('Active tab at the end of a crowded strip', () => {
 });
 
 /**
+ * Tabs on a zoomable canvas: an ancestor's `transform: scale()` shrinks the
+ * tabs on screen, while the indicator is positioned in the tab list's own,
+ * unscaled pixels. Nothing re-measures when the scale changes, so the indicator
+ * stays under its tab only if what it measured does not depend on the scale.
+ * jsdom has no layout.
+ */
+describe('Tabs inside a scaled ancestor', () => {
+  function ScaledTabs({
+    scale,
+    placement,
+  }: {
+    scale: number;
+    placement: 'top' | 'left';
+  }) {
+    return (
+      <div style={{ transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+        <Tabs defaultActiveKey="charlie" placement={placement}>
+          <Tab key="alpha" title="Alpha" />
+          <Tab key="bravo" title="Bravo tab" />
+          <Tab key="charlie" title="Charlie" />
+        </Tabs>
+      </div>
+    );
+  }
+
+  it.each([
+    ['top', 'left', 'width'],
+    ['left', 'top', 'height'],
+  ] as const)(
+    'keeps the indicator under the selected tab with placement="%s", across a zoom',
+    async (placement, start, size) => {
+      const { rerender } = renderWithRoot(
+        <ScaledTabs scale={0.57} placement={placement} />,
+      );
+      const tab = screen.getByRole('tab', { name: 'Charlie' });
+
+      // Shorter than the test timeout, so a miss reports the positions.
+      const expectUnderTab = () =>
+        waitFor(
+          () => {
+            const tabRect = tab.getBoundingClientRect();
+            const indicatorRect = tabIndicator()!.getBoundingClientRect();
+
+            expect(indicatorRect[start]).toBeCloseTo(tabRect[start], 0);
+            expect(indicatorRect[size]).toBeCloseTo(tabRect[size], 0);
+          },
+          { timeout: 2000 },
+        );
+
+      await expectUnderTab();
+
+      // Zoom in with the same tab selected: nothing re-measures.
+      rerender(<ScaledTabs scale={1.5} placement={placement} />);
+
+      await expectUnderTab();
+    },
+  );
+});
+
+/**
  * A caller themes the tabs by re-declaring current tokens on `Tabs`. Root
  * resolves the legacy colour aliases once, on the root, so a tab reading one
  * would ignore that override. jsdom does not resolve custom properties, so only
@@ -401,14 +476,8 @@ describe('Tabs themed through the caller’s tokens', () => {
     expect(tabStyle('Active').color).toBe(TITLE);
     expect(tabStyle('Inactive').color).toBe(SECONDARY);
 
-    // The indicator is the one child of the tab list that holds no tab.
-    const indicator = () =>
-      [...screen.getByRole('tablist').children].find(
-        (child) => !child.querySelector('[role="tab"]'),
-      );
-
     await waitFor(() => {
-      expect(getComputedStyle(indicator()!).backgroundColor).toBe(ACCENT);
+      expect(getComputedStyle(tabIndicator()!).backgroundColor).toBe(ACCENT);
     });
   });
 
