@@ -120,7 +120,7 @@ Each `Radio` carries **`readonly`** while its group is `isReadOnly`. A classic r
 ### Type
 
 - `radio` - Traditional radio button appearance (default)
-- `button` - Button-style radio options with spacing
+- `button` - Button-style options joined into one control: shared borders, with only the outer corners rounded
 - `tabs` - A segmented control. It takes the look of [Tabs](/docs/navigation-tabs--docs) `type="radio"` from one shared style definition: the track, the white chip on the selected option, hover, the keyboard focus ring on the focused option, the disabled look (the selected chip stays, the labels fade) and the text size. Recolor it through the tokens [Tabs → Theming](/docs/navigation-tabs--docs#theming) lists. An invalid or valid group also tints its idle labels. Only the layout differs: its options size to their labels, while tabs share the track equally.
 
 **Default Orientation:**
@@ -349,7 +349,7 @@ A disabled option with a tooltip stays in this navigation so its tooltip can be 
    </Radio.Group>
    ```
 
-3. **Visual Type**: pick by the shape of the choice, not by the look you want — `Radio.Tabs` for a compact connected group _inside a form_, `type="button"` for spaced selections, traditional radios for longer or descriptive option lists
+3. **Visual Type**: pick by the shape of the choice, not by the look you want — `Radio.Tabs` for a compact connected group _inside a form_, `type="button"` for a row of joined buttons, traditional radios for longer or descriptive option lists
 
    ```jsx
    {/* Good for a compact form field that gates the fields below it */}
