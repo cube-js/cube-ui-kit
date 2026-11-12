@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.212.0
+
+### Minor Changes
+
+- [#1644](https://github.com/cube-js/cube-ui-kit/pull/1644) [`b86a6634e`](https://github.com/cube-js/cube-ui-kit/commit/b86a6634e9de869fb8d88236466fb7bf7a856e0c) Thanks [@tenphi](https://github.com/tenphi)! - **Query containers:** more regions are named `inline-size` query containers, so a `Button`'s `collapseState` (`'@(dialog, w < 400px)'`) and any `@(name, …)` style condition can respond to them. `Layout.Container` and `Layout.Center` are the `content` container on their column, as `Layout.Content` is; `Panel` and `ResizablePanel` are `panel`, as `Layout.Panel` is; and `Dialog` is `dialog`. `Card`, `Alert` and `Result` become `card`, `alert` and `result` with the new `isQueryContainer` prop. They are containers only on request because they can be as wide as their content, and a query container ignores its content's width, so a card in a horizontal `Space` or a centered one would shrink to its padding.
+
+  **Breaking — a dialog's width no longer comes from its content.** A container ignores its content's width, so a `Dialog` sized by its content (`width="max-content"`, or a `styles.width` that sets no width of its own, such as `'max 70vw'`) now shrinks to its padding: give it a size or a length. A popover is the exception: it still sizes to what it holds, as the pickers' popovers do, also when `mobileType` shows it as a tray or modal on a phone, and is no container unless you set `isQueryContainer`. A `type="panel"` dialog with no width now takes its width from `size`, as the other types do.
+
+### Patch Changes
+
+- [#1640](https://github.com/cube-js/cube-ui-kit/pull/1640) [`233681c28`](https://github.com/cube-js/cube-ui-kit/commit/233681c2864c619cb8921fdc9f2b6aa0a041cbe9) Thanks [@tenphi](https://github.com/tenphi)! - Scrollbar thumbs are fainter, and `Panel`'s now matches the rest. The default `#scrollbar-thumb` is 20% of `#text` instead of 50%, and `Panel` reads it instead of its own color. To keep the previous default, set `'#scrollbar-thumb': '#text.5'` in your tokens. To keep `Panel`'s previous thumb, pass `tokens={{ '#scrollbar-thumb': '#dark.2' }}` to it.
+
+- [#1642](https://github.com/cube-js/cube-ui-kit/pull/1642) [`10b353822`](https://github.com/cube-js/cube-ui-kit/commit/10b35382238adcbb9130f1a6c65df8adfb4cbf43) Thanks [@tenphi](https://github.com/tenphi)! - `ResizablePanel`'s `innerStyles` now merges with the panel's own inner styles instead of replacing them. The fix is in `mergeProps`, which now merges `styles` and every `*Styles` key (`innerStyles`, `inputStyles`, …) whenever both objects hold a styles object for that key, whether or not they also pass `styles`.
+
 ## 0.211.0
 
 ### Minor Changes
