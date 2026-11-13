@@ -430,6 +430,7 @@ value      getValidationIcon
 value      getValidationMods
 value      getValidationTheme
 value      getWeekNumber
+value      GLASS_TOKENS
 type       Granularity
 value      Grid
 value      GridLayout
