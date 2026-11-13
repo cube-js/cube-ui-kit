@@ -209,6 +209,19 @@ const meta = {
       description: 'Size of the input. The chips follow it',
       table: { defaultValue: { summary: 'medium' } },
     },
+    tagPlacement: {
+      options: ['below', 'inside'],
+      control: { type: 'radio' },
+      description:
+        'Where the chips go: in a list below the input, or in the input box, in one wrapping row with the text',
+      table: { defaultValue: { summary: 'below' } },
+    },
+    hidePlaceholderWithTags: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the placeholder hides once there is a tag, so it only prompts for the first value',
+      table: { defaultValue: { summary: false } },
+    },
     listGap: {
       control: { type: 'number' },
       description: 'Space between options, in pixels',
@@ -439,6 +452,96 @@ export const Sizes: StoryFn<CubeTagInputProps> = (args) => (
 );
 
 Sizes.args = { fieldStyles: { width: '100%' } };
+
+export const TagsInside: StoryFn<CubeTagInputProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
+    {(['small', 'medium', 'large'] as const).map((size) => (
+      <TagInput
+        key={size}
+        {...args}
+        tagPlacement="inside"
+        label={size}
+        size={size}
+        // Short enough to leave typing room on one row at every size.
+        defaultValue={['ana@acme.com', 'lee@acme.com']}
+      />
+    ))}
+    <TagInput
+      {...args}
+      tagPlacement="inside"
+      label="Wrapping, with suggestions"
+      defaultValue={ACTIONS.map((action) => action.key)}
+      defaultInputValue="ma"
+      isClearable
+    >
+      {ACTIONS.map((action) => (
+        <TagInput.Item key={action.key}>{action.label}</TagInput.Item>
+      ))}
+    </TagInput>
+    <TagInput
+      {...args}
+      tagPlacement="inside"
+      label="Long value, long placeholder"
+      placeholder="Add another recipient by name or address"
+      defaultValue={[
+        'quarterly-revenue-distribution-list@finance.acme-holdings.com',
+        'ana@acme.com',
+      ]}
+    />
+    <TagInput
+      {...args}
+      tagPlacement="inside"
+      label="Invalid"
+      defaultValue={['ana@acme.com', 'not an address']}
+      validateTag={validateEmail}
+      isInvalid
+      errorMessage="Fix the highlighted address"
+    />
+    <TagInput
+      {...args}
+      tagPlacement="inside"
+      isDisabled
+      label="Disabled"
+      defaultValue={['ana@acme.com', 'ops-team@acme.com']}
+    />
+  </Space>
+);
+
+TagsInside.args = { fieldStyles: { width: '100%' } };
+
+TagsInside.parameters = {
+  docs: {
+    description: {
+      story:
+        'The chips in the input box, in one wrapping row with the text. One row is the height of the input. Text that does not fit after the chips moves to a row of its own with the controls, and a long value or placeholder ends in an ellipsis.',
+    },
+  },
+};
+
+export const HidePlaceholderWithTags: StoryFn<CubeTagInputProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
+    <TagInput
+      {...args}
+      hidePlaceholderWithTags
+      tagPlacement="inside"
+      label="No tags yet"
+      placeholder="Add recipients"
+    />
+    <TagInput
+      {...args}
+      hidePlaceholderWithTags
+      tagPlacement="inside"
+      label="With tags"
+      placeholder="Add recipients"
+      defaultValue={['ana@acme.com']}
+    />
+  </Space>
+);
+
+HidePlaceholderWithTags.args = { fieldStyles: { width: '100%' } };
+
+// A field with no placeholder looks like any other: nothing new to photograph.
+HidePlaceholderWithTags.parameters = NO_SNAPSHOT;
 
 export const DisabledAndReadOnly: StoryFn<CubeTagInputProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
