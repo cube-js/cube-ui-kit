@@ -33,7 +33,7 @@ import {
 import { RadioContext } from './context';
 import { JOINED_GROUP_STYLES } from './joined-styles';
 
-import type { KeyboardEvent } from 'react';
+import type { DOMAttributes, KeyboardEvent } from 'react';
 
 export interface CubeRadioGroupProps
   extends
@@ -192,7 +192,8 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     onArrowKey?.(event);
     isArrowKeyRef.current = false;
     // The caller's own handler, which the explicit prop below would replace.
-    baseProps.onKeyDown?.(event);
+    // `filterBaseProps` forwards event handlers, but its type lists none.
+    (baseProps as DOMAttributes<HTMLDivElement>).onKeyDown?.(event);
   };
 
   // Keyboard-only focus ring on the group container (button layout).
