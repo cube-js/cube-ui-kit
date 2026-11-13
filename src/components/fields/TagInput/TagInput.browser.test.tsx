@@ -278,3 +278,123 @@ describe('<TagInput /> leaving with a message shown', () => {
     );
   });
 });
+
+/** Layout of `tagPlacement="inside"`: wrapping and sizes jsdom cannot see. */
+describe('<TagInput tagPlacement="inside" /> layout', () => {
+  const ACTIONS = ['read', 'refresh', 'rebuild', 'deploy', 'delete'];
+
+  function box(container: HTMLElement) {
+    return container.querySelector('[data-qa="InputWrapper"]') as HTMLElement;
+  }
+
+  const middle = (el: Element) => {
+    const rect = el.getBoundingClientRect();
+
+    return rect.top + rect.height / 2;
+  };
+
+  const nextFrame = () =>
+    new Promise((resolve) => requestAnimationFrame(resolve));
+
+  it('keeps one row at the height of the input, for every size', () => {
+    const heights = (['small', 'medium', 'large'] as const).map((size) => {
+      const { container, unmount } = render(
+        <TagInput
+          aria-label="Tags"
+          tagPlacement="inside"
+          size={size}
+          defaultValue={['one', 'two']}
+          fieldStyles={{ width: '400px' }}
+        />,
+      );
+      const height = box(container).getBoundingClientRect().height;
+
+      unmount();
+
+      return height;
+    });
+
+    expect(heights).toEqual([28, 32, 40]);
+  });
+
+  // The suffix used to be a row item of its own, so at some widths the text
+  // ended a row and its trigger and clear button started the next.
+  it('keeps the text and its controls on one row at every width', async () => {
+    // The options' popover mounts in the Root's portal.
+    const { container } = renderWithRoot(
+      <div data-qa="Host">
+        <TagInput
+          aria-label="Actions"
+          tagPlacement="inside"
+          isClearable
+          isInvalid
+          defaultInputValue="ma"
+          defaultValue={ACTIONS.slice(0, 4)}
+        >
+          {ACTIONS.map((action) => (
+            <TagInput.Item key={action}>{action}</TagInput.Item>
+          ))}
+        </TagInput>
+      </div>,
+    );
+    const host = screen.getByTestId('Host');
+    const field = box(container);
+    const input = screen.getByRole('combobox');
+    const suffix = field.querySelector(':scope > [data-element="Suffix"]')!;
+    const split: number[] = [];
+
+    for (let width = 260; width <= 420; width += 2) {
+      host.style.width = `${width}px`;
+      await nextFrame();
+
+      if (Math.abs(middle(input) - middle(suffix)) > 2) split.push(width);
+    }
+
+    expect(split).toEqual([]);
+  });
+
+  it('moves text that does not fit after the chips to a row of its own', async () => {
+    const { container } = render(
+      <TagInput
+        aria-label="Recipients"
+        tagPlacement="inside"
+        defaultValue={['ana@acme.com', 'ben@acme.com']}
+        fieldStyles={{ width: '340px' }}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+    const firstRow = middle(input);
+
+    await userEvent.type(input, 'dan');
+    expect(middle(input)).toBe(firstRow);
+
+    await userEvent.type(input, 'iel.richardson@');
+    expect(middle(input)).toBeGreaterThan(firstRow);
+    expect(input.getBoundingClientRect().width).toBeCloseTo(
+      box(container).clientWidth - 6,
+      0,
+    );
+  });
+
+  it('cuts a long value inside the box', () => {
+    const { container } = render(
+      <TagInput
+        aria-label="Recipients"
+        tagPlacement="inside"
+        defaultValue={[
+          'a.very.long.address.for.the.quarterly.revenue.list@finance.acme.com',
+        ]}
+        fieldStyles={{ width: '300px' }}
+      />,
+    );
+    const field = box(container).getBoundingClientRect();
+    const chip = screen.getByRole('row').getBoundingClientRect();
+    const label = container.querySelector(
+      '[data-qa="Tag"] [data-element="Label"]',
+    ) as HTMLElement;
+
+    expect(chip.right).toBeLessThanOrEqual(field.right);
+    expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
+    expect(getComputedStyle(label).textOverflow).toBe('ellipsis');
+  });
+});

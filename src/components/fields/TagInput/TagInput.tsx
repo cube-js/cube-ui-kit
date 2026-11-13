@@ -63,6 +63,7 @@ import { TextInputBase } from '../TextInput/TextInputBase';
 
 import { TagList, TagListEntry } from './TagList';
 import { useActiveOption } from './useActiveOption';
+import { useSuffixSpace } from './useSuffixSpace';
 import { useTagError } from './useTagError';
 
 import type { FieldBaseProps } from '../../../shared';
@@ -314,18 +315,22 @@ const INSIDE_WRAPPER_STYLES: Styles = {
     'size=large': '$size-sm',
   },
   '$tag-inset': '(($size - $tag-size - 2bw) / 2)',
+  // The suffix's width and the gap before it, measured by `useSuffixSpace`.
+  '$suffix-space': '0px',
 
   Prefix: {
     display: 'contents',
   },
 
-  // At the end of the last row. The negative margins let a full-height action
-  // sit in a chip-high row without growing it, flush with the edge as in a
-  // plain input.
+  // On the end of the text, which reserves its room: the suffix takes none of
+  // its own in the row, so the two wrap together. The block margins let a
+  // full-height action sit in a chip-high row without growing it, flush with
+  // the edge as in a plain input.
   Suffix: {
+    position: 'relative',
     alignSelf: 'stretch',
     margin: '(-1 * $tag-inset)',
-    marginLeft: 0,
+    marginLeft: '(-1 * $suffix-space)',
   },
 };
 
@@ -341,11 +346,13 @@ const INSIDE_INPUT_STYLES: Styles = {
     '@supports(field-sizing: content)': 'auto',
   },
   fieldSizing: 'content',
-  // `auto`, or a width would override `field-sizing`.
-  width: '6x auto 100%',
+  // `auto`, or a width would override `field-sizing`. The suffix's room counts
+  // toward the minimum, so typing room stays 6x beside it.
+  width: '(6x + $suffix-space) auto 100%',
   // Its own line box would make the row taller than the chips.
   height: '$tag-size',
-  padding: '0 (1x - 1bw - $tag-inset)',
+  padding:
+    '0 (1x - 1bw - $tag-inset + $suffix-space) 0 (1x - 1bw - $tag-inset)',
 };
 
 // The chips are items of the box's row, not a box of their own, and each one
@@ -1908,6 +1915,8 @@ function TagInput<T extends object>(
   // Not a bare fragment: an empty one would still mark the input as having a
   // suffix.
   const hasActions = clearButton != null || trigger != null;
+
+  useSuffixSpace(wrapperRef, tagPlacement === 'inside');
 
   const partStyles = getPlacementStyles(tagPlacement, {
     wrapper: wrapperStyles,
