@@ -304,7 +304,7 @@ describe('<TagInput tagPlacement="inside" /> layout', () => {
           tagPlacement="inside"
           size={size}
           defaultValue={['one', 'two']}
-          fieldStyles={{ width: '400px' }}
+          fieldStyles={{ width: '50x' }}
         />,
       );
       const height = box(container).getBoundingClientRect().height;
@@ -359,7 +359,7 @@ describe('<TagInput tagPlacement="inside" /> layout', () => {
         aria-label="Recipients"
         tagPlacement="inside"
         defaultValue={['ana@acme.com', 'ben@acme.com']}
-        fieldStyles={{ width: '340px' }}
+        fieldStyles={{ width: '42.5x' }}
       />,
     );
     const input = screen.getByRole('textbox');
@@ -376,6 +376,32 @@ describe('<TagInput tagPlacement="inside" /> layout', () => {
     );
   });
 
+  // Sized like text, a long placeholder took a row of its own, which the first
+  // typed letter took back.
+  it('cuts a long placeholder instead of giving it a row', () => {
+    const { container } = render(
+      <TagInput
+        aria-label="Recipients"
+        tagPlacement="inside"
+        placeholder="Add another recipient by name or address"
+        defaultValue={['ana@acme.com', 'ben@acme.com']}
+        fieldStyles={{ width: '42.5x' }}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+
+    expect(box(container).getBoundingClientRect().height).toBe(32);
+    expect(middle(input)).toBe(middle(screen.getAllByRole('row')[0]));
+    // An input's scroll width leaves the placeholder out: measure its text.
+    const context = document.createElement('canvas').getContext('2d')!;
+
+    context.font = getComputedStyle(input).font;
+    expect(
+      context.measureText((input as HTMLInputElement).placeholder).width,
+    ).toBeGreaterThan(input.clientWidth);
+    expect(getComputedStyle(input).textOverflow).toBe('ellipsis');
+  });
+
   it('cuts a long value inside the box', () => {
     const { container } = render(
       <TagInput
@@ -384,7 +410,7 @@ describe('<TagInput tagPlacement="inside" /> layout', () => {
         defaultValue={[
           'a.very.long.address.for.the.quarterly.revenue.list@finance.acme.com',
         ]}
-        fieldStyles={{ width: '300px' }}
+        fieldStyles={{ width: '37.5x' }}
       />,
     );
     const field = box(container).getBoundingClientRect();

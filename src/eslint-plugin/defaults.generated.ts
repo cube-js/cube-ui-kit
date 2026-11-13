@@ -753,6 +753,7 @@ export const DEFAULTS: DefaultsRegistry = {
         autoComplete: { kind: 'default', value: 'off' },
         containerPadding: { kind: 'default', value: 8 },
         direction: { kind: 'default', value: 'bottom' },
+        hidePlaceholderWithTags: { kind: 'default', value: false },
         hideTrigger: { kind: 'default', value: false },
         isClearable: { kind: 'default', value: false },
         overlayOffset: { kind: 'default', value: 8 },
@@ -760,6 +761,7 @@ export const DEFAULTS: DefaultsRegistry = {
         shouldCommitOnBlur: { kind: 'default', value: true },
         shouldFlip: { kind: 'default', value: true },
         size: { kind: 'default', value: 'medium' },
+        tagPlacement: { kind: 'default', value: 'below' },
       },
     },
     Text: {
