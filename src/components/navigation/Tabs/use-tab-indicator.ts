@@ -1,4 +1,4 @@
-import { RefObject, useEffectEvent, useState } from 'react';
+import { useEffectEvent, useState } from 'react';
 
 import { getLayoutScale } from '../../../utils/layout-scale';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
@@ -32,7 +32,8 @@ export type IndicatorOrientation = 'horizontal' | 'vertical';
  * along the orientation axis. Returns null if disabled (e.g., for
  * non-default/narrow tab types).
  *
- * @param containerRef - Ref to the tab container element
+ * @param container - The tab list element. An element rather than a ref, so a
+ *   list that is replaced by a new one is watched in its place.
  * @param selectedKey - Currently selected tab key
  * @param enabled - Whether the indicator should be shown
  * @param orientation - Axis along which the indicator moves
@@ -40,7 +41,7 @@ export type IndicatorOrientation = 'horizontal' | 'vertical';
  * @returns Indicator style (`start`, `size`) or null if disabled/not ready
  */
 export function useTabIndicator(
-  containerRef: RefObject<HTMLElement | null>,
+  container: HTMLElement | null,
   selectedKey: Key | null,
   enabled: boolean,
   orientation: IndicatorOrientation = 'horizontal',
@@ -87,8 +88,6 @@ export function useTabIndicator(
   // grows, the list becoming visible. A new selection or tab order observes
   // afresh, and the observer's first report measures it.
   useLayoutEffect(() => {
-    const container = containerRef.current;
-
     if (!enabled || !container) return;
 
     const observer = new ResizeObserver(() => measure(container));
@@ -98,7 +97,7 @@ export function useTabIndicator(
     for (const child of container.children) observer.observe(child);
 
     return () => observer.disconnect();
-  }, [containerRef, enabled, orientation, selectedKey, orderToken]);
+  }, [container, enabled, orientation, selectedKey, orderToken]);
 
   return enabled ? style : null;
 }

@@ -459,13 +459,19 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     firstTitle = 'Model',
     selectedTitle = 'Dashboard',
     keyOrder,
+    isReorderable,
   }: {
     firstTitle?: string;
     selectedTitle?: string;
     keyOrder?: string[];
+    isReorderable?: boolean;
   }) {
     return (
-      <Tabs defaultActiveKey="dashboard" keyOrder={keyOrder}>
+      <Tabs
+        defaultActiveKey="dashboard"
+        keyOrder={keyOrder}
+        isReorderable={isReorderable}
+      >
         <Tab key="model" title={firstTitle} />
         <Tab key="dashboard" title={selectedTitle} />
       </Tabs>
@@ -529,6 +535,35 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
 
     rerender(<HiddenTabs hidden={false} />);
 
+    await expectUnderTab(tab);
+  });
+
+  // Turning reordering on or off replaces the tab list element, as a builder
+  // does when it enters edit mode.
+  it('keeps following the selected tab after reordering is turned on', async () => {
+    const { rerender } = renderWithRoot(<LoadingTabs />);
+
+    await expectUnderTab(screen.getByRole('tab', { name: 'Dashboard' }));
+
+    rerender(<LoadingTabs isReorderable />);
+
+    // A new list holds new tabs.
+    const tab = screen.getByRole('tab', { name: 'Dashboard' });
+
+    await expectUnderTab(tab);
+
+    const { width: before } = tab.getBoundingClientRect();
+
+    rerender(
+      <LoadingTabs
+        isReorderable
+        selectedTitle="2026 Sales Performance Story"
+      />,
+    );
+
+    await waitFor(() =>
+      expect(tab.getBoundingClientRect().width).toBeGreaterThan(before + 50),
+    );
     await expectUnderTab(tab);
   });
 
