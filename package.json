@@ -113,7 +113,7 @@
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
     "@tenphi/glaze": "3.1.0",
-    "@tenphi/tasty": "3.19.0",
+    "@tenphi/tasty": "3.19.1",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",
