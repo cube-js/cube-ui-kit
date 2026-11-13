@@ -391,7 +391,13 @@ describe('component base props', () => {
   it('forwards panel props in dialog mode', () => {
     renderWithRoot(
       <Layout>
-        <Layout.Panel {...customization} qa="custom" mode="dialog" isDialogOpen>
+        <Layout.Panel
+          {...customization}
+          qa="custom"
+          side="left"
+          mode="dialog"
+          isDialogOpen
+        >
           Panel
         </Layout.Panel>
       </Layout>,
