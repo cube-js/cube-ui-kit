@@ -212,6 +212,8 @@ const form = Form.useController({
 - `ArrowLeft` / `ArrowRight` — Move focus between the items without toggling them, skipping disabled items that have no tooltip
 - `Space` / `Enter` — Toggle the focused item
 
+In `single` mode the group is announced as a radio group but takes focus like a toolbar, and this differs from the [ARIA radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/). There, `Tab` lands on the checked radio and the arrow keys select as they move. Here, the first `Tab` lands on the edge item even when another item is checked, so a screen reader may announce "not checked" first, and the arrow keys only move focus. This is React Aria's behaviour (`useToggleButtonGroup`, built on `useToolbar`), and UI Kit keeps it. When focus must land on the checked option, use `Radio.Group type="button"`: it draws the same joined row and follows the radio pattern.
+
 ### Screen Reader Support
 
 - `single` mode: the group is a `radiogroup`, and each item a `radio` that is `checked` or not

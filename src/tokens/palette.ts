@@ -241,6 +241,13 @@ const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [25, 25] };
  * link is. The hover takes `body`/75 so the rest→hover intensify stays visible; one
  * preset step apart is what keeps the two from solving onto the same color.
  *
+ * These floors stay below WCAG AA on purpose. A color seed is a customer's brand, and
+ * the rest link should read as that brand: a higher floor would darken a light brand's
+ * link away from it. So in light, normal contrast, a bright brand's link measures about
+ * 4.0–4.4:1 on white, and its selected outline/clear labels 3.4–4.4:1 on their darker
+ * fills. The unseeded arm solves against a WCAG floor and meets AA; Theming.docs.mdx
+ * tells a consumer who needs AA to seed a darker shade.
+ *
  * The HC entries are spelled `85` and `92` rather than left to Glaze's +15, for the
  * same reason as {@link ACCENT_FILL_CONTRAST}, and they stay apart so the rest→hover
  * intensify survives the tier that needs it most. They replace the hand-measured

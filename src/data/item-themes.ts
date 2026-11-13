@@ -110,7 +110,10 @@ export const DEFAULT_OUTLINE_STYLES: Styles = mergeStyles(
     // below AA. Selected label uses LINK's colors: soft `#primary-accent-text-soft`
     // at rest, intensifying to `#primary-accent-text` on hover, as a link does,
     // and on keyboard focus, where the fill darkens too. Both are solved in
-    // `palette.ts` for AA against the BASE selected fill (`accent-selected-fill`).
+    // `palette.ts` against the BASE selected fill (`accent-selected-fill`): for
+    // WCAG AA in the default palette, and at APCA Lc 60 / 75 under a brand or
+    // status color seed, which keeps the brand's tone and can measure below AA
+    // in light mode (see ACCENT_TEXT_CONTRAST).
     outline: {
       '': '0 #primary-accent-text.0',
       focused: '$ring-width #primary-accent-text',
