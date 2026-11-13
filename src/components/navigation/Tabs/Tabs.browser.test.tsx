@@ -491,6 +491,20 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
       { timeout: 2000 },
     );
 
+  // Selecting a tab changes its colour, not its size, so no resize moves the
+  // indicator here: only the new selection does.
+  it('moves to a newly selected tab', async () => {
+    renderWithRoot(<LoadingTabs />);
+
+    await expectUnderTab(screen.getByRole('tab', { name: 'Dashboard' }));
+
+    const tab = screen.getByRole('tab', { name: 'Model' });
+
+    await userEvent.click(tab);
+
+    await expectUnderTab(tab);
+  });
+
   it('follows the selected tab when its title loads and widens it', async () => {
     const { rerender } = renderWithRoot(<LoadingTabs />);
     const tab = screen.getByRole('tab', { name: 'Dashboard' });

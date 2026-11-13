@@ -94,7 +94,11 @@ export function useTabIndicator(
 
     observer.observe(container);
 
-    for (const child of container.children) observer.observe(child);
+    for (const child of container.children) {
+      // Skip the indicator, the one child without a tab: its own transition
+      // moves nothing.
+      if (child.querySelector('[role="tab"]')) observer.observe(child);
+    }
 
     return () => observer.disconnect();
   }, [container, enabled, orientation, selectedKey, orderToken]);
