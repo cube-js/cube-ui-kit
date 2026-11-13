@@ -210,19 +210,12 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs `node scripts/test-once.mjs --pre-push`, which skips like `pnpm test:once` only when every pushed ref also points at that tree, and otherwise runs the full suite on the working tree as before. So a `pnpm test:once` pass covers the next push of that tree. Skip only intentionally (`--no-verify` or `HUSKY=0`).
 - No external services or databases required for local development.
 
-## Tasty Documentation
+## Tasty and Glaze Documentation
 
-Symlinked in `docs/tasty/` from `node_modules/@tenphi/tasty/docs`, for working on this repo. The package does not ship them: consumers get Tasty's docs through Tasty's harness, which UI Kit's extends. Consult these when authoring components or working with style props:
+The docs of the installed Tasty and Glaze come through harnesspm, as they do for consumers. Their indexes are in the harnesspm block at the end of this file, and `pnpm install` rewrites them for the pinned versions.
 
-- [`getting-started.md`](docs/tasty/getting-started.md), [`methodology.md`](docs/tasty/methodology.md), [`design-system.md`](docs/tasty/design-system.md), [`react-api.md`](docs/tasty/react-api.md), [`dsl.md`](docs/tasty/dsl.md), [`styles.md`](docs/tasty/styles.md), [`configuration.md`](docs/tasty/configuration.md), [`debug.md`](docs/tasty/debug.md)
-
-Internal-only references (`pipeline.md`, `injector.md`), positioning material (`comparison.md`, `adoption.md`), and modes the UI Kit does not ship (`tasty-static.md`, `ssr.md`) are intentionally omitted; read them directly in `docs/tasty/` if needed.
-
-## Glaze Documentation
-
-Symlinked in `docs/glaze/` the same way, and not shipped either: consumers get them through Glaze's harness. Consult when working on color tokens, theme generation, or contrast tuning — Glaze powers `src/tokens/palette.ts`.
-
-- [`methodology.mdx`](docs/glaze/methodology.mdx), [`shadows-and-glows.mdx`](docs/glaze/shadows-and-glows.mdx), [API reference](docs/glaze/reference/index.md), [`migration.md`](docs/glaze/migration.md)
+- **Tasty:** [`llms.txt`](node_modules/.harnesspm/pkgs/@tenphi/tasty/docs/llms.txt). Read "Tasty Style Rules for AI Agents" before you write or review styles, then the guides and references the task needs. UI Kit ships neither build-time extraction nor SSR.
+- **Glaze:** [`llms.txt`](node_modules/.harnesspm/docs/glaze/llms.txt). Read it when you work on color tokens, theme generation or contrast tuning: Glaze powers `src/tokens/palette.ts`. Start with "Designing a palette" and "Light, dark, and high contrast".
 
 ## Harness for Coding Agents — `harness/`
 
