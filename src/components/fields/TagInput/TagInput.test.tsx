@@ -644,6 +644,39 @@ describe('<TagInput />', () => {
     });
   });
 
+  describe('hidePlaceholderWithTags', () => {
+    it('shows the placeholder only while there is no tag', async () => {
+      const { getByRole } = render(
+        <TagInput
+          hidePlaceholderWithTags
+          label="Tags"
+          placeholder="Add a tag"
+        />,
+      );
+      const input = getByRole('textbox');
+
+      expect(input).toHaveAttribute('placeholder', 'Add a tag');
+
+      await userEvent.type(input, 'one{Enter}');
+      expect(input).not.toHaveAttribute('placeholder', 'Add a tag');
+
+      await userEvent.click(getByRole('button', { name: 'Remove one' }));
+      expect(input).toHaveAttribute('placeholder', 'Add a tag');
+    });
+
+    it('keeps the placeholder next to tags by default', () => {
+      const { getByRole } = render(
+        <TagInput
+          label="Tags"
+          placeholder="Add a tag"
+          defaultValue={['one']}
+        />,
+      );
+
+      expect(getByRole('textbox')).toHaveAttribute('placeholder', 'Add a tag');
+    });
+  });
+
   describe('tagPlacement="inside"', () => {
     function Inside(props: Partial<Parameters<typeof TagInput>[0]>) {
       return (

@@ -109,6 +109,11 @@ export interface CubeTagInputProps<T = object>
   onInputChange?: (value: string) => void;
   /** Placeholder text for the input. */
   placeholder?: string;
+  /**
+   * Whether the placeholder hides once there is a tag, so it only prompts for
+   * the first value.
+   */
+  hidePlaceholderWithTags?: boolean;
   /** HTML `autocomplete` attribute for the input. */
   autoComplete?: string;
   /**
@@ -334,18 +339,24 @@ const INSIDE_WRAPPER_STYLES: Styles = {
   },
 };
 
-// The text takes what the last row leaves. It is as wide as what is typed (or
-// the placeholder), never under 6x, so text that does not fit the rest of the
-// row moves to a row of its own, and is cut only past the full width. Without
-// `field-sizing` it keeps a fixed share of the row and scrolls instead. With no
-// chips it lines up with a plain input.
+// The text takes what the last row leaves. It is as wide as what is typed,
+// never under 6x, so text that does not fit the rest of the row moves to a row
+// of its own, and is cut only past the full width. The placeholder is a hint:
+// it does not size the field, so it never takes a row of its own (which the
+// first typed letter would take back) and is cut with an ellipsis instead.
+// Without `field-sizing` the text keeps a fixed share of the row and scrolls.
+// With no chips it lines up with a plain input.
 const INSIDE_INPUT_STYLES: Styles = {
   flexGrow: 1,
   flexBasis: {
     '': 0,
-    '@supports(field-sizing: content)': 'auto',
+    '@supports(field-sizing: content) & !:placeholder-shown': 'auto',
   },
-  fieldSizing: 'content',
+  fieldSizing: {
+    '': 'content',
+    ':placeholder-shown': 'fixed',
+  },
+  textOverflow: 'ellipsis',
   // `auto`, or a width would override `field-sizing`. The suffix's room counts
   // toward the minimum, so typing room stays 6x beside it.
   width: '(6x + $suffix-space) auto 100%',
@@ -391,6 +402,15 @@ function getPlacementStyles(
     tagList: mergeStyles(INSIDE_TAG_LIST_STYLES, own.tagList),
     tag: mergeStyles(INSIDE_TAG_STYLES, own.tag),
   };
+}
+
+/** The placeholder, unless it hides once there is a tag. */
+function shownPlaceholder(
+  placeholder: string | undefined,
+  hideWithTags: boolean | undefined,
+  tagCount: number,
+) {
+  return hideWithTags && tagCount > 0 ? undefined : placeholder;
 }
 
 /**
@@ -897,6 +917,7 @@ function TagInput<T extends object>(
     defaultInputValue,
     onInputChange,
     placeholder,
+    hidePlaceholderWithTags,
     autoFocus,
     autoComplete = 'off',
     onFocus,
@@ -1815,7 +1836,11 @@ function TagInput<T extends object>(
       id,
       label,
       value: draft,
-      placeholder,
+      placeholder: shownPlaceholder(
+        placeholder,
+        hidePlaceholderWithTags,
+        tags.length,
+      ),
       isDisabled,
       isReadOnly,
       isRequired,
