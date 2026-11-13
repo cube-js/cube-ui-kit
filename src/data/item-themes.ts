@@ -245,9 +245,11 @@ export const DEFAULT_ITEM_STYLES: Styles = {
 
 export const DEFAULT_LINK_STYLES: Styles = {
   // Default sits at `#primary-accent-text-soft` and intensifies on hover to the
-  // stronger `#primary-accent-text`. Both are solved in `palette.ts` for AA
-  // against `accent-selected-fill` (the BASE selected Item fill), so they also
-  // clear AA on plain surfaces; both are adaptive across light/dark/HC.
+  // stronger `#primary-accent-text`. Both are solved in `palette.ts` against
+  // `accent-selected-fill` (the BASE selected Item fill): for WCAG AA in the
+  // default palette, and at APCA Lc 60 / 75 under a brand or status color
+  // seed, which keeps the brand's tone and can measure below AA in light mode
+  // (see ACCENT_TEXT_CONTRAST). Both are adaptive across light/dark/HC.
   outline: {
     '': '0 #primary-accent-text.0',
     focused: '$ring-width #primary-accent-text',

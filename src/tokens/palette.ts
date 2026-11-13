@@ -233,9 +233,9 @@ const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [25, 25] };
  *
  * Also "from white", in the same sense as {@link ACCENT_FILL_CONTRAST}: both solve
  * against `accent-selected-fill`, which is `oklch(0.975 0.0037 284.4)` in light — white
- * for every practical purpose, and the surface links sit on. Selected outline and clear
- * labels sit on slightly darker fills (`surface-2`, `surface-3`), so they measure a
- * little lower than a link does. These are
+ * for every practical purpose, and the surface links sit on. Selected outline, outline-2
+ * and clear labels sit on a 9% brand tint over `surface-2`, `surface-3` or the page,
+ * so they measure a little lower than a link does. These are
  * foreground spots, so they keep the default `fg` polarity and Glaze solves
  * `apcaContrast(text, base)`.
  *
