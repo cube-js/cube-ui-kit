@@ -2,25 +2,28 @@
   "lockfileVersion": 1,
   "packages": {
     "@cube-dev/ui-kit": {
-      "version": "0.213.0",
       "plugin": "uikit",
       "project": true
     },
     "@tenphi/eslint-plugin-tasty": {
-      "version": "1.19.0",
-      "plugin": "tasty-lint"
+      "version": "1.19.1",
+      "plugin": "tasty-lint",
+      "integrity": "sha512-QOibUelN/4dYMpCDCirZXYnCGpYBRpENJO5u96nFzRRT0Iu/LDFPyTa+bZoPiZS1tG+Np4I2t1HuX6LYQ13cjw=="
     },
     "@tenphi/glaze": {
       "version": "3.1.0",
-      "plugin": "glaze"
+      "plugin": "glaze",
+      "integrity": "sha512-NOg3tsb6knAlNL1J9Y9Bkf0mDYf/1dHlTTcUHyYFoeOS5SGLXjBWMY4H85Zr342/p2UTpetSEVNCgCq2BN0Bfg=="
     },
     "@tenphi/harnesspm": {
-      "version": "0.3.0",
-      "plugin": "harnesspm"
+      "version": "0.4.0",
+      "plugin": "harnesspm",
+      "integrity": "sha512-O5hMPf6d/NMlxFQ7KS2faiVbmtjcI2ePcZz/F2dD+QZ9XWOkMJAwz2rjsuPoo6SOqggQSiITOC69tzhM6l1dZw=="
     },
     "@tenphi/tasty": {
       "version": "3.19.1",
-      "plugin": "tasty"
+      "plugin": "tasty",
+      "integrity": "sha512-eOXl0ePu1ciPXG93RSJwgfsrkbIPHJrGaenIJrhZ8pQcIwmbSslMp2wMk8GRtrSDgGuyiC65a8g3RQwwjwC4aA=="
     }
   },
   "units": {
@@ -50,7 +53,7 @@
     },
     "harnesspm:docs": {
       "kind": "docs",
-      "hash": "9d1749e64e709dc2"
+      "hash": "cb70226770a83916"
     },
     "harnesspm:rules/generated-files": {
       "kind": "rules",
@@ -66,7 +69,7 @@
     },
     "harnesspm:skills/harnesspm-import": {
       "kind": "skills",
-      "hash": "c1962f2164e14333"
+      "hash": "1e8f43dcceaf4750"
     },
     "harnesspm:skills/harnesspm-improve": {
       "kind": "skills",
@@ -74,7 +77,7 @@
     },
     "tasty-lint:docs": {
       "kind": "docs",
-      "hash": "e5abbaec5ef26af5"
+      "hash": "e8d7edf40a04a04c"
     },
     "tasty-lint:hooks/check-edit": {
       "kind": "hooks",
@@ -82,15 +85,15 @@
     },
     "tasty-lint:rules/usage": {
       "kind": "rules",
-      "hash": "77f3b6f8856d00f1"
+      "hash": "96bcd61ec50d3d70"
     },
     "tasty-lint:scripts/check": {
       "kind": "scripts",
-      "hash": "5b3341d0465ec9ab"
+      "hash": "6c24d63fa8c49161"
     },
     "tasty-lint:scripts/check-edit": {
       "kind": "scripts",
-      "hash": "a380582bd29f804b"
+      "hash": "81a36c54c1df4f0d"
     },
     "tasty:docs": {
       "kind": "docs",
@@ -129,8 +132,7 @@
     },
     "tasty-lint:rules/usage": {
       "harnesspm/patches/tasty-lint-usage.patch.md": {
-        "After you change styles": "b5a2a1dc94cb8a0d",
-        "Exceptions": "82706b69a6ce96c5"
+        "Exceptions": "14f40fdd7def7f18"
       }
     },
     "tasty:rules/usage": {
