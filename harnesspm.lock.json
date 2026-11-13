@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "packages": {
     "@cube-dev/ui-kit": {
-      "version": "0.212.0",
+      "version": "0.213.0",
       "plugin": "uikit",
       "project": true
     },
