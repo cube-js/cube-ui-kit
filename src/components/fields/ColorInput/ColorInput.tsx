@@ -1,4 +1,4 @@
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import {
   FocusEvent,
   ForwardedRef,
@@ -37,6 +37,8 @@ import { useIsInsideColorPopover } from '../color/context';
 import { ColorSwatch } from '../ColorSwatch/ColorSwatch';
 import { TextInputBase } from '../TextInput/TextInputBase';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+
 /**
  * How the text in the input relates to the committed value.
  *
@@ -65,7 +67,7 @@ const ColorInputTrigger = tasty(ItemAction, {
 
 export interface CubeColorInputProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The selected color, as a color string. */

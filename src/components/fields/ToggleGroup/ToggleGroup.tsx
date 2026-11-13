@@ -1,10 +1,11 @@
 import { useObjectRef } from '@react-aria/utils';
-import { BaseProps, filterBaseProps, mergeStyles, tasty } from '@tenphi/tasty';
+import { mergeStyles, tasty } from '@tenphi/tasty';
 import { Children, cloneElement, isValidElement } from 'react';
 import { useFocusWithin, useLabel, useToggleButtonGroup } from 'react-aria';
 import { useToggleGroupState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared/form';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   FieldLayoutStyleProps,
@@ -21,11 +22,12 @@ import type { AriaLabelingProps, FocusEvents, Key } from '@react-types/shared';
 import type { ReactElement, ReactNode, Ref } from 'react';
 import type { ToggleGroupState } from 'react-stately';
 import type { SizeName } from '../../../tokens/sizes';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { ToggleGroupType } from './context';
 
 export interface CubeToggleGroupProps
   extends
-    Omit<BaseProps, 'children' | 'role' | 'as'>,
+    Omit<ComponentBaseProps, 'children' | 'role' | 'as'>,
     AriaLabelingProps,
     Pick<FocusEvents, 'onFocus' | 'onBlur'>,
     FieldLayoutStyleProps,
@@ -216,7 +218,7 @@ function ToggleGroup(rawProps: CubeToggleGroupProps) {
       // The caller's base props (`qaVal`, `className`, `style`, `data-*`, event
       // handlers), as every field forwards them; the group's own wiring wins.
       {...mergeProps(
-        filterBaseProps(otherProps, { eventProps: true }),
+        filterComponentBaseProps(otherProps, { eventProps: true }),
         groupProps,
         focusWithinProps,
       )}

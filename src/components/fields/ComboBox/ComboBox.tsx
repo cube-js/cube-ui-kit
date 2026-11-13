@@ -5,7 +5,7 @@ import {
   FocusableRef,
   Key,
 } from '@react-types/shared';
-import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import React, {
   ForwardedRef,
   forwardRef,
@@ -32,6 +32,7 @@ import {
   OVERLAY_KEYS,
   settleOverlayKey,
 } from '../../../utils/react/overlayKeyPropagation';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
@@ -69,6 +70,8 @@ import {
   sortSelectedFirst,
 } from './comboBoxOptions';
 
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 export type PopoverTriggerAction = 'focus' | 'input' | 'manual';
@@ -85,7 +88,7 @@ const InputElement = tasty({
 
 export interface CubeComboBoxProps<T>
   extends
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The selected key in controlled mode */
@@ -640,6 +643,7 @@ function useComboBoxKeyboard({
 // Component: ComboBoxInput
 // ============================================================================
 interface ComboBoxInputProps {
+  customizationProps: ReturnType<typeof pickBaseCustomizationProps>;
   qa?: string;
   inputRef: RefObject<HTMLInputElement>;
   id?: string;
@@ -676,6 +680,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
   function ComboBoxInput(
     {
       qa,
+      customizationProps,
       inputRef,
       id,
       value,
@@ -706,6 +711,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
 
     return (
       <InputElement
+        {...customizationProps}
         ref={combinedRef}
         qa={qa}
         id={id}
@@ -1301,6 +1307,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     prefix: !!prefix,
     suffix: true,
     clearable: showClearButton,
+    ...props.mods,
   };
 
   // The list is at least as wide as the field, measured as it shows.
@@ -1364,6 +1371,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <ComboBoxInput
+        customizationProps={pickBaseCustomizationProps(props)}
         qa={qa || 'ComboBox'}
         inputRef={inputRef}
         id={id}

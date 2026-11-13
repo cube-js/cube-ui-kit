@@ -3,6 +3,7 @@ import { forwardRef, useMemo, useRef, useState } from 'react';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n/useI18n';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { DraggableCollection } from '../../shared/DraggableCollection';
@@ -556,6 +557,7 @@ function ItemTable<T = any>(
       dropState={dropState}
       collectionProps={collectionProps}
       bodyRef={bodyRef}
+      customizationProps={pickBaseCustomizationProps(props)}
       qa={qa || 'ItemTable'}
       rows={visibleRows}
       rowKeys={visibleRowKeys}

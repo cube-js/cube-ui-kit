@@ -1,18 +1,19 @@
 import {
-  BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  filterBaseProps,
   mergeStyles,
   Styles,
   tasty,
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, HTMLAttributes, ReactNode } from 'react';
 
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
 
 import { LayoutContextReset } from './LayoutContext';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 const ContainerElement = tasty({
   as: 'div',
@@ -51,7 +52,7 @@ const ContainerElement = tasty({
 });
 
 export interface CubeLayoutContainerProps
-  extends BaseProps, ContainerStyleProps {
+  extends ComponentBaseProps, ContainerStyleProps {
   children?: ReactNode;
   /** Custom styles for container and inner elements */
   styles?: Styles;
@@ -94,7 +95,7 @@ function LayoutContainer(
   return (
     <ContainerElement
       ref={ref}
-      {...filterBaseProps(otherProps, { eventProps: true })}
+      {...filterComponentBaseProps(otherProps, { eventProps: true })}
       styles={finalStyles}
     >
       <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>

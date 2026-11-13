@@ -26,6 +26,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useMergeStyles } from '../../../utils/react/useMergeStyles';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
@@ -753,9 +754,10 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   return (
     <TabsProvider value={baseContextValue}>
       <TabsElement
+        {...pickBaseCustomizationProps(props)}
         ref={ref}
         qa={qa}
-        mods={mods}
+        mods={{ ...mods, ...otherProps.mods }}
         styles={combinedStyles}
         // The measured scrollbar handle wins over a caller's token of the same name.
         tokens={{ ...tokens, ...handleTokens }}

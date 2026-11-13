@@ -1,12 +1,6 @@
 import { useObjectRef, useSyncRef } from '@react-aria/utils';
 import { CollectionChildren, FocusStrategy, Key } from '@react-types/shared';
-import {
-  BasePropsWithoutChildren,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  filterBaseProps,
-  Styles,
-} from '@tenphi/tasty';
+import { CONTAINER_STYLES, ContainerStyleProps, Styles } from '@tenphi/tasty';
 import React, {
   KeyboardEvent,
   ReactElement,
@@ -21,6 +15,7 @@ import { Section, useTreeState } from 'react-stately';
 
 import { useI18n } from '../../../i18n/useI18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useMenuContext } from '../Menu/context';
@@ -45,6 +40,8 @@ import {
   StyledLoadingWrapper,
   StyledSearchInput,
 } from './styled';
+
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
 
 /** The keys of the items in `nodes`, in order, including those in sections. */
 function collectItemKeys(nodes: Iterable<any>, keys: Key[] = []): Key[] {
@@ -97,7 +94,7 @@ export interface CommandMenuItem {
 
 export interface CubeCommandMenuProps<T>
   extends
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     ContainerStyleProps,
     Omit<
       CubeMenuProps<T>,
@@ -581,8 +578,7 @@ function CommandMenu<T extends object>(
     sections: viewHasSections,
     footer: !!footer,
     header: !!header,
-    popover: completeProps.mods?.popover,
-    tray: completeProps.mods?.tray,
+    ...completeProps.mods,
   };
 
   const {
@@ -591,7 +587,7 @@ function CommandMenu<T extends object>(
     'aria-describedby': _ariaDescribedBy,
     'aria-details': _ariaDetails,
     ...wrapperProps
-  } = filterBaseProps(props) as Record<string, unknown>;
+  } = filterComponentBaseProps(props) as Record<string, unknown>;
 
   return (
     <StyledCommandMenu

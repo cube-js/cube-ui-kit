@@ -1,8 +1,9 @@
 import type { Key } from '@react-types/shared';
-import type { BaseProps, ContainerStyleProps, Styles } from '@tenphi/tasty';
+import type { ContainerStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type { NavigateArg } from '../../../providers/navigation.types';
 import type { SizeName } from '../../../tokens';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeItemActionProps } from '../../actions/ItemAction/ItemAction';
 import type { CubeTablePageInfo } from '../../navigation/Pagination';
 import type { CubeTableRowRenderProps } from '../TableBase/TableView';
@@ -27,7 +28,7 @@ export interface CubeItemTableSection {
 
 export interface CubeItemTableProps<T = any>
   extends
-    BaseProps,
+    ComponentBaseProps,
     ContainerStyleProps,
     CubeTableLayoutProps,
     CubeTableTreeProps<T> {

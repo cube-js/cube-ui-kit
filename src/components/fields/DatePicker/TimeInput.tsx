@@ -1,5 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import { BaseProps, Styles } from '@tenphi/tasty';
+import { Styles } from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import {
   AriaTimeFieldProps,
@@ -11,6 +11,7 @@ import { useTimeFieldState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared/form';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -24,13 +25,15 @@ import { DEFAULT_TIME_PROPS } from './props';
 import { Granularity } from './types';
 import { useFocusManagerRef } from './utils';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+
 export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
   extends
     Omit<
       AriaTimeFieldProps<TimeValue>,
       'errorMessage' | 'form' | 'name' | 'value' | 'onChange' | 'granularity'
     >,
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<TimeValue | null | undefined> {
   wrapperStyles?: Styles;
@@ -102,6 +105,8 @@ function TimeInput<T extends TimeValue>(
 
   const timeInput = (
     <DateInputBase
+      {...pickBaseCustomizationProps(props)}
+      mods={props.mods}
       ref={fieldRef}
       wrapperRef={domRef}
       qa={qa || 'TimeInput'}

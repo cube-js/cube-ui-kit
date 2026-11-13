@@ -54,7 +54,9 @@ A single on/off setting is a [Switch](/docs/forms-switch--docs) or a [Checkbox](
 - **`aria-label`** `string` — The accessible name of an icon-only item
 - **`tooltip`** — Tooltip content, or `true` (default) to show the label only when it is truncated. A disabled item still shows its tooltip, a good place to say why it is unavailable: it stays focusable, marked `aria-disabled`, so the keyboard reaches the reason too, while presses and keys still can't toggle it
 - **`isDisabled`** `boolean` — Disables this item. The group's `isDisabled` disables them all
-- **`qa`** `string` — The item's `data-qa` (default: `ToggleGroupItem`)
+- **`qa`** / **`qaVal`** — Testing attributes on the item’s button
+- **`tokens`** / **`mods`** — Custom properties and visual modifiers on the item’s button
+- **`className`** / **`style`** — The item’s button accepts classes and inline styles from third-party integrations
 - **`styles`** — Styles of the item, an [Item](/docs/content-item--docs)
 
 ### Base Properties

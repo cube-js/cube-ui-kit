@@ -7,6 +7,7 @@ import { Item, useTreeState } from 'react-stately';
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n/useI18n';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
 
@@ -480,15 +481,16 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
 
   return (
     <TreeElement
+      {...pickBaseCustomizationProps(props)}
       {...gridProps}
       // Driven from outside (`_activeKey`), the tree is no tab stop: the
       // control that points at its rows keeps focus.
       tabIndex={activeKey === undefined ? gridProps.tabIndex : -1}
       ref={treeRef}
       qa={qa ?? 'Tree'}
-      mods={mods}
+      mods={{ ...mods, ...props.mods }}
       styles={baseStyles}
-      tokens={treeTokens}
+      tokens={{ ...treeTokens, ...props.tokens }}
     >
       <TreeScrollContainer ref={mergedScrollRef}>
         <TreeSizer

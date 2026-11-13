@@ -417,6 +417,8 @@ Component themes are set via the `theme` prop or `theme=name` modifier:
 
 Most components are a design contract: customize them through their own props (`type`, `theme`, `size`, …), `tokens` and `mods` rather than by restyling them. The layout and typography primitives (`Element`, `Block`, `Flex`, `Flow`, `Grid`, `Space`, `Prefix`, `Suffix`, `Text`, `TextItem`, `Title`, `Paragraph`, `Typography`, `ButtonGroup` and `Button.Group`), the `Action` base and the icons (including `IconSwitch`) are the exception: their `styles` are their API.
 
+Use `className` and inline `style` when a third-party integration needs to attach its own CSS. The [base properties guide](/docs/getting-started-base-properties--docs) explains the component-specific roles of `theme` and `title`.
+
 The package's `tasty.config.ts` lists the other components as `protectedComponents`, and `tasty/no-protected-restyle` from `@tenphi/eslint-plugin-tasty` 1.12.0 or newer reports a restyle of one in your code:
 
 - instance `styles`, and every `*Styles` prop such as `inputStyles`;

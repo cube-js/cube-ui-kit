@@ -1,9 +1,7 @@
 import { useResizeObserver } from '@react-aria/utils';
 import {
-  BaseProps,
   BlockStyleProps,
   ColorStyleProps,
-  filterBaseProps,
   FlowStyleProps,
   INNER_STYLES,
   mergeStyles,
@@ -29,6 +27,7 @@ import {
 } from 'react';
 
 import { isDevEnv } from '../../../utils/is-dev-env';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
 import { Alert } from '../Alert/Alert';
@@ -41,6 +40,8 @@ import {
   useLayoutRefsContext,
   useLayoutStateContext,
 } from './LayoutContext';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 const LayoutElement = tasty({
   as: 'div',
@@ -102,7 +103,7 @@ const DEV_WARNING_STYLES: Styles = {
 
 export interface CubeLayoutProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     OuterStyleProps,
     BlockStyleProps,
     ColorStyleProps,
@@ -417,10 +418,10 @@ function LayoutInner(
   return (
     <LayoutElement
       ref={setRefs}
-      {...filterBaseProps(otherProps, { eventProps: true })}
-      mods={mods}
+      {...filterComponentBaseProps(otherProps, { eventProps: true })}
+      mods={{ ...mods, ...otherProps.mods }}
       styles={finalStyles}
-      tokens={insetTokens}
+      tokens={{ ...insetTokens, ...otherProps.tokens }}
       // oxlint-disable-next-line tasty/no-style-prop -- forwards the consumer's public `style`; while clipping, the overflow shorthand must also beat its inline longhands
       style={transitionStyle}
       onKeyDown={hasOverlayPanels ? handleKeyDown : undefined}

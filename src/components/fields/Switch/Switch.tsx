@@ -1,5 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactElement, useRef } from 'react';
 import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
 import { useToggleState } from 'react-stately';
@@ -16,6 +16,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useId } from '../../../utils/react/useId';
 import { Text } from '../../content/Text';
@@ -33,6 +34,7 @@ import {
   splitTooltipTriggerProps,
 } from '../../overlays/Tooltip/split-trigger-props';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 const SwitchWrapperElement = tasty({
@@ -136,7 +138,7 @@ const SwitchElement = tasty({
 
 export interface CubeSwitchProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<boolean | null | undefined>,
     ToggleSelectionProps,
@@ -234,6 +236,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
     ...getValidationMods({ isInvalid, isValid }),
     'inside-form': insideForm,
     'side-label': labelPosition === 'side',
+    ...props.mods,
   };
 
   // The input, where keyboard focus lands, takes the tooltip's focus-side
@@ -253,6 +256,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
         {...mergeProps(hoverProps, pointerProps)}
       >
         <HiddenInput
+          {...pickBaseCustomizationProps(props)}
           qa={qa || 'Switch'}
           data-input-type="switch"
           // For a dialog kept mounted while closed, as on `Button`.
@@ -264,7 +268,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
           ref={inputRef}
           id={id}
           // Not left to the native `disabled`, which an inert input drops.
-          mods={{ disabled: isInputDisabled }}
+          mods={{ disabled: isInputDisabled, ...props.mods }}
         />
         <SwitchElement
           data-element="Input"

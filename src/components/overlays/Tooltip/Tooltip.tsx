@@ -1,7 +1,6 @@
 import { createDOMRef } from '@react-spectrum/utils';
 import { DOMRefValue } from '@react-types/shared';
 import {
-  BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   Styles,
@@ -17,6 +16,7 @@ import {
 import { AriaTooltipProps, useTooltip } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { extractStyles } from '../../../utils/styles';
@@ -25,6 +25,7 @@ import { useModalLayerRef } from '../Modal/modal-containment';
 import { TooltipContext } from './context';
 
 import type { PlacementAxis } from '../../../shared';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 export type { AriaTooltipProps };
 
@@ -159,7 +160,7 @@ const TooltipTipElement = tasty({
 });
 
 export interface CubeTooltipProps
-  extends BaseProps, ContainerStyleProps, AriaTooltipProps {
+  extends ComponentBaseProps, ContainerStyleProps, AriaTooltipProps {
   tipStyles?: Styles;
   /**
    * @deprecated Has no effect. No icon is ever rendered.
@@ -242,14 +243,15 @@ function Tooltip(
 
   return (
     <TooltipElement
+      {...pickBaseCustomizationProps(props)}
       {...tooltipProps}
       {...overlayProps}
       ref={combinedRef}
-      // `qa` is typed through `BaseProps` but nothing forwarded it, so a test
-      // had no way to tell one control's tooltip from another's.
       qa={otherProps.qa}
       styles={styles}
-      mods={mods}
+      mods={{ ...mods, ...props.mods }}
+      // oxlint-disable-next-line tasty/no-style-prop -- combines caller styles with React Aria positioning
+      style={{ ...props.style, ...overlayProps?.style }}
       data-placement={placementDirection}
       data-phase={phase}
     >

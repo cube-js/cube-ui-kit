@@ -15,6 +15,7 @@ import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { Text } from '../../content/Text';
 import { splitFieldLayout } from '../../form/field-layout';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
@@ -219,12 +220,14 @@ function SliderBase(
 
   const sliderField = (
     <SliderElement
+      {...pickBaseCustomizationProps(props)}
+      qa={props.qa}
       ref={domRef}
       {...groupProps}
       // `useSlider` seeds the group id once; the current id follows the form
       // binding, and the label points at it.
       id={props.id ?? groupProps.id}
-      mods={mods}
+      mods={{ ...mods, ...props.mods }}
       styles={styles}
       data-input-type="slider"
     >
