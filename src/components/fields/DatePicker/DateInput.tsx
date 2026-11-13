@@ -12,6 +12,7 @@ import { useDateFieldState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared/form';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -90,6 +91,8 @@ function DateInput<T extends DateValue>(
 
   const component = (
     <DateInputBase
+      {...pickBaseCustomizationProps(props)}
+      mods={props.mods}
       ref={fieldRef}
       wrapperRef={domRef}
       qa={qa || 'DateInput'}

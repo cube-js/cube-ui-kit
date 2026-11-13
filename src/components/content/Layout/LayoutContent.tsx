@@ -153,10 +153,10 @@ function LayoutContent(
     : undefined;
 
   const mods = {
-    ...externalMods,
     scrollbar,
     hovered: isHovered,
     scrolling: isScrolling,
+    ...externalMods,
   };
 
   // Merge styles: outer styles to root, inner styles to Inner element
@@ -174,7 +174,7 @@ function LayoutContent(
       {...hoverProps}
       mods={mods}
       styles={finalStyles}
-      tokens={scrollbarTokens}
+      tokens={{ ...scrollbarTokens, ...otherProps.tokens }}
     >
       <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>
         <LayoutContextReset>{children}</LayoutContextReset>

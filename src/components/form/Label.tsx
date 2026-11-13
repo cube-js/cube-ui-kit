@@ -265,12 +265,14 @@ function Label(props: CubeLabelProps, ref) {
       {...filterBaseProps(otherProps)}
       ref={domRef}
       styles={styles}
+      qa={qa}
       htmlFor={labelFor || htmlFor}
       data-size={size}
       mods={{
         side: labelPosition === 'side',
         disabled: isDisabled,
         ...getValidationMods({ isInvalid, isValid }),
+        ...otherProps.mods,
       }}
     >
       {/*

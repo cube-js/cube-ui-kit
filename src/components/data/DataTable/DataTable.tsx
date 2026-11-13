@@ -8,6 +8,7 @@ import { useMultipleSelectionState } from 'react-stately';
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n/useI18n';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import {
@@ -715,6 +716,7 @@ function DataTable<T = any>(
     <TableView<T>
       {...rest}
       rootRef={rootRef}
+      customizationProps={pickBaseCustomizationProps(props)}
       qa={qa || 'DataTable'}
       rows={visibleRows}
       rowKeys={visibleRowKeys}

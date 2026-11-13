@@ -14,6 +14,7 @@ import { useDatePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n/useI18n';
 import { FieldBaseProps } from '../../../shared/form';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeStyleLayers } from '../../../utils/styles';
 import {
   FieldLayoutStyleProps,
@@ -183,6 +184,8 @@ function PeriodPickerImpl<T extends DateValue>(
 
   const component = (
     <DateInputBase
+      {...pickBaseCustomizationProps(props)}
+      mods={props.mods}
       ref={targetRef}
       wrapperRef={domRef}
       qa={qa || 'PeriodPicker'}

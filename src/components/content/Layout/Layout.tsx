@@ -418,9 +418,9 @@ function LayoutInner(
     <LayoutElement
       ref={setRefs}
       {...filterBaseProps(otherProps, { eventProps: true })}
-      mods={mods}
+      mods={{ ...mods, ...otherProps.mods }}
       styles={finalStyles}
-      tokens={insetTokens}
+      tokens={{ ...insetTokens, ...otherProps.tokens }}
       // oxlint-disable-next-line tasty/no-style-prop -- forwards the consumer's public `style`; while clipping, the overflow shorthand must also beat its inline longhands
       style={transitionStyle}
       onKeyDown={hasOverlayPanels ? handleKeyDown : undefined}

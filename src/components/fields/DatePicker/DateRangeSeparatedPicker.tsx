@@ -14,6 +14,7 @@ import { useDatePickerState, useDateRangePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n/useI18n';
 import { FieldBaseProps } from '../../../shared/form';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -226,6 +227,8 @@ function DateRangeSeparatedPicker<T extends DateValue>(
 
   const component = (
     <DatePickerElement
+      {...pickBaseCustomizationProps(props)}
+      mods={props.mods}
       ref={targetRef}
       {...groupProps}
       styles={styles}

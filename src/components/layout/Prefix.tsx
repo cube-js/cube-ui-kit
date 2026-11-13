@@ -51,7 +51,7 @@ export const Prefix = forwardRef<HTMLDivElement, CubePrefixProps>(
         {...filterBaseProps(props, { eventProps: true })}
         ref={ref}
         styles={styles}
-        tokens={{ '$prefix-gap': outerGap }}
+        tokens={{ '$prefix-gap': outerGap, ...props.tokens }}
       >
         {children}
       </PrefixElement>

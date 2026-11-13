@@ -11,6 +11,7 @@ import { useTimeFieldState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared/form';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -102,6 +103,8 @@ function TimeInput<T extends TimeValue>(
 
   const timeInput = (
     <DateInputBase
+      {...pickBaseCustomizationProps(props)}
+      mods={props.mods}
       ref={fieldRef}
       wrapperRef={domRef}
       qa={qa || 'TimeInput'}

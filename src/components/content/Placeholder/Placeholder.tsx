@@ -108,7 +108,7 @@ export const Placeholder = forwardRef(function Placeholder(
       // caller's `qa` or a translated `aria-label` doesn't change it.
       data-loading-placeholder=""
       ref={ref}
-      mods={{ animated: !isStatic, circle }}
+      mods={{ animated: !isStatic, circle, ...props.mods }}
       // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `size` prop
       styles={mergeStyleLayers({ height: size }, styles)}
     />

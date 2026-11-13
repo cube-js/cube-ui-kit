@@ -771,7 +771,7 @@ function LayoutPane(
       {...hoverProps}
       mods={paneMods}
       styles={finalStyles}
-      tokens={paneTokens}
+      tokens={{ ...paneTokens, ...otherProps.tokens }}
     >
       <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>
         <LayoutContextReset>{children}</LayoutContextReset>

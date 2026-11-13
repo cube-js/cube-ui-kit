@@ -530,6 +530,7 @@ export function TabButton({
     draggable: isDraggable,
     dragging: isDragging,
     'drop-pending': isDropPending,
+    ...tabData.mods,
   };
 
   const keepActiveTabInStrip = useEvent(() => {

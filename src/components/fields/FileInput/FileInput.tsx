@@ -14,6 +14,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n/useI18n';
 import { FieldBaseProps } from '../../../shared/form';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { Action } from '../../actions/Action/Action';
 import {
@@ -129,6 +130,8 @@ const FileInputElement = tasty(Action, {
     },
 
     Input: {
+      // oxlint-disable-next-line tasty/no-state-in-selector -- identifies the native input independently of the caller's element name
+      $: '[data-input-type="fileinput"]',
       position: 'absolute',
       top: 0,
       right: 0,
@@ -148,6 +151,8 @@ const FileInputElement = tasty(Action, {
     },
   }),
 });
+
+const FileControl = tasty({ as: 'input', element: 'Input' });
 
 export interface CubeFileInputProps
   extends
@@ -317,6 +322,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         'drag-hover': dragHover && !isDisabled,
         suffix: hasValidationIndicator({ isInvalid, isValid }),
         ...getValidationMods({ isInvalid, isValid }),
+        ...props.mods,
       }}
       onKeyDown={(e) => {
         // The button's own click doesn't reach the input inside it. A held
@@ -326,14 +332,15 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         }
       }}
     >
-      <input
+      <FileControl
+        {...pickBaseCustomizationProps(props)}
+        mods={props.mods}
         ref={inputRef}
         id={id}
         name={name}
         accept={accept}
-        data-qa={qa || 'FileInput'}
+        qa={qa || 'FileInput'}
         data-input-type="fileinput"
-        data-element="Input"
         disabled={isDisabled}
         type="file"
         multiple={false}

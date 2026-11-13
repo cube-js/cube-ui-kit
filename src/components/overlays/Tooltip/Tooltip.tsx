@@ -17,6 +17,7 @@ import {
 import { AriaTooltipProps, useTooltip } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { extractStyles } from '../../../utils/styles';
@@ -242,14 +243,15 @@ function Tooltip(
 
   return (
     <TooltipElement
+      {...pickBaseCustomizationProps(props)}
       {...tooltipProps}
       {...overlayProps}
       ref={combinedRef}
-      // `qa` is typed through `BaseProps` but nothing forwarded it, so a test
-      // had no way to tell one control's tooltip from another's.
       qa={otherProps.qa}
       styles={styles}
-      mods={mods}
+      mods={{ ...mods, ...props.mods }}
+      // oxlint-disable-next-line tasty/no-style-prop -- combines caller styles with React Aria positioning
+      style={{ ...props.style, ...overlayProps?.style }}
       data-placement={placementDirection}
       data-phase={phase}
     >

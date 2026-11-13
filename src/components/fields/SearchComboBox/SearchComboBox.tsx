@@ -32,6 +32,7 @@ import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared/form';
 import { generateRandomId } from '../../../utils/random';
 import { useFocus } from '../../../utils/react/interactions';
 import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { CollectionItem as Item } from '../../CollectionItem';
@@ -256,6 +257,7 @@ function useDelayedFlag(active: boolean, delay: number): boolean {
 // Component: SearchComboBoxInput
 // ============================================================================
 interface SearchComboBoxInputProps {
+  customizationProps: ReturnType<typeof pickBaseCustomizationProps>;
   qa?: string;
   inputRef: RefObject<HTMLInputElement | null>;
   id?: string;
@@ -284,6 +286,7 @@ const SearchComboBoxInput = forwardRef<
 >(function SearchComboBoxInput(
   {
     qa,
+    customizationProps,
     inputRef,
     id,
     value,
@@ -309,6 +312,7 @@ const SearchComboBoxInput = forwardRef<
 
   return (
     <InputElement
+      {...customizationProps}
       ref={combinedRef}
       qa={qa}
       id={id}
@@ -872,6 +876,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     // Always reserve the suffix slot (it holds validation/loading/clear/trigger).
     suffix: true,
     clearable: showClearButton,
+    ...props.mods,
   };
 
   const searchComboBoxWidth = wrapperRef?.current?.offsetWidth;
@@ -943,6 +948,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <SearchComboBoxInput
+        customizationProps={pickBaseCustomizationProps(props)}
         qa={qa || 'SearchComboBox'}
         inputRef={inputRef}
         id={id}

@@ -969,9 +969,8 @@ function LayoutPanel(
       horizontal: isHorizontal,
       // Only enable transition after layout is ready to prevent initial animation
       'has-transition': hasTransition && isReady,
-      ...mods,
     }),
-    [side, isDragging, isHorizontal, hasTransition, isReady, mods],
+    [side, isDragging, isHorizontal, hasTransition, isReady],
   );
 
   // Build --max-size CSS variable combining user maxSize and natural boundary
@@ -1050,9 +1049,9 @@ function LayoutPanel(
             panelRefCallback(node, transitionRef);
           }}
           {...filterBaseProps(otherProps, { eventProps: true })}
-          mods={{ ...panelMods, offscreen, hidden: isHidden }}
+          mods={{ ...panelMods, offscreen, hidden: isHidden, ...mods }}
           styles={finalStyles}
-          tokens={panelTokens}
+          tokens={{ ...panelTokens, ...otherProps.tokens }}
           data-side={side}
         >
           <LayoutPanelContext.Provider value={panelContextValue}>

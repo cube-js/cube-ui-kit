@@ -43,6 +43,7 @@ import { FieldBaseProps } from '../../../shared/form';
 import { generateRandomId } from '../../../utils/random';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import {
   mergeRefs,
@@ -685,6 +686,7 @@ function Select<T extends object>(
             actions={hasTriggerActions || undefined}
             insideWrapper
             as="button"
+            {...pickBaseCustomizationProps(props)}
             qa={qa || 'Select'}
             data-input-type="select"
             {...mergeProps(buttonProps, hoverProps, focusProps, inputProps)}
@@ -702,7 +704,7 @@ function Select<T extends object>(
             htmlType="button"
             // Preserve visual variant via data attribute instead of conflicting with HTML attribute
             type={type}
-            mods={modifiers}
+            mods={{ ...modifiers, ...props.mods }}
             prefix={prefix}
             suffix={suffix}
             icon={icon}

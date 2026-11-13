@@ -22,6 +22,8 @@ import {
   waitFor,
 } from '../../../test';
 import { warnAboutLegacyTooltip } from '../../form/legacy-tooltip';
+import { ColorInput } from '../ColorInput/ColorInput';
+import { Input } from '../Input/Input';
 
 import type { FocusableRefValue } from '@react-types/shared';
 
@@ -30,6 +32,62 @@ vi.mock('../../form/legacy-tooltip', { spy: true });
 vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<TextInput />', () => {
+  it.each([
+    ['TextInput', TextInput],
+    ['TextArea', TextArea],
+    ['PasswordInput', PasswordInput],
+    ['NumberInput', NumberInput],
+    ['SearchInput', SearchInput],
+    ['CommandTextArea', CommandTextArea],
+    ['ColorInput', ColorInput],
+    ['Input', Input],
+  ])("puts the caller's base props on the %s control", (_, Control) => {
+    const baseProps = {
+      qa: 'CustomInput',
+      qaVal: 'example',
+      className: 'custom',
+      style: { outline: '1px solid red' },
+      tokens: { '$probe-token': '7px' },
+      mods: { extra: true },
+      theme: 'special',
+      title: 'Details',
+      element: 'Control' as const,
+    };
+
+    for (const label of [undefined, 'Example']) {
+      const { container, getByLabelText, getByTestId, unmount } =
+        renderWithRoot(
+          <Control
+            {...baseProps}
+            label={label}
+            aria-label={label ? undefined : 'Example'}
+          />,
+        );
+
+      const input = getByLabelText('Example', { selector: 'input, textarea' });
+
+      expect(getByTestId('CustomInput')).toBe(input);
+      expect(input).toHaveAttribute('data-qaval', 'example');
+      expect(input).toHaveClass('custom');
+      expect(input).toHaveStyle({
+        outline: '1px solid red',
+        '--probe-token': '7px',
+      });
+      expect(input).toHaveAttribute('data-extra');
+      expect(input).toHaveAttribute('data-shape', 'default');
+      expect(input).toHaveAttribute('data-theme', 'special');
+      expect(input).toHaveAttribute('title', 'Details');
+      expect(input).toHaveAttribute('data-element', 'Control');
+      expect(
+        Array.from(
+          container.querySelectorAll('[data-qaval="example"], .custom'),
+        ),
+      ).toEqual([input]);
+
+      unmount();
+    }
+  });
+
   it('should work without form', async () => {
     const { getByRole } = render(<TextInput label="test" />);
 
@@ -168,6 +226,30 @@ describe('<TextInput />', () => {
   });
 
   describe('inputProps', () => {
+    it('merges input tokens and preserves the multiline password mask', () => {
+      const { getByTestId } = render(
+        <TextInput
+          label="Password"
+          type="password"
+          multiLine
+          defaultValue="secret"
+          tokens={{ '$probe-token': '7px', '$shared-token': '4px' }}
+          inputProps={{
+            tokens: { '$input-token': '8px', '$shared-token': '9px' },
+          }}
+          style={{ outline: '1px solid red', fontFamily: 'serif' }}
+        />,
+      );
+
+      expect(getByTestId('Input')).toHaveStyle({
+        '--probe-token': '7px',
+        '--input-token': '8px',
+        '--shared-token': '9px',
+        fontFamily: 'text-security-disc',
+        outline: '1px solid red',
+      });
+    });
+
     it('keeps attributes the explicit props leave unset', () => {
       const { getByRole } = render(
         <TextInput

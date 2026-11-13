@@ -13,6 +13,7 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef } from 'react';
 
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { extractStyles } from '../../../utils/styles';
 import { ColorValue, parseColor, toHex } from '../color/color';
 
@@ -105,12 +106,16 @@ export const ColorSwatch = forwardRef(function ColorSwatch(
 
   return (
     <SwatchElement
+      {...pickBaseCustomizationProps(props)}
       ref={ref}
       qa={qa}
       data-size={size}
       mods={{ empty: !resolved, ...mods }}
       styles={styles}
-      tokens={resolved ? { '#color-picker': toHex(resolved) } : undefined}
+      tokens={{
+        ...(resolved ? { '#color-picker': toHex(resolved) } : undefined),
+        ...props.tokens,
+      }}
     />
   );
 });

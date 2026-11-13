@@ -18,6 +18,7 @@ import {
 } from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
@@ -279,12 +280,14 @@ export interface CubeRadioProps
   size?: Exclude<CubeItemProps['size'], 'inline'>;
 }
 
-function Radio(props: CubeRadioProps, ref) {
+function Radio(rawProps: CubeRadioProps, ref) {
   // The radio's own prop, before it inherits the group's, a form's or a
   // provider's state: only this one cancels the loading rule below.
-  let ownIsDisabled = props.isDisabled;
+  let ownIsDisabled = rawProps.isDisabled;
 
-  props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
+  const props = useFieldProps(rawProps, {
+    defaultValidationTrigger: 'onChange',
+  });
 
   let {
     qa,
@@ -483,6 +486,7 @@ function Radio(props: CubeRadioProps, ref) {
     joined: isButton && !isSegmented,
     tabs: isSegmented,
     segmented: isSegmented,
+    ...props.mods,
   };
 
   // Keyboard focus lands on the hidden input. A segment draws its own ring
@@ -519,6 +523,7 @@ function Radio(props: CubeRadioProps, ref) {
         // describes the control a screen reader announces.
         hiddenContent={(tooltipFocusProps, isItemTooltipActive) => (
           <HiddenInput
+            {...pickBaseCustomizationProps(props)}
             qa={qa || 'Radio'}
             data-input-type="radio"
             aria-label={ariaLabel}
@@ -533,6 +538,7 @@ function Radio(props: CubeRadioProps, ref) {
               button: isButton,
               disabled: isRadioDisabled,
               readonly: isReadOnly,
+              ...props.mods,
             }}
           />
         )}
@@ -566,6 +572,7 @@ function Radio(props: CubeRadioProps, ref) {
         data-type={type}
       >
         <HiddenInput
+          {...pickBaseCustomizationProps(props)}
           qa={qa || 'Radio'}
           data-input-type="radio"
           aria-label={ariaLabel}
@@ -581,6 +588,7 @@ function Radio(props: CubeRadioProps, ref) {
             button: isButton,
             disabled: isRadioDisabled,
             readonly: isReadOnly,
+            ...props.mods,
           }}
         />
         <RadioNormalElement data-element="Input" mods={mods} data-type={type}>

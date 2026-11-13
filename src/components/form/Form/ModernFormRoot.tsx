@@ -192,6 +192,7 @@ function ModernFormRoot<T extends object>(
         'has-sider': labelPosition === 'side',
         'has-split': labelPosition === 'split',
         horizontal: orientation === 'horizontal',
+        ...otherProps.mods,
       }}
       onSubmit={otherProps.action == null ? handleSubmit : undefined}
       onResetCapture={handleReset}

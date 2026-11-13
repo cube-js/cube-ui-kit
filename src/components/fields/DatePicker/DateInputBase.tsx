@@ -1,5 +1,6 @@
 import { mergeRefs } from '@react-aria/utils';
 import {
+  BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   mergeStyles,
@@ -10,6 +11,7 @@ import React, { useRef } from 'react';
 import { useFocusRing } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { extractStyles } from '../../../utils/styles';
 import { getValidationMods } from '../../form/validation/resolve-validation-props';
 import {
@@ -48,7 +50,8 @@ const DateInputElement = tasty({
   }),
 });
 
-interface CubeDateAtomInputProps extends ContainerStyleProps {
+interface CubeDateAtomInputProps extends BaseProps, ContainerStyleProps {
+  title?: string;
   qa?: string;
   inputType?: string;
   isDisabled?: boolean;
@@ -79,7 +82,6 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
     inputStyles,
     children,
     fieldProps,
-    style,
     disableFocusRing,
     autoFocus,
     isInvalid,
@@ -106,6 +108,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
 
   return (
     <DateInputWrapperElement
+      {...pickBaseCustomizationProps(props)}
       ref={wrapperRef}
       qa={qa || 'DateTimeInput'}
       styles={styles}
@@ -117,13 +120,14 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
         focused: isFocused && !disableFocusRing,
         ...getValidationMods({ isInvalid, isValid }),
         suffix: showValidationIndicator || !!suffix,
+        ...props.mods,
       }}
-      {...mergeProps(fieldProps ?? {}, focusProps)}
+      {...mergeProps(fieldProps, focusProps)}
+      // oxlint-disable-next-line tasty/no-style-prop -- forwards caller styles alongside React Aria's field styles
+      style={{ ...fieldProps?.style, ...props.style }}
       // For a dialog kept mounted while closed, which focuses the field's
       // first segment on every open, as `Button` marks itself.
       {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
-      // oxlint-disable-next-line tasty/no-style-prop -- forwards the consumer's public `style` prop
-      style={style}
     >
       <div data-element="Contents" role="presentation">
         <DateInputElement

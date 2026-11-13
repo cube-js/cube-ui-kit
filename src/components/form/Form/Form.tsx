@@ -257,6 +257,7 @@ function LegacyFormRoot<T extends FieldTypes>(
         'has-sider': labelPosition === 'side',
         'has-split': labelPosition === 'split',
         horizontal: isHorizontal,
+        ...otherProps.mods,
       }}
       onSubmit={onSubmitCallback}
       onResetCapture={handleReset}

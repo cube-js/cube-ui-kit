@@ -35,6 +35,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import {
@@ -297,14 +298,12 @@ function Checkbox(
   // The wrapper's props, the same in both branches. React Aria puts `id`,
   // `aria-*` and `data-*` on the input, so they stay off the `<label>`: the
   // grouped one used to copy them, and `#id`, `for` and `aria-labelledby`
-  // resolved to it. A caller's own `mods` stay, under the state ones.
+  // resolved to it. Caller modifiers override the visual state defaults.
   const wrapperProps = {
-    className: props.className,
-    style: props.style,
-    qaVal: props.qaVal,
+    ...pickBaseCustomizationProps(props),
     styles,
     isHidden,
-    mods: { ...props.mods, ...mods },
+    mods: { ...mods, ...props.mods },
   };
 
   // The wrapper is the checkbox's element in both branches, so the field's ref

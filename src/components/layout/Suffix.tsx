@@ -49,7 +49,7 @@ export const Suffix = forwardRef<HTMLDivElement, CubeSuffixProps>(
         {...filterBaseProps(props, { eventProps: true })}
         ref={ref}
         styles={styles}
-        tokens={{ '$suffix-gap': outerGap }}
+        tokens={{ '$suffix-gap': outerGap, ...props.tokens }}
       >
         {children}
       </SuffixElement>

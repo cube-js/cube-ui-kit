@@ -581,8 +581,7 @@ function CommandMenu<T extends object>(
     sections: viewHasSections,
     footer: !!footer,
     header: !!header,
-    popover: completeProps.mods?.popover,
-    tray: completeProps.mods?.tray,
+    ...completeProps.mods,
   };
 
   const {

@@ -36,6 +36,7 @@ import {
 import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { SlotProvider } from '../../../utils/react/Slots';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
@@ -515,6 +516,7 @@ const DialogContent = forwardRef(function DialogContent(
 
   return (
     <DialogElement
+      {...pickBaseCustomizationProps(props)}
       ref={domRef}
       data-id="Dialog"
       data-qa={qa || 'Dialog'}
@@ -534,6 +536,7 @@ const DialogContent = forwardRef(function DialogContent(
         dismissable: isDismissable,
         'custom-width': width != null,
         'query-container': isContainer,
+        ...props.mods,
       }}
       tokens={{
         '$dialog-size':
