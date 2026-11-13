@@ -31,16 +31,20 @@ pnpm list @tenphi/tasty @tenphi/glaze
 Project-specific working rules for AI agents. Not published with the package.
 
 - [react-compiler.md](docs/rules/react-compiler.md) — React 19, callbacks, Effect Events, memoization and lifecycle ownership
-- [coding.md](docs/rules/coding.md) — development flow, code style, **import rules**, inline `style` and Tasty lint rules, Markdown formatting, knowledge maintenance
+- [coding.md](docs/rules/coding.md) — development flow, code style, **import rules**, styling that keeps components customizable, inline `style` and Tasty lint rules, Markdown formatting, knowledge maintenance
 - [entropy.md](docs/rules/entropy.md) — proportional complexity in code, public APIs, consumer usage and UX; Entropy review and developer exceptions
 - [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
-- [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring, including the `play`-function rule below
+- [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring. Read it before you add or change a story: an interaction-only state needs a `play` function, a story must earn its Chromatic snapshot, and a new story must pass axe-core
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
 - [tests.md](docs/rules/tests.md) — Vitest + React Testing Library patterns
 - [probe.md](docs/rules/probe.md) — `pnpm probe`: inspecting the HTML, CSS and tokens a render actually produces
 - [screen-reader.md](docs/rules/screen-reader.md) — the virtual screen reader: `pnpm probe render --sr` and the spec helpers, with the limits that make a silence the simulator's rather than the component's
+- [commands.md](docs/rules/commands.md) — the commands not under [Commands](#commands), and the environment: Node, pnpm, the two TypeScripts, Git hooks. Read it before you run one of those commands or change the toolchain
 - [commit-changes.md](docs/rules/commit-changes.md) — commit message convention
+- [linear.md](docs/rules/linear.md) — Linear issues and PR bodies. Read it before you name a branch, open or update a PR, or change a Linear issue: a PR names its issues as `Part of <issue ID>`, never in its title or branch name
+- [ci.md](docs/rules/ci.md) — which CI jobs a PR runs, and the bundle-size gate. Read it before you change a workflow, the job planner or a bundle baseline, or when a job fails or is skipped
 - [eslint-plugin.md](docs/rules/eslint-plugin.md) — the shipped lint rule + the defaults registry it checks against
+- [harness.md](docs/rules/harness.md) — the harness UI Kit ships for consumers' coding agents, and harnesspm in this repo. Read it before you change `harness/`, `harnesspm.json` or `harnesspm/patches/`
 - [review.md](docs/rules/review.md) — shared UI Kit review checklist, scope and verification; the local `ui-review` skill reads this file
 
 ## Entropy rule
@@ -66,30 +70,6 @@ When making code changes that affect end users or the public API, **always add a
 - Add changeset manually (no CLI) — full guidelines: [`.cursor/commands/add-changeset.md`](.cursor/commands/add-changeset.md).
 - Write the summary unwrapped: one paragraph is one line, like every other Markdown file here (see [Markdown rules](docs/rules/coding.md#markdown-rules)).
 
-## Linear Issues: Done When Cloud Has the Fix
-
-Cloud consumes the published package, so a UI Kit fix reaches users only when a Cloud PR bumps a release that carries it. Cloud's `update-uikit` skill finds the fix's issues through the changelog's links to UI Kit PRs, and the bump closes each one it completes; an issue that also needs a Cloud change, such as removing a workaround, closes with that change. So a UI Kit PR links its issues without closing them:
-
-- Name each issue on a line of its own in the PR body: `Part of <issue ID>`.
-- Keep issue IDs out of the PR title and the branch name, which close an issue on merge, and out of changesets, whose text the release PR copies. Never put a closing word before an ID: Linear's are close, fix, resolve, complete and implement in any form, and "Linear issue".
-- A PR that only edits another PR's unreleased changeset ships under that PR's changelog entry, which links only that PR, so it names only issues that PR names too. Give any other issue a changeset of its own.
-- Tasty isn't connected to Linear. The UI Kit PR that bumps `@tenphi/tasty` names the Tasty fix's issues as `Part of`.
-- After a merge, check each issue the PR names. An issue whose fix ships in no release, because none of its PRs adds a non-empty changeset (see Changesets), has nothing for a bump to find: move it to Done by hand once its last PR has merged. One whose fix ships in a release and went to Done before Cloud has it goes back to In Progress, with a comment saying what is left.
-
-File new issues with the [`create-ticket`](.claude/skills/create-ticket/SKILL.md) skill. `implement` runs it for a task that has no issue.
-
-**Tracking a task.** Update the issue and the PR body when the work moves, not on every event, and edit them in place rather than append:
-
-- **Status:** In Progress when work starts. Linear's GitHub integration attaches each PR that names the issue and moves its status when the PR opens: don't repeat that by hand or in a comment.
-- **Description:** the task as it stands now. When the scope or approach changes, edit the sections it changes and comment one line on what changed and why. No progress log. On an issue someone else is working on, propose the edit in a comment instead.
-- **PR body:** what the diff does now, rewritten after a push that changes it.
-- **Comments:** what a reader acts on, such as a question or blocker waiting on a person or another issue, or a follow-up issue.
-- **Not tracked:** CI runs and their test failures, reruns, flakes and outages, review rounds and their findings, pushes and rebases. When one changes the scope or approach, record that change, not the event.
-
-## Stories: Interaction-Only States
-
-A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs `play` before it snapshots, so a story whose point is such a state **must** drive it with `play` and end on a `waitFor` assertion for the state itself (that assertion is also the wait Chromatic needs). Drive one element per story — only the final state is captured. For tooltips, copy the recipe verbatim: `timeout(250)` (the trigger is wired in a mount effect), `unhover` before `hover` (React Aria ignores a hover until a mouse move sets the pointer modality), and `delay: 0` in the tooltip config. Both caveats fail silently, and a local render test can pass while the story does not — Chromatic is the check. Full pattern: [storybook.md](docs/rules/storybook.md#interaction-only-states-need-a-play-function).
-
 ## Imports: Reach Past the Barrel
 
 Inside `src/`, import the file that defines a thing rather than the barrel that re-exports it: `from '../../actions/ItemButton/ItemButton'`, not `from '../../actions'`. Same component either way, but the barrel also drags `Menu`, `CommandMenu`, `ButtonSplit` and everything they import into the graph. Three things read that graph — Chromatic's TurboSnap (which cannot scope a build around anything reachable from `<Root>`, so a barrel there costs a full 1000-snapshot rebuild), consumers' tree-shaking, and module init order around `Root`'s module-scope `configure()`. Lint enforces it: `repo/no-barrel-import` rejects a relative import that resolves to an `index.ts`, and `import/no-cycle` rejects an import cycle. `import type` is exempt, a story may import a component's own entry for its compound API (`Button.Group`), and `index.ts` files and specs are exempt. `node scripts/chromatic-report.mjs --trace <file>` prices a change before you make it. Full rules: [coding.md](docs/rules/coding.md#imports).
@@ -102,46 +82,7 @@ Run `pnpm diagnostics:compiler` and `pnpm diagnostics:hooks --check` after touch
 
 ## Styling: Keep Components Customizable
 
-A consumer customizes an element by passing `styles` (or style props) to it, and every styling fix must leave that working. The trap is a parent fixing a child's layout from outside, with any of these:
-
-- a sub-element selector aimed at an element the parent does not render, such as `$: '> form'` or `$: '> form > :not(:last-child)'`;
-- a blanket reset on another component's children, such as `margin: 0` on every child;
-- a selector built to outrank another component's rule, using an extra type selector, a doubled class or `!important`.
-
-Such a rule only works by beating the child's own styles, so it also beats the consumer's `styles` on that element, and their padding, gap or layout override silently stops applying. Fix the element in the component that owns it:
-
-- **The child owns its context, as a named state.** When a component must lay out differently inside another, declare a local state at the top of its own `styles` and use that name in the maps:
-  ```ts
-  '@in-dialog': '@parent(id=Dialog, >)', // `, >` = direct parent; drop it for any ancestor
-  display: { '': 'block', '@in-dialog': 'flex' },
-  ```
-  The rule keeps the child's own specificity and a consumer's `styles` key replaces it. Because the state travels with the styles, a consumer can also target the same case: `gap: { '': '3x', '@in-dialog': '1x' }`. Worked example: `FormElement` in `FormElement.tsx`. It replaced two `Dialog` rules that silently beat a form's own `display` and `gap` styles.
-- **Never build state keys in JS.** No `const IN_DIALOG = '@parent(…)'` spread as `[IN_DIALOG]: …`. The condition then lives outside the styles, a consumer can't name it, and every map carries the raw selector instead of a word. If several components need a state, register it with the global predefined states in `Root.tsx` (`setGlobalPredefinedStates`) rather than exporting a string.
-- **A parent passes values only through channels built for overriding.** Those channels are slot styles (a `SlotProvider` merges them under the consumer's own `styles`), custom properties the child reads (`$dialog-padding-h`), props and mods.
-- **Know what tasty's `gap` compiles to.** On `display: flex` or `grid` it becomes the CSS `gap` property. On `display: block` it becomes a bottom margin on every child but the last. Those margins land on whatever goes inside the container, and a `gap: 0` from outside never reaches them. So when a block container's spacing is wrong in some context, change the container's own `gap` for that context; don't reset its children. `Form` stays a block outside dialogs because a flex column would stretch a bare `Button` child to full width and stack inline content.
-- **Check before adding a rule.** Ask whether a consumer can still override it with ordinary `styles` on the element it affects. If their styles would lose, the rule is a hack: move the fix to the component that owns the element, and add a browser test that a consumer override still applies.
-
-**Never start a `:has()` with `~`** (`:has(~ X)`). jsdom before 27 matches selectors with nwsapi, which throws on it for any element without a parent. jsdom's `getComputedStyle` walks up to `<html>`, so once such a rule is on the page, every role query, `toBeVisible` and user-event click in a consumer's tests throws. Cube Cloud runs jsdom 26. This repo runs 29, so its tests never show it. Use `:last-child`, `:first-child` or a mod. 0.187.0 shipped one on ListBox options; `ListBox.test.tsx` guards them.
-
-## Stories: The Snapshot Budget
-
-Chromatic bills per snapshot and a snapshot is one story, so every story is a recurring cost for as long as it exists. A story earns its snapshot by showing something no other story shows — and a surprising number do not: controlled/uncontrolled twins, props that only paint during a drag or hover, `DynamicSections` next to `WithSections`, a `Modal` story for a dialog whose default type is already `modal`. Keep those stories (the sidebar and the docs page still want them) and opt the photograph out with `NO_SNAPSHOT` from [`src/stories/chromatic.ts`](src/stories/chromatic.ts), with a comment saying why. Where several stories differ only in one enum value, one matrix story is both cheaper and a better review artefact — an inconsistency between two themes shows up in one image and not across two.
-
-Do not guess which stories are redundant, measure: `pnpm build-storybook && pnpm chromatic:duplicates` renders every story in real Chromium (waiting for `play`, as Chromatic does) and reports the groups that are provably paying twice for one image, plus the stories named for an overlay that never opened. `pnpm chromatic:report` covers the other half of the bill — how much of the suite one changed file drags in, and which files force a full rebuild by being reachable from `.storybook/preview.jsx`. Inside that dependency tree, import defining files directly rather than through a barrel: one `from '../../actions'` pulls most of the library into the always-rebuild set. `pnpm chromatic:check` gates this in CI. Full guidance: [storybook.md](docs/rules/storybook.md#the-snapshot-budget).
-
-## Stories: The Accessibility Baseline
-
-CI renders every story in real Chromium and runs axe-core on it: `pnpm diagnostics:a11y --check`, against WCAG 2.2 A/AA. `scripts/a11y-baseline.json` records how many elements fail each rule in each existing story, and nothing may grow. A new story has to be clean, including the labels on its icon-only buttons and fields, because consumers copy stories. After a fix, lower the baseline with `--update` and commit it. Raise it only for an axe false positive or an axe-core upgrade, and say which in the PR. Full rules: [storybook.md](docs/rules/storybook.md#the-accessibility-baseline).
-
-## Bundle Size: Gate Dependencies, Not Growth
-
-The size job (`.github/workflows/size-limit.yml`) has no byte limit: UI Kit's own code grows with every feature, and the PR comment reports the total and its change against `main`. It fails on two things instead. The dependency graph changes: a third-party package enters or leaves the bundle, or grows more than 10 KB past its size in `scripts/bundle-deps-baseline.json`. Or the `{ Button }` import weighs more than 35% of the full bundle, which means tree-shaking broke. Only those changes are reported, so a version bump within the 10 KB passes without a word. **Leave the check to CI: don't run `pnpm size` before a push.** A graph change is rare, and the job measures every PR. When it fails on a package, its PR comment lists the baseline entries to set and delete: apply them, commit, and say in the PR why the package is worth it, or that it is gone. `@tenphi/*` packages are ours and not gated. Growth within the 10 KB is tolerated but not approved, so it adds up across PRs until it fails. The `{ Button }` entry is checked only by its share: a package already in the full bundle that newly reaches `Button` passes. `pnpm build && pnpm size` runs the same check locally, for work on the check itself; `pnpm size --update` re-approves every package at its current size, so review the whole baseline diff. See [`scripts/bundle-deps.mjs`](scripts/bundle-deps.mjs).
-
-## CI: Run What a Change Can Affect
-
-PR CI skips the jobs a change cannot affect. A `plan` job runs `scripts/ci/plan-jobs.mjs` first in the `Pull Request`, size and `Publish` workflows, and the run summary says why each job ran or was skipped. A job is skipped for one of two reasons. Either the PR changes no file the job reads, judged by each file's kind in `KINDS` (a spec alone runs the jsdom suites; a story runs a11y, Chromatic and the canary; repository notes run nothing but `Lint, types & diagnostics`, which always runs). Or the job already passed on exactly these inputs in an earlier run of the same PR: `Tests & lint` saves an empty cache entry named after a hash of each passing job's inputs, a pass marker, and a later push that leaves those inputs alone skips the job.
-
-A file no kind matches runs every job, and so does a failed planner. Chromatic is never skipped by a marker: its skip marks the commit as passing, which would approve visual changes an earlier push left unreviewed. A fork's PR neither saves nor trusts markers. To run every affected job again, use **Re-run all jobs**: a later attempt ignores markers. The table is only sound while imports respect it, so `plan-jobs.test.mjs` checks every relative import in `src`: the imported file's kind must be read by every job that reads the importer. When it fails, move the import or widen the kind.
+A consumer customizes an element by passing `styles` (or style props) to it, and every styling fix must leave that working. So fix an element in the component that owns it, with a named state in its own `styles`, a slot style, a custom property, a prop or a mod. Never fix it from a parent: no sub-element selector aimed at an element the parent does not render, no blanket reset on another component's children, no selector built to outrank another component's rule. **Never start a `:has()` with `~`**: jsdom before 27 throws on it, and consumers still run one. Read [the full rule](docs/rules/coding.md#styling-keep-components-customizable) before you change a component's styles.
 
 ## Inspecting Rendered HTML & CSS — `pnpm probe`
 
@@ -178,37 +119,17 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 
 ## Commands
 
+The everyday commands. The others, from Chromatic and bundle size to the diagnostics and consumer checks, are in [commands.md](docs/rules/commands.md).
+
 - `pnpm storybook` — start Storybook on port 6060
 - `pnpm build` — build library (`tsdown`, unbundled ESM)
 - `pnpm test` — run all tests (Vitest); add `-- ComponentName` to filter, `-u` to update snapshots
 - `pnpm test:once` — the full `pnpm test` (no test arguments), skipped when this exact tree is the last one that passed it in this worktree: a clean working tree (no changes, no untracked files, no tracked file written during that run) with the same Node, install and test environment (`KEYED_ENV` in the script; a test that reads another environment variable adds it there). It never selects tests by changed files. See [`scripts/test-once.mjs`](scripts/test-once.mjs)
-- `pnpm test:browser` — run the `*.browser.test.tsx` specs in real Chromium (layout, pointer, observers)
 - `pnpm probe` — print the HTML, CSS or tokens a snippet actually produces, with the real config loaded. `pnpm probe:browser` for computed values, geometry and screenshots; `render --sr` for what a screen reader says. See [Inspecting Rendered HTML & CSS](#inspecting-rendered-html--css--pnpm-probe) and [Hearing What a Screen Reader Says](#hearing-what-a-screen-reader-says)
 - `pnpm fix` — lint + format (Oxlint + Prettier)
-- `pnpm size` — measure the bundle, then check its third-party packages against `scripts/bundle-deps-baseline.json` (needs `pnpm build` first). CI runs it on every PR, so it is not a pre-push step; `--update` re-approves every package. See [Bundle Size](#bundle-size-gate-dependencies-not-growth)
-- `pnpm chromatic` — visual regression
-- `pnpm chromatic:report` — snapshot inventory + TurboSnap blast radius. `pnpm chromatic:check` is the CI gate; `pnpm chromatic:duplicates` finds stories that photograph the same thing. All three read `storybook-static`, so run `pnpm build-storybook` first. See [The Snapshot Budget](#stories-the-snapshot-budget)
-- `pnpm add-icons` — add new icons from tabler
 - `pnpm audit-docs` — audit component API ↔ docs ↔ argTypes sync. Options: `--component=Name`, `--fix-stories`, `--fix-docs`, `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.**
-- `pnpm diagnostics:compiler` — check every source file against the React Compiler coverage baseline (`scripts/compiler/baseline.json`); `--update` ratchets it after a reviewed change. See [React Compiler](#react-compiler-skip-manual-memoization)
-- `pnpm diagnostics:hooks --check` — whole runtime-source official Hooks ratchet plus strict Effect Event adoption checks. `--update` tightens the canonical baseline after reviewed improvements. See [React Compiler rules](docs/rules/react-compiler.md).
-- `pnpm diagnostics:form` — Form/input view of the same Hooks baseline; `--check` rejects growth. Update through `diagnostics:hooks --update`. See [`src/components/form/Form/legacy-contract/README.md`](src/components/form/Form/legacy-contract/README.md)
-- `pnpm check:react-package` — verify supported React peers and native compiler imports before publishing or testing a packed build.
-- `pnpm check:consumer-declarations` — after `pnpm pack:test`, install the packed build in a consumer and emit declarations for `tasty(Component, {})` of every exported component with TypeScript 7. It fails when a declaration needs a type the package does not export (TS2883, TS4023), and when the package bundles `dist/node_modules`. Name a compound component with an exported interface, as `LayoutComponent` does.
-- `pnpm diagnostics:a11y` — every story through axe-core (WCAG 2.2 A/AA) in real Chromium, against the per-story baseline in `scripts/a11y-baseline.json`. `--check` fails on growth and runs in CI; `--update` records a fix; `--filter` and `--verbose` show what fails where; `--shard 2/3` runs one of the three parts CI checks in parallel. Reads `storybook-static`, so run `pnpm build-storybook` first. See [storybook.md](docs/rules/storybook.md#the-accessibility-baseline)
-- `pnpm diagnostics:complexity` — every function in `src/` ranked by cognitive complexity (SonarSource's metric, from `eslint-plugin-sonarjs` running in oxlint), worst first. Options: `--limit N`, `--all`, `pnpm -s … --json`. `.oxlintrc.json` caps every function with the same rule (`sonarjs/cognitive-complexity`), so `pnpm lint` fails CI if any function exceeds it. The ceiling only goes down: when a refactor leaves the worst function lower, lower the ceiling to match (the report says when). A new function too complex to fit is a sign to extract hooks, sub-components or pure helpers, not to raise the ceiling. One quirk of the plugin (4.2.2): a ternary branch that is itself a function (`cond ? () => true : fn`) adds a level of nesting to everything after it in the enclosing function, so hoist such a function to a named constant. See [`scripts/complexity-report.mjs`](scripts/complexity-report.mjs)
 - `pnpm audit-defaults` — regenerate the lint plugin's defaults registry (`src/eslint-plugin/defaults.generated.ts`). **Run whenever you change a default prop value.** `pnpm test` fails until the registry matches what the components actually render — see [eslint-plugin.md](docs/rules/eslint-plugin.md).
 - `pnpm generate:tasty-config` — regenerate `tasty.config.generated.ts`: the tokens, state aliases, presets and recipes the published `tasty.config.ts` lists for consumers' lint. **Run whenever you add, rename or remove one.** `pnpm test` fails until the file matches the runtime — see [coding.md](docs/rules/coding.md#tasty-lint-rules).
-- `pnpm run update-tasty` / `pnpm run update-glaze` — bump and pin `@tenphi/tasty` or `@tenphi/glaze` to the latest version, then sync the harness block. To pin a specific version, set `npm_config_version`: `npm_config_version=X.Y.Z pnpm run update-glaze`. A `--version=X.Y.Z` flag does not work: pnpm passes it to `pnpm add`, which prints pnpm's own version and changes nothing.
-
-## Environment
-
-- Tasty's experimental type-aware JSX analysis is enabled only in this repo's `.oxlintrc.json` through `settings.tasty.typeAwareJSX`, using `tsconfig.json` and the installed TypeScript. It distinguishes semantic props such as drop ordering and Item content from style props. Unresolved or erased prop types keep the name heuristic and may still need individual ignores. Cold lint runs load the TypeScript project; the setting is not part of the published Tasty config or plugin presets, so consumers such as Cloud remain opt-in.
-- Two TypeScripts. `pnpm test:types` and the `tsc` half of `pnpm test:types:consumer` run TypeScript 7 (the `typescript-native` alias, ~7× faster). `typescript` stays 5.x because TypeScript 7 ships no compiler API, and tsdown's declaration build, `audit-docs`, `check-declaration-bindings.mjs`, the export parsing in `check-consumer-declarations.mjs` and the type-aware lint above all need it. Both packages ship a `tsc` binary, so a bare `tsc` may run either one; use the scripts. TypeScript 7 removed `baseUrl`, so import by relative path, never `from 'src/…'`.
-- Node 24, pinned in `.nvmrc` and used by every CI job including publish — OIDC trusted publishing requires npm ≥ 11.5.1, which Node 24 ships and Node 22 (npm 10.x) does not. pnpm `^10`, pinned to `pnpm@10.34.5` via `packageManager`; no Corepack involved. Note the published package still declares `engines.node >=22.0.0` — that is the floor for consumers, not for building this repo.
-- After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`). Do this at the start of every task — see [Before You Start](#before-you-start).
-- Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs `node scripts/test-once.mjs --pre-push`, which skips like `pnpm test:once` only when every pushed ref also points at that tree, and otherwise runs the full suite on the working tree as before. So a `pnpm test:once` pass covers the next push of that tree. Skip only intentionally (`--no-verify` or `HUSKY=0`).
-- No external services or databases required for local development.
 
 ## Tasty and Glaze Documentation
 
@@ -216,19 +137,6 @@ The docs of the installed Tasty and Glaze come through harnesspm, as they do for
 
 - **Tasty:** [`llms.txt`](node_modules/.harnesspm/pkgs/@tenphi/tasty/docs/llms.txt). Read "Tasty Style Rules for AI Agents" before you write or review styles, then the guides and references the task needs. UI Kit ships neither build-time extraction nor SSR.
 - **Glaze:** [`llms.txt`](node_modules/.harnesspm/docs/glaze/llms.txt). Read it when you work on color tokens, theme generation or contrast tuning: Glaze powers `src/tokens/palette.ts`. Start with "Designing a palette" and "Light, dark, and high contrast".
-
-## Harness for Coding Agents — `harness/`
-
-`harness/` ships in the package for projects that use [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm). It is for agents that **use** UI Kit; the rules for working on UI Kit stay in this file. This repository uses harnesspm too, so the block at the end of this file holds the same harness, changed for this repository by `harnesspm.json`.
-
-- [`plugin.json`](harness/plugin.json) extends `@tenphi/glaze` and `@tenphi/tasty`, so a project gets Glaze's colors rule, docs and `glaze-theme` skill, and Tasty's styles rule and docs, through UI Kit. It also extends `@tenphi/eslint-plugin-tasty`, an optional peer: a project that installs the plugin gets its `tasty-lint` harness (a rule to lint changed styles, a page for every `tasty/*` rule, `tasty-lint:check`, and a hook that lints each file an agent edits), and harnesspm skips it quietly in a project without the plugin. Every `extends` entry must be a dependency or an optional peer, which `src/harness.test.ts` checks. Scripts run only in projects that trust their package: `uikit:tokens` needs `@cube-dev/ui-kit` trusted, Glaze's `glaze:*` tools need `@tenphi/glaze`, `tasty:styles` needs `@tenphi/tasty`, and `tasty-lint:check` and its edit hook need `@tenphi/eslint-plugin-tasty`. Its `docs` is `src/`: the package ships the Storybook pages (`src/**/*.docs.mdx`) and the Modern Form guides there, and harnesspm indexes them by their `#` titles, with no build step. Tasty's and Glaze's indexes come with their harnesses. harnesspm lists every page it finds in `src/`, so keep anything else there out of `files`.
-- [`rules/usage.md`](harness/dev.harnesspm/rules/usage.md) (`uikit:rules/usage`) is the one always-on rule, with UI Kit's color guidance. Keep it short: it is in every consumer's `AGENTS.md`. Its ID is public, since consumers name it to patch or exclude it.
-- [`patches/glaze-colors.patch.md`](harness/dev.harnesspm/patches/glaze-colors.patch.md) replaces only the "Where colors come from" section of Glaze's colors rule, which would otherwise send an app on UI Kit to a Glaze theme of its own.
-- [`patches/tasty-usage.patch.md`](harness/dev.harnesspm/patches/tasty-usage.patch.md) replaces only the "Checking styles" section of Tasty's rule, so `tasty:styles` loads UI Kit's `configure()` through `--setup @cube-dev/ui-kit/dist/components/Root.js`. Without it, the CSS uses Tasty's default units and none of UI Kit's states or recipes.
-- `uikit:tokens` ([`scripts/tokens.mjs`](harness/dev.harnesspm/scripts/tokens.mjs)) is for consumers: palette tokens and their aliases by their Tasty names (which aliases are legacy is the Usage guide's call, not the tool's), with values in all four schemes and contrast against their base, measured by Glaze's public measuring module, `@tenphi/glaze/harness/measure`, from the pinned Glaze. It reads `dist/`. While you edit the palette here, use `pnpm probe tokens`, which reads `src/`.
-- [`harnesspm.json`](harnesspm.json) changes the harness for this repository only, never for consumers. It trusts `@tenphi/tasty`, `@tenphi/glaze` and `@tenphi/eslint-plugin-tasty`, so their tools and the lint hook run here. Its patches in `harnesspm/patches/` point the UI Kit, Tasty, Glaze and lint rules at `src/`, `pnpm probe` and `pnpm exec oxlint`, because the shipped text names `dist/` and a consumer's own Glaze theme and lint.
-- `pnpm install` runs `harnesspm sync` (in `prepare`); `pnpm add` does not. After `pnpm add` or a change to `harness/` or `harnesspm.json`, run `pnpm exec harnesspm sync` and commit `AGENTS.md` and `harnesspm.lock.json`. The lint job fails when they are out of date. Prettier skips the block, which harnesspm formats its own way.
-- `pnpm check:harness` (`harnesspm check`, a devDependency) validates the harness, and CI runs it in the lint job. [`src/harness.test.ts`](src/harness.test.ts) guards what it cannot see: the packages `extends` names, the Glaze and Tasty sections the patches replace, and the tool; `package-tests/artifacts.test.tsx` runs the tool, checks that `src/` ships only doc pages, and runs `tasty:styles` with the setup the Tasty patch names, all on the packed build.
 
 ## Stack
 

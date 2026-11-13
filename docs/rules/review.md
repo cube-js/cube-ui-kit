@@ -35,11 +35,11 @@ Flag new components, hooks or helpers that duplicate an existing implementation 
 
 ### Preserve consumer customization
 
-Flag parent selectors, blanket child resets or specificity escalation that defeat a child's consumer `styles`. Fix the owning element with named states, slot styles, props or tokens. Verify that an ordinary consumer override still applies. See [Styling](../../AGENTS.md#styling-keep-components-customizable).
+Flag parent selectors, blanket child resets or specificity escalation that defeat a child's consumer `styles`. Fix the owning element with named states, slot styles, props or tokens. Verify that an ordinary consumer override still applies. See [Styling](coding.md#styling-keep-components-customizable).
 
 ### Keep style state names inside the style definition
 
-Flag JS-built state keys such as `[IN_DIALOG]` that hide a reusable condition from consumers. Declare a named local state in `styles`; use Root's predefined states for shared conditions. See [Styling](../../AGENTS.md#styling-keep-components-customizable).
+Flag JS-built state keys such as `[IN_DIALOG]` that hide a reusable condition from consumers. Declare a named local state in `styles`; use Root's predefined states for shared conditions. See [Styling](coding.md#styling-keep-components-customizable).
 
 ### Use props and slots where they preserve the contract
 
@@ -85,7 +85,7 @@ Flag adaptive content on fixed fills, accent-fill tokens used as adaptive text o
 
 ### Preserve supported consumer selector behavior
 
-Flag new selectors that break supported consumers, even when this repo's newer jsdom accepts them. In particular, avoid `:has(~ X)`, which throws in Cloud's jsdom 26. Use a supported selector or mod; see [Styling](../../AGENTS.md#styling-keep-components-customizable).
+Flag new selectors that break supported consumers, even when this repo's newer jsdom accepts them. In particular, avoid `:has(~ X)`, which throws in Cloud's jsdom 26. Use a supported selector or mod; see [Styling](coding.md#styling-keep-components-customizable).
 
 ## Interaction and state
 
