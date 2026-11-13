@@ -1,14 +1,7 @@
-import {
-  RefObject,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { RefObject, useEffectEvent, useState } from 'react';
 
 import { getLayoutScale } from '../../../utils/layout-scale';
-import { chainRaf } from '../../../utils/raf';
+import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 
 import type { Key } from '@react-types/shared';
 
@@ -54,25 +47,17 @@ export function useTabIndicator(
   orderToken?: string,
 ): IndicatorStyle | null {
   const [style, setStyle] = useState<IndicatorStyle | null>(null);
-  const cancelRef = useRef<(() => void) | null>(null);
 
-  const updateIndicator = useCallback(() => {
-    if (!enabled || !containerRef.current || selectedKey == null) {
-      setStyle(null);
-      return;
-    }
-
-    // Find the selected tab button within the container
-    const selectedTab = containerRef.current.querySelector(
+  const measure = useEffectEvent((container: HTMLElement) => {
+    const selectedTab = container.querySelector<HTMLElement>(
       '[aria-selected="true"]',
-    ) as HTMLElement | null;
+    );
 
-    if (!selectedTab) {
+    if (selectedKey == null || !selectedTab) {
       setStyle(null);
       return;
     }
 
-    const container = containerRef.current;
     const isVertical = orientation === 'vertical';
     const containerRect = container.getBoundingClientRect();
     const tabRect = selectedTab.getBoundingClientRect();
@@ -87,69 +72,33 @@ export function useTabIndicator(
       ? tabRect.top - containerRect.top
       : tabRect.left - containerRect.left;
     const scroll = isVertical ? container.scrollTop : container.scrollLeft;
+    const start = offset / scale + scroll;
+    const size = tabSize / scale;
 
-    setStyle({ start: offset / scale + scroll, size: tabSize / scale });
-  }, [containerRef, selectedKey, enabled, orientation, orderToken]);
+    // Every observed element reports at once, so most calls change nothing.
+    setStyle((prev) =>
+      prev?.start === start && prev.size === size ? prev : { start, size },
+    );
+  });
 
-  // Update on selectedKey change - use chainRaf to ensure DOM is fully painted
+  // The selected tab's place depends on the list's size and on the size and
+  // order of every tab in it. So measure whenever one of them changes: a title
+  // that loads after the tab is selected, a renamed tab, a tab before it that
+  // grows, the list becoming visible. A new selection or tab order observes
+  // afresh, and the observer's first report measures it.
   useLayoutEffect(() => {
-    // Cancel any pending RAF chain
-    if (cancelRef.current) {
-      cancelRef.current();
-    }
-
-    // Schedule update after 2 frames to ensure layout is complete
-    cancelRef.current = chainRaf(() => {
-      updateIndicator();
-    }, 2);
-
-    return () => {
-      if (cancelRef.current) {
-        cancelRef.current();
-      }
-    };
-  }, [updateIndicator]);
-
-  // Update on window resize
-  useEffect(() => {
-    if (!enabled) return;
-
-    const handleResize = () => updateIndicator();
-
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, [enabled, updateIndicator]);
-
-  // Recalculate when container becomes visible (0 -> non-zero size along the axis)
-  useEffect(() => {
-    if (!enabled) return;
-
     const container = containerRef.current;
-    if (!container) return;
 
-    const getAxisSize = (rect: { width: number; height: number }) =>
-      orientation === 'vertical' ? rect.height : rect.width;
+    if (!enabled || !container) return;
 
-    let prevSize = getAxisSize(container.getBoundingClientRect());
-
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-
-      const newSize = getAxisSize(entry.contentRect);
-
-      if (prevSize === 0 && newSize > 0) {
-        updateIndicator();
-      }
-
-      prevSize = newSize;
-    });
+    const observer = new ResizeObserver(() => measure(container));
 
     observer.observe(container);
 
+    for (const child of container.children) observer.observe(child);
+
     return () => observer.disconnect();
-  }, [enabled, orientation, updateIndicator]);
+  }, [containerRef, enabled, orientation, selectedKey, orderToken]);
 
   return enabled ? style : null;
 }
