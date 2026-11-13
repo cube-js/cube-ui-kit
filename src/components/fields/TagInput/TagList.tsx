@@ -1,7 +1,13 @@
 import { Key, Node } from '@react-types/shared';
 import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import { KeyboardEvent, RefObject, useRef } from 'react';
-import { useFocusRing, useId, useTag, useTagGroup } from 'react-aria';
+import {
+  useFocusRing,
+  useId,
+  useLocale,
+  useTag,
+  useTagGroup,
+} from 'react-aria';
 import { Item, ListState, useListState } from 'react-stately';
 
 import { useI18n } from '../../../i18n/useI18n';
@@ -48,6 +54,56 @@ export interface TagListProps {
   listRef?: RefObject<HTMLDivElement | null>;
   /** The field's input, which Escape and typing on a chip return to. */
   inputRef?: RefObject<HTMLInputElement | null>;
+  /**
+   * Whether the chips sit in one line with the input, before it: the arrows
+   * then lead on to the input and stop at the first chip.
+   */
+  isInline?: boolean;
+}
+
+/**
+ * Inside the input box the chips and the text read as one line: the arrow past
+ * the last chip goes on to the text, caret at its start, and the arrow before
+ * the first chip stops there instead of wrapping round to the last. Returns
+ * whether it took the key.
+ */
+function handleEdgeArrow(
+  e: KeyboardEvent<HTMLDivElement>,
+  list: HTMLElement | null,
+  input: HTMLInputElement | null | undefined,
+  direction: 'ltr' | 'rtl',
+) {
+  const forward = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
+  const backward = direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
+
+  if (
+    (e.key !== forward && e.key !== backward) ||
+    e.shiftKey ||
+    e.altKey ||
+    e.ctrlKey ||
+    e.metaKey
+  ) {
+    return false;
+  }
+
+  // Locked chips take no focus, so the edges are the focusable ones.
+  const rows = [
+    ...(list?.querySelectorAll('[role="row"]:not([aria-disabled="true"])') ??
+      []),
+  ];
+  const row = (e.target as Element).closest('[role="row"]');
+
+  if (e.key === forward && row === rows.at(-1) && input && !input.disabled) {
+    input.focus();
+    input.setSelectionRange(0, 0);
+  } else if (!(e.key === backward && row === rows[0])) {
+    return false;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  return true;
 }
 
 const TagListElement = tasty({
@@ -200,7 +256,9 @@ export function TagList(props: TagListProps) {
     tagStyles,
     listRef,
     inputRef,
+    isInline,
   } = props;
+  const { direction } = useLocale();
   const localRef = useRef<HTMLDivElement>(null);
   const ref = listRef ?? localRef;
 
@@ -242,6 +300,9 @@ export function TagList(props: TagListProps) {
   // also jump to the chip it starts.
   const handleKeyDownCapture = (e: KeyboardEvent<HTMLDivElement>) => {
     const input = inputRef?.current;
+
+    if (isInline && handleEdgeArrow(e, ref.current, input, direction)) return;
+
     const isPrintable =
       e.key.length === 1 &&
       e.key !== ' ' &&

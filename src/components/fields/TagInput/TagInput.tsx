@@ -17,7 +17,13 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useFilter, useId, useTextField, VisuallyHidden } from 'react-aria';
+import {
+  useFilter,
+  useId,
+  useLocale,
+  useTextField,
+  VisuallyHidden,
+} from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
@@ -323,12 +329,20 @@ const INSIDE_WRAPPER_STYLES: Styles = {
   },
 };
 
-// The text takes what the last row leaves, down to a usable minimum, and then
-// wraps to a row of its own. With no chips it lines up with a plain input.
+// The text takes what the last row leaves. It is as wide as what is typed (or
+// the placeholder), never under 6x, so text that does not fit the rest of the
+// row moves to a row of its own, and is cut only past the full width. Without
+// `field-sizing` it keeps a fixed share of the row and scrolls instead. With no
+// chips it lines up with a plain input.
 const INSIDE_INPUT_STYLES: Styles = {
   flexGrow: 1,
-  flexBasis: 0,
-  width: 'min 8x',
+  flexBasis: {
+    '': 0,
+    '@supports(field-sizing: content)': 'auto',
+  },
+  fieldSizing: 'content',
+  // `auto`, or a width would override `field-sizing`.
+  width: '6x auto 100%',
   // Its own line box would make the row taller than the chips.
   height: '$tag-size',
   padding: '0 (1x - 1bw - $tag-inset)',
@@ -660,6 +674,25 @@ function isComposingKey(e: KeyboardEvent<HTMLInputElement>) {
   return e.nativeEvent.isComposing || e.keyCode === 229;
 }
 
+/**
+ * The arrow toward the start of the line, with the caret already there and
+ * nothing selected: the caret has nowhere to go, so it steps out to the chip
+ * before it. Modified arrows stay text editing.
+ */
+function isArrowPastStart(
+  e: KeyboardEvent<HTMLInputElement>,
+  direction: 'ltr' | 'rtl',
+) {
+  const { selectionStart, selectionEnd } = e.currentTarget;
+
+  return (
+    e.key === (direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft') &&
+    !(e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) &&
+    selectionStart === 0 &&
+    selectionEnd === 0
+  );
+}
+
 type RejectionReason =
   'invalid' | 'duplicate' | 'unknown' | 'unavailable' | 'limit';
 
@@ -843,6 +876,8 @@ function TagInput<T extends object>(
 
   const { t } = useI18n();
   const { formatList } = useFormatter();
+  // The text direction; `direction` is where the popover opens.
+  const { direction: textDirection } = useLocale();
 
   let {
     qa,
@@ -1469,17 +1504,18 @@ function TagInput<T extends object>(
     }
   });
 
-  // The chips sit below the input, not beside the caret, so Backspace in an
-  // empty input moves to the last chip instead of removing it out of view.
-  // The chip comes into view with focus and says it is removable; the next
-  // Backspace removes it and moves to the one before.
-  const handleBackspaceKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
+  // Backspace in an empty input moves to the last chip instead of removing it,
+  // which below the input would be out of view. The chip comes into view with
+  // focus and says it is removable; the next Backspace removes it and moves to
+  // the one before. Inside the box, the arrow past the start of the text goes
+  // there too.
+  const handleToTagsKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
     if (isComposingKey(e)) return;
 
     e.preventDefault();
 
-    // A held Backspace that just emptied the input stops there, so it does
-    // not run on into the chips.
+    // A held key that just emptied the input, or brought the caret to its
+    // start, stops there, so it does not run on into the chips.
     if (e.repeat) return;
 
     setIsPopoverOpen(false);
@@ -1583,11 +1619,12 @@ function TagInput<T extends object>(
       } else if ((e.key === 'Home' || e.key === 'End') && shouldShowPopover) {
         handleEdgeKey(e);
       } else if (
-        e.key === 'Backspace' &&
-        !draft &&
+        (e.key === 'Backspace'
+          ? !draft
+          : tagPlacement === 'inside' && isArrowPastStart(e, textDirection)) &&
         uniqueValues.some((value) => !isTagLocked(value))
       ) {
-        handleBackspaceKey(e);
+        handleToTagsKey(e);
       } else if (e.key === 'Enter') {
         handleEnterKey(e);
       } else if (delimiters.includes(e.key)) {
@@ -1896,6 +1933,7 @@ function TagInput<T extends object>(
       size={TAG_SIZES[size] ?? 'xsmall'}
       isDisabled={isDisabled}
       isReadOnly={isReadOnly}
+      isInline={tagPlacement === 'inside'}
       styles={partStyles.tagList}
       tagStyles={partStyles.tag}
       onRemove={removeValues}
