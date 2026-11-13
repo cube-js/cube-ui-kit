@@ -71,6 +71,27 @@ const tabIndicator = () =>
     (child) => !child.querySelector('[role="tab"]'),
   );
 
+/**
+ * Waits for the indicator to lie under `tab` along the strip: `left` and
+ * `width` for a horizontal one, `top` and `height` for a vertical one. Shorter
+ * than the test timeout, so a miss reports the positions.
+ */
+const expectIndicatorUnder = (
+  tab: HTMLElement,
+  start: 'left' | 'top' = 'left',
+  size: 'width' | 'height' = 'width',
+) =>
+  waitFor(
+    () => {
+      const tabRect = tab.getBoundingClientRect();
+      const indicatorRect = tabIndicator()!.getBoundingClientRect();
+
+      expect(indicatorRect[start]).toBeCloseTo(tabRect[start], 0);
+      expect(indicatorRect[size]).toBeCloseTo(tabRect[size], 0);
+    },
+    { timeout: 2000 },
+  );
+
 /** The ⋮ button that opens a tab's menu. */
 const menuTriggerFor = (tabName: string) => {
   const tab = screen.getByRole('tab', { name: tabName });
@@ -423,27 +444,199 @@ describe('Tabs inside a scaled ancestor', () => {
       );
       const tab = screen.getByRole('tab', { name: 'Charlie' });
 
-      // Shorter than the test timeout, so a miss reports the positions.
-      const expectUnderTab = () =>
-        waitFor(
-          () => {
-            const tabRect = tab.getBoundingClientRect();
-            const indicatorRect = tabIndicator()!.getBoundingClientRect();
-
-            expect(indicatorRect[start]).toBeCloseTo(tabRect[start], 0);
-            expect(indicatorRect[size]).toBeCloseTo(tabRect[size], 0);
-          },
-          { timeout: 2000 },
-        );
-
-      await expectUnderTab();
+      await expectIndicatorUnder(tab, start, size);
 
       // Zoom in with the same tab selected: nothing re-measures.
       rerender(<ScaledTabs scale={1.5} placement={placement} />);
 
-      await expectUnderTab();
+      await expectIndicatorUnder(tab, start, size);
     },
   );
+});
+
+/**
+ * A tab that changes size with no selection change: a title that loads after
+ * the tab is selected (a fallback "Dashboard" becomes the dashboard's own
+ * name), or a tab before the selected one that grows and pushes it along.
+ * Nothing but the selection, the tab order and a window resize used to
+ * re-measure, so the indicator kept the size and place it measured first.
+ * jsdom has no layout.
+ */
+describe('Indicator of a tab that resizes or moves while selected', () => {
+  function LoadingTabs({
+    firstTitle = 'Model',
+    selectedTitle = 'Dashboard',
+    keyOrder,
+    isReorderable,
+    type,
+    tabListPadding,
+  }: {
+    firstTitle?: string;
+    selectedTitle?: string;
+    keyOrder?: string[];
+    isReorderable?: boolean;
+    type?: 'default' | 'file';
+    tabListPadding?: string;
+  }) {
+    return (
+      <Tabs
+        defaultActiveKey="dashboard"
+        keyOrder={keyOrder}
+        isReorderable={isReorderable}
+        type={type}
+        tabListPadding={tabListPadding}
+      >
+        <Tab key="model" title={firstTitle} />
+        <Tab key="dashboard" title={selectedTitle} />
+      </Tabs>
+    );
+  }
+
+  // Selecting a tab changes its colour, not its size, so no resize moves the
+  // indicator here: only the new selection does.
+  it('moves to a newly selected tab', async () => {
+    renderWithRoot(<LoadingTabs />);
+
+    await expectIndicatorUnder(screen.getByRole('tab', { name: 'Dashboard' }));
+
+    const tab = screen.getByRole('tab', { name: 'Model' });
+
+    await userEvent.click(tab);
+
+    await expectIndicatorUnder(tab);
+  });
+
+  it('follows the selected tab when its title loads and widens it', async () => {
+    const { rerender } = renderWithRoot(<LoadingTabs />);
+    const tab = screen.getByRole('tab', { name: 'Dashboard' });
+
+    await expectIndicatorUnder(tab);
+
+    const { width: before } = tab.getBoundingClientRect();
+
+    rerender(<LoadingTabs selectedTitle="2026 Sales Performance Story" />);
+
+    // Guard the guard: the tab must actually widen.
+    await waitFor(() =>
+      expect(tab.getBoundingClientRect().width).toBeGreaterThan(before + 50),
+    );
+    await expectIndicatorUnder(tab);
+  });
+
+  it('follows the selected tab when a tab before it widens', async () => {
+    const { rerender } = renderWithRoot(<LoadingTabs />);
+    const tab = screen.getByRole('tab', { name: 'Dashboard' });
+
+    await expectIndicatorUnder(tab);
+
+    const { left: before } = tab.getBoundingClientRect();
+
+    rerender(<LoadingTabs firstTitle="Semantic model of the sales data" />);
+
+    await waitFor(() =>
+      expect(tab.getBoundingClientRect().left).toBeGreaterThan(before + 50),
+    );
+    await expectIndicatorUnder(tab);
+  });
+
+  it('measures a list that mounts hidden once it is shown', async () => {
+    const HiddenTabs = ({ hidden }: { hidden: boolean }) => (
+      <div style={{ display: hidden ? 'none' : 'block' }}>
+        <LoadingTabs />
+      </div>
+    );
+    const { rerender } = renderWithRoot(<HiddenTabs hidden />);
+    const tab = screen.getByRole('tab', { name: 'Dashboard', hidden: true });
+
+    rerender(<HiddenTabs hidden={false} />);
+
+    await expectIndicatorUnder(tab);
+  });
+
+  // The list's own padding moves every tab without resizing any of them.
+  it('follows the selected tab when the list padding changes', async () => {
+    const { rerender } = renderWithRoot(<LoadingTabs />);
+    const tab = screen.getByRole('tab', { name: 'Dashboard' });
+
+    await expectIndicatorUnder(tab);
+
+    const { left: before } = tab.getBoundingClientRect();
+
+    rerender(<LoadingTabs tabListPadding="8x" />);
+
+    await waitFor(() =>
+      expect(tab.getBoundingClientRect().left).toBeGreaterThan(before + 20),
+    );
+    await expectIndicatorUnder(tab);
+  });
+
+  // A type without the indicator turns it off; the selection can change
+  // meanwhile, and the indicator must not come back where it was.
+  it('shows no stale indicator when it is turned back on', async () => {
+    const { rerender } = renderWithRoot(<LoadingTabs />);
+
+    await expectIndicatorUnder(screen.getByRole('tab', { name: 'Dashboard' }));
+
+    rerender(<LoadingTabs type="file" />);
+
+    const tab = screen.getByRole('tab', { name: 'Model' });
+
+    await userEvent.click(tab);
+
+    rerender(<LoadingTabs type="default" />);
+
+    // Not drawn until it is measured, rather than under the old selection.
+    expect(tabIndicator()).toBeUndefined();
+
+    await expectIndicatorUnder(tab);
+  });
+
+  // Turning reordering on or off replaces the tab list element, as a builder
+  // does when it enters edit mode.
+  it('keeps following the selected tab after reordering is turned on', async () => {
+    const { rerender } = renderWithRoot(<LoadingTabs />);
+
+    await expectIndicatorUnder(screen.getByRole('tab', { name: 'Dashboard' }));
+
+    rerender(<LoadingTabs isReorderable />);
+
+    // A new list holds new tabs.
+    const tab = screen.getByRole('tab', { name: 'Dashboard' });
+
+    await expectIndicatorUnder(tab);
+
+    const { width: before } = tab.getBoundingClientRect();
+
+    rerender(
+      <LoadingTabs
+        isReorderable
+        selectedTitle="2026 Sales Performance Story"
+      />,
+    );
+
+    await waitFor(() =>
+      expect(tab.getBoundingClientRect().width).toBeGreaterThan(before + 50),
+    );
+    await expectIndicatorUnder(tab);
+  });
+
+  // No tab changes size here, so only the order itself can re-measure. The
+  // compiled build used to drop it.
+  it('follows the selected tab when the tabs are reordered', async () => {
+    const { rerender } = renderWithRoot(<LoadingTabs />);
+    const tab = screen.getByRole('tab', { name: 'Dashboard' });
+
+    await expectIndicatorUnder(tab);
+
+    const { left: before } = tab.getBoundingClientRect();
+
+    rerender(<LoadingTabs keyOrder={['dashboard', 'model']} />);
+
+    await waitFor(() =>
+      expect(tab.getBoundingClientRect().left).toBeLessThan(before - 20),
+    );
+    await expectIndicatorUnder(tab);
+  });
 });
 
 /**

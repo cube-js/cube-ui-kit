@@ -8,9 +8,11 @@ import {
   ReactElement,
   ReactNode,
   RefAttributes,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import { AriaTabListProps, useTabList } from 'react-aria';
 import {
@@ -233,6 +235,13 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
 
   // DOM element refs
   const listRef = useRef<HTMLDivElement>(null);
+  // The indicator watches the list element itself, which turning reordering on
+  // or off replaces with a new one, so the element is kept in state too.
+  const [listElement, setListElement] = useState<HTMLDivElement | null>(null);
+  const handleListRef = useCallback((element: HTMLDivElement | null) => {
+    listRef.current = element;
+    setListElement(element);
+  }, []);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Track visited tabs for keepMounted functionality
@@ -461,7 +470,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   );
 
   const indicatorStyle = useTabIndicator(
-    listRef,
+    listElement,
     state.selectedKey,
     effectiveType === 'default' || effectiveType === 'narrow',
     orientation,
@@ -616,7 +625,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   ) => (
     <div
       {...mergeProps(tabListProps, collectionProps)}
-      ref={listRef}
+      ref={handleListRef}
       data-element="TabList"
       data-qa={listQa.qa}
       data-qaval={listQa.qaVal}
