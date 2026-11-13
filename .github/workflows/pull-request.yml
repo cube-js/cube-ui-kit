@@ -111,6 +111,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The install ran `harnesspm sync` (in `prepare`), which rewrites the
+      # committed agent files from the installed packages, even in CI. So a PR
+      # that forgot to sync shows up here as a change, and a later
+      # `harnesspm sync --check` would pass on the rewritten files.
+      - name: Check the agent files match the installed harness (harnesspm)
+        run: |
+          files="AGENTS.md CLAUDE.md harnesspm.json harnesspm.lock.json"
+          if [ -n "$(git status --porcelain -- $files)" ]; then
+            git --no-pager diff -- $files
+            echo "::error::The harnesspm block in AGENTS.md or harnesspm.lock.json is out of date. Run \`pnpm exec harnesspm sync\` and commit the result."
+            exit 1
+          fi
+
       - name: Run the lint
         run: pnpm lint
 

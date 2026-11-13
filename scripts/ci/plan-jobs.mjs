@@ -48,10 +48,12 @@ const ALL = ['tests', 'browser', 'a11y', 'chromatic', 'bundle', 'canary'];
  * importer. Add a kind only for a path no job reads beyond what it says.
  */
 export const KINDS = [
+  // harnesspm's config and lock only change the agent files, which only
+  // `Lint, types & diagnostics` checks.
   {
     kind: 'repo-notes',
     reads: [],
-    test: /^(\.changeset|\.husky|\.claude|\.cursor|\.agents|docs\/rules)\//,
+    test: /^((\.changeset|\.husky|\.claude|\.cursor|\.agents|docs\/rules|harnesspm)\/|harnesspm(\.lock)?\.json$)/,
   },
   // Shipped in the package, and `ModernForm.docs.mdx` imports one. Before the
   // catch-all `notes`, which takes every other `.md`.
