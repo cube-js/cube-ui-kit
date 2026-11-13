@@ -130,8 +130,7 @@ const FileInputElement = tasty(Action, {
     },
 
     Input: {
-      // oxlint-disable-next-line tasty/no-state-in-selector -- identifies the native input independently of the caller's element name
-      $: '[data-input-type="fileinput"]',
+      $: '> input',
       position: 'absolute',
       top: 0,
       right: 0,

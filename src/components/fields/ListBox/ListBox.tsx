@@ -1365,17 +1365,18 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             styles={listStyles}
             tokens={{
               ...listGapTokens,
+              ...customizationProps.tokens,
               '$list-virtual-height': shouldVirtualize
                 ? `${rowVirtualizer.getTotalSize()}px`
                 : undefined,
-              ...customizationProps.tokens,
             }}
             aria-disabled={isDisabled || undefined}
             mods={{
               sections: hasSections,
               empty: isEmpty,
-              virtualized: shouldVirtualize,
               ...externalMods,
+              // The spacer and row positions follow the same virtualization state.
+              virtualized: shouldVirtualize,
             }}
             data-shape={shape}
             data-input-type="listbox"
