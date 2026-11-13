@@ -8,7 +8,11 @@ import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
-import { CubeTagProps, Tag } from '../../content/Tag/Tag';
+import {
+  CubeTagProps,
+  Tag,
+  TAG_CLOSE_ACTION_STYLES,
+} from '../../content/Tag/Tag';
 
 /** One chip as the list renders it. */
 export interface TagListEntry {
@@ -165,7 +169,7 @@ function TagRow({
               aria-label={t('tagInput.remove', 'Remove')}
               // Reads "Remove, <label>": the button's own name, then the row's.
               aria-labelledby={removeButtonProps['aria-labelledby']}
-              styles={{ color: '#current' }}
+              styles={TAG_CLOSE_ACTION_STYLES}
               onPress={removeButtonProps.onPress}
             />
           ) : undefined

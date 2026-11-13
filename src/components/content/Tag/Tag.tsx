@@ -20,6 +20,10 @@ const TagElement = tasty(Item, {
     },
     border: {
       // extend
+      // The default card's border is the text color at 20%, darker than a
+      // field's; a neutral chip takes the standard one. Tinted themes keep
+      // their own.
+      neutral: '#border',
       'type=primary': '#clear',
     },
 
@@ -37,6 +41,19 @@ const TagElement = tasty(Item, {
     },
   },
 });
+
+/**
+ * A chip's close button: a small mark, quieter than the label until the
+ * pointer is on it. The button keeps its full size, so the target does not
+ * shrink with the glyph.
+ */
+export const TAG_CLOSE_ACTION_STYLES: Styles = {
+  color: {
+    '': '#current.6',
+    'hovered | pressed': '#current',
+  },
+  '$local-icon-size': '1.5x',
+};
 
 export interface CubeTagProps extends CubeItemProps {
   /**
@@ -89,12 +106,17 @@ function Tag(allProps: CubeTagProps, ref) {
       size={size}
       data-type={type}
       variant={`${theme}.${type}` as ItemVariant}
-      mods={mods}
+      // The element's own `theme` mod is always `default`: the theme travels
+      // in `variant`.
+      mods={{ neutral: theme === 'default' && type === 'card', ...mods }}
       actions={
         isClosable ? (
           <Item.Action
             aria-label={t('tag.close', 'Close')}
-            styles={mergeStyleLayers({ color: '#current' }, closeButtonStyles)}
+            styles={mergeStyleLayers(
+              TAG_CLOSE_ACTION_STYLES,
+              closeButtonStyles,
+            )}
             icon={<CloseIcon />}
             onPress={onClose}
           />
