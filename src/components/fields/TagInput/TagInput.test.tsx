@@ -2352,7 +2352,11 @@ describe('<TagInput />', () => {
 
       await userEvent.click(getByRole('button', { name: 'After' }));
 
-      expect(queryByText('"one" is already added')).toBeNull();
+      // A press clears it in a task after mouseup (see the test below), which
+      // a loaded run can reach after the click resolves.
+      await waitFor(() =>
+        expect(queryByText('"one" is already added')).toBeNull(),
+      );
       expect(input).not.toHaveAttribute('aria-invalid');
     });
 
