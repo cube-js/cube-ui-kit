@@ -5,7 +5,7 @@ import * as TagInputStories from './TagInput.stories';
 
 # TagInput
 
-A multi-value field. The user types a value into a single-line input and commits it with Enter or a comma, and each value becomes a removable chip listed below the input. The same component covers free-form lists (email addresses, numbers, IAM principals) and picking several values from suggestions, with an optional custom value on top.
+A multi-value field. The user types a value into a single-line input and commits it with Enter or a comma, and each value becomes a removable chip listed below the input, or, with `tagPlacement="inside"`, inside the input box. The same component covers free-form lists (email addresses, numbers, IAM principals) and picking several values from suggestions, with an optional custom value on top.
 
 ## When to Use
 
@@ -13,6 +13,7 @@ A multi-value field. The user types a value into a single-line input and commits
 - The user picks several values from a long list and should see what is picked while searching for the next one
 - A list of options where the user may also add a value that is not in it (`allowsCustomValue`)
 - Not for a short, fixed list of options: use [FilterPicker](/docs/forms-filterpicker--docs) or [CheckboxGroup](/docs/forms-checkboxgroup--docs)
+- Keep the chips below the input (the default) wherever there is room for them. Put them inside the box (`tagPlacement="inside"`) only where the field sits in a row with no room below it, such as a filter row
 
 ## Component
 
@@ -46,6 +47,8 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the button that toggles the popover
 - **`disabledKeys`** `Iterable<Key>` — Keys of options that cannot be picked
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the input. The chips follow it
+- **`tagPlacement`** `'below' | 'inside'` (default: `below`) — Where the chips go: in a list below the input, or in the input box, in one wrapping row with the text
+- **`hidePlaceholderWithTags`** `boolean` (default: `false`) — Whether the placeholder hides once there is a tag, so it only prompts for the first value
 - **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`)
 - **`direction`** `'bottom' | 'top'` (default: `bottom`) — Where the suggestions popover opens
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the popover flips when there is no room
@@ -75,6 +78,8 @@ A multi-value field. The user types a value into a single-line input and commits
 **maxTags** - A hard limit on the number of values. Past it, typed, pasted and picked values are refused with a message and stay in the input, while values up to the limit are still added. For a limit that only flags the field, use a `rules` entry instead.
 
 **tagProps** - Called per value. Return a theme, an icon or `qa` for the chip. A string `children` replaces the chip's text and also names the value in the input's description and in the "Added"/"Removed" announcements, for values whose label does not come from the options. `isDisabled: true` locks the chip: it has no remove button, the keyboard skips it, and its option cannot be unpicked. An invalid chip stays in the danger theme whatever theme it asks for.
+
+**tagPlacement** - `below` is the default and the preferred layout: the input is a fixed single line that never moves, stays level with a side label, and keeps the arrow keys for the suggestions. `inside` puts the chips in the input box for a field that has no room below it. The chips and the text share one wrapping row and the box grows a row at a time; one row is exactly the input's height. The text is as wide as what is typed, never under 6x: text that does not fit after the chips moves to a row of its own, and is cut only past the full width. The placeholder does not size the text, so a long one ends in an ellipsis instead of taking a row (`hidePlaceholderWithTags` hides it once there is a value). The suffix (validation icon, clear button, popover trigger) rides on the end of the text, so the two always wrap together. A long value shrinks to the box's width and ends in an ellipsis. Inside, the arrow keys cross between the text and the chips (see [Keyboard Navigation](#keyboard-navigation)). Typed text sizes itself with `field-sizing`; a browser without it keeps a fixed share of the row for the text, which scrolls.
 
 **children / items** - Options turn the input into a combobox. Typing filters them and focuses the option the typed text names, or else the first match. Enter or a click toggles the focused option, and the popover stays open so the user can pick several in a row. A picked option is added as its own key, whatever other options its text resembles. Typed text means "add": pressing Enter on an option that is already a chip refuses it as a duplicate, and unpicking it takes the arrow keys, a click, or an empty input. A picked option shows a checked box. Typed text names an option by its exact label, then by its key, anywhere in the list, before any looser match counts, so `active` finds `active` even when `Active` comes first. Enter, a delimiter, a paste and blur all go by the same rule, and the option the text names stays listed and focused even when the filter would hide it, as when a key is typed, so they always add the same option. Without `allowsCustomValue`, typed text must name an option, and a label in another case or without its accents counts too: `production` adds `Production`. On blur a query that names nothing is dropped. With `allowsCustomValue`, only an exact match counts: `paris` next to an option `Paris` is a value of its own, offered and focused as its own row and added as typed, since a case-sensitive filter treats the two apart. A press on a control outside while the popover shows (a button, a link, another field) is not taken by it: it reaches the control, so a Save button saves on the first click, with the typed text already committed. A press anywhere else, such as blank space in or the backdrop of a dialog the field sits in, or a control outside the dialog or popover it sits in, only closes the popover, keeps the typed text in the input, and leaves the dialog open. An enabled UI Kit `Button` or `ItemButton` is the exception: it is reached from anywhere. A press on a disabled control never commits the typed text. The typed text is offered as its own option after the matches, the same way [FilterListBox](/docs/forms-filterlistbox--docs) does, and custom values already added are listed there too, checked and sorted, so they can be unpicked from the list as well as from their chips. One unpicked in the list stays there, unchecked, until focus leaves the field, so it can be picked back. An option in `disabledKeys` is refused however it is entered. A chip for an option shows the option's label, while the value holds its key. The label is remembered, so it survives server-side filtering (`filter={false}` with changing `items`).
 
@@ -117,7 +122,7 @@ Customizes the text input element.
 
 #### tagListStyles
 
-Customizes the wrapping row of chips.
+Customizes the wrapping row of chips. With `tagPlacement="inside"` the list is `display: contents`, so its chips are items of the input box's own row.
 
 #### tagStyles
 
@@ -179,6 +184,30 @@ The `mods` prop accepts the following modifiers for the bordered input box:
 ### Validation States
 
 <Story of={TagInputStories.Validation} />
+
+### Tags Inside the Input
+
+<Story of={TagInputStories.TagsInside} />
+
+```jsx
+<TagInput
+  tagPlacement="inside"
+  aria-label="Values"
+  placeholder="Add a value"
+  defaultValue={['active', 'pending']}
+/>
+```
+
+To prompt only for the first value, hide the placeholder once there is one:
+
+```jsx
+<TagInput
+  hidePlaceholderWithTags
+  tagPlacement="inside"
+  aria-label="Values"
+  placeholder="Add a value"
+/>
+```
 
 ### Disabled and Read-only
 
@@ -402,6 +431,7 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 - `ArrowDown` / `ArrowUp` - Opens the popover or moves through the options
 - `Home` / `End` - Moves to the first or last option while the popover is open
 - `ArrowLeft` / `ArrowRight` - Moves between chips. Locked chips are skipped
+- `ArrowLeft` at the start of the text, with `tagPlacement="inside"` - Moves focus to the last chip, as Backspace in the empty input does. `ArrowRight` on the last chip moves back to the text, with the caret at its start, and `ArrowLeft` on the first chip stays there instead of wrapping round. A modified arrow (Shift, Alt, Ctrl, Cmd) stays text editing, and right to left the two arrows swap. Below the box, the arrows in the input move the caret only
 - `Delete` / `Backspace` on a chip - Removes it and focuses its neighbour, or the input when no chip is left. Holding the key down removes one chip, not the whole row
 - `Escape` on a chip - Moves focus back to the input
 - Typing on a chip - Moves focus back to the input, where the typed character lands
@@ -442,6 +472,8 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 3. **Do**: Say how to add a value in the `description` or `placeholder` when the delimiter is not obvious
 
 4. **Do**: Turn delimiters off with `delimiters={[]}` when a value may contain a comma
+
+5. **Don't**: Reach for `tagPlacement="inside"` by default. Chips below a fixed input are easier to read and to reach, and keep the field level with its neighbours; put them inside only where the field has no room below it
 
 ## Integration with Forms
 
