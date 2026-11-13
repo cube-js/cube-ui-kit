@@ -71,6 +71,27 @@ const tabIndicator = () =>
     (child) => !child.querySelector('[role="tab"]'),
   );
 
+/**
+ * Waits for the indicator to lie under `tab` along the strip: `left` and
+ * `width` for a horizontal one, `top` and `height` for a vertical one. Shorter
+ * than the test timeout, so a miss reports the positions.
+ */
+const expectIndicatorUnder = (
+  tab: HTMLElement,
+  start: 'left' | 'top' = 'left',
+  size: 'width' | 'height' = 'width',
+) =>
+  waitFor(
+    () => {
+      const tabRect = tab.getBoundingClientRect();
+      const indicatorRect = tabIndicator()!.getBoundingClientRect();
+
+      expect(indicatorRect[start]).toBeCloseTo(tabRect[start], 0);
+      expect(indicatorRect[size]).toBeCloseTo(tabRect[size], 0);
+    },
+    { timeout: 2000 },
+  );
+
 /** The ⋮ button that opens a tab's menu. */
 const menuTriggerFor = (tabName: string) => {
   const tab = screen.getByRole('tab', { name: tabName });
@@ -423,25 +444,12 @@ describe('Tabs inside a scaled ancestor', () => {
       );
       const tab = screen.getByRole('tab', { name: 'Charlie' });
 
-      // Shorter than the test timeout, so a miss reports the positions.
-      const expectUnderTab = () =>
-        waitFor(
-          () => {
-            const tabRect = tab.getBoundingClientRect();
-            const indicatorRect = tabIndicator()!.getBoundingClientRect();
-
-            expect(indicatorRect[start]).toBeCloseTo(tabRect[start], 0);
-            expect(indicatorRect[size]).toBeCloseTo(tabRect[size], 0);
-          },
-          { timeout: 2000 },
-        );
-
-      await expectUnderTab();
+      await expectIndicatorUnder(tab, start, size);
 
       // Zoom in with the same tab selected: nothing re-measures.
       rerender(<ScaledTabs scale={1.5} placement={placement} />);
 
-      await expectUnderTab();
+      await expectIndicatorUnder(tab, start, size);
     },
   );
 });
@@ -484,38 +492,25 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     );
   }
 
-  // Shorter than the test timeout, so a miss reports the positions.
-  const expectUnderTab = (tab: HTMLElement) =>
-    waitFor(
-      () => {
-        const tabRect = tab.getBoundingClientRect();
-        const indicatorRect = tabIndicator()!.getBoundingClientRect();
-
-        expect(indicatorRect.left).toBeCloseTo(tabRect.left, 0);
-        expect(indicatorRect.width).toBeCloseTo(tabRect.width, 0);
-      },
-      { timeout: 2000 },
-    );
-
   // Selecting a tab changes its colour, not its size, so no resize moves the
   // indicator here: only the new selection does.
   it('moves to a newly selected tab', async () => {
     renderWithRoot(<LoadingTabs />);
 
-    await expectUnderTab(screen.getByRole('tab', { name: 'Dashboard' }));
+    await expectIndicatorUnder(screen.getByRole('tab', { name: 'Dashboard' }));
 
     const tab = screen.getByRole('tab', { name: 'Model' });
 
     await userEvent.click(tab);
 
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
   });
 
   it('follows the selected tab when its title loads and widens it', async () => {
     const { rerender } = renderWithRoot(<LoadingTabs />);
     const tab = screen.getByRole('tab', { name: 'Dashboard' });
 
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
 
     const { width: before } = tab.getBoundingClientRect();
 
@@ -525,14 +520,14 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     await waitFor(() =>
       expect(tab.getBoundingClientRect().width).toBeGreaterThan(before + 50),
     );
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
   });
 
   it('follows the selected tab when a tab before it widens', async () => {
     const { rerender } = renderWithRoot(<LoadingTabs />);
     const tab = screen.getByRole('tab', { name: 'Dashboard' });
 
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
 
     const { left: before } = tab.getBoundingClientRect();
 
@@ -541,7 +536,7 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     await waitFor(() =>
       expect(tab.getBoundingClientRect().left).toBeGreaterThan(before + 50),
     );
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
   });
 
   it('measures a list that mounts hidden once it is shown', async () => {
@@ -555,7 +550,7 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
 
     rerender(<HiddenTabs hidden={false} />);
 
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
   });
 
   // The list's own padding moves every tab without resizing any of them.
@@ -563,7 +558,7 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     const { rerender } = renderWithRoot(<LoadingTabs />);
     const tab = screen.getByRole('tab', { name: 'Dashboard' });
 
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
 
     const { left: before } = tab.getBoundingClientRect();
 
@@ -572,7 +567,7 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     await waitFor(() =>
       expect(tab.getBoundingClientRect().left).toBeGreaterThan(before + 20),
     );
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
   });
 
   // A type without the indicator turns it off; the selection can change
@@ -580,7 +575,7 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
   it('shows no stale indicator when it is turned back on', async () => {
     const { rerender } = renderWithRoot(<LoadingTabs />);
 
-    await expectUnderTab(screen.getByRole('tab', { name: 'Dashboard' }));
+    await expectIndicatorUnder(screen.getByRole('tab', { name: 'Dashboard' }));
 
     rerender(<LoadingTabs type="file" />);
 
@@ -593,7 +588,7 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     // Not drawn until it is measured, rather than under the old selection.
     expect(tabIndicator()).toBeUndefined();
 
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
   });
 
   // Turning reordering on or off replaces the tab list element, as a builder
@@ -601,14 +596,14 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
   it('keeps following the selected tab after reordering is turned on', async () => {
     const { rerender } = renderWithRoot(<LoadingTabs />);
 
-    await expectUnderTab(screen.getByRole('tab', { name: 'Dashboard' }));
+    await expectIndicatorUnder(screen.getByRole('tab', { name: 'Dashboard' }));
 
     rerender(<LoadingTabs isReorderable />);
 
     // A new list holds new tabs.
     const tab = screen.getByRole('tab', { name: 'Dashboard' });
 
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
 
     const { width: before } = tab.getBoundingClientRect();
 
@@ -622,7 +617,7 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     await waitFor(() =>
       expect(tab.getBoundingClientRect().width).toBeGreaterThan(before + 50),
     );
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
   });
 
   // No tab changes size here, so only the order itself can re-measure. The
@@ -631,7 +626,7 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     const { rerender } = renderWithRoot(<LoadingTabs />);
     const tab = screen.getByRole('tab', { name: 'Dashboard' });
 
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
 
     const { left: before } = tab.getBoundingClientRect();
 
@@ -640,7 +635,7 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     await waitFor(() =>
       expect(tab.getBoundingClientRect().left).toBeLessThan(before - 20),
     );
-    await expectUnderTab(tab);
+    await expectIndicatorUnder(tab);
   });
 });
 

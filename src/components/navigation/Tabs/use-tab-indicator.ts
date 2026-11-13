@@ -80,7 +80,8 @@ export function useTabIndicator(
     const start = offset / scale + scroll;
     const size = tabSize / scale;
 
-    // Every observed element reports at once, so most calls change nothing.
+    // Most reports leave the selected tab where it was (a tab after it, the
+    // list's other axis), so keep the same object then.
     setStyle((prev) =>
       prev?.start === start && prev.size === size ? prev : { start, size },
     );
