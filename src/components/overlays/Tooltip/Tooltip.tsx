@@ -1,7 +1,6 @@
 import { createDOMRef } from '@react-spectrum/utils';
 import { DOMRefValue } from '@react-types/shared';
 import {
-  BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   Styles,
@@ -26,6 +25,7 @@ import { useModalLayerRef } from '../Modal/modal-containment';
 import { TooltipContext } from './context';
 
 import type { PlacementAxis } from '../../../shared';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 export type { AriaTooltipProps };
 
@@ -160,7 +160,7 @@ const TooltipTipElement = tasty({
 });
 
 export interface CubeTooltipProps
-  extends BaseProps, ContainerStyleProps, AriaTooltipProps {
+  extends ComponentBaseProps, ContainerStyleProps, AriaTooltipProps {
   tipStyles?: Styles;
   /**
    * @deprecated Has no effect. No icon is ever rendered.

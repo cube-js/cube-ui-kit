@@ -1,5 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactElement, RefObject, useRef } from 'react';
 import {
   AriaDateRangePickerProps,
@@ -34,6 +34,8 @@ import { TimeInput } from './TimeInput';
 import { DateFieldBase } from './types';
 import { useFocusManagerRef } from './utils';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+
 const DateRangeDash = tasty({
   'aria-hidden': 'true',
   'data-qa': 'DateRangeDash',
@@ -61,7 +63,7 @@ export interface CubeDateRangeSeparatedPickerProps<
       AriaDateRangePickerProps<T>,
       'errorMessage' | 'form' | 'name' | keyof DateFieldBase<T>
     >,
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     DateFieldBase<T>,
     FieldBaseProps<{ start: T; end: T } | null | undefined> {

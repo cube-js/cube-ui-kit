@@ -8,7 +8,6 @@ import {
 } from '@react-aria/utils';
 import {
   BASE_STYLES,
-  BaseProps,
   BaseStyleProps,
   BLOCK_STYLES,
   BlockStyleProps,
@@ -45,6 +44,8 @@ import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 import { trapsFocus, useDialogContext } from './context';
 import { useContentOverflow } from './use-content-overflow';
 import { useRetainedDialogFocus } from './use-retained-dialog-focus';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 const STYLES_LIST = [
   ...BASE_STYLES,
@@ -160,7 +161,7 @@ const sizePxMap = {
 
 export interface CubeDialogProps
   extends
-    Omit<BaseProps, 'role'>,
+    Omit<ComponentBaseProps, 'role'>,
     AriaDialogProps,
     BaseStyleProps,
     BlockStyleProps,

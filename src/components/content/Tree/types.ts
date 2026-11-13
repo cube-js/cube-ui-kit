@@ -1,7 +1,8 @@
 import type { Key } from '@react-types/shared';
-import type { BaseProps, OuterStyleProps, Styles } from '@tenphi/tasty';
+import type { OuterStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type { SizeName } from '../../../tokens/sizes';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeItemActionProps } from '../../actions/ItemAction';
 import type { CubeMenuProps } from '../../actions/Menu';
 import type { CubeItemProps } from '../Item/Item';
@@ -138,7 +139,7 @@ export interface TreeLoadDataNode {
  * Designed to be a drop-in (modulo `is*` renames) for the AntD `Tree`
  * `treeData` API, scoped to the v1 feature set.
  */
-export interface CubeTreeProps extends BaseProps, OuterStyleProps {
+export interface CubeTreeProps extends ComponentBaseProps, OuterStyleProps {
   /** Hierarchical data describing the tree. */
   treeData: CubeTreeNodeData[];
 

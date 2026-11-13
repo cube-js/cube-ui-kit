@@ -3,7 +3,7 @@ import {
   FocusableRef,
   Key,
 } from '@react-types/shared';
-import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import React, {
   cloneElement,
   ForwardedRef,
@@ -61,6 +61,8 @@ import {
   INPUT_WRAPPER_STYLES,
 } from '../TextInput/TextInputBase';
 
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 export type PopoverTriggerAction = 'focus' | 'input' | 'manual';
@@ -77,7 +79,7 @@ const InputElement = tasty({
 
 export interface CubeSearchComboBoxProps<T>
   extends
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps,
     // SearchComboBox is not form-connected: it holds no persistent value, so
     // form-binding and form-validation props are excluded from the public API.

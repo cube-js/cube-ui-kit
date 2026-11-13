@@ -1,5 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import { BaseProps, Styles } from '@tenphi/tasty';
+import { Styles } from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import {
   AriaTimeFieldProps,
@@ -25,13 +25,15 @@ import { DEFAULT_TIME_PROPS } from './props';
 import { Granularity } from './types';
 import { useFocusManagerRef } from './utils';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+
 export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
   extends
     Omit<
       AriaTimeFieldProps<TimeValue>,
       'errorMessage' | 'form' | 'name' | 'value' | 'onChange' | 'granularity'
     >,
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<TimeValue | null | undefined> {
   wrapperStyles?: Styles;

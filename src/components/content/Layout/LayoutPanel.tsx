@@ -1,9 +1,7 @@
 import { getFocusableTreeWalker } from '@react-aria/focus';
 import {
-  BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  filterBaseProps,
   mergeStyles,
   Styles,
   tasty,
@@ -28,6 +26,7 @@ import { createPortal } from 'react-dom';
 
 import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value';
 import { useI18n } from '../../../i18n/useI18n';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
@@ -51,6 +50,8 @@ import {
 } from './LayoutContext';
 import { LayoutPanelTransition } from './LayoutPanelTransition';
 import { clampSize, getOppositeSide, resolveCssSize } from './utils';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 // Resize handler dimensions
 const HANDLER_WIDTH = 9;
@@ -375,7 +376,8 @@ function ResizeHandler(props: ResizeHandlerProps) {
 /** Panel rendering mode */
 export type LayoutPanelMode = 'default' | 'sticky' | 'overlay' | 'dialog';
 
-export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
+export interface CubeLayoutPanelProps
+  extends ComponentBaseProps, ContainerStyleProps {
   /** Side of the layout where panel is positioned */
   side: Side;
   /**
@@ -1049,7 +1051,7 @@ function LayoutPanel(
             if (node) panelNodeRef.current = node;
             panelRefCallback(node, transitionRef);
           }}
-          {...filterBaseProps(otherProps, { eventProps: true })}
+          {...filterComponentBaseProps(otherProps, { eventProps: true })}
           mods={{ ...panelMods, ...mods, offscreen, hidden: isHidden }}
           styles={finalStyles}
           tokens={{ ...panelTokens, ...otherProps.tokens }}

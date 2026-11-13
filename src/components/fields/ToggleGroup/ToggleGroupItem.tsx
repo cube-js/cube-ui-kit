@@ -5,6 +5,7 @@ import { useHover, useToggleButtonGroupItem } from 'react-aria';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { getValidationTheme } from '../../form/validation/resolve-validation-props';
 import { JOINED_ITEM_STYLES } from '../RadioGroup/joined-styles';
@@ -17,7 +18,10 @@ import type { ReactNode, Ref } from 'react';
 
 export interface CubeToggleGroupItemProps
   extends
-    Pick<BasePropsWithoutChildren, 'qa' | 'qaVal' | 'styles'>,
+    Pick<
+      BasePropsWithoutChildren,
+      'qa' | 'qaVal' | 'className' | 'style' | 'styles' | 'tokens' | 'mods'
+    >,
     Pick<CubeItemProps, 'icon' | 'tooltip'> {
   /**
    * The item's key in the group's `selectedKey` / `selectedKeys`. A direct
@@ -54,7 +58,6 @@ export function ToggleGroupItem(props: CubeToggleGroupItemProps) {
     children,
     isDisabled,
     qa,
-    qaVal,
     styles,
     ref,
     'aria-label': ariaLabel,
@@ -93,21 +96,22 @@ export function ToggleGroupItem(props: CubeToggleGroupItemProps) {
 
   // The visual `type` below is `Item`'s; the button's own is `htmlType`.
   const { type: _htmlType, ...elementProps } = buttonProps;
+  const theme = getValidationTheme(
+    'default',
+    { isInvalid, isValid },
+    { includeValid: true },
+  );
 
   return (
     <ToggleGroupItemElement
+      {...pickBaseCustomizationProps(props)}
       {...mergeProps(elementProps, hoverProps, focusProps)}
       ref={domRef}
       qa={qa || 'ToggleGroupItem'}
-      qaVal={qaVal}
       htmlType="button"
       type={type}
       size={size}
-      theme={getValidationTheme(
-        'default',
-        { isInvalid, isValid },
-        { includeValid: true },
-      )}
+      theme={theme}
       icon={icon}
       tooltip={tooltip}
       isDisabled={isItemDisabled}
@@ -116,6 +120,9 @@ export function ToggleGroupItem(props: CubeToggleGroupItemProps) {
       // that into `aria-selected`, which a toggle button and a radio don't
       // take. React Aria already sets `aria-pressed` or `aria-checked`.
       mods={{
+        ...props.mods,
+        theme,
+        disabled: isItemDisabled,
         joined: true,
         selected: isSelected,
         hovered: isHovered,

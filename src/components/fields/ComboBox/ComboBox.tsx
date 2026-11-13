@@ -5,7 +5,7 @@ import {
   FocusableRef,
   Key,
 } from '@react-types/shared';
-import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import React, {
   ForwardedRef,
   forwardRef,
@@ -70,6 +70,8 @@ import {
   sortSelectedFirst,
 } from './comboBoxOptions';
 
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 export type PopoverTriggerAction = 'focus' | 'input' | 'manual';
@@ -86,7 +88,7 @@ const InputElement = tasty({
 
 export interface CubeComboBoxProps<T>
   extends
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The selected key in controlled mode */

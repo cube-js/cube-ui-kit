@@ -1,5 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactElement, RefObject, useId, useRef } from 'react';
 import {
   AriaDatePickerProps,
@@ -32,6 +32,8 @@ import { DatePickerButton } from './DatePickerButton';
 import { formatPeriod, PickerType, snapToPeriod } from './period';
 import { useFocusManagerRef } from './utils';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+
 const PeriodValueElement = tasty({
   qa: 'PeriodPickerValue',
   styles: {
@@ -54,7 +56,7 @@ export interface CubePeriodPickerProps<T extends DateValue = DateValue>
       AriaDatePickerProps<T>,
       'errorMessage' | 'granularity' | 'form' | 'name'
     >,
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<T | null | undefined> {
   /** Which period the picker selects. Set by the concrete picker components. */

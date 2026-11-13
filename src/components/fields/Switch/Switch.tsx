@@ -1,5 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactElement, useRef } from 'react';
 import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
 import { useToggleState } from 'react-stately';
@@ -34,6 +34,7 @@ import {
   splitTooltipTriggerProps,
 } from '../../overlays/Tooltip/split-trigger-props';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 const SwitchWrapperElement = tasty({
@@ -137,7 +138,7 @@ const SwitchElement = tasty({
 
 export interface CubeSwitchProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<boolean | null | undefined>,
     ToggleSelectionProps,

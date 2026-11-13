@@ -1,14 +1,11 @@
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  filterBaseProps,
-  tasty,
-} from '@tenphi/tasty';
+import { CONTAINER_STYLES, ContainerStyleProps, tasty } from '@tenphi/tasty';
 import { CSSProperties, forwardRef, useEffect } from 'react';
 
+import { filterComponentBaseProps } from '../../utils/react/componentBaseProps';
 import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../utils/styles';
+
+import type { ComponentBaseProps } from '../../utils/react/componentBaseProps';
 
 const SuffixElement = tasty({
   element: 'Suffix',
@@ -27,7 +24,8 @@ const SuffixElement = tasty({
   },
 });
 
-export interface CubeSuffixProps extends BaseProps, ContainerStyleProps {
+export interface CubeSuffixProps
+  extends ComponentBaseProps, ContainerStyleProps {
   onWidthChange?: Function;
   outerGap?: CSSProperties['gap'];
 }
@@ -46,7 +44,7 @@ export const Suffix = forwardRef<HTMLDivElement, CubeSuffixProps>(
 
     return (
       <SuffixElement
-        {...filterBaseProps(props, { eventProps: true })}
+        {...filterComponentBaseProps(props, { eventProps: true })}
         ref={ref}
         styles={styles}
         tokens={{ '$suffix-gap': outerGap, ...props.tokens }}

@@ -1,9 +1,7 @@
 import { useObjectRef } from '@react-aria/utils';
 import {
-  BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  filterBaseProps,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -16,9 +14,12 @@ import {
   NecessityIndicator,
   ValidationProps,
 } from '../../shared/form';
+import { filterComponentBaseProps } from '../../utils/react/componentBaseProps';
 import { extractStyles } from '../../utils/styles';
 
 import { getValidationMods } from './validation/resolve-validation-props';
+
+import type { ComponentBaseProps } from '../../utils/react/componentBaseProps';
 
 const RequiredIconElement = tasty({
   as: 'svg',
@@ -211,7 +212,7 @@ const LabelElement = tasty({
 });
 
 export interface CubeLabelProps
-  extends BaseProps, ContainerStyleProps, ValidationProps {
+  extends ComponentBaseProps, ContainerStyleProps, ValidationProps {
   labelPosition?: LabelPosition;
   necessityIndicator?: NecessityIndicator | null;
   isRequired?: boolean;
@@ -262,7 +263,7 @@ function Label(props: CubeLabelProps, ref) {
 
   return (
     <LabelElement
-      {...filterBaseProps(otherProps)}
+      {...filterComponentBaseProps(otherProps)}
       ref={domRef}
       styles={styles}
       qa={qa}

@@ -3,6 +3,7 @@ import {
   Checkbox,
   ColorPicker,
   ColorSwatch,
+  ColorSwatchGroup,
   ComboBox,
   CommandMenu,
   DataTable,
@@ -14,6 +15,7 @@ import {
   DialogForm,
   FileInput,
   FilterListBox,
+  FilterPicker,
   Form,
   GridLayout,
   GridProvider,
@@ -23,6 +25,7 @@ import {
   Layout,
   ListBox,
   MonthPicker,
+  Picker,
   Placeholder,
   Prefix,
   QuarterPicker,
@@ -36,6 +39,7 @@ import {
   Tabs,
   TagInput,
   TimeInput,
+  ToggleGroup,
   Tooltip,
   Tree,
   WeekPicker,
@@ -52,6 +56,7 @@ const customization = {
   tokens: { '$custom-token': '7px' },
   mods: { custom: true },
   element: 'CustomControl' as const,
+  title: 'Native title override',
 };
 
 function expectCustomization(element: HTMLElement) {
@@ -62,7 +67,9 @@ function expectCustomization(element: HTMLElement) {
     '--custom-token': '7px',
   });
   expect(element).toHaveAttribute('data-custom');
-  expect(element).toHaveAttribute('data-element', 'CustomControl');
+  expect(element).not.toHaveAttribute('data-element', 'CustomControl');
+  expect(element).not.toHaveAttribute('title', 'Native title override');
+  expect(element).not.toHaveAttribute('data-theme', 'unsupported-theme');
 }
 
 const dates = [
@@ -157,7 +164,12 @@ describe('component base props', () => {
     ['FileInput', <FileInput {...customization} qa="custom" label="File" />],
     [
       'ColorPicker',
-      <ColorPicker {...customization} qa="custom" label="Color" />,
+      <ColorPicker
+        {...customization}
+        theme="special"
+        qa="custom"
+        label="Color"
+      />,
     ],
     [
       'ColorSwatch',
@@ -250,6 +262,134 @@ describe('component base props', () => {
   ] as const)('forwards props on %s', (_, component, qa?: string) => {
     renderWithRoot(component);
     expectCustomization(screen.getByTestId(qa ?? 'custom'));
+  });
+
+  it('retains semantic trigger themes and content titles', () => {
+    renderWithRoot(
+      <>
+        <ColorPicker qa="color" label="Color" theme="special" />
+        <Select qa="select" label="Fruit" theme="special">
+          <Select.Item key="pear">Pear</Select.Item>
+        </Select>
+        <Tabs aria-label="Tabs">
+          <Tabs.Tab key="one" title="Tab title" />
+        </Tabs>
+        <Layout>
+          <Layout.Header title="Page title" />
+        </Layout>
+      </>,
+    );
+
+    expect(screen.getByTestId('color')).toHaveAttribute(
+      'data-theme',
+      'special',
+    );
+    expect(screen.getByTestId('select')).toHaveAttribute(
+      'data-theme',
+      'special',
+    );
+    expect(screen.getByRole('tab', { name: 'Tab title' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Page title' }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps picker themes on their triggers and slot names on their wrappers', () => {
+    renderWithRoot(
+      <>
+        <Picker {...customization} qa="picker" label="Fruit" theme="special">
+          <Picker.Item key="pear">Pear</Picker.Item>
+        </Picker>
+        <FilterPicker
+          {...customization}
+          qa="filter-picker"
+          label="Filtered fruit"
+          theme="special"
+        >
+          <FilterPicker.Item key="pear">Pear</FilterPicker.Item>
+        </FilterPicker>
+      </>,
+    );
+
+    for (const label of ['Fruit', 'Filtered fruit']) {
+      const trigger = screen.getByRole('button', { name: label });
+      expect(trigger).toHaveAttribute('data-theme', 'special');
+      const wrapper = trigger.closest<HTMLElement>('.custom-control');
+
+      expect(wrapper).toHaveAttribute('data-qaval', 'example');
+      expect(wrapper).toHaveStyle({ '--custom-token': '7px' });
+      expect(wrapper).not.toHaveAttribute('data-element', 'CustomControl');
+      expect(wrapper).not.toHaveAttribute('title');
+      expect(trigger).toHaveAttribute('data-custom');
+    }
+  });
+
+  it('keeps group and toggle button customization on their controls', () => {
+    const props = { ...customization, theme: 'unsupported-theme' };
+    renderWithRoot(
+      <>
+        <Radio.Group {...props} qa="radio-group" label="Radio">
+          <Radio value="one">One</Radio>
+        </Radio.Group>
+        <Checkbox.Group {...props} qa="checkbox-group" label="Checkbox">
+          <Checkbox value="one">One</Checkbox>
+        </Checkbox.Group>
+        <ColorSwatchGroup
+          {...props}
+          qa="swatch-group"
+          label="Swatch"
+          colors={['#abc']}
+        />
+        <ToggleGroup
+          {...props}
+          qa="toggle-group"
+          label="Toggle"
+          defaultSelectedKey="one"
+        >
+          <ToggleGroup.Item
+            {...props}
+            qa="toggle-item"
+            key="one"
+            mods={{ custom: true, selected: false, theme: 'danger' }}
+          >
+            One
+          </ToggleGroup.Item>
+        </ToggleGroup>
+      </>,
+    );
+
+    for (const qa of [
+      'radio-group',
+      'checkbox-group',
+      'swatch-group',
+      'toggle-group',
+      'toggle-item',
+    ]) {
+      expectCustomization(screen.getByTestId(qa));
+    }
+    const toggle = screen.getByTestId('toggle-item');
+    expect(toggle).toHaveAttribute('data-theme', 'default');
+    expect(toggle).toHaveAttribute('data-selected');
+    expect(toggle).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('omits generic theme from roots with no appearance variant', () => {
+    const props = { theme: 'unsupported-theme' };
+    renderWithRoot(
+      <>
+        <Form {...props} qa="form" />
+        <Layout {...props} qa="layout">
+          <Layout.Header {...props} qa="header" title="Heading" />
+        </Layout>
+        <Tooltip {...props} qa="tooltip">
+          Help
+        </Tooltip>
+      </>,
+    );
+
+    for (const qa of ['form', 'layout', 'header', 'tooltip']) {
+      expect(screen.getByTestId(qa)).not.toHaveAttribute('data-theme');
+    }
   });
 
   it.each([undefined, 'button', 'tabs'] as const)(

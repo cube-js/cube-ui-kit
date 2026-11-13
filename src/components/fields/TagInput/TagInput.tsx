@@ -1,6 +1,6 @@
 import { useControlledState } from '@react-stately/utils';
 import { Node as CollectionNode, Key } from '@react-types/shared';
-import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import {
   ClipboardEvent,
   cloneElement,
@@ -60,6 +60,7 @@ import { useActiveOption } from './useActiveOption';
 import { useTagError } from './useTagError';
 
 import type { FieldBaseProps } from '../../../shared';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
 import type { CubeTagProps } from '../../content/Tag/Tag';
 import type { CompositeBlurInfo } from '../ListBoxPopover';
 
@@ -83,7 +84,7 @@ export type TagValidationResult = boolean | string | null | undefined;
 
 export interface CubeTagInputProps<T = object>
   extends
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps,
     FieldBaseProps<readonly string[] | null | undefined> {
   /** The values in controlled mode. */

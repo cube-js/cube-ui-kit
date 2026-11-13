@@ -19,18 +19,18 @@ const textBoxOf = (label: string) =>
  * otherwise — so this needs a browser.
  */
 describe('FileInput box', () => {
-  it('keeps the file control positioned when the caller names the element', () => {
+  it('keeps the file control positioned when a caller changes its data attribute', () => {
     renderWithRoot(
       <FileInput
         qa="File"
-        element="UploadControl"
+        {...{ element: 'UploadControl' as const }}
         label="File"
         inputProps={{ 'data-input-type': 'upload' }}
       />,
     );
 
     const input = screen.getByTestId('File');
-    expect(input).toHaveAttribute('data-element', 'UploadControl');
+    expect(input).toHaveAttribute('data-element', 'Input');
     expect(input).toHaveAttribute('data-input-type', 'upload');
     expect(getComputedStyle(input).position).toBe('absolute');
     expect(getComputedStyle(input).opacity).toBe('0.01');

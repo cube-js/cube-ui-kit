@@ -1,11 +1,5 @@
 import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
-import {
-  BasePropsWithoutChildren,
-  ContainerStyleProps,
-  filterBaseProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { ContainerStyleProps, Styles, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -26,6 +20,7 @@ import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { isTextOnly } from '../../../utils/react/isTextOnly';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
 import { processSelectionArray } from '../../../utils/selection';
@@ -82,9 +77,8 @@ export interface CubeFilterPickerProps<T>
     // apply, through `FieldLayoutStyleProps`.
     Omit<
       CubeItemProps,
-      'children' | 'size' | 'tooltip' | keyof ContainerStyleProps
+      'children' | 'size' | 'tooltip' | 'element' | keyof ContainerStyleProps
     >,
-    BasePropsWithoutChildren,
     FieldLayoutStyleProps,
     FieldBaseProps<
       string | number | readonly (string | number)[] | null | undefined
@@ -1016,7 +1010,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       ref={ref}
       qa="FilterPickerWrapper"
       styles={styles}
-      {...filterBaseProps(otherProps, { eventProps: true })}
+      {...filterComponentBaseProps(otherProps, { eventProps: true })}
     >
       <DialogTrigger
         type="popover"

@@ -1,6 +1,6 @@
 import { useObjectRef } from '@react-aria/utils';
 import { createFocusableRef } from '@react-spectrum/utils';
-import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   FocusEventHandler,
   forwardRef,
@@ -41,6 +41,7 @@ import {
 } from '../../overlays/Tooltip/split-trigger-props';
 
 import type { Props } from '../../../props';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 const ADD_STYLES = {
@@ -263,7 +264,7 @@ function preventPointerFocus(event: MouseEvent<HTMLElement>) {
 
 export interface CubeTextInputBaseProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     Omit<
       AriaTextFieldProps<HTMLInputElement | HTMLTextAreaElement>,

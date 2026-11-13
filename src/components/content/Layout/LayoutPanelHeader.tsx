@@ -1,19 +1,17 @@
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  tasty,
-} from '@tenphi/tasty';
+import { CONTAINER_STYLES, ContainerStyleProps, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
 import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
+import { omitComponentOwnedProps } from '../../../utils/react/componentBaseProps';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { useDialogContext } from '../../overlays/Dialog/context';
 import { CubeItemProps, Item } from '../Item/Item';
 
 import { useLayoutPanelContext } from './LayoutContext';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 const PanelHeaderElement = tasty(Item, {
   qa: 'PanelHeader',
@@ -28,7 +26,10 @@ const PanelHeaderElement = tasty(Item, {
 });
 
 export interface CubeLayoutPanelHeaderProps
-  extends Omit<BaseProps, 'theme'>, ContainerStyleProps, CubeItemProps {
+  extends
+    ComponentBaseProps,
+    ContainerStyleProps,
+    Omit<CubeItemProps, 'theme' | 'element'> {
   /** Panel title */
   title?: ReactNode;
   /** Title heading level (affects semantics, not visual) */
@@ -90,7 +91,7 @@ function LayoutPanelHeader(
       size="large"
       actions={finalActions}
       styles={styles}
-      {...otherProps}
+      {...omitComponentOwnedProps(otherProps)}
     >
       {title ?? children}
     </PanelHeaderElement>

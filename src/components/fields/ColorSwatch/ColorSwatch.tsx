@@ -1,6 +1,5 @@
 import {
   BASE_STYLES,
-  BaseProps,
   BaseStyleProps,
   BLOCK_STYLES,
   BlockStyleProps,
@@ -16,6 +15,8 @@ import { ForwardedRef, forwardRef } from 'react';
 import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { extractStyles } from '../../../utils/styles';
 import { ColorValue, parseColor, toHex } from '../color/color';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 const STYLE_PROPS = [
   ...BASE_STYLES,
@@ -71,7 +72,7 @@ const SwatchElement = tasty({
 
 export interface CubeColorSwatchProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     BaseStyleProps,
     OuterStyleProps,
     BlockStyleProps,

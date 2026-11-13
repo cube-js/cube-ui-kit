@@ -1,8 +1,6 @@
 import {
-  BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  filterBaseProps,
   keyframes,
   Styles,
   tasty,
@@ -10,7 +8,10 @@ import {
 import { createContext, forwardRef, useContext } from 'react';
 
 import { useI18n } from '../../../i18n/useI18n';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 // Create the placeholder animation using keyframes helper
 const placeholderAnimation = keyframes({
@@ -75,7 +76,8 @@ const StyledPlaceholder = tasty({
  */
 export const PlaceholderGroupContext = createContext(false);
 
-export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
+export interface CubePlaceholderProps
+  extends ComponentBaseProps, ContainerStyleProps {
   size?: Styles['fontSize'];
   circle?: boolean;
   isStatic?: boolean;
@@ -103,7 +105,7 @@ export const Placeholder = forwardRef(function Placeholder(
               'Content is loading',
             ),
           })}
-      {...filterBaseProps(props, { eventProps: true })}
+      {...filterComponentBaseProps(props, { eventProps: true })}
       // The documented way to detect a loading placeholder. Fixed, so a
       // caller's `qa` or a translated `aria-label` doesn't change it.
       data-loading-placeholder=""

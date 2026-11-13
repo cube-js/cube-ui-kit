@@ -1,15 +1,12 @@
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  filterBaseProps,
-  tasty,
-} from '@tenphi/tasty';
+import { CONTAINER_STYLES, ContainerStyleProps, tasty } from '@tenphi/tasty';
 import { CSSProperties, forwardRef } from 'react';
 
+import { filterComponentBaseProps } from '../../utils/react/componentBaseProps';
 import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
 import { useLayoutEffect } from '../../utils/react/useLayoutEffect';
 import { extractStyles } from '../../utils/styles';
+
+import type { ComponentBaseProps } from '../../utils/react/componentBaseProps';
 
 const PrefixElement = tasty({
   element: 'Prefix',
@@ -28,7 +25,8 @@ const PrefixElement = tasty({
   },
 });
 
-export interface CubePrefixProps extends BaseProps, ContainerStyleProps {
+export interface CubePrefixProps
+  extends ComponentBaseProps, ContainerStyleProps {
   onWidthChange?: Function;
   outerGap?: CSSProperties['gap'];
 }
@@ -48,7 +46,7 @@ export const Prefix = forwardRef<HTMLDivElement, CubePrefixProps>(
 
     return (
       <PrefixElement
-        {...filterBaseProps(props, { eventProps: true })}
+        {...filterComponentBaseProps(props, { eventProps: true })}
         ref={ref}
         styles={styles}
         tokens={{ '$prefix-gap': outerGap, ...props.tokens }}

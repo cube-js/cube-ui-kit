@@ -1,5 +1,5 @@
 import { useObjectRef } from '@react-aria/utils';
-import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, useMemo, useRef, useState } from 'react';
 import { useRadio, useRadioGroup } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
@@ -23,6 +23,7 @@ import { useIsInsideColorPopover } from '../color/context';
 import { ColorPicker } from '../ColorPicker/ColorPicker';
 
 import type { RadioGroupState } from 'react-stately';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 /** A swatch: a color, and optionally a name to announce instead of the color. */
 export type CubeColorSwatchItem = string | { color: string; label?: string };
@@ -163,7 +164,7 @@ const SwatchElement = tasty({
 
 export interface CubeColorSwatchGroupProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The colors to offer. Duplicates of the same color are dropped. */
@@ -289,8 +290,8 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
   // The caller's base props that style the group take its outer element. ARIA,
   // `id` and `data-*` stay on the radiogroup inside it, where `useRadioGroup`
   // puts them, so the wrapper takes no second accessible name.
-  const { qaVal, className, style, theme, element } = props;
-  const outerProps = { qaVal, className, style, theme, element };
+  const { qaVal, className, style } = props;
+  const outerProps = { qaVal, className, style };
 
   const { styles, field } = splitFieldLayout(props);
   const isInsidePopover = useIsInsideColorPopover();

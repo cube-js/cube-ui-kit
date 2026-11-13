@@ -1,6 +1,7 @@
-import { BaseProps, filterBaseProps, tasty } from '@tenphi/tasty';
+import { BaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
 
+import { filterComponentBaseProps } from '../utils/react/componentBaseProps';
 import { useCombinedRefs } from '../utils/react/useCombinedRefs';
 
 const GridElement = tasty({
@@ -87,7 +88,7 @@ export const GridProvider = forwardRef<HTMLDivElement, CubeGridProviderProps>(
 
     return (
       <GridElement
-        {...filterBaseProps(props, { eventProps: true })}
+        {...filterComponentBaseProps(props, { eventProps: true })}
         ref={ref}
         tokens={{
           '$grid-width': toLength(width),

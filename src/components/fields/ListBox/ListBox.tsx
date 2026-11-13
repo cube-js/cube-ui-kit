@@ -1,12 +1,7 @@
 import { useHover } from '@react-aria/interactions';
 import { IconMinus } from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import {
-  BasePropsWithoutChildren,
-  mergeStyles,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   DOMAttributes,
   ForwardedRef,
@@ -92,6 +87,7 @@ import type {
   Key,
 } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
 
 const ListBoxWrapperElement = tasty({
   qa: 'ListBox',
@@ -368,7 +364,7 @@ export interface CubeListBoxProps<T>
     >,
     CollectionBase<T>,
     FieldBaseProps<Key | readonly Key[] | null | undefined>,
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps {
   /** Custom styles for the list container */
   listStyles?: Styles;

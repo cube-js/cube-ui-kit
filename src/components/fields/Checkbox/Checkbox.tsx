@@ -1,12 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { IconCheck, IconMinus } from '@tabler/icons-react';
-import {
-  BaseProps,
-  Element,
-  filterBaseProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { Element, filterBaseProps, Styles, tasty } from '@tenphi/tasty';
 import {
   forwardRef,
   ReactElement,
@@ -60,11 +54,12 @@ import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
 
 import type { FocusableRef } from '@react-types/shared';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 export interface CubeCheckboxProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     Omit<AriaCheckboxProps, 'form' | 'name'>,
     ToggleSelectionProps,

@@ -1,11 +1,12 @@
 import { useObjectRef } from '@react-aria/utils';
-import { BaseProps, filterBaseProps, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 import { AriaCheckboxGroupProps, useCheckboxGroup } from 'react-aria';
 import { useCheckboxGroupState } from 'react-stately';
 
 import { Provider } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/form';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   castNullableArrayValue,
@@ -20,6 +21,8 @@ import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { wrapWithField } from '../../form/wrapper';
 
 import { CheckboxGroupContext } from './context';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 const CheckGroupElement = tasty({
   qa: 'CheckboxGroup',
@@ -40,7 +43,7 @@ const CheckGroupElement = tasty({
 
 export interface CubeCheckboxGroupProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     Omit<AriaCheckboxGroupProps, 'errorMessage' | 'form' | 'name'>,
     FieldBaseProps<readonly string[] | null | undefined>,
     FieldLayoutStyleProps {
@@ -85,7 +88,7 @@ function CheckboxGroup(
   } = props;
   let domRef = useObjectRef(ref);
 
-  // The caller's base props (`qaVal`, `className`, `style`, `tokens`, `theme`,
+  // The caller's base props (`qaVal`, `className`, `style`, `tokens`,
   // `data-*`, event handlers) reach the group, as on `ToggleGroup`. Not the
   // ones `useCheckboxGroup` already handles: a native `change` bubbles up from
   // each checkbox, so a forwarded `onChange` would be called with an event,
@@ -98,7 +101,7 @@ function CheckboxGroup(
     isDisabled: _isDisabled,
     mods: _mods,
     ...baseProps
-  } = filterBaseProps(props, { eventProps: true });
+  } = filterComponentBaseProps(props, { eventProps: true });
 
   // `inputStyles` styles the group too; `styles` goes over it.
   const { styles, field } = splitFieldLayout(props, {

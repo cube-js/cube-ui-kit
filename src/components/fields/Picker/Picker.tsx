@@ -1,11 +1,5 @@
 import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
-import {
-  BasePropsWithoutChildren,
-  ContainerStyleProps,
-  filterBaseProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { ContainerStyleProps, Styles, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -28,6 +22,7 @@ import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { isTextOnly } from '../../../utils/react/isTextOnly';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
 import { processSelectionArray } from '../../../utils/selection';
@@ -67,9 +62,8 @@ export interface CubePickerProps<T>
     // apply, through `FieldLayoutStyleProps`.
     Omit<
       CubeItemProps,
-      'children' | 'size' | 'tooltip' | keyof ContainerStyleProps
+      'children' | 'size' | 'tooltip' | 'element' | keyof ContainerStyleProps
     >,
-    BasePropsWithoutChildren,
     FieldLayoutStyleProps,
     FieldBaseProps<
       string | number | readonly (string | number)[] | null | undefined
@@ -845,7 +839,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     <PickerWrapper
       ref={ref}
       styles={styles}
-      {...(filterBaseProps(otherProps, { eventProps: true }) as Record<
+      {...(filterComponentBaseProps(otherProps, { eventProps: true }) as Record<
         string,
         unknown
       >)}

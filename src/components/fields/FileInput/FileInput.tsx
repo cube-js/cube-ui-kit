@@ -1,6 +1,6 @@
 import { createFocusableRef, unwrapDOMRef } from '@react-spectrum/utils';
 import { useControlledState } from '@react-stately/utils';
-import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   forwardRef,
   RefObject,
@@ -34,6 +34,7 @@ import type { AriaLabelingProps, FocusableRefValue } from '@react-types/shared';
 import type { ChangeEvent } from 'react';
 import type { AriaTextFieldProps } from 'react-aria';
 import type { Props } from '../../../props';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 // The input box is the one every text field draws (`INPUT_WRAPPER_STYLES`):
 // its fill, border, radius and `$size` height per `size`, so the field lines
@@ -155,7 +156,7 @@ const FileControl = tasty({ as: 'input', element: 'Input' });
 
 export interface CubeFileInputProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     Omit<AriaTextFieldProps, 'form' | 'name' | 'errorMessage'>,
     FieldBaseProps<string | null | undefined> {

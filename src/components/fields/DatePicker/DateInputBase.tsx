@@ -1,6 +1,5 @@
 import { mergeRefs } from '@react-aria/utils';
 import {
-  BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   mergeStyles,
@@ -24,6 +23,7 @@ import {
 } from '../TextInput/TextInputBase';
 
 import type { Props } from '../../../props';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 const DateInputWrapperElement = tasty({
   qa: 'DateInputWrapper',
@@ -50,8 +50,8 @@ const DateInputElement = tasty({
   }),
 });
 
-interface CubeDateAtomInputProps extends BaseProps, ContainerStyleProps {
-  title?: string;
+interface CubeDateAtomInputProps
+  extends ComponentBaseProps, ContainerStyleProps {
   qa?: string;
   inputType?: string;
   isDisabled?: boolean;

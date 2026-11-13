@@ -1,15 +1,15 @@
-import type { BaseProps } from '@tenphi/tasty';
+import type { ComponentBaseProps } from './componentBaseProps';
 
 type BaseCustomizationProps = Pick<
-  BaseProps,
-  'qaVal' | 'className' | 'style' | 'tokens' | 'theme' | 'element'
-> & { title?: string };
+  ComponentBaseProps,
+  'qaVal' | 'className' | 'style' | 'tokens'
+>;
 
-/** Props that can sit under the control's existing DOM and event wiring. */
+/** Customization props that can sit under a control's DOM and event wiring. */
 export function pickBaseCustomizationProps(
   props: BaseCustomizationProps,
 ): BaseCustomizationProps {
-  const { qaVal, className, style, tokens, theme, title, element } = props;
+  const { qaVal, className, style, tokens } = props;
 
-  return { qaVal, className, style, tokens, theme, title, element };
+  return { qaVal, className, style, tokens };
 }

@@ -1,7 +1,5 @@
 import {
-  BaseProps,
   ContainerStyleProps,
-  filterBaseProps,
   INNER_STYLES,
   mergeStyles,
   Mods,
@@ -17,11 +15,14 @@ import {
 } from 'react';
 import { useHover } from 'react-aria';
 
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';
 import { LayoutContextReset } from './LayoutContext';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 const ContentElement = tasty({
   as: 'div',
@@ -107,7 +108,8 @@ const ContentElement = tasty({
 
 export type ScrollbarType = 'default' | 'thin' | 'tiny' | 'none';
 
-export interface CubeLayoutContentProps extends BaseProps, ContainerStyleProps {
+export interface CubeLayoutContentProps
+  extends ComponentBaseProps, ContainerStyleProps {
   /** Scrollbar style: 'default' | 'thin' | 'tiny' | 'none' */
   scrollbar?: ScrollbarType;
   children?: ReactNode;
@@ -170,7 +172,7 @@ function LayoutContent(
   return (
     <ContentElement
       ref={combinedRef}
-      {...filterBaseProps(otherProps, { eventProps: true })}
+      {...filterComponentBaseProps(otherProps, { eventProps: true })}
       {...hoverProps}
       mods={mods}
       styles={finalStyles}

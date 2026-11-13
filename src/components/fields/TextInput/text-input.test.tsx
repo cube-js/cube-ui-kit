@@ -75,9 +75,9 @@ describe('<TextInput />', () => {
       });
       expect(input).toHaveAttribute('data-extra');
       expect(input).toHaveAttribute('data-shape', 'default');
-      expect(input).toHaveAttribute('data-theme', 'special');
-      expect(input).toHaveAttribute('title', 'Details');
-      expect(input).toHaveAttribute('data-element', 'Control');
+      expect(input).not.toHaveAttribute('data-theme');
+      expect(input).not.toHaveAttribute('title');
+      expect(input).not.toHaveAttribute('data-element');
       expect(
         Array.from(
           container.querySelectorAll('[data-qaval="example"], .custom'),

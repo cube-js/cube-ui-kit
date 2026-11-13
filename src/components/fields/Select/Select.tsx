@@ -1,5 +1,5 @@
 import { AriaLabelingProps, CollectionBase, Key } from '@react-types/shared';
-import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import React, {
   cloneElement,
   ForwardedRef,
@@ -86,6 +86,7 @@ import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { Placement } from 'react-aria';
 import type { Props } from '../../../props';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
 
 const SelectWrapperElement = tasty({
   qa: 'SelectWrapper',
@@ -210,7 +211,7 @@ const OverlayElement = tasty({
 
 export interface CubeSelectBaseProps<T>
   extends
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     AriaLabelingProps,
     FieldLayoutStyleProps,
     FieldBaseProps<Key | null | undefined>,

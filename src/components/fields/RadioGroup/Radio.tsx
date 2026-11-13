@@ -1,6 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import {
-  BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   filterBaseProps,
@@ -43,6 +42,7 @@ import { RadioGroup } from './RadioGroup';
 import type { KeyboardEvent } from 'react';
 import type { AriaRadioProps } from 'react-aria';
 import type { RadioGroupState } from 'react-stately';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 export { AriaRadioProps };
 export { useRadio };
@@ -256,7 +256,7 @@ type RadioItemProps = Pick<CubeItemProps, (typeof ITEM_PROPS)[number]>;
 
 export interface CubeRadioProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     Omit<AriaRadioProps, 'value'>,
     // `labelTooltip` belongs to the group's label: a single radio has none.
     Omit<FieldBaseProps, 'labelTooltip'>,

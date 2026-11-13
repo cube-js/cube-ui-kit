@@ -1,4 +1,4 @@
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -46,6 +46,7 @@ import { ColorSwatch } from '../ColorSwatch/ColorSwatch';
 // oxlint-disable-next-line import/no-cycle -- mutual composition used only at render time; see above
 import { ColorSwatchGroup } from '../ColorSwatchGroup/ColorSwatchGroup';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeColorSwatchItem } from '../ColorSwatchGroup/ColorSwatchGroup';
 
 /**
@@ -77,7 +78,7 @@ const ColorPickerWrapper = tasty({
 
 export interface CubeColorPickerProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The selected color, as a color string. */

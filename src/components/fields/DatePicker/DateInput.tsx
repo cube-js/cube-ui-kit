@@ -1,6 +1,6 @@
 import { createCalendar } from '@internationalized/date';
 import { FocusableRef } from '@react-types/shared';
-import { BaseProps, Styles } from '@tenphi/tasty';
+import { Styles } from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import {
   AriaDateFieldProps,
@@ -27,11 +27,12 @@ import { DEFAULT_DATE_PROPS } from './props';
 import { formatSegments, useFocusManagerRef } from './utils';
 
 import type { ReactElement, Ref } from 'react';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 export interface CubeDateInputProps<T extends DateValue = DateValue>
   extends
     Omit<AriaDateFieldProps<T>, 'errorMessage' | 'form' | 'name'>,
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<T | null | undefined> {
   wrapperStyles?: Styles;

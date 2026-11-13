@@ -1,7 +1,5 @@
 import {
-  BaseProps,
   ContainerStyleProps,
-  filterBaseProps,
   INNER_STYLES,
   mergeStyles,
   OUTER_STYLES,
@@ -23,6 +21,7 @@ import { useFocusRing, useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value';
 import { useI18n } from '../../../i18n/useI18n';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
@@ -31,6 +30,8 @@ import { useTinyScrollbar } from './hooks/useTinyScrollbar';
 import { ScrollbarType } from './LayoutContent';
 import { LayoutContextReset } from './LayoutContext';
 import { clampSize } from './utils';
+
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 // Handler dimensions
 const HANDLER_WIDTH = 9; // Interactive area
@@ -362,7 +363,8 @@ const PaneElement = tasty({
 
 export type ResizeEdge = 'right' | 'bottom';
 
-export interface CubeLayoutPaneProps extends BaseProps, ContainerStyleProps {
+export interface CubeLayoutPaneProps
+  extends ComponentBaseProps, ContainerStyleProps {
   /** Edge where resize handler appears */
   resizeEdge?: ResizeEdge;
   /** Enable resize functionality */
@@ -767,7 +769,7 @@ function LayoutPane(
   return (
     <PaneElement
       ref={combinedRef}
-      {...filterBaseProps(otherProps, { eventProps: true })}
+      {...filterComponentBaseProps(otherProps, { eventProps: true })}
       {...hoverProps}
       mods={paneMods}
       styles={finalStyles}
