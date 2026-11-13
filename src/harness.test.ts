@@ -1,9 +1,10 @@
 /**
  * UI Kit's harness for coding agents (`harness/`, shared through harnesspm).
- * harnesspm does not run in CI yet, so these specs guard what its `check`
- * would: the packages the manifest extends, the files it names, the Glaze and
- * Tasty rule sections UI Kit patches, and the `uikit:tokens` tool, which builds
- * on Glaze's measuring module.
+ * `pnpm check:harness` (`harnesspm check`, in CI) validates the harness. These
+ * specs guard what it cannot see: the packages the manifest extends, the Glaze
+ * and Tasty rule sections UI Kit patches, which must match the pinned
+ * releases, and the `uikit:tokens` tool, which builds on Glaze's measuring
+ * module.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

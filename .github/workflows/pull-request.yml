@@ -119,6 +119,9 @@ jobs:
       - name: Check every published component token is documented
         run: pnpm check:component-tokens
 
+      - name: Validate the agent harness (harnesspm check)
+        run: pnpm check:harness
+
       - name: Verify the modern Form store without React or DOM setup
         run: pnpm test:form-store
 
