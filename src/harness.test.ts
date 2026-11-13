@@ -1,9 +1,9 @@
 /**
  * UI Kit's harness for coding agents (`harness/`, shared through harnesspm).
  * harnesspm does not run in CI yet, so these specs guard what its `check`
- * would: the files the manifest names, the Glaze and Tasty rule sections UI Kit
- * patches, and the `uikit:tokens` tool, which builds on Glaze's measuring
- * module.
+ * would: the packages the manifest extends, the files it names, the Glaze and
+ * Tasty rule sections UI Kit patches, and the `uikit:tokens` tool, which builds
+ * on Glaze's measuring module.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -33,6 +33,29 @@ const headingsOf = (text: string) =>
   text.split('\n').filter((line) => line.startsWith('## '));
 
 describe('harness', () => {
+  it('extends only packages that a consumer gets with UI Kit', () => {
+    // harnesspm resolves `extends` from UI Kit's own dependencies, and skips
+    // an optional peer quietly when the project does not install it. Any other
+    // missing package would warn in every consumer.
+    const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
+
+    expect(manifest.extends).toEqual([
+      '@tenphi/glaze',
+      '@tenphi/tasty',
+      '@tenphi/eslint-plugin-tasty',
+    ]);
+
+    for (const name of manifest.extends) {
+      const optionalPeer =
+        pkg.peerDependencies?.[name] !== undefined &&
+        pkg.peerDependenciesMeta?.[name]?.optional === true;
+
+      expect(pkg.dependencies?.[name] !== undefined || optionalPeer, name).toBe(
+        true,
+      );
+    }
+  });
+
   it('names files that exist', () => {
     for (const script of Object.values<{ file: string }>(manifest.scripts)) {
       expect(existsSync(join(HARNESS, script.file))).toBe(true);
