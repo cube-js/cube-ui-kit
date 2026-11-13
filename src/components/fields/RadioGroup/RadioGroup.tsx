@@ -191,6 +191,8 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     isArrowKeyRef.current = true;
     onArrowKey?.(event);
     isArrowKeyRef.current = false;
+    // The caller's own handler, which the explicit prop below would replace.
+    baseProps.onKeyDown?.(event);
   };
 
   // Keyboard-only focus ring on the group container (button layout).

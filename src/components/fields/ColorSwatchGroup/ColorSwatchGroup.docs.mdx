@@ -66,11 +66,13 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier   | Type      | Description                      |
-| ---------- | --------- | -------------------------------- |
-| `selected` | `boolean` | The swatch is the selected color |
-| `empty`    | `boolean` | The swatch has no color to show  |
-| `disabled` | `boolean` | The group is disabled            |
+| Modifier  | Type      | Description                                     |
+| --------- | --------- | ----------------------------------------------- |
+| `columns` | `boolean` | Set by `columns`: the swatches wrap into a grid |
+| `invalid` | `boolean` | The field is invalid                            |
+| `valid`   | `boolean` | The field is valid                              |
+
+Each swatch carries **`selected`**, **`focused`** and **`disabled`**; style them through `swatchStyles`.
 
 ## ColorSwatch
 

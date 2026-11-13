@@ -233,7 +233,9 @@ const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [25, 25] };
  *
  * Also "from white", in the same sense as {@link ACCENT_FILL_CONTRAST}: both solve
  * against `accent-selected-fill`, which is `oklch(0.975 0.0037 284.4)` in light — white
- * for every practical purpose, and the surface these labels actually sit on. These are
+ * for every practical purpose, and the surface links sit on. Selected outline and clear
+ * labels sit on slightly darker fills (`surface-2`, `surface-3`), so they measure a
+ * little lower than a link does. These are
  * foreground spots, so they keep the default `fg` polarity and Glaze solves
  * `apcaContrast(text, base)`.
  *
@@ -243,10 +245,10 @@ const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [25, 25] };
  *
  * These floors stay below WCAG AA on purpose. A color seed is a customer's brand, and
  * the rest link should read as that brand: a higher floor would darken a light brand's
- * link away from it. So in light, normal contrast, a bright brand's link measures about
- * 4.0–4.4:1 on white, and its selected outline/clear labels 3.4–4.4:1 on their darker
- * fills. The unseeded arm solves against a WCAG floor and meets AA; Theming.docs.mdx
- * tells a consumer who needs AA to seed a darker shade.
+ * link away from it. So in light, normal contrast, a bright brand's links and selected
+ * labels can measure below 4.5:1. The unseeded arm solves against a WCAG floor and
+ * meets AA. Theming.docs.mdx ("A color seed is a request") gives the measured figures
+ * and tells a consumer who needs AA to seed a darker shade.
  *
  * The HC entries are spelled `85` and `92` rather than left to Glaze's +15, for the
  * same reason as {@link ACCENT_FILL_CONTRAST}, and they stay apart so the rest→hover

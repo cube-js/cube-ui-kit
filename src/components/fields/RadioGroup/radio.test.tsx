@@ -805,6 +805,8 @@ describe('<Radio /> and <RadioGroup />', () => {
     ])('reach the radiogroup of %s, with and without a label', (_, Group) => {
       for (const label of [undefined, 'Options']) {
         const onChange = vi.fn();
+        const onKeyUp = vi.fn();
+        const onKeyDown = vi.fn();
         const { unmount } = renderWithRoot(
           <Group
             aria-label={label ? undefined : 'Options'}
@@ -816,6 +818,7 @@ describe('<Radio /> and <RadioGroup />', () => {
             mods={{ extra: true, horizontal: false }}
             data-qa="Orientation"
             onChange={onChange}
+            {...{ onKeyUp, onKeyDown }}
           >
             <Options />
           </Group>,
@@ -839,6 +842,15 @@ describe('<Radio /> and <RadioGroup />', () => {
         fireEvent.click(screen.getByRole('radio', { name: 'Beta' }));
 
         expect(onChange.mock.calls).toEqual([['b']]);
+
+        // Event handlers reach the group, next to its own arrow-key handler.
+        fireEvent.keyDown(screen.getByRole('radio', { name: 'Beta' }), {
+          key: 'ArrowDown',
+        });
+        fireEvent.keyUp(group, { key: 'ArrowDown' });
+
+        expect(onKeyDown).toHaveBeenCalledTimes(1);
+        expect(onKeyUp).toHaveBeenCalledTimes(1);
 
         unmount();
       }
