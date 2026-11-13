@@ -31,10 +31,9 @@
     "dist/**/*.map",
     "dist/README.md",
     "dist/CHANGELOG.md",
-    "docs/components",
-    "docs/tasty",
-    "docs/glaze",
-    "docs/*.md",
+    "src/**/*.docs.mdx",
+    "src/components/form/Form/modern-form-*.md",
+    "harness",
     "tasty.config.ts",
     "tasty.config.generated.ts"
   ],
@@ -71,11 +70,9 @@
     "chromatic:check": "node scripts/chromatic-report.mjs --check",
     "chromatic:duplicates": "node scripts/chromatic-duplicates.mjs",
     "size": "size-limit && node scripts/bundle-deps.mjs",
-    "prepare": "husky install",
+    "prepare": "husky install && harnesspm sync",
     "clear": "pnpm clear:dist && rimraf ./storybook-docs ./storybook-static ./node_modules/.cache",
     "clear:dist": "rimraf ./dist",
-    "prepack": "node scripts/prepare-docs.mjs",
-    "postpack": "node scripts/cleanup-docs.mjs",
     "release": "pnpm build && pnpm check:react-package && changeset publish --provenance",
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix",
     "audit-docs": "node scripts/audit-docs.mjs",
@@ -85,12 +82,13 @@
     "diagnostics:form": "node scripts/form-diagnostics.mjs",
     "diagnostics:complexity": "node scripts/complexity-report.mjs",
     "diagnostics:a11y": "node scripts/a11y-diagnostics.mjs",
-    "update-tasty": "pnpm add @tenphi/tasty@${npm_config_version:-latest} --save-exact",
-    "update-glaze": "pnpm add @tenphi/glaze@${npm_config_version:-latest} --save-exact",
+    "update-tasty": "pnpm add @tenphi/tasty@${npm_config_version:-latest} --save-exact && harnesspm sync",
+    "update-glaze": "pnpm add @tenphi/glaze@${npm_config_version:-latest} --save-exact && harnesspm sync",
     "test:form-compiled": "vitest run --config vitest.form-compiled.config.ts",
     "diagnostics:hooks": "node scripts/hooks-diagnostics.mjs",
     "check:react-package": "node scripts/compiler/check-package.mjs",
     "check:component-tokens": "node scripts/check-component-tokens.mjs",
+    "check:harness": "harnesspm check",
     "check:consumer-declarations": "node scripts/check-consumer-declarations.mjs"
   },
   "keywords": [
@@ -98,8 +96,14 @@
   ],
   "author": "Cube Dev Team",
   "peerDependencies": {
+    "@tenphi/eslint-plugin-tasty": "^1.19.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
+  },
+  "peerDependenciesMeta": {
+    "@tenphi/eslint-plugin-tasty": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@internationalized/date": "^3.12.4",
@@ -115,8 +119,8 @@
     "@react-types/shared": "^3.36.1",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tenphi/glaze": "3.0.1",
-    "@tenphi/tasty": "3.18.0",
+    "@tenphi/glaze": "3.1.0",
+    "@tenphi/tasty": "3.19.1",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",
@@ -154,7 +158,8 @@
     "@statoscope/cli": "^5.20.1",
     "@storybook/addon-docs": "^10.3.6",
     "@storybook/react-vite": "^10.3.6",
-    "@tenphi/eslint-plugin-tasty": "^1.14.0",
+    "@tenphi/eslint-plugin-tasty": "^1.19.1",
+    "@tenphi/harnesspm": "^0.4.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^16.3.0",

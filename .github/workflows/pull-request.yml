@@ -111,6 +111,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The install ran `harnesspm sync` (in `prepare`), which rewrites the
+      # committed agent files from the installed packages, even in CI. So a PR
+      # that forgot to sync shows up here as a change, and a later
+      # `harnesspm sync --check` would pass on the rewritten files.
+      - name: Check the agent files match the installed harness (harnesspm)
+        run: pnpm exec harnesspm sync --check
+
       - name: Run the lint
         run: pnpm lint
 
@@ -118,6 +125,9 @@ jobs:
       # test job, and a docs edit can drop the mention a token relies on.
       - name: Check every published component token is documented
         run: pnpm check:component-tokens
+
+      - name: Validate the agent harness (harnesspm check)
+        run: pnpm check:harness
 
       - name: Verify the modern Form store without React or DOM setup
         run: pnpm test:form-store

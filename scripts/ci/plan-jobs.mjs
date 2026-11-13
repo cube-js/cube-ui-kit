@@ -48,16 +48,19 @@ const ALL = ['tests', 'browser', 'a11y', 'chromatic', 'bundle', 'canary'];
  * importer. Add a kind only for a path no job reads beyond what it says.
  */
 export const KINDS = [
+  // harnesspm's config and lock only change the agent files, which only
+  // `Lint, types & diagnostics` checks.
   {
     kind: 'repo-notes',
     reads: [],
-    test: /^(\.changeset|\.husky|\.claude|\.cursor|\.agents|docs\/rules)\//,
+    test: /^((\.changeset|\.husky|\.claude|\.cursor|\.agents|docs\/rules|harnesspm)\/|harnesspm(\.lock)?\.json$)/,
   },
-  // Shipped in the package, and `ModernForm.docs.mdx` imports one.
+  // Shipped in the package, and `ModernForm.docs.mdx` imports one. Before the
+  // catch-all `notes`, which takes every other `.md`.
   {
     kind: 'docs-guide',
     reads: ['chromatic', 'canary'],
-    test: /^docs\/[^/]+\.md$/,
+    test: /^src\/components\/form\/Form\/modern-form-[a-z-]+\.md$/,
   },
   // `tsdown` copies both into `dist/`.
   {
@@ -65,6 +68,9 @@ export const KINDS = [
     reads: ['canary'],
     test: /^(README|CHANGELOG)\.md$/,
   },
+  // Shipped in the package for harnesspm, and `src/harness.test.ts` imports its
+  // script, so it comes before the catch-all `notes`.
+  { kind: 'harness', reads: ['tests', 'canary'], test: /^harness\// },
   { kind: 'notes', reads: [], test: /\.md$/ },
   // Read only by `pnpm test:types`, in `Lint, types & diagnostics`.
   { kind: 'type-fixture', reads: [], test: /^src\/.*\.test-d\.tsx?$/ },
@@ -85,7 +91,7 @@ export const KINDS = [
     reads: ['tests', 'browser'],
     test: /^src\/.*\.fixture\.tsx?$/,
   },
-  // `prepare-docs.mjs` ships each page as `docs/components/**/*.md`.
+  // Shipped as is: harnesspm indexes the package's pages for agents.
   {
     kind: 'docs-page',
     reads: ['chromatic', 'canary'],

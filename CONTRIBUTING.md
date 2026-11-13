@@ -57,7 +57,7 @@ pnpm changeset
 >
 > If your changeset includes JSX snippets, disable live preview: ` ```jsx live=false `
 
-4. **Push** and open a Pull Request against `main`. Name its Linear issues in the body as the template says, and keep issue IDs out of the title and branch name, which close an issue on merge ([AGENTS.md → Linear Issues](AGENTS.md#linear-issues-done-when-cloud-has-the-fix)).
+4. **Push** and open a Pull Request against `main`. Name its Linear issues in the body as the template says, and keep issue IDs out of the title and branch name, which close an issue on merge ([Linear issues](docs/rules/linear.md)).
 
 ## Tests
 
