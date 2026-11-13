@@ -1,5 +1,6 @@
 import { act, fireEvent, waitFor, within } from '@testing-library/react';
 import { StrictMode, useState } from 'react';
+import { I18nProvider } from 'react-aria';
 
 import { Button, Dialog, DialogTrigger, Field } from '../../../index';
 import {
@@ -640,6 +641,131 @@ describe('<TagInput />', () => {
       expect(
         within(getAllByRole('row')[1]).getByTestId('Chip-two'),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('tagPlacement="inside"', () => {
+    function Inside(props: Partial<Parameters<typeof TagInput>[0]>) {
+      return (
+        <TagInput
+          label="Tags"
+          tagPlacement="inside"
+          defaultValue={['one', 'two', 'three']}
+          {...props}
+        />
+      );
+    }
+
+    it('puts the chips in the input box, before the input', () => {
+      const { getByRole, getByTestId } = render(<Inside />);
+      const box = getByTestId('InputWrapper');
+      const grid = getByRole('grid');
+
+      expect(box).toContainElement(grid);
+      expect(
+        grid.compareDocumentPosition(getByRole('textbox')) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('keeps the chips below the box by default', () => {
+      const { getByRole, getByTestId } = render(
+        <TagInput label="Tags" defaultValue={['one']} />,
+      );
+
+      expect(getByTestId('InputWrapper')).not.toContainElement(
+        getByRole('grid'),
+      );
+    });
+
+    it('steps from the start of the text to the last chip and back', async () => {
+      const { getByRole, getAllByRole } = render(<Inside />);
+      const input = getByRole('textbox') as HTMLInputElement;
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(getAllByRole('row')[2]).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowRight}');
+      expect(input).toHaveFocus();
+      expect(input.selectionStart).toBe(0);
+    });
+
+    it('moves the caret through the text before stepping out of it', async () => {
+      const { getByRole, getAllByRole } = render(<Inside />);
+      const input = getByRole('textbox');
+
+      await userEvent.type(input, 'ab{ArrowLeft}');
+      expect(input).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowLeft}{ArrowLeft}');
+      expect(getAllByRole('row')[2]).toHaveFocus();
+      expect(input).toHaveValue('ab');
+    });
+
+    it('keeps a modified arrow in the text', async () => {
+      const { getByRole } = render(<Inside />);
+      const input = getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{Shift>}{ArrowLeft}{/Shift}');
+
+      expect(input).toHaveFocus();
+    });
+
+    it('stops at the first chip instead of wrapping round', async () => {
+      const { getByRole, getAllByRole } = render(<Inside />);
+
+      await userEvent.click(getByRole('textbox'));
+      await userEvent.keyboard('{ArrowLeft}{ArrowLeft}{ArrowLeft}');
+      expect(getAllByRole('row')[0]).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(getAllByRole('row')[0]).toHaveFocus();
+    });
+
+    it('skips a locked last chip on the way to the text', async () => {
+      const { getByRole, getAllByRole } = render(
+        <Inside tagProps={(value) => ({ isDisabled: value === 'three' })} />,
+      );
+
+      await userEvent.click(getByRole('textbox'));
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(getAllByRole('row')[1]).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowRight}');
+      expect(getByRole('textbox')).toHaveFocus();
+    });
+
+    it('leaves the arrows to the text below the box', async () => {
+      const { getByRole } = render(
+        <TagInput label="Tags" defaultValue={['one']} />,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{ArrowLeft}');
+
+      expect(input).toHaveFocus();
+    });
+
+    it('mirrors the arrows right to left', async () => {
+      const { getByRole, getAllByRole } = render(
+        <I18nProvider locale="he-IL">
+          <Inside />
+        </I18nProvider>,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(input).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowRight}');
+      expect(getAllByRole('row')[2]).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(input).toHaveFocus();
     });
   });
 
