@@ -39,6 +39,12 @@ it('ships the harness: uikit:tokens runs from the tarball', () => {
     token: '#dark-02',
     aliasOf: '#surface-text-soft',
   });
+  // --on measures a token on another surface, held to its own floor.
+  expect(tokens('danger-accent-text', '--on', 'surface')[0].on).toMatchObject({
+    surface: '#surface',
+    metric: 'wcag',
+    schemes: { light: { target: 6, pass: true } },
+  });
 });
 
 it('ships only doc pages in src/, which the harness indexes as its docs', () => {

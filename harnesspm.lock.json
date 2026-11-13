@@ -109,7 +109,7 @@
     },
     "uikit:docs": {
       "kind": "docs",
-      "hash": "aacf78c738ace1c0"
+      "hash": "5b9e244082795c25"
     },
     "uikit:rules/usage": {
       "kind": "rules",
@@ -117,7 +117,7 @@
     },
     "uikit:scripts/tokens": {
       "kind": "scripts",
-      "hash": "9b0b8d63b677a34e"
+      "hash": "933103591eb0a101"
     }
   },
   "patches": {
@@ -145,7 +145,7 @@
     },
     "uikit:rules/usage": {
       "harnesspm/patches/uikit-usage.patch.md": {
-        "Styling": "64d60aebaeb2c2bc"
+        "Styling": "2178c1f6888cec1a"
       }
     }
   }

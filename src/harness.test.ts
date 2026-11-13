@@ -15,6 +15,8 @@ import * as glazeModule from '@tenphi/glaze';
 import {
   listTokens,
   loadMeasure,
+  measureOn,
+  render,
   sourceFrom,
 } from '../harness/dev.harnesspm/scripts/tokens.mjs';
 
@@ -194,6 +196,78 @@ describe('uikit:tokens', () => {
     expect(text.contrast.schemes.darkContrast).toMatchObject({
       target: 11,
       pass: true,
+    });
+  });
+
+  describe('--on', () => {
+    const byName = async (...names: string[]) => {
+      const tokens = listTokens(glazeModule, await loadMeasure(), source());
+
+      return names.map((name) => tokens.find((t) => t.token === name)!);
+    };
+
+    it("holds a token to its own floor on another surface, measured with Glaze's measurePair", async () => {
+      const measure = await loadMeasure();
+      const [text, surface] = await byName('#danger-accent-text', '#surface');
+      const [{ on }] = measureOn(glazeModule, measure, [text], surface);
+
+      expect(on).toMatchObject({ surface: '#surface', metric: 'wcag' });
+
+      for (const { key } of measure.SCHEMES) {
+        const pair = measure.measurePair(
+          glazeModule,
+          text.values[key],
+          surface.values[key],
+        );
+
+        expect(on.schemes[key]).toMatchObject({
+          value: pair.wcag,
+          target: text.contrast.schemes[key].target,
+          pass: pair.wcag >= text.contrast.schemes[key].target,
+        });
+      }
+    });
+
+    it('gives a token without a floor its WCAG ratio and the best level it reaches', async () => {
+      const measure = await loadMeasure();
+      const [border, surface] = await byName('#border', '#surface');
+      const [{ on }] = measureOn(glazeModule, measure, [border], surface);
+
+      expect(on.schemes.light.target).toBeUndefined();
+      expect(on.schemes.light.level).toBe(
+        on.schemes.light.value >= 3 ? expect.any(String) : '—',
+      );
+    });
+
+    it('does not measure a translucent alias', async () => {
+      const measure = await loadMeasure();
+      const [minor, surface] = await byName('#minor', '#surface');
+      const [{ on }] = measureOn(glazeModule, measure, [minor], surface);
+
+      expect(minor.aliasOf).toMatch(/\.\d+$/);
+      expect(on.schemes.light).toEqual({ translucent: true });
+    });
+
+    it('prints an "on" row, except on the base the row above already measures', async () => {
+      const measure = await loadMeasure();
+      const [text, surface, base] = await byName(
+        '#danger-accent-text',
+        '#surface',
+        '#danger-accent-selected-fill',
+      );
+      const onSurface = render(
+        measureOn(glazeModule, measure, [text], surface),
+        measure.SCHEMES,
+        1,
+      );
+      const onBase = render(
+        measureOn(glazeModule, measure, [text], base),
+        measure.SCHEMES,
+        1,
+      );
+
+      expect(onSurface).toMatch(/\n {2}on #surface +WCAG ≥ 6\/11 +✓/);
+      expect(onBase).not.toMatch(/\bon #/);
     });
   });
 });

@@ -10,7 +10,7 @@
 import { existsSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const USAGE = `Usage: npx harnesspm run uikit:tokens [<part of a name>...] [--format <format>] [--json]
+const USAGE = `Usage: npx harnesspm run uikit:tokens [<part of a name>...] [--on <token>] [--format <format>] [--json]
 
 Lists UI Kit's color tokens by the names Tasty styles use, such as #surface or
 #danger-accent-text, with their values in light, dark and both high-contrast
@@ -23,6 +23,11 @@ Usage guide says which aliases are legacy. A context hook, such as
 #current-fill, shows its default, which a container may replace. Values are
 for UI Kit's default palette configuration.
 
+--on      also measure each token on another surface, such as --on surface
+          or --on #dark-bg, in every scheme. A token with a floor against its
+          base is held to the same floor there; a token without one shows its
+          WCAG ratio and the best WCAG level it reaches. A translucent token
+          or alias is not measured.
 --format  how to print colors: hex (default), okhsl, okhst, rgb, hsl or oklch
 --json    print the result as JSON`;
 
@@ -106,6 +111,76 @@ function literal(g, measure, value, format) {
   }
 }
 
+/** Whether a hex value, or an alias with an opacity such as `.65`, is see-through. */
+function isTranslucent(entry, value) {
+  if (/\.\d+$/.test(entry.aliasOf ?? '')) return true;
+
+  return /^#[\da-f]{8}$/i.test(value) && !/ff$/i.test(value);
+}
+
+/** The highest WCAG 2 level a measured pair reaches, or `—`. */
+function wcagLevel(measured) {
+  const passes = measured.passes.wcag;
+
+  if (passes.AAA) return 'AAA';
+  if (passes.AA) return 'AA';
+  if (passes['AA-large']) return 'AA-large';
+
+  return '—';
+}
+
+/**
+ * Each token on another surface, in every scheme: Glaze's `measurePair` on
+ * the two tokens' values in that scheme, as the palette resolves them. A
+ * token with a floor against its own base is held to the same floor and
+ * metric here, so ✓ means it would still meet it on this surface. A token
+ * without a floor gets its WCAG ratio and the best WCAG level it reaches.
+ *
+ * `tokens` and `surface` are `listTokens` entries with hex values, which is
+ * what `measurePair` reads.
+ */
+export function measureOn(g, measure, tokens, surface) {
+  return tokens.map((entry) => {
+    const pair = entry.contrast;
+    const metric = pair?.metric ?? 'wcag';
+    const schemes = {};
+
+    for (const { key } of measure.SCHEMES) {
+      const text = entry.values[key];
+      const background = surface.values[key];
+
+      if (isTranslucent(entry, text)) {
+        schemes[key] = { translucent: true };
+        continue;
+      }
+
+      let measured;
+
+      try {
+        measured = measure.measurePair(g, text, background);
+      } catch {
+        // Not a color Glaze parses, such as an alias to `transparent`.
+        schemes[key] = { unmeasured: true };
+        continue;
+      }
+
+      const value = metric === 'apca' ? Math.abs(measured.apca) : measured.wcag;
+      const target = pair?.schemes[key]?.target;
+
+      schemes[key] = {
+        value,
+        wcag: measured.wcag,
+        apca: measured.apca,
+        ...(target === undefined
+          ? { level: wcagLevel(measured) }
+          : { target, pass: value >= target }),
+      };
+    }
+
+    return { ...entry, on: { surface: surface.token, metric, schemes } };
+  });
+}
+
 /**
  * What `listTokens` reads, from UI Kit's palette and color-token modules: the
  * built ones in the tool, the source ones in the spec.
@@ -157,6 +232,7 @@ function floorLabel(pair) {
 
 function cell(pair, result) {
   if (result.translucent) return 'translucent';
+  if (result.unmeasured) return '—';
 
   const value = number(pair.metric, result.value);
 
@@ -205,6 +281,22 @@ export function render(tokens, schemes, total) {
         ...schemes.map((s) => cell(pair, pair.schemes[s.key])),
       ]);
     }
+
+    const on = entry.on;
+
+    // On its own base, the row above already says it, with Glaze's exact values.
+    if (on && on.surface !== pair?.base) {
+      rows.push([
+        `  on ${on.surface}`,
+        pair ? floorLabel(pair) : 'WCAG, no floor',
+        ...schemes.map((s) => {
+          const result = on.schemes[s.key];
+          const text = cell(on, result);
+
+          return result.level ? `${text} ${result.level}` : text;
+        }),
+      ]);
+    }
   }
 
   return `${table(rows)}\n\n${tokens.length} of ${total} tokens.`;
@@ -214,6 +306,7 @@ async function main(argv) {
   const filters = [];
   let format = 'hex';
   let json = false;
+  let on;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -225,6 +318,8 @@ async function main(argv) {
     }
 
     if (arg === '--json') json = true;
+    else if (arg === '--on') on = argv[++i];
+    else if (arg.startsWith('--on=')) on = arg.slice('--on='.length);
     else if (arg === '--format') format = argv[++i];
     else if (arg.startsWith('--format='))
       format = arg.slice('--format='.length);
@@ -269,7 +364,55 @@ async function main(argv) {
         new URL('../../../dist/tokens/colors.js', import.meta.url).href
       )),
     });
-    const tokens = listTokens(g, measure, source, { filters, format });
+    let tokens = listTokens(g, measure, source, { filters, format });
+
+    if (on !== undefined) {
+      const hex = listTokens(g, measure, source);
+      const name = `#${String(on).replace(/^#/, '')}`;
+      const surface = hex.find((entry) => entry.token === name);
+
+      if (!surface) {
+        const near = hex
+          .filter((entry) => entry.token.includes(name.slice(1)))
+          .slice(0, 5)
+          .map((entry) => entry.token);
+
+        console.error(
+          `uikit:tokens: --on ${name} is not a UI Kit color token.${near.length > 0 ? ` Did you mean ${near.join(', ')}?` : ''}`,
+        );
+
+        return 2;
+      }
+
+      if (
+        measure.SCHEMES.some((s) =>
+          isTranslucent(surface, surface.values[s.key]),
+        )
+      ) {
+        console.error(
+          `uikit:tokens: ${name} is translucent, so contrast on it depends on what is under it. Measure on an opaque surface.`,
+        );
+
+        return 2;
+      }
+
+      // Measure on hex values, then show them in the chosen format.
+      const byToken = new Map(
+        measureOn(
+          g,
+          measure,
+          format === 'hex'
+            ? tokens
+            : listTokens(g, measure, source, { filters }),
+          surface,
+        ).map((entry) => [entry.token, entry.on]),
+      );
+
+      tokens = tokens.map((entry) => ({
+        ...entry,
+        on: byToken.get(entry.token),
+      }));
+    }
 
     if (json) {
       console.log(JSON.stringify(tokens, null, 2));
