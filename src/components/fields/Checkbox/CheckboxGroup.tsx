@@ -1,5 +1,5 @@
 import { useObjectRef } from '@react-aria/utils';
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { BaseProps, filterBaseProps, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 import { AriaCheckboxGroupProps, useCheckboxGroup } from 'react-aria';
 import { useCheckboxGroupState } from 'react-stately';
@@ -62,6 +62,7 @@ function CheckboxGroup(
   });
 
   let {
+    qa,
     id,
     isDisabled,
     isReadOnly,
@@ -80,8 +81,24 @@ function CheckboxGroup(
     labelSuffix,
     inputStyles,
     form,
+    mods,
   } = props;
   let domRef = useObjectRef(ref);
+
+  // The caller's base props (`qaVal`, `className`, `style`, `tokens`, `theme`,
+  // `data-*`, event handlers) reach the group, as on `ToggleGroup`. Not the
+  // ones `useCheckboxGroup` already handles: a native `change` bubbles up from
+  // each checkbox, so a forwarded `onChange` would be called with an event,
+  // and `isDisabled` would reach the element a second time.
+  let {
+    onChange: _onChange,
+    onFocus: _onFocus,
+    onBlur: _onBlur,
+    onFocusChange: _onFocusChange,
+    isDisabled: _isDisabled,
+    mods: _mods,
+    ...baseProps
+  } = filterBaseProps(props, { eventProps: true });
 
   // `inputStyles` styles the group too; `styles` goes over it.
   const { styles, field } = splitFieldLayout(props, {
@@ -101,11 +118,13 @@ function CheckboxGroup(
   let radioGroup = (
     <CheckGroupElement
       ref={domRef}
-      {...groupProps}
+      {...mergeProps(baseProps, groupProps)}
       id={id}
+      qa={qa || 'CheckboxGroup'}
       styles={styles}
       mods={{
         horizontal: orientation === 'horizontal',
+        ...mods,
       }}
     >
       <FormScopeMask

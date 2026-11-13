@@ -282,7 +282,15 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
     isValid,
     swatchStyles,
     'aria-label': ariaLabel,
+    mods,
+    tokens,
   } = props;
+
+  // The caller's base props that style the group take its outer element. ARIA,
+  // `id` and `data-*` stay on the radiogroup inside it, where `useRadioGroup`
+  // puts them, so the wrapper takes no second accessible name.
+  const { qaVal, className, style, theme, element } = props;
+  const outerProps = { qaVal, className, style, theme, element };
 
   const { styles, field } = splitFieldLayout(props);
   const isInsidePopover = useIsInsideColorPopover();
@@ -371,6 +379,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
   const group = (
     <GroupElement
       ref={domRef}
+      {...outerProps}
       qa={qa || 'ColorSwatchGroup'}
       data-size={size}
       data-input-type="colorswatchgroup"
@@ -378,8 +387,9 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
       mods={{
         ...getValidationMods({ isInvalid, isValid }),
         columns: !!columns,
+        ...mods,
       }}
-      tokens={columns ? { $columns: columns } : undefined}
+      tokens={columns ? { $columns: columns, ...tokens } : tokens}
     >
       <RadiosElement {...radioGroupProps}>
         {swatches.map((swatch) => (

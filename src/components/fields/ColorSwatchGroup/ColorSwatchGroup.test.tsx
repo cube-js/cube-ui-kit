@@ -266,4 +266,41 @@ describe('<ColorSwatchGroup />', () => {
 
     expect(formInstance.getFieldValue('accent')).toBe('#ff0000');
   });
+
+  it("puts the caller's base props on the group, with and without a label", () => {
+    for (const label of [undefined, 'Palette']) {
+      const { getByTestId, getByRole, unmount } = renderWithRoot(
+        <ColorSwatchGroup
+          aria-label={label ? undefined : 'Palette'}
+          label={label}
+          colors={PALETTE}
+          columns={2}
+          qaVal="palette"
+          className="custom"
+          style={{ outline: '1px solid red' }}
+          tokens={{ '$probe-token': '7px' }}
+          mods={{ extra: true }}
+          data-section="brand"
+        />,
+      );
+
+      const group = getByTestId('ColorSwatchGroup');
+
+      expect(group).toHaveAttribute('data-qaval', 'palette');
+      expect(group).toHaveAttribute('data-extra');
+      expect(group).toHaveClass('custom');
+      // The caller's tokens merge with the group's own `$columns`.
+      expect(group).toHaveStyle({
+        outline: '1px solid red',
+        '--probe-token': '7px',
+        '--columns': '2',
+      });
+      // ARIA and `data-*` stay on the radiogroup inside.
+      expect(group).not.toHaveAttribute('data-section');
+      expect(group).not.toHaveAttribute('aria-label');
+      expect(getByRole('radiogroup')).toHaveAttribute('data-section', 'brand');
+
+      unmount();
+    }
+  });
 });

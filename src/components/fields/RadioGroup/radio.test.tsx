@@ -796,4 +796,65 @@ describe('<Radio /> and <RadioGroup />', () => {
       'rgb(1, 2, 3)',
     );
   });
+
+  describe("the caller's base props", () => {
+    it.each([
+      ['Radio.Group', Radio.Group],
+      ['Radio.ButtonGroup', Radio.ButtonGroup],
+      ['Radio.Tabs', Radio.Tabs],
+    ])('reach the radiogroup of %s, with and without a label', (_, Group) => {
+      for (const label of [undefined, 'Options']) {
+        const onChange = vi.fn();
+        const { unmount } = renderWithRoot(
+          <Group
+            aria-label={label ? undefined : 'Options'}
+            label={label}
+            qaVal="options"
+            className="custom"
+            style={{ outline: '1px solid red' }}
+            tokens={{ '$probe-token': '7px' }}
+            mods={{ extra: true, horizontal: false }}
+            data-qa="Orientation"
+            onChange={onChange}
+          >
+            <Options />
+          </Group>,
+        );
+
+        const group = screen.getByRole('radiogroup');
+
+        expect(group).toHaveAttribute('data-qa', 'Orientation');
+        expect(group).toHaveAttribute('data-qaval', 'options');
+        expect(group).toHaveClass('custom');
+        expect(group).toHaveStyle({
+          outline: '1px solid red',
+          '--probe-token': '7px',
+        });
+        expect(group).toHaveAttribute('data-extra');
+        // The caller's mods go over the group's own.
+        expect(group).not.toHaveAttribute('data-horizontal');
+
+        // A native `change` bubbles from the radio to the group: the caller's
+        // `onChange` still gets only the value.
+        fireEvent.click(screen.getByRole('radio', { name: 'Beta' }));
+
+        expect(onChange.mock.calls).toEqual([['b']]);
+
+        unmount();
+      }
+    });
+
+    it('keeps isDisabled off the group element', () => {
+      renderWithRoot(
+        <Radio.ButtonGroup isDisabled aria-label="Options">
+          <Options />
+        </Radio.ButtonGroup>,
+      );
+
+      expect(screen.getByRole('radiogroup')).not.toHaveAttribute(
+        'data-disabled',
+      );
+      expect(screen.getByRole('radio', { name: 'Alpha' })).toBeDisabled();
+    });
+  });
 });
