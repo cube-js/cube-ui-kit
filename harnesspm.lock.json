@@ -1,0 +1,150 @@
+{
+  "lockfileVersion": 1,
+  "packages": {
+    "@cube-dev/ui-kit": {
+      "version": "0.212.0",
+      "plugin": "uikit",
+      "project": true
+    },
+    "@tenphi/eslint-plugin-tasty": {
+      "version": "1.19.0",
+      "plugin": "tasty-lint"
+    },
+    "@tenphi/glaze": {
+      "version": "3.1.0",
+      "plugin": "glaze"
+    },
+    "@tenphi/harnesspm": {
+      "version": "0.3.0",
+      "plugin": "harnesspm"
+    },
+    "@tenphi/tasty": {
+      "version": "3.19.1",
+      "plugin": "tasty"
+    }
+  },
+  "units": {
+    "glaze:docs": {
+      "kind": "docs",
+      "hash": "bb77afae7195f3cd"
+    },
+    "glaze:rules/colors": {
+      "kind": "rules",
+      "hash": "28a7337877a98c59"
+    },
+    "glaze:scripts/color": {
+      "kind": "scripts",
+      "hash": "83a0a05025c783ae"
+    },
+    "glaze:scripts/contrast": {
+      "kind": "scripts",
+      "hash": "0f19c41b5b03c811"
+    },
+    "glaze:scripts/inspect": {
+      "kind": "scripts",
+      "hash": "ed4efa32714fb96c"
+    },
+    "glaze:skills/glaze-theme": {
+      "kind": "skills",
+      "hash": "cfe520518fec25c5"
+    },
+    "harnesspm:docs": {
+      "kind": "docs",
+      "hash": "9d1749e64e709dc2"
+    },
+    "harnesspm:rules/generated-files": {
+      "kind": "rules",
+      "hash": "91b0cd8b178bda8f"
+    },
+    "harnesspm:rules/harnesspm-config": {
+      "kind": "rules",
+      "hash": "4ab34118776febeb"
+    },
+    "harnesspm:skills/harnesspm-export": {
+      "kind": "skills",
+      "hash": "e97f20b7bd0320ab"
+    },
+    "harnesspm:skills/harnesspm-import": {
+      "kind": "skills",
+      "hash": "c1962f2164e14333"
+    },
+    "harnesspm:skills/harnesspm-improve": {
+      "kind": "skills",
+      "hash": "7543189ff8b9b71d"
+    },
+    "tasty-lint:docs": {
+      "kind": "docs",
+      "hash": "e5abbaec5ef26af5"
+    },
+    "tasty-lint:hooks/check-edit": {
+      "kind": "hooks",
+      "hash": "60de055481a08446"
+    },
+    "tasty-lint:rules/usage": {
+      "kind": "rules",
+      "hash": "77f3b6f8856d00f1"
+    },
+    "tasty-lint:scripts/check": {
+      "kind": "scripts",
+      "hash": "5b3341d0465ec9ab"
+    },
+    "tasty-lint:scripts/check-edit": {
+      "kind": "scripts",
+      "hash": "a380582bd29f804b"
+    },
+    "tasty:docs": {
+      "kind": "docs",
+      "hash": "ef7f2b98d4db3107"
+    },
+    "tasty:rules/usage": {
+      "kind": "rules",
+      "hash": "577670e34e52f2b5"
+    },
+    "tasty:scripts/styles": {
+      "kind": "scripts",
+      "hash": "bd020ff534f6ae40"
+    },
+    "uikit:docs": {
+      "kind": "docs",
+      "hash": "aacf78c738ace1c0"
+    },
+    "uikit:rules/usage": {
+      "kind": "rules",
+      "hash": "4de651b26f7a7fc2"
+    },
+    "uikit:scripts/tokens": {
+      "kind": "scripts",
+      "hash": "9b0b8d63b677a34e"
+    }
+  },
+  "patches": {
+    "glaze:rules/colors": {
+      "harness/dev.harnesspm/patches/glaze-colors.patch.md": {
+        "Where colors come from": "ce40127f100138c6"
+      },
+      "harnesspm/patches/glaze-colors.patch.md": {
+        "Checking a theme": "caf25f3b5adae6a8",
+        "Where colors come from": "4697f675ff182dda"
+      }
+    },
+    "tasty-lint:rules/usage": {
+      "harnesspm/patches/tasty-lint-usage.patch.md": {
+        "After you change styles": "b5a2a1dc94cb8a0d",
+        "Exceptions": "82706b69a6ce96c5"
+      }
+    },
+    "tasty:rules/usage": {
+      "harness/dev.harnesspm/patches/tasty-usage.patch.md": {
+        "Checking styles": "6fc039e8c6929820"
+      },
+      "harnesspm/patches/tasty-usage.patch.md": {
+        "Checking styles": "7176861fc1fc930a"
+      }
+    },
+    "uikit:rules/usage": {
+      "harnesspm/patches/uikit-usage.patch.md": {
+        "Styling": "64d60aebaeb2c2bc"
+      }
+    }
+  }
+}

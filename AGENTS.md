@@ -199,7 +199,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm diagnostics:complexity` — every function in `src/` ranked by cognitive complexity (SonarSource's metric, from `eslint-plugin-sonarjs` running in oxlint), worst first. Options: `--limit N`, `--all`, `pnpm -s … --json`. `.oxlintrc.json` caps every function with the same rule (`sonarjs/cognitive-complexity`), so `pnpm lint` fails CI if any function exceeds it. The ceiling only goes down: when a refactor leaves the worst function lower, lower the ceiling to match (the report says when). A new function too complex to fit is a sign to extract hooks, sub-components or pure helpers, not to raise the ceiling. One quirk of the plugin (4.2.2): a ternary branch that is itself a function (`cond ? () => true : fn`) adds a level of nesting to everything after it in the enclosing function, so hoist such a function to a named constant. See [`scripts/complexity-report.mjs`](scripts/complexity-report.mjs)
 - `pnpm audit-defaults` — regenerate the lint plugin's defaults registry (`src/eslint-plugin/defaults.generated.ts`). **Run whenever you change a default prop value.** `pnpm test` fails until the registry matches what the components actually render — see [eslint-plugin.md](docs/rules/eslint-plugin.md).
 - `pnpm generate:tasty-config` — regenerate `tasty.config.generated.ts`: the tokens, state aliases, presets and recipes the published `tasty.config.ts` lists for consumers' lint. **Run whenever you add, rename or remove one.** `pnpm test` fails until the file matches the runtime — see [coding.md](docs/rules/coding.md#tasty-lint-rules).
-- `pnpm run update-tasty` / `pnpm run update-glaze` — bump and pin `@tenphi/tasty` or `@tenphi/glaze` to the latest version. To pin a specific version, set `npm_config_version`: `npm_config_version=X.Y.Z pnpm run update-glaze`. A `--version=X.Y.Z` flag does not work: pnpm passes it to `pnpm add`, which prints pnpm's own version and changes nothing.
+- `pnpm run update-tasty` / `pnpm run update-glaze` — bump and pin `@tenphi/tasty` or `@tenphi/glaze` to the latest version, then sync the harness block. To pin a specific version, set `npm_config_version`: `npm_config_version=X.Y.Z pnpm run update-glaze`. A `--version=X.Y.Z` flag does not work: pnpm passes it to `pnpm add`, which prints pnpm's own version and changes nothing.
 
 ## Environment
 
@@ -226,13 +226,15 @@ Symlinked in `docs/glaze/` the same way, and not shipped either: consumers get t
 
 ## Harness for Coding Agents — `harness/`
 
-`harness/` ships in the package for projects that use [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm). It is for agents that **use** UI Kit; the rules for working on UI Kit stay in this file.
+`harness/` ships in the package for projects that use [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm). It is for agents that **use** UI Kit; the rules for working on UI Kit stay in this file. This repository uses harnesspm too, so the block at the end of this file holds the same harness, changed for this repository by `harnesspm.json`.
 
 - [`plugin.json`](harness/plugin.json) extends `@tenphi/glaze` and `@tenphi/tasty`, so a project gets Glaze's colors rule, docs and `glaze-theme` skill, and Tasty's styles rule and docs, through UI Kit. It also extends `@tenphi/eslint-plugin-tasty`, an optional peer: a project that installs the plugin gets its `tasty-lint` harness (a rule to lint changed styles, a page for every `tasty/*` rule, `tasty-lint:check`, and a hook that lints each file an agent edits), and harnesspm skips it quietly in a project without the plugin. Every `extends` entry must be a dependency or an optional peer, which `src/harness.test.ts` checks. Scripts run only in projects that trust their package: `uikit:tokens` needs `@cube-dev/ui-kit` trusted, Glaze's `glaze:*` tools need `@tenphi/glaze`, `tasty:styles` needs `@tenphi/tasty`, and `tasty-lint:check` and its edit hook need `@tenphi/eslint-plugin-tasty`. Its `docs` is `src/`: the package ships the Storybook pages (`src/**/*.docs.mdx`) and the Modern Form guides there, and harnesspm indexes them by their `#` titles, with no build step. Tasty's and Glaze's indexes come with their harnesses. harnesspm lists every page it finds in `src/`, so keep anything else there out of `files`.
 - [`rules/usage.md`](harness/dev.harnesspm/rules/usage.md) (`uikit:rules/usage`) is the one always-on rule, with UI Kit's color guidance. Keep it short: it is in every consumer's `AGENTS.md`. Its ID is public, since consumers name it to patch or exclude it.
 - [`patches/glaze-colors.patch.md`](harness/dev.harnesspm/patches/glaze-colors.patch.md) replaces only the "Where colors come from" section of Glaze's colors rule, which would otherwise send an app on UI Kit to a Glaze theme of its own.
 - [`patches/tasty-usage.patch.md`](harness/dev.harnesspm/patches/tasty-usage.patch.md) replaces only the "Checking styles" section of Tasty's rule, so `tasty:styles` loads UI Kit's `configure()` through `--setup @cube-dev/ui-kit/dist/components/Root.js`. Without it, the CSS uses Tasty's default units and none of UI Kit's states or recipes.
 - `uikit:tokens` ([`scripts/tokens.mjs`](harness/dev.harnesspm/scripts/tokens.mjs)) is for consumers: palette tokens and their aliases by their Tasty names (which aliases are legacy is the Usage guide's call, not the tool's), with values in all four schemes and contrast against their base, measured by Glaze's public measuring module, `@tenphi/glaze/harness/measure`, from the pinned Glaze. It reads `dist/`. While you edit the palette here, use `pnpm probe tokens`, which reads `src/`.
+- [`harnesspm.json`](harnesspm.json) changes the harness for this repository only, never for consumers. It trusts `@tenphi/tasty`, `@tenphi/glaze` and `@tenphi/eslint-plugin-tasty`, so their tools and the lint hook run here. Its patches in `harnesspm/patches/` point the UI Kit, Tasty, Glaze and lint rules at `src/`, `pnpm probe` and `pnpm exec oxlint`, because the shipped text names `dist/` and a consumer's own Glaze theme and lint.
+- `pnpm install` runs `harnesspm sync` (in `prepare`); `pnpm add` does not. After `pnpm add` or a change to `harness/` or `harnesspm.json`, run `pnpm exec harnesspm sync` and commit `AGENTS.md` and `harnesspm.lock.json`. The lint job fails when they are out of date. Prettier skips the block, which harnesspm formats its own way.
 - `pnpm check:harness` (`harnesspm check`, a devDependency) validates the harness, and CI runs it in the lint job. [`src/harness.test.ts`](src/harness.test.ts) guards what it cannot see: the packages `extends` names, the Glaze and Tasty sections the patches replace, and the tool; `package-tests/artifacts.test.tsx` runs the tool, checks that `src/` ships only doc pages, and runs `tasty:styles` with the setup the Tasty patch names, all on the packed build.
 
 ## Stack
@@ -281,3 +283,91 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 - **Not every question needs a spec.** If you only want to _see_ what something renders, run [`pnpm probe`](#inspecting-rendered-html--css--pnpm-probe) instead of writing a spec to delete afterwards.
 - **Screen reader:** `startScreenReader()` / `readWithScreenReader()` from `src/test/screen-reader.ts` assert what a user hears. See [Hearing What a Screen Reader Says](#hearing-what-a-screen-reader-says).
 - Patterns: see [docs/rules/tests.md](docs/rules/tests.md).
+
+<!-- prettier-ignore-start -->
+<!-- BEGIN:harnesspm — generated by `harnesspm sync`. Do not edit. To change a rule, run `npx harnesspm why <ID>`. -->
+## @tenphi/eslint-plugin-tasty 1.19.0
+
+### Linting Tasty styles (tasty-lint:rules/usage)
+
+#### After you change styles
+
+- Lint the changed files with `pnpm exec oxlint <files>` and fix every `tasty/*` problem. It runs every Tasty rule UI Kit enforces, with the settings in `.oxlintrc.json`.
+- `tasty-lint:check` and the edit hook run only the plugin's recommended rules, without UI Kit's settings, and they do not read `oxlint-disable` comments. When they disagree with `pnpm exec oxlint`, oxlint decides.
+- Each `tasty/<rule>` has a page in the `tasty-lint` docs index.
+
+#### Exceptions
+
+- Disable a rule for one line only, with a reason: `// oxlint-disable-next-line tasty/<rule> -- <reason>`. See "Tasty lint rules" in `docs/rules/coding.md`.
+
+- Docs: node_modules/.harnesspm/docs/tasty-lint/llms.txt (tasty-lint:docs)
+- Script: `npx harnesspm run tasty-lint:check` — Lint files or folders with only the tasty/* rules (recommended, or --strict) and the project's tasty.config, and print each problem with its rule's page (tasty-lint:scripts/check)
+
+## @tenphi/glaze 3.1.0
+
+### Glaze colors (glaze:rules/colors)
+
+#### Where colors come from
+
+- UI Kit's palette is a Glaze palette, built in `src/tokens/palette.ts` from the seeds in `src/tokens/palette-config.ts`. Components use its tokens: follow the UI Kit rule.
+- A color the palette lacks is added to the palette, not made in a component with a Glaze theme or `glaze.color()` of its own. Do not write its dark or high-contrast values by hand. The `glaze-theme` skill explains how to define one.
+
+#### Checking a theme
+
+- `glaze:inspect` cannot load UI Kit's palette: `palette.ts` builds it inside `getPalette()` and imports files without extensions. After a palette change, compare `pnpm probe tokens --json` before and after in all four schemes, as `docs/rules/probe.md` shows, and run `pnpm test -- src/tokens`.
+- To try one color, such as a brand color, before you add it, run `glaze:color <color> --base <surface> --contrast AA`.
+- To check two literal colors, run `glaze:contrast <text> <background>`.
+
+- Docs: node_modules/.harnesspm/docs/glaze/llms.txt (glaze:docs)
+- Script: `npx harnesspm run glaze:inspect` — Resolve a theme or palette in light, dark and high contrast, and check every contrast floor (filter with --color, --theme) (glaze:scripts/inspect)
+- Script: `npx harnesspm run glaze:color` — Resolve one color without a theme: its values and tone in light, dark and high contrast, and its contrast on a --base (glaze:scripts/color)
+- Script: `npx harnesspm run glaze:contrast` — Measure the WCAG and APCA contrast of a text color on a background (glaze:scripts/contrast)
+
+## @tenphi/harnesspm 0.3.0
+
+### Files generated by harnesspm (harnesspm:rules/generated-files)
+
+- Files and links that harnesspm writes, such as `.claude/agents/`, `.codex/agents/`, `.claude/skills/` and `.agents/skills/`, are outputs like the managed block. Never edit them. Change the source that `npx harnesspm why <ID>` names, with the `harnesspm-improve` skill.
+- After changing `harnesspm.json` or a harness file, or after `npm install <pkg>` or `pnpm add`, run `npx harnesspm sync`.
+
+- When editing `harnesspm.json`, `harnesspm.local.json`, `harness/**`, read node_modules/.harnesspm/pkgs/@tenphi/harnesspm/harness/dev.harnesspm/rules/harnesspm-config.md — How to change harnesspm configuration and harness files safely (harnesspm:rules/harnesspm-config)
+- Docs: node_modules/.harnesspm/docs/harnesspm/llms.txt (harnesspm:docs)
+
+## @tenphi/tasty 3.19.1
+
+### Tasty styles (tasty:rules/usage)
+
+#### Writing styles
+
+- Before you write or review styles, read `ai-agents.md` from the Tasty docs index.
+- Use only the tokens, units, presets, recipes and states the project defines in `tasty.config.ts` or `configure()`.
+- Style with `tasty()` and `styles`, not the `style` prop. Colors are `#tokens`, sizes are units (`2x`, `1r`): no hex, `rgb()` or `px`.
+- One state map per property, `''` first. Sub-elements are capitalized keys, not nested selectors.
+
+#### Checking styles
+
+- To see the CSS that styles produce, run `pnpm probe styles '<json>'`. It loads `configure()` and the states from `src/components/Root.tsx`, and the palette from `src/`. `docs/rules/probe.md` has the other modes.
+- `tasty:styles` with UI Kit's `--setup` reads the build in `dist/`, which is missing or out of date while you work here.
+
+- Docs: node_modules/.harnesspm/pkgs/@tenphi/tasty/docs/llms.txt (tasty:docs)
+- Script: `npx harnesspm run tasty:styles` — Print the CSS a Tasty styles object produces, with the app's configure() loaded through --setup, and flag values that stayed unresolved (tasty:scripts/styles)
+
+## @cube-dev/ui-kit (this project)
+
+### UI Kit (uikit:rules/usage)
+
+#### Components
+
+- Build screens from `@cube-dev/ui-kit` components before writing your own. Before you use a component, read its page in the UI Kit docs index.
+- For a new form, use `Form.useController`. Read the modern form guide in the UI Kit docs index first.
+
+#### Styling
+
+- Style with Tasty (the `styles` prop and `tasty()`) and UI Kit's tokens, units and presets.
+- Colors are UI Kit palette tokens, written `#name`, such as `#surface`, `#surface-text` or `#danger-accent-text`. Never paste raw `#rrggbb`, `rgb()` or `hsl()` values.
+- To find a token, run `pnpm probe tokens --filter <part of its name>`, with `--scheme dark` or `--hc` for the other schemes. It reads the palette in `src/`. `uikit:tokens` reads the build in `dist/`, which is missing or out of date while you work here. Put a text token on its base. The Usage guide lists the legacy aliases that new code avoids.
+
+- Docs: node_modules/.harnesspm/docs/uikit/llms.txt (uikit:docs)
+- Script: `npx harnesspm run uikit:tokens` — Look up UI Kit color tokens by name: values in light, dark and high contrast, and contrast against their base (uikit:scripts/tokens)
+<!-- END:harnesspm -->
+<!-- prettier-ignore-end -->

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/@tenphi/harnesspm/schema/harnesspm.schema.json",
+  "patch": {
+    "glaze:rules/colors": "./harnesspm/patches/glaze-colors.patch.md",
+    "tasty-lint:rules/usage": "./harnesspm/patches/tasty-lint-usage.patch.md",
+    "tasty:rules/usage": "./harnesspm/patches/tasty-usage.patch.md",
+    "uikit:rules/usage": "./harnesspm/patches/uikit-usage.patch.md"
+  },
+  "trust": {
+    "@tenphi/eslint-plugin-tasty": true,
+    "@tenphi/glaze": true,
+    "@tenphi/tasty": true
+  }
+}
