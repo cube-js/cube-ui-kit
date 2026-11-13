@@ -1,6 +1,6 @@
 import { useControlledState } from '@react-stately/utils';
 import { Node as CollectionNode, Key } from '@react-types/shared';
-import { Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   ClipboardEvent,
   cloneElement,
@@ -228,6 +228,13 @@ export interface CubeTagInputProps<T = object>
   suffixPosition?: 'before' | 'after';
   /** Size of the input. The chips follow it. @default 'medium' */
   size?: 'small' | 'medium' | 'large' | (string & {});
+  /**
+   * Where the chips go. `below`: a list under a fixed single-line input.
+   * `inside`: in the input box, in one wrapping row with the text, so the box
+   * grows a line at a time; for a row with no room below the field.
+   * @default 'below'
+   */
+  tagPlacement?: 'below' | 'inside';
 
   /** Ref to the input element. */
   inputRef?: RefObject<HTMLInputElement>;
@@ -279,6 +286,113 @@ const TAG_SIZES: Record<string, CubeTagProps['size']> = {
   medium: 'xsmall',
   large: 'small',
 };
+
+// Chips inside the box: one wrapping row of chips and text. The padding is the
+// same on every side and comes from the chip height, so one row is exactly the
+// input's height. The prefix box steps aside (`contents`) so the icon and the
+// chips are items of that row, and the caret follows the last chip.
+const INSIDE_WRAPPER_STYLES: Styles = {
+  display: 'flex',
+  flow: 'row wrap',
+  placeItems: 'center start',
+  gap: '.5x',
+  height: 'min $size',
+  padding: '$tag-inset',
+  // The fill reaches under the padding, which the default `content-box` clip
+  // would leave bare.
+  backgroundClip: 'padding-box',
+
+  '$tag-size': {
+    '': '$size-xs',
+    'size=small': '2.5x',
+    'size=large': '$size-sm',
+  },
+  '$tag-inset': '(($size - $tag-size - 2bw) / 2)',
+
+  Prefix: {
+    display: 'contents',
+  },
+
+  // At the end of the last row. The negative margins let a full-height action
+  // sit in a chip-high row without growing it, flush with the edge as in a
+  // plain input.
+  Suffix: {
+    alignSelf: 'stretch',
+    margin: '(-1 * $tag-inset)',
+    marginLeft: 0,
+  },
+};
+
+// The text takes what the last row leaves, down to a usable minimum, and then
+// wraps to a row of its own. With no chips it lines up with a plain input.
+const INSIDE_INPUT_STYLES: Styles = {
+  flexGrow: 1,
+  flexBasis: 0,
+  width: 'min 8x',
+  // Its own line box would make the row taller than the chips.
+  height: '$tag-size',
+  padding: '0 (1x - 1bw - $tag-inset)',
+};
+
+// The chips are items of the box's row, not a box of their own, and each one
+// fits the row height.
+const INSIDE_TAG_LIST_STYLES: Styles = {
+  display: 'contents',
+  // Off a flex box, tasty's `gap` turns into child margins; the box's own gap
+  // spaces the chips.
+  gap: 0,
+};
+
+const INSIDE_TAG_STYLES: Styles = {
+  $size: '$tag-size',
+  // The height comes from `$size` alone, the label centered in it, so a small
+  // field's chip can be shorter than the label's padded line.
+  '$block-padding': 0,
+};
+
+interface PartStyles {
+  wrapper?: Styles;
+  input?: Styles;
+  tagList?: Styles;
+  tag?: Styles;
+}
+
+/** What each part is styled with for a placement. The consumer's own win. */
+function getPlacementStyles(
+  placement: CubeTagInputProps['tagPlacement'],
+  own: PartStyles,
+): PartStyles {
+  if (placement !== 'inside') return own;
+
+  return {
+    wrapper: mergeStyles(INSIDE_WRAPPER_STYLES, own.wrapper),
+    input: mergeStyles(INSIDE_INPUT_STYLES, own.input),
+    tagList: mergeStyles(INSIDE_TAG_LIST_STYLES, own.tagList),
+    tag: mergeStyles(INSIDE_TAG_STYLES, own.tag),
+  };
+}
+
+/**
+ * Where the list of chips renders: inside, after the icon and the prefix and
+ * before the text; below, under the box.
+ */
+function placeTagList(
+  placement: CubeTagInputProps['tagPlacement'],
+  prefix: ReactNode,
+  tagList: ReactNode,
+) {
+  if (placement !== 'inside' || !tagList) return { prefix, below: tagList };
+
+  return {
+    prefix: (
+      <>
+        {prefix}
+        {tagList}
+      </>
+    ),
+    below: null,
+  };
+}
 
 const DEFAULT_DELIMITERS = [','];
 const LINE_BREAK = /\r\n|\r|\n/;
@@ -771,6 +885,7 @@ function TagInput<T extends object>(
     suffix,
     suffixPosition,
     size = 'medium',
+    tagPlacement = 'below',
     isDisabled,
     isReadOnly,
     isRequired,
@@ -1757,6 +1872,38 @@ function TagInput<T extends object>(
   // suffix.
   const hasActions = clearButton != null || trigger != null;
 
+  const partStyles = getPlacementStyles(tagPlacement, {
+    wrapper: wrapperStyles,
+    input: inputStyles,
+    tagList: tagListStyles,
+    tag: tagStyles,
+  });
+
+  const tagList = tags.length ? (
+    <TagList
+      id={tagListId}
+      listRef={tagListRef}
+      inputRef={inputRef}
+      aria-label={
+        ariaLabel
+          ? t('tagInput.selectedValuesFor', 'Selected values, {{label}}', {
+              label: ariaLabel,
+            })
+          : t('tagInput.selectedValues', 'Selected values')
+      }
+      aria-labelledby={fieldLabelledby}
+      tags={tags}
+      size={TAG_SIZES[size] ?? 'xsmall'}
+      isDisabled={isDisabled}
+      isReadOnly={isReadOnly}
+      styles={partStyles.tagList}
+      tagStyles={partStyles.tag}
+      onRemove={removeValues}
+    />
+  ) : null;
+
+  const placed = placeTagList(tagPlacement, prefix, tagList);
+
   const tagInputField = (
     <TagInputElement
       ref={rootRef}
@@ -1773,7 +1920,7 @@ function TagInput<T extends object>(
         inputProps={tagInputProps}
         mods={mods}
         icon={icon}
-        prefix={prefix}
+        prefix={placed.prefix}
         suffix={suffix}
         suffixPosition={suffixPosition}
         actions={
@@ -1791,31 +1938,10 @@ function TagInput<T extends object>(
         isLoading={isLoading}
         isInvalid={effectiveIsInvalid}
         isValid={isValid}
-        styles={wrapperStyles}
-        inputStyles={inputStyles}
+        styles={partStyles.wrapper}
+        inputStyles={partStyles.input}
       />
-      {tags.length ? (
-        <TagList
-          id={tagListId}
-          listRef={tagListRef}
-          inputRef={inputRef}
-          aria-label={
-            ariaLabel
-              ? t('tagInput.selectedValuesFor', 'Selected values, {{label}}', {
-                  label: ariaLabel,
-                })
-              : t('tagInput.selectedValues', 'Selected values')
-          }
-          aria-labelledby={fieldLabelledby}
-          tags={tags}
-          size={TAG_SIZES[size] ?? 'xsmall'}
-          isDisabled={isDisabled}
-          isReadOnly={isReadOnly}
-          styles={tagListStyles}
-          tagStyles={tagStyles}
-          onRemove={removeValues}
-        />
-      ) : null}
+      {placed.below}
       {/* Read only as the input's description, never on its own in browse mode. */}
       <span hidden id={summaryId}>
         {tags.length
