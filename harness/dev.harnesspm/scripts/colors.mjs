@@ -1,5 +1,5 @@
 /**
- * uikit:tokens — UI Kit's color tokens by the names Tasty styles use, with
+ * uikit:colors — UI Kit's color tokens by the names Tasty styles use, with
  * their values in light, dark and both high-contrast schemes, and each token's
  * contrast against its base.
  *
@@ -10,7 +10,7 @@
 import { existsSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const USAGE = `Usage: npx harnesspm run uikit:tokens [<part of a name>...] [--on <token>] [--format <format>] [--json]
+const USAGE = `Usage: npx harnesspm run uikit:colors [<part of a name>...] [--on <token>] [--format <format>] [--json]
 
 Lists UI Kit's color tokens by the names Tasty styles use, such as #surface or
 #danger-accent-text, with their values in light, dark and both high-contrast
@@ -324,7 +324,7 @@ async function main(argv) {
     else if (arg.startsWith('--format='))
       format = arg.slice('--format='.length);
     else if (arg.startsWith('--')) {
-      console.error(`uikit:tokens: unknown option ${arg}\n\n${USAGE}`);
+      console.error(`uikit:colors: unknown option ${arg}\n\n${USAGE}`);
 
       return 2;
     } else filters.push(arg);
@@ -342,7 +342,7 @@ async function main(argv) {
 
     if (!measure.FORMATS.includes(format)) {
       console.error(
-        `uikit:tokens: --format must be one of ${measure.FORMATS.join(', ')}`,
+        `uikit:colors: --format must be one of ${measure.FORMATS.join(', ')}`,
       );
 
       return 2;
@@ -352,7 +352,7 @@ async function main(argv) {
 
     if (!existsSync(build)) {
       console.error(
-        `uikit:tokens: cannot find UI Kit's build at ${fileURLToPath(build)}. In the UI Kit repository, run \`pnpm build\` first.`,
+        `uikit:colors: cannot find UI Kit's build at ${fileURLToPath(build)}. In the UI Kit repository, run \`pnpm build\` first.`,
       );
 
       return 2;
@@ -378,7 +378,7 @@ async function main(argv) {
           .map((entry) => entry.token);
 
         console.error(
-          `uikit:tokens: --on ${name} is not a UI Kit color token.${near.length > 0 ? ` Did you mean ${near.join(', ')}?` : ''}`,
+          `uikit:colors: --on ${name} is not a UI Kit color token.${near.length > 0 ? ` Did you mean ${near.join(', ')}?` : ''}`,
         );
 
         return 2;
@@ -390,7 +390,7 @@ async function main(argv) {
         )
       ) {
         console.error(
-          `uikit:tokens: ${name} is translucent, so contrast on it depends on what is under it. Measure on an opaque surface.`,
+          `uikit:colors: ${name} is translucent, so contrast on it depends on what is under it. Measure on an opaque surface.`,
         );
 
         return 2;

@@ -3,7 +3,7 @@
  * `pnpm check:harness` (`harnesspm check`, in CI) validates the harness. These
  * specs guard what it cannot see: the packages the manifest extends, the Glaze
  * and Tasty rule sections UI Kit patches, which must match the pinned
- * releases, and the `uikit:tokens` tool, which builds on Glaze's measuring
+ * releases, and the `uikit:colors` tool, which builds on Glaze's measuring
  * module.
  */
 import { existsSync, readFileSync } from 'node:fs';
@@ -18,7 +18,7 @@ import {
   measureOn,
   render,
   sourceFrom,
-} from '../harness/dev.harnesspm/scripts/tokens.mjs';
+} from '../harness/dev.harnesspm/scripts/colors.mjs';
 
 import { getColorTokens } from './tokens/colors';
 import { getCodeTheme, getPalette, getPaletteTokens } from './tokens/palette';
@@ -105,7 +105,7 @@ describe('harness', () => {
   });
 });
 
-describe('uikit:tokens', () => {
+describe('uikit:colors', () => {
   it("loads Glaze's public measuring module from the pinned Glaze", async () => {
     const measure = await loadMeasure();
 

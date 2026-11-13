@@ -266,9 +266,9 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 
 - Style with Tasty (the `styles` prop and `tasty()`) and UI Kit's tokens, units and presets.
 - Colors are UI Kit palette tokens, written `#name`, such as `#surface`, `#surface-text` or `#danger-accent-text`. Never paste raw `#rrggbb`, `rgb()` or `hsl()` values.
-- To find a token, run `pnpm probe tokens --filter <part of its name>`, with `--scheme dark` or `--hc` for the other schemes. It reads the palette in `src/`. `uikit:tokens` reads the build in `dist/`, which is missing or out of date while you work here. Put a text token on its base. The Usage guide lists the legacy aliases that new code avoids.
+- To find a color token, run `pnpm probe tokens --filter <part of its name>`, with `--scheme dark` or `--hc` for the other schemes. It reads the palette in `src/`. `uikit:colors` reads the build in `dist/`, which is missing or out of date while you work here. Put a text token on its base. The Usage guide lists the legacy aliases that new code avoids.
 
 - Docs: node_modules/.harnesspm/docs/uikit/llms.txt (uikit:docs)
-- Script: `npx harnesspm run uikit:tokens` — Look up UI Kit color tokens by name: values in light, dark and high contrast, and contrast against their base (uikit:scripts/tokens)
+- Script: `npx harnesspm run uikit:colors` — Look up UI Kit color tokens by name: values in light, dark and high contrast, and contrast against their base, or with --on against another surface (uikit:scripts/colors)
 
 <!-- END:harnesspm -->

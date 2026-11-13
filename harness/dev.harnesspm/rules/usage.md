@@ -9,4 +9,4 @@
 
 - Style with Tasty (the `styles` prop and `tasty()`) and UI Kit's tokens, units and presets.
 - Colors are UI Kit palette tokens, written `#name`, such as `#surface`, `#surface-text` or `#danger-accent-text`. Never paste raw `#rrggbb`, `rgb()` or `hsl()` values.
-- To find a token, run `uikit:tokens <part of its name>`. It shows the token's values in light, dark and high contrast, its contrast against the base it was made for, and what an alias such as `#dark` resolves to. Put a text token on its base; to use it on another surface, check it there with `--on <surface>`. The Usage guide lists the legacy aliases that new code avoids.
+- To find a color token, run `uikit:colors <part of its name>`. It shows the token's values in light, dark and high contrast, its contrast against the base it was made for, and what an alias such as `#dark` resolves to. Put a text token on its base; to use it on another surface, check it there with `--on <surface>`. The Usage guide lists the legacy aliases that new code avoids.

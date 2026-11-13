@@ -109,15 +109,15 @@
     },
     "uikit:docs": {
       "kind": "docs",
-      "hash": "5b9e244082795c25"
+      "hash": "e478af00795d2ab4"
     },
     "uikit:rules/usage": {
       "kind": "rules",
-      "hash": "4de651b26f7a7fc2"
+      "hash": "a77636a0d2516560"
     },
-    "uikit:scripts/tokens": {
+    "uikit:scripts/colors": {
       "kind": "scripts",
-      "hash": "933103591eb0a101"
+      "hash": "1ce8b19c8f8973a4"
     }
   },
   "patches": {
@@ -145,7 +145,7 @@
     },
     "uikit:rules/usage": {
       "harnesspm/patches/uikit-usage.patch.md": {
-        "Styling": "2178c1f6888cec1a"
+        "Styling": "f25ddb9ecf445caa"
       }
     }
   }

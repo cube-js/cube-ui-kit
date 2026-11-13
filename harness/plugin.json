@@ -1,22 +1,26 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "uikit",
-  "description": "Cube UI Kit: the component docs, a rule for building with UI Kit, Tasty's and Glaze's harnesses adapted to UI Kit, the Tasty lint plugin's harness when the project has it, and a tool that looks up palette tokens",
+  "description": "Cube UI Kit: the component docs, a rule for building with UI Kit, Tasty's and Glaze's harnesses adapted to UI Kit, the Tasty lint plugin's harness when the project has it, and a tool that looks up palette colors",
   "homepage": "https://cube-ui-kit.vercel.app/",
   "repository": "https://github.com/cube-js/cube-ui-kit",
   "keywords": ["ui-kit", "react", "tasty", "glaze", "design-system"],
   "extensions": {
     "dev.harnesspm": {
-      "extends": ["@tenphi/glaze", "@tenphi/tasty", "@tenphi/eslint-plugin-tasty"],
+      "extends": [
+        "@tenphi/glaze",
+        "@tenphi/tasty",
+        "@tenphi/eslint-plugin-tasty"
+      ],
       "docs": "../src",
       "patch": {
         "glaze:rules/colors": "./dev.harnesspm/patches/glaze-colors.patch.md",
         "tasty:rules/usage": "./dev.harnesspm/patches/tasty-usage.patch.md"
       },
       "scripts": {
-        "tokens": {
-          "file": "./dev.harnesspm/scripts/tokens.mjs",
-          "description": "Look up UI Kit color tokens by name: values in light, dark and high contrast, and contrast against their base",
+        "colors": {
+          "file": "./dev.harnesspm/scripts/colors.mjs",
+          "description": "Look up UI Kit color tokens by name: values in light, dark and high contrast, and contrast against their base, or with --on against another surface",
           "allow": true
         }
       }

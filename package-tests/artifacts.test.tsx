@@ -16,13 +16,13 @@ it('ships React 19 peers and the intended native compiler output in the npm tarb
   });
 });
 
-/** Runs the packed `uikit:tokens` and returns its JSON. */
+/** Runs the packed `uikit:colors` and returns its JSON. */
 const tokens = (...args: string[]) =>
   JSON.parse(
     execFileSync(
       process.execPath,
       [
-        join(packageRoot, 'harness/dev.harnesspm/scripts/tokens.mjs'),
+        join(packageRoot, 'harness/dev.harnesspm/scripts/colors.mjs'),
         ...args,
         '--json',
       ],
@@ -30,7 +30,7 @@ const tokens = (...args: string[]) =>
     ),
   );
 
-it('ships the harness: uikit:tokens runs from the tarball', () => {
+it('ships the harness: uikit:colors runs from the tarball', () => {
   expect(
     tokens('danger-accent-text').map((t: { token: string }) => t.token),
   ).toContain('#danger-accent-text');
