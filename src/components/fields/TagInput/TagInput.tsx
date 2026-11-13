@@ -1,6 +1,6 @@
 import { useControlledState } from '@react-stately/utils';
 import { Node as CollectionNode, Key } from '@react-types/shared';
-import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import {
   ClipboardEvent,
   cloneElement,
@@ -32,6 +32,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CollectionItem as Item } from '../../CollectionItem';
@@ -59,6 +60,7 @@ import { useActiveOption } from './useActiveOption';
 import { useTagError } from './useTagError';
 
 import type { FieldBaseProps } from '../../../shared';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
 import type { CubeTagProps } from '../../content/Tag/Tag';
 import type { CompositeBlurInfo } from '../ListBoxPopover';
 
@@ -82,7 +84,7 @@ export type TagValidationResult = boolean | string | null | undefined;
 
 export interface CubeTagInputProps<T = object>
   extends
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps,
     FieldBaseProps<readonly string[] | null | undefined> {
   /** The values in controlled mode. */
@@ -794,9 +796,6 @@ function TagInput<T extends object>(
     listGap,
     labelProps: userLabelProps,
     mods,
-    className,
-    style,
-    qaVal,
     // The input holds the text being typed, not the field's value: a native
     // form must not submit it under the field's name.
     name,
@@ -1761,11 +1760,8 @@ function TagInput<T extends object>(
   const tagInputField = (
     <TagInputElement
       ref={rootRef}
-      // oxlint-disable-next-line tasty/no-classname-prop -- forwards the consumer's public `className` prop
-      className={className}
-      // oxlint-disable-next-line tasty/no-style-prop -- forwards the consumer's public `style` prop
-      style={style}
-      qaVal={qaVal}
+      {...pickBaseCustomizationProps(props)}
+      mods={mods}
       styles={styles}
       {...compositeFocusProps}
     >

@@ -1,17 +1,12 @@
 import { getActiveElement, useObjectRef } from '@react-aria/utils';
-import {
-  BaseProps,
-  filterBaseProps,
-  mergeStyles,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import { AriaRadioGroupProps, useFocusRing, useRadioGroup } from 'react-aria';
 import { RadioGroupState, useRadioGroupState } from 'react-stately';
 
 import { Provider } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/form';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   castNullableStringValue,
@@ -34,10 +29,11 @@ import { RadioContext } from './context';
 import { JOINED_GROUP_STYLES } from './joined-styles';
 
 import type { DOMAttributes, KeyboardEvent } from 'react';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 export interface CubeRadioGroupProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     Omit<AriaRadioGroupProps, 'errorMessage' | 'form' | 'name'>,
     FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
@@ -139,7 +135,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
   } = props;
   let domRef = useObjectRef(ref);
 
-  // The caller's base props (`qaVal`, `className`, `style`, `tokens`, `theme`,
+  // The caller's base props (`qaVal`, `className`, `style`, `tokens`,
   // `data-*`, event handlers) reach the group, as on `ToggleGroup`. Not the
   // ones `useRadioGroup` already handles: a native `change` bubbles up from
   // each radio, so a forwarded `onChange` would be called with an event, and
@@ -152,7 +148,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     isDisabled: _isDisabled,
     mods: _mods,
     ...baseProps
-  } = filterBaseProps(props, { eventProps: true });
+  } = filterComponentBaseProps(props, { eventProps: true });
 
   const fieldLayout = splitFieldLayout(props);
 
@@ -192,7 +188,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     onArrowKey?.(event);
     isArrowKeyRef.current = false;
     // The caller's own handler, which the explicit prop below would replace.
-    // `filterBaseProps` forwards event handlers, but its type lists none.
+    // `filterComponentBaseProps` forwards event handlers, but its type lists none.
     (baseProps as DOMAttributes<HTMLDivElement>).onKeyDown?.(event);
   };
 

@@ -1,4 +1,4 @@
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -14,6 +14,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n/useI18n';
 import { FieldBaseProps } from '../../../shared/form';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { CubeItemProps } from '../../content/Item/Item';
 import { Text } from '../../content/Text';
@@ -45,6 +46,7 @@ import { ColorSwatch } from '../ColorSwatch/ColorSwatch';
 // oxlint-disable-next-line import/no-cycle -- mutual composition used only at render time; see above
 import { ColorSwatchGroup } from '../ColorSwatchGroup/ColorSwatchGroup';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeColorSwatchItem } from '../ColorSwatchGroup/ColorSwatchGroup';
 
 /**
@@ -76,7 +78,7 @@ const ColorPickerWrapper = tasty({
 
 export interface CubeColorPickerProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The selected color, as a color string. */
@@ -275,6 +277,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
         onOpenChange={handleOpenChange}
       >
         <ItemButton
+          {...pickBaseCustomizationProps(props)}
           data-popover-trigger
           id={id}
           qa={qa || 'ColorPickerTrigger'}
@@ -295,7 +298,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
           // The trigger is the control, so the field's description and
           // message describe it.
           aria-describedby={ariaDescribedBy}
-          mods={{ placeholder: !color }}
+          mods={{ placeholder: !color, ...props.mods }}
           styles={triggerStyles}
         >
           {label}

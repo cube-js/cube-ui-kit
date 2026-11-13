@@ -4,26 +4,31 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Base Properties
 
-All UI Kit components support a common set of base properties from the `tasty` style system. These properties are passed through `filterBaseProps` and can be used for styling, accessibility, and testing.
+UI Kit components share base properties for styling, accessibility and testing. Each component’s props define which properties it supports and where they apply.
 
 ## Core Properties
 
 - **`qa`** `string` — Data attribute for e2e testing (`data-qa`)
 - **`qaVal`** `string` — Value for the qa attribute
-- **`style`** `CSSProperties` — Inline styles
 - **`styles`** `Styles` — Tasty styles object
 - **`css`** `string` — Raw CSS string
 - **`mods`** `Mods` — State modifiers for conditional styling
 - **`tokens`** `Tokens` — Custom-property values, applied as inline custom properties on the element
-- **`theme`** `string` — Renders `data-theme`. Components with their own `theme` prop, such as `Button`, `Alert` and `ItemAction`, give it their own meaning
 - **`breakpoints`** — Responsive breakpoint configuration
 - **`hidden`** `boolean` — Hide the element
 - **`isHidden`** `boolean` — Hide the element
 - **`disabled`** `boolean` — Disabled state
 - **`isChecked`** `boolean` — Renders `data-checked`, which the `checked` modifier resolves against in `styles`
-- **`element`** `string` — Override the rendered element name for sub-element targeting
 - **`block`** `boolean` — Display as block
 - **`inline`** `boolean` — Display as inline
+
+## Component-specific properties
+
+Use `theme` where the component documents an appearance variant, such as `Button`, `Alert`, `Select` or `ColorPicker`. Use `title` where it is a content prop, such as on `Layout.Header` or `Tabs.Tab`. For a control’s name or hint, use its label, description or tooltip API. Tasty’s `element` names a slot when authoring a styled element.
+
+## Third-party integrations
+
+`className` and inline `style` are available on component roots that expose them. Use them for integrations that supply a class or CSS style object. For ordinary UI Kit customization, use component props, `tokens`, `mods` and supported Tasty style props.
 
 ## Style Properties
 

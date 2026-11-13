@@ -22,6 +22,7 @@ import { useI18n } from '../../../i18n/useI18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { getLayoutScale } from '../../../utils/layout-scale';
+import { omitComponentOwnedProps } from '../../../utils/react/componentBaseProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   CubeItemActionProps,
@@ -530,6 +531,7 @@ export function TabButton({
     draggable: isDraggable,
     dragging: isDragging,
     'drop-pending': isDropPending,
+    ...tabData.mods,
   };
 
   const keepActiveTabInStrip = useEvent(() => {
@@ -761,7 +763,7 @@ export function TabButton({
               onPointerLeave: clearSpringLoad,
             })}
             {...ariaProps}
-            {...itemStyleProps}
+            {...omitComponentOwnedProps(itemStyleProps)}
             ref={ref}
             qa={qa ?? `Tab-${String(item.key)}`}
             qaVal={qaVal}

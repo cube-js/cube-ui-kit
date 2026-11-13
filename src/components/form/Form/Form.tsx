@@ -1,11 +1,5 @@
 import { useObjectRef } from '@react-aria/utils';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  filterBaseProps,
-  Styles,
-} from '@tenphi/tasty';
+import { CONTAINER_STYLES, ContainerStyleProps, Styles } from '@tenphi/tasty';
 import {
   FormEvent,
   FormHTMLAttributes,
@@ -20,6 +14,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { Provider, useProviderProps } from '../../../provider';
 import { FormBaseProps } from '../../../shared/form';
 import { timeout } from '../../../utils/promise';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
 import { useValidationProps } from '../validation/use-validation-props';
@@ -37,6 +32,7 @@ import { resetUnboundControls } from './reset-unbound-controls';
 import { FieldTypes } from './types';
 import { CubeFormData, CubeFormInstance, useForm } from './use-form';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { ModernFormProps } from './ModernFormRoot';
 
 /** Separate overloads retain contextual callback typing for each backend. */
@@ -52,7 +48,7 @@ export interface FormRootComponent {
 export interface CubeFormProps<T extends FieldTypes = FieldTypes>
   extends
     FormBaseProps,
-    BaseProps,
+    ComponentBaseProps,
     ContainerStyleProps,
     Pick<
       FormHTMLAttributes<HTMLFormElement>,
@@ -248,7 +244,7 @@ function LegacyFormRoot<T extends FieldTypes>(
 
   return (
     <FormElement
-      {...filterBaseProps(otherProps, { propNames: formPropNames })}
+      {...filterComponentBaseProps(otherProps, { propNames: formPropNames })}
       ref={domRef}
       noValidate
       qa={qa}
@@ -257,6 +253,7 @@ function LegacyFormRoot<T extends FieldTypes>(
         'has-sider': labelPosition === 'side',
         'has-split': labelPosition === 'split',
         horizontal: isHorizontal,
+        ...otherProps.mods,
       }}
       onSubmit={onSubmitCallback}
       onResetCapture={handleReset}

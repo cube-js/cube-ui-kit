@@ -1,8 +1,9 @@
-import { CONTAINER_STYLES, filterBaseProps } from '@tenphi/tasty';
+import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { forwardRef, useEffect, useMemo, useRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { Provider, useProviderProps } from '../../../provider';
+import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { extractStyles } from '../../../utils/styles';
@@ -183,7 +184,7 @@ function ModernFormRoot<T extends object>(
 
   return (
     <FormElement
-      {...filterBaseProps(otherProps, { propNames: formPropNames })}
+      {...filterComponentBaseProps(otherProps, { propNames: formPropNames })}
       ref={mergedRef}
       qa={qa}
       noValidate
@@ -192,6 +193,7 @@ function ModernFormRoot<T extends object>(
         'has-sider': labelPosition === 'side',
         'has-split': labelPosition === 'split',
         horizontal: orientation === 'horizontal',
+        ...otherProps.mods,
       }}
       onSubmit={otherProps.action == null ? handleSubmit : undefined}
       onResetCapture={handleReset}

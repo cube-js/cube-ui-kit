@@ -1,6 +1,7 @@
-import { filterBaseProps, tasty } from '@tenphi/tasty';
+import { BaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
 
+import { filterComponentBaseProps } from '../utils/react/componentBaseProps';
 import { useCombinedRefs } from '../utils/react/useCombinedRefs';
 
 const GridElement = tasty({
@@ -16,7 +17,7 @@ function toLength(value: string | number) {
   return typeof value === 'number' ? `${value}px` : value;
 }
 
-export interface CubeGridProviderProps {
+export interface CubeGridProviderProps extends Pick<BaseProps, 'tokens'> {
   children: ReactNode;
   columns?: number;
   /** Gap between columns, as a single Tasty value such as `'1x'`, or a number of pixels. */
@@ -87,12 +88,13 @@ export const GridProvider = forwardRef<HTMLDivElement, CubeGridProviderProps>(
 
     return (
       <GridElement
-        {...filterBaseProps(props, { eventProps: true })}
+        {...filterComponentBaseProps(props, { eventProps: true })}
         ref={ref}
         tokens={{
           '$grid-width': toLength(width),
           '$columns-amount': columns,
           '$column-gap': toLength(gap),
+          ...props.tokens,
         }}
       >
         {children}

@@ -1,12 +1,7 @@
 import { useHover } from '@react-aria/interactions';
 import { IconMinus } from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import {
-  BasePropsWithoutChildren,
-  mergeStyles,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   DOMAttributes,
   ForwardedRef,
@@ -51,6 +46,7 @@ import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 // Import Menu styled components for header and footer
 import {
@@ -91,6 +87,7 @@ import type {
   Key,
 } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
 
 const ListBoxWrapperElement = tasty({
   qa: 'ListBox',
@@ -367,7 +364,7 @@ export interface CubeListBoxProps<T>
     >,
     CollectionBase<T>,
     FieldBaseProps<Key | readonly Key[] | null | undefined>,
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps {
   /** Custom styles for the list container */
   listStyles?: Styles;
@@ -1254,6 +1251,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     ],
   );
 
+  const customizationProps = pickBaseCustomizationProps(props);
   const listGapTokens =
     listGap == null ? undefined : { '$list-gap': `${listGap}px` };
 
@@ -1315,6 +1313,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           >
             {(dragState, dropState, collectionProps) => (
               <ListElement
+                {...customizationProps}
                 qa={qa || 'ListBox'}
                 {...mergeProps(
                   mergedListBoxProps,
@@ -1322,9 +1321,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                 )}
                 ref={listRef}
                 styles={listStyles}
-                tokens={listGapTokens}
+                tokens={{ ...listGapTokens, ...customizationProps.tokens }}
                 aria-disabled={isDisabled || undefined}
-                mods={{ sections: false }}
+                mods={{ sections: false, ...externalMods }}
                 data-shape={shape}
                 data-input-type="listbox"
               >
@@ -1355,12 +1354,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           </DraggableListBox>
         ) : (
           <ListElement
+            {...customizationProps}
             qa={qa || 'ListBox'}
             {...mergedListBoxProps}
             ref={listRef}
             styles={listStyles}
             tokens={{
               ...listGapTokens,
+              ...customizationProps.tokens,
               '$list-virtual-height': shouldVirtualize
                 ? `${rowVirtualizer.getTotalSize()}px`
                 : undefined,
@@ -1369,6 +1370,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             mods={{
               sections: hasSections,
               empty: isEmpty,
+              ...externalMods,
+              // The spacer and row positions follow the same virtualization state.
               virtualized: shouldVirtualize,
             }}
             data-shape={shape}

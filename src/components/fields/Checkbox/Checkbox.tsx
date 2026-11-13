@@ -1,12 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { IconCheck, IconMinus } from '@tabler/icons-react';
-import {
-  BaseProps,
-  Element,
-  filterBaseProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { Element, filterBaseProps, Styles, tasty } from '@tenphi/tasty';
 import {
   forwardRef,
   ReactElement,
@@ -35,6 +29,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import {
@@ -59,11 +54,12 @@ import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
 
 import type { FocusableRef } from '@react-types/shared';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 export interface CubeCheckboxProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     Omit<AriaCheckboxProps, 'form' | 'name'>,
     ToggleSelectionProps,
@@ -297,14 +293,12 @@ function Checkbox(
   // The wrapper's props, the same in both branches. React Aria puts `id`,
   // `aria-*` and `data-*` on the input, so they stay off the `<label>`: the
   // grouped one used to copy them, and `#id`, `for` and `aria-labelledby`
-  // resolved to it. A caller's own `mods` stay, under the state ones.
+  // resolved to it. Caller modifiers override the visual state defaults.
   const wrapperProps = {
-    className: props.className,
-    style: props.style,
-    qaVal: props.qaVal,
+    ...pickBaseCustomizationProps(props),
     styles,
     isHidden,
-    mods: { ...props.mods, ...mods },
+    mods: { ...mods, ...props.mods },
   };
 
   // The wrapper is the checkbox's element in both branches, so the field's ref

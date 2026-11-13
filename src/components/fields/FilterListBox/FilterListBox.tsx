@@ -23,6 +23,7 @@ import { useI18n } from '../../../i18n/useI18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import {
   CubeCollectionItemProps,
@@ -956,6 +957,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         </div>
       )}
       <SearchInputElement
+        {...pickBaseCustomizationProps(props)}
         ref={searchInputRef}
         qa={qa || 'FilterListBox'}
         id={id}

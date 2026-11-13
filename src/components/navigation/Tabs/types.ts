@@ -1,5 +1,6 @@
-import type { BaseProps, OuterStyleProps, Styles } from '@tenphi/tasty';
+import type { OuterStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeItemActionProps } from '../../actions/ItemAction';
 import type { CubeMenuProps } from '../../actions/Menu';
 import type { CubeItemProps } from '../../content/Item';
@@ -70,6 +71,7 @@ type OmittedItemProps =
   | 'type' // Type is decided at the Tabs level, never per-tab
   | 'size' // Tab has its own TabSize
   | 'theme' // Tabs have internal theming
+  | 'element' // Tabs own their slot names
   | 'shape' // Tabs have internal shape logic
   | 'description' // Tabs don't have descriptions
   | 'descriptionPlacement'
@@ -113,7 +115,7 @@ export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
 export type CacheKeyValue = string | number | boolean | null | undefined;
 
 export interface CubeTabsProps
-  extends BaseProps, OuterStyleProps, PanelBehaviorProps {
+  extends ComponentBaseProps, OuterStyleProps, PanelBehaviorProps {
   /** Controlled active tab key. When provided, component is controlled. */
   activeKey?: string;
   /** Initial active tab key for uncontrolled mode. */

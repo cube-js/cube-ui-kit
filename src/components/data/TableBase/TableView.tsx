@@ -20,6 +20,7 @@ import { MoreIcon } from '../../../icons/MoreIcon';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useSlotProps } from '../../../utils/react/Slots';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu } from '../../actions/Menu/Menu';
@@ -186,6 +187,7 @@ export interface CubeTableRowRenderProps {
 }
 
 export interface TableViewProps<T = any> extends CubeTableLayoutProps {
+  customizationProps?: ReturnType<typeof pickBaseCustomizationProps>;
   qa?: string;
   rows: readonly T[];
   /** Stable keys for `rows`; required when a tree was flattened for display. */
@@ -2869,6 +2871,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   if (columnCount === 0 && isLoading) {
     return (
       <TableElement
+        {...props.customizationProps}
         ref={rootRef}
         qa={qa || 'Table'}
         styles={mergedStyles}
@@ -2884,10 +2887,14 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   return (
     <TableElement
+      {...props.customizationProps}
       ref={rootRef}
       qa={qa || 'Table'}
       styles={mergedStyles}
-      tokens={sectionCaptionTokens(sectionLayout, layout.totalWidth)}
+      tokens={{
+        ...sectionCaptionTokens(sectionLayout, layout.totalWidth),
+        ...props.customizationProps?.tokens,
+      }}
       mods={{
         size,
         shape,

@@ -29,22 +29,29 @@ Forward consumer styles to the element that owns them. DialogContainer's `styles
 
 ## Core Concepts
 
-### 1. Base Properties with `filterBaseProps`
+### 1. Base Properties for Component Roots
 
-The `filterBaseProps` helper ensures only valid DOM properties are passed to elements, filtering out design system properties and unsupported event handlers.
+For a component that owns its slots and appearance, use the kit’s `ComponentBaseProps` (or `ComponentBasePropsWithoutChildren`) and `filterComponentBaseProps`. Add a component-level `theme` or `title` only when the component gives it a defined meaning. Keep `className` and `style` available for third-party integrations.
 
 ```tsx
-import { filterBaseProps, AllBaseProps } from '@tenphi/tasty';
+import { tasty } from '@tenphi/tasty';
 
-interface MyComponentProps extends AllBaseProps {
+import {
+  type ComponentBaseProps,
+  filterComponentBaseProps,
+} from '../../../utils/react/componentBaseProps';
+
+const MyElement = tasty({});
+
+interface MyComponentProps extends ComponentBaseProps {
   customProp?: string;
 }
 
 function MyComponent(props: MyComponentProps) {
   return (
-    <div {...filterBaseProps(props, { eventProps: true })}>
+    <MyElement {...filterComponentBaseProps(props, { eventProps: true })}>
       {props.children}
-    </div>
+    </MyElement>
   );
 }
 ```
@@ -445,7 +452,7 @@ For input components that need to integrate with forms, see the [Field documenta
 
 ## Best Practices
 
-1. **Always support base properties**: Use `styleProps` (recommended) or `filterBaseProps`, and extend `AllBaseProps`
+1. **Choose the supported base properties**: Use `ComponentBaseProps` and `filterComponentBaseProps` for component-owned roots
 
 2. **Provide appropriate style properties**: Choose the right combination of style property sets for your component's needs
 
@@ -489,7 +496,7 @@ function Connection({ roomId, connect, notify, theme }) {
 
 When creating a new component, consider:
 
-- [ ] Base properties support (`AllBaseProps`, `filterBaseProps`)
+- [ ] Base properties match the component API and are forwarded to the correct root
 - [ ] Appropriate style property sets
 - [ ] Modifier (`mods`) support for state-based styling
 - [ ] Additional style properties for inner elements

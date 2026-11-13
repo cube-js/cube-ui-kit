@@ -1,7 +1,8 @@
 import type { Key } from '@react-types/shared';
-import type { BaseProps, ContainerStyleProps, Styles } from '@tenphi/tasty';
+import type { ContainerStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type { SizeName } from '../../../tokens';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeTablePageInfo } from '../../navigation/Pagination';
 import type {
   CubeTableCellRange,
@@ -51,7 +52,7 @@ export type CubeDataTableColumnDefinition<T = any> =
 
 export interface CubeDataTableProps<T = any>
   extends
-    BaseProps,
+    ComponentBaseProps,
     ContainerStyleProps,
     CubeTableLayoutProps,
     CubeTableTreeProps<T> {

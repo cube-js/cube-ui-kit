@@ -217,7 +217,7 @@ function LayoutHeader(
     <HeaderElement
       {...otherProps}
       ref={ref}
-      mods={{ ...mods, level, 'title-preset': titlePreset }}
+      mods={{ level, 'title-preset': titlePreset, ...mods }}
       scrollbar={scrollbar}
     >
       {renderBreadcrumbs()}

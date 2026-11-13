@@ -659,12 +659,14 @@ describe('ListBox virtualized list height', () => {
     label: `Value ${index}`,
   }));
 
-  it('keeps a listStyles height cap and scrolls to the last option', async () => {
+  it('keeps its virtual spacer and scrolls to the last option with caller overrides', async () => {
     renderWithRoot(
       <ListBox
         aria-label="Values"
         items={VALUES}
         listStyles={{ height: 'max 30x' }}
+        mods={{ virtualized: false }}
+        tokens={{ '$list-virtual-height': '0' }}
       >
         {(value: (typeof VALUES)[number]) => (
           <ListBox.Item key={value.key}>{value.label}</ListBox.Item>

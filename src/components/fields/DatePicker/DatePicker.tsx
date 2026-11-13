@@ -1,5 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import { BaseProps, Styles } from '@tenphi/tasty';
+import { Styles } from '@tenphi/tasty';
 import { forwardRef, RefObject, useRef } from 'react';
 import {
   AriaDatePickerProps,
@@ -13,6 +13,7 @@ import { useDatePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n/useI18n';
 import { FieldBaseProps } from '../../../shared/form';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -31,6 +32,8 @@ import { TimeInput } from './TimeInput';
 import { DateFieldBase } from './types';
 import { useFocusManagerRef } from './utils';
 
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+
 export interface CubeDatePickerProps<T extends DateValue = DateValue>
   extends
     Omit<
@@ -38,7 +41,7 @@ export interface CubeDatePickerProps<T extends DateValue = DateValue>
       'errorMessage' | 'form' | 'name' | keyof DateFieldBase<T>
     >,
     DateFieldBase<T>,
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     FieldBaseProps<T | null | undefined> {
   wrapperStyles?: Styles;
@@ -144,6 +147,8 @@ function DatePicker<T extends DateValue>(
 
   const component = (
     <DateInputBase
+      {...pickBaseCustomizationProps(props)}
+      mods={props.mods}
       ref={targetRef}
       wrapperRef={domRef}
       qa={qa || 'DatePicker'}

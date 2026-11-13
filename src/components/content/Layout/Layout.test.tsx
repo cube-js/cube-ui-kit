@@ -25,6 +25,25 @@ describe('Layout', () => {
     expect(screen.getByText('Content')).toBeInTheDocument();
   });
 
+  it('keeps a closed panel hidden with caller modifiers', async () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel
+          side="left"
+          hideOnClose
+          isOpen={false}
+          mods={{ hidden: false, custom: true }}
+        >
+          Panel
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const panel = await screen.findByTestId('LayoutPanel');
+    expect(panel).toHaveAttribute('data-hidden');
+    expect(panel).toHaveAttribute('data-custom');
+  });
+
   it('renders Layout with header', () => {
     renderWithRoot(
       <Layout>

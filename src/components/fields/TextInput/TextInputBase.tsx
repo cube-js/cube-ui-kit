@@ -1,6 +1,6 @@
 import { useObjectRef } from '@react-aria/utils';
 import { createFocusableRef } from '@react-spectrum/utils';
-import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   FocusEventHandler,
   forwardRef,
@@ -19,6 +19,7 @@ import {
 } from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import {
   mergeRefs,
   useCombinedRefs,
@@ -40,6 +41,7 @@ import {
 } from '../../overlays/Tooltip/split-trigger-props';
 
 import type { Props } from '../../../props';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 const ADD_STYLES = {
@@ -262,7 +264,7 @@ function preventPointerFocus(event: MouseEvent<HTMLElement>) {
 
 export interface CubeTextInputBaseProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     Omit<
       AriaTextFieldProps<HTMLInputElement | HTMLTextAreaElement>,
@@ -412,6 +414,10 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     ...otherProps
   } = props;
 
+  // The public controls already put their DOM attributes and handlers in inputProps.
+  const { style, tokens, ...customizationProps } =
+    pickBaseCustomizationProps(otherProps);
+
   // A text area grows with its flex line when bare, so it fills a field
   // sized by flex props too.
   const { styles, field } = splitFieldLayout(props, {
@@ -543,6 +549,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     );
   }
 
+  const controlProps = mergeProps(customizationProps, ownInputProps);
+
   // The field box takes the tooltip's hover side and positions it, so it
   // covers the prefix, suffix and steppers and never the text being typed. The
   // input, where keyboard focus lands, takes the focus side. The box keeps the
@@ -567,12 +575,13 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
           qa={qa || 'Input'}
           as={ElementType}
           data-input-type="textinput"
-          {...mergeTooltipFocusProps(ownInputProps, tooltipFocusProps)}
+          {...mergeTooltipFocusProps(controlProps, tooltipFocusProps)}
           ref={inputRef}
           rows={multiLine ? (rows ?? inputProps.rows ?? 1) : inputProps.rows}
           mods={modifiers}
-          // oxlint-disable-next-line tasty/no-style-prop -- `preset` owns font-family, and a `fontFamily` state map would replace the preset's in every state
-          style={textSecurityStyles}
+          tokens={{ ...tokens, ...inputProps.tokens }}
+          // oxlint-disable-next-line tasty/no-style-prop -- forwards the caller's style and keeps the masking font for multiline passwords
+          style={{ ...style, ...inputProps.style, ...textSecurityStyles }}
           {...(resolvedAutoFocus ? { 'data-autofocus': '' } : undefined)}
           autoFocus={resolvedAutoFocus}
           data-size={size}

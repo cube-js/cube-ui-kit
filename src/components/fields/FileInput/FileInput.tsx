@@ -1,6 +1,6 @@
 import { createFocusableRef, unwrapDOMRef } from '@react-spectrum/utils';
 import { useControlledState } from '@react-stately/utils';
-import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   forwardRef,
   RefObject,
@@ -14,6 +14,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n/useI18n';
 import { FieldBaseProps } from '../../../shared/form';
 import { mergeProps } from '../../../utils/react/mergeProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { Action } from '../../actions/Action/Action';
 import {
@@ -33,6 +34,7 @@ import type { AriaLabelingProps, FocusableRefValue } from '@react-types/shared';
 import type { ChangeEvent } from 'react';
 import type { AriaTextFieldProps } from 'react-aria';
 import type { Props } from '../../../props';
+import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 // The input box is the one every text field draws (`INPUT_WRAPPER_STYLES`):
 // its fill, border, radius and `$size` height per `size`, so the field lines
@@ -129,6 +131,7 @@ const FileInputElement = tasty(Action, {
     },
 
     Input: {
+      $: '> input',
       position: 'absolute',
       top: 0,
       right: 0,
@@ -149,9 +152,11 @@ const FileInputElement = tasty(Action, {
   }),
 });
 
+const FileControl = tasty({ as: 'input', element: 'Input' });
+
 export interface CubeFileInputProps
   extends
-    BaseProps,
+    ComponentBaseProps,
     FieldLayoutStyleProps,
     Omit<AriaTextFieldProps, 'form' | 'name' | 'errorMessage'>,
     FieldBaseProps<string | null | undefined> {
@@ -317,6 +322,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         'drag-hover': dragHover && !isDisabled,
         suffix: hasValidationIndicator({ isInvalid, isValid }),
         ...getValidationMods({ isInvalid, isValid }),
+        ...props.mods,
       }}
       onKeyDown={(e) => {
         // The button's own click doesn't reach the input inside it. A held
@@ -326,14 +332,15 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         }
       }}
     >
-      <input
+      <FileControl
+        {...pickBaseCustomizationProps(props)}
+        mods={props.mods}
         ref={inputRef}
         id={id}
         name={name}
         accept={accept}
-        data-qa={qa || 'FileInput'}
+        qa={qa || 'FileInput'}
         data-input-type="fileinput"
-        data-element="Input"
         disabled={isDisabled}
         type="file"
         multiple={false}

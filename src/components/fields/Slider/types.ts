@@ -1,13 +1,15 @@
-import { BasePropsWithoutChildren, Styles } from '@tenphi/tasty';
+import { Styles } from '@tenphi/tasty';
 import { AriaSliderProps } from 'react-aria';
 
 import { FieldBaseProps } from '../../../shared/form';
 import { FieldLayoutStyleProps } from '../../form/field-layout';
 
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+
 export interface CubeSliderBaseProps<T>
   extends
     Omit<AriaSliderProps<T>, 'label' | 'form' | 'name'>,
-    BasePropsWithoutChildren,
+    ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps,
     FieldBaseProps<T | null | undefined> {
   inputStyles?: Styles;
