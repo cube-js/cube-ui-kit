@@ -460,17 +460,23 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     selectedTitle = 'Dashboard',
     keyOrder,
     isReorderable,
+    type,
+    tabListPadding,
   }: {
     firstTitle?: string;
     selectedTitle?: string;
     keyOrder?: string[];
     isReorderable?: boolean;
+    type?: 'default' | 'file';
+    tabListPadding?: string;
   }) {
     return (
       <Tabs
         defaultActiveKey="dashboard"
         keyOrder={keyOrder}
         isReorderable={isReorderable}
+        type={type}
+        tabListPadding={tabListPadding}
       >
         <Tab key="model" title={firstTitle} />
         <Tab key="dashboard" title={selectedTitle} />
@@ -548,6 +554,44 @@ describe('Indicator of a tab that resizes or moves while selected', () => {
     const tab = screen.getByRole('tab', { name: 'Dashboard', hidden: true });
 
     rerender(<HiddenTabs hidden={false} />);
+
+    await expectUnderTab(tab);
+  });
+
+  // The list's own padding moves every tab without resizing any of them.
+  it('follows the selected tab when the list padding changes', async () => {
+    const { rerender } = renderWithRoot(<LoadingTabs />);
+    const tab = screen.getByRole('tab', { name: 'Dashboard' });
+
+    await expectUnderTab(tab);
+
+    const { left: before } = tab.getBoundingClientRect();
+
+    rerender(<LoadingTabs tabListPadding="8x" />);
+
+    await waitFor(() =>
+      expect(tab.getBoundingClientRect().left).toBeGreaterThan(before + 20),
+    );
+    await expectUnderTab(tab);
+  });
+
+  // A type without the indicator turns it off; the selection can change
+  // meanwhile, and the indicator must not come back where it was.
+  it('shows no stale indicator when it is turned back on', async () => {
+    const { rerender } = renderWithRoot(<LoadingTabs />);
+
+    await expectUnderTab(screen.getByRole('tab', { name: 'Dashboard' }));
+
+    rerender(<LoadingTabs type="file" />);
+
+    const tab = screen.getByRole('tab', { name: 'Model' });
+
+    await userEvent.click(tab);
+
+    rerender(<LoadingTabs type="default" />);
+
+    // Not drawn until it is measured, rather than under the old selection.
+    expect(tabIndicator()).toBeUndefined();
 
     await expectUnderTab(tab);
   });

@@ -49,6 +49,10 @@ export function useTabIndicator(
 ): IndicatorStyle | null {
   const [style, setStyle] = useState<IndicatorStyle | null>(null);
 
+  // Forget the place while off: the selection may change meanwhile, and the
+  // indicator must not reappear under the old tab before it is measured.
+  if (!enabled && style) setStyle(null);
+
   const measure = useEffectEvent((container: HTMLElement) => {
     const selectedTab = container.querySelector<HTMLElement>(
       '[aria-selected="true"]',
@@ -92,7 +96,8 @@ export function useTabIndicator(
 
     const observer = new ResizeObserver(() => measure(container));
 
-    observer.observe(container);
+    // The border box, so the list's own padding, which moves every tab, counts.
+    observer.observe(container, { box: 'border-box' });
 
     for (const child of container.children) {
       // Skip the indicator, the one child without a tab: its own transition
