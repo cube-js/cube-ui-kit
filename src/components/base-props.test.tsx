@@ -388,6 +388,17 @@ describe('component base props', () => {
     }
   });
 
+  it('forwards panel props in dialog mode', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel {...customization} qa="custom" mode="dialog" isDialogOpen>
+          Panel
+        </Layout.Panel>
+      </Layout>,
+    );
+    expectCustomization(screen.getByTestId('custom'));
+  });
+
   it('merges customization on GridLayout', () => {
     renderWithRoot(
       <GridLayout {...customization} qa="custom">
