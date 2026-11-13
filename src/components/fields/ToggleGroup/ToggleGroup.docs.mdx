@@ -1,0 +1,242 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+import * as ToggleGroupStories from './ToggleGroup.stories';
+
+<Meta of={ToggleGroupStories} />
+
+# ToggleGroup
+
+A joined row of toggle buttons that holds a value. In `single` mode at most one item is on, and pressing it again turns it off. In `multiple` mode each item toggles on its own. It is a form field, like [Picker](/docs/forms-picker--docs), and takes the same selection API.
+
+Built on React Aria's [`useToggleButtonGroup`](https://react-spectrum.adobe.com/react-aria/useToggleButtonGroup.html) and React Stately's `useToggleGroupState`. It looks like [`Radio.Group type="button"`](/docs/forms-radiogroup--docs): both draw their row from one shared style definition.
+
+## When to Use
+
+- One option or none: a column shows a bar, a sparkline or plain text, and pressing the active option goes back to plain text
+- Several options at once: bold, italic and underline; which totals a table shows
+- A compact control where every option fits on one row
+
+### Which component?
+
+| What can be selected? | Use |
+| --- | --- |
+| Exactly one option, always | [`Radio.Group type="button"`](/docs/forms-radiogroup--docs) |
+| One option or none | `ToggleGroup` |
+| Several options | `ToggleGroup` with `selectionMode="multiple"` |
+| Nothing: a row of actions | [Button.Split](/docs/actions-button-split--docs) |
+
+A single on/off setting is a [Switch](/docs/forms-switch--docs) or a [Checkbox](/docs/forms-checkbox--docs). A long list of options is a [Picker](/docs/forms-picker--docs).
+
+## Component
+
+<Story of={ToggleGroupStories.Default} />
+
+---
+
+### Properties
+
+- **`selectionMode`** `'single' | 'multiple'` (default: `'single'`) — `single`: at most one item is on, and pressing it again turns it off. `multiple`: each item toggles on its own
+- **`selectedKey`** `Key | null` — The key of the item that is on, or `null` for none (controlled, `single` mode)
+- **`defaultSelectedKey`** `Key | null` — The key of the item that starts on (uncontrolled, `single` mode)
+- **`selectedKeys`** `Key[]` — The keys of the items that are on (controlled, `multiple` mode)
+- **`defaultSelectedKeys`** `Key[]` — The keys of the items that start on (uncontrolled, `multiple` mode)
+- **`onSelectionChange`** `(key: Key | null | Key[]) => void` — Called with a key or `null` in `single` mode, and with an array of keys in `multiple` mode
+- **`onFocus`** / **`onBlur`** `(e: FocusEvent) => void` — Called when focus enters or leaves the group, not when it moves between items. In a form, leaving the group marks the field touched and runs `validateTrigger="onBlur"` rules
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `'medium'`) — Size of every item, the sizes of `Radio.Group type="button"`
+- **`type`** `'outline' | 'outline-2' | 'clear'` (default: `'outline'`) — Look of every item. `outline-2` uses `#surface-3` as its base fill, so it stands out on a `#surface-2` container
+- **`children`** — `ToggleGroup.Item` elements
+
+### ToggleGroup.Item Properties
+
+- **`key`** — The item's key in `selectedKey` / `selectedKeys`. The group reads it from a direct child, so a mapped list writes it once
+- **`id`** `Key` — The same key, given explicitly. Use it for an item inside a wrapper component, which the group can't read a React `key` from, or for a number key: a React `key` is always a string. An explicit `id` wins over the `key`
+- **`children`** — The visible label. Omit it for an icon-only item
+- **`icon`** — An icon before the label
+- **`aria-label`** `string` — The accessible name of an icon-only item
+- **`tooltip`** — Tooltip content, or `true` (default) to show the label only when it is truncated. A disabled item still shows its tooltip, a good place to say why it is unavailable: it stays focusable, marked `aria-disabled`, so the keyboard reaches the reason too, while presses and keys still can't toggle it
+- **`isDisabled`** `boolean` — Disables this item. The group's `isDisabled` disables them all
+- **`qa`** `string` — The item's `data-qa` (default: `ToggleGroupItem`)
+- **`styles`** — Styles of the item, an [Item](/docs/content-item--docs)
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/getting-started-field-properties--docs). In a form, the field's value is a key or `null` in `single` mode, and an array of keys in `multiple` mode. Given more room than their content, through the field's width or `controlWidth`, the items share it. A disabled group still shows which items are on; a read-only one can be focused, but no press or key changes its selection.
+
+### Styling Properties
+
+#### styles
+
+Customizes the group: the row that holds the items.
+
+**Sub-elements:** None
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop. They place and size the field:
+
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `blockMargin`, `inlineMargin`, `inset`, `blockInset`, `inlineInset`, `position`, `scrollMargin`, `blockScrollMargin`, `inlineScrollMargin`, `scrollPadding`, `blockScrollPadding`, `inlineScrollPadding`
+- **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+- **`joined`** `boolean` — Always set: the joined look, shared with `Radio.Group type="button"`, applies to the group and to each item. The items share their borders, the selected one is raised above its neighbours and a keyboard-focused one above that, and the group isolates its stacking so the raise stays inside it
+- **`fill-width`** `boolean` — Set when the group's style props size its field's width; the group then fills it
+
+Each item also carries **`selected`**, **`hovered`**, **`pressed`**, **`focused`** (keyboard focus only) and **`readonly`**.
+
+## Variants
+
+### Selection Mode
+
+- `single` — One item or none
+- `multiple` — Any number of items
+
+<Story of={ToggleGroupStories.Multiple} />
+
+### Sizes
+
+The sizes of `Radio.Group type="button"`. An `xsmall` item is at least 26px wide: its neighbours cover one border width of each side, and what is left is the 24px target WCAG 2.5.8 asks for. From `small` up, an icon-only item is square.
+
+<Story of={ToggleGroupStories.Sizes} />
+
+### Types
+
+<Story of={ToggleGroupStories.Types} />
+
+## Examples
+
+### One or None
+
+```jsx
+const [display, setDisplay] = useState(null);
+
+<ToggleGroup
+  label="Display"
+  selectedKey={display}
+  onSelectionChange={setDisplay}
+>
+  <ToggleGroup.Item key="bar">Bar</ToggleGroup.Item>
+  <ToggleGroup.Item key="sparkline">Sparkline</ToggleGroup.Item>
+</ToggleGroup>;
+```
+
+Pressing the selected item calls `onSelectionChange(null)`.
+
+### Several at Once
+
+```jsx
+<ToggleGroup
+  aria-label="Text format"
+  selectionMode="multiple"
+  size="small"
+  defaultSelectedKeys={['bold']}
+  onSelectionChange={(keys) => console.log(keys)} // ['bold', 'italic']
+>
+  <ToggleGroup.Item key="bold" icon={<IconBold />} aria-label="Bold" tooltip="Bold" />
+  <ToggleGroup.Item key="italic" icon={<IconItalic />} aria-label="Italic" tooltip="Italic" />
+  <ToggleGroup.Item key="underline" icon={<IconUnderline />} aria-label="Underline" tooltip="Underline" />
+</ToggleGroup>
+```
+
+### From a List
+
+The items take their keys from the React `key`, so a mapped list needs no `id`:
+
+```jsx
+<ToggleGroup aria-label="Totals" selectionMode="multiple">
+  {TOTALS.map((total) => (
+    <ToggleGroup.Item key={total.value}>{total.label}</ToggleGroup.Item>
+  ))}
+</ToggleGroup>
+```
+
+An item inside a wrapper component, or with a number key, passes `id`:
+
+```jsx
+function WidthOption({ width }) {
+  return <ToggleGroup.Item id={width}>{`${width}px`}</ToggleGroup.Item>;
+}
+
+<ToggleGroup aria-label="Width" defaultSelectedKey={120}>
+  <WidthOption width={120} />
+  <WidthOption width={240} />
+</ToggleGroup>;
+```
+
+### In a Form
+
+```jsx
+const form = Form.useController({
+  defaultValues: { display: null, format: [] },
+});
+
+<Form form={form}>
+  <ToggleGroup name="display" label="Display">
+    <ToggleGroup.Item key="bar">Bar</ToggleGroup.Item>
+    <ToggleGroup.Item key="sparkline">Sparkline</ToggleGroup.Item>
+  </ToggleGroup>
+  <ToggleGroup name="format" label="Format" selectionMode="multiple">
+    <ToggleGroup.Item key="bold">Bold</ToggleGroup.Item>
+    <ToggleGroup.Item key="italic">Italic</ToggleGroup.Item>
+  </ToggleGroup>
+</Form>;
+```
+
+### Disabled With a Reason
+
+```jsx
+<ToggleGroup aria-label="Format" selectionMode="multiple">
+  <ToggleGroup.Item key="bold">Bold</ToggleGroup.Item>
+  <ToggleGroup.Item key="italic" isDisabled tooltip="Not available for numbers">
+    Italic
+  </ToggleGroup.Item>
+</ToggleGroup>
+```
+
+<Story of={ToggleGroupStories.Disabled} />
+
+### Validation
+
+<Story of={ToggleGroupStories.Validation} />
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` — Moves focus into the group and out of it again: the group is one tab stop. The first time, focus lands on the item at the edge it enters from — the first focusable item with `Tab`, the last with `Shift+Tab` — also in `single` mode where an item is selected (React Aria's toolbar behaviour); after that it returns to the item focused last
+- `ArrowLeft` / `ArrowRight` — Move focus between the items without toggling them, skipping disabled items that have no tooltip
+- `Space` / `Enter` — Toggle the focused item
+
+In `single` mode the group is announced as a radio group but takes focus like a toolbar, and this differs from the [ARIA radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/). There, `Tab` lands on the checked radio and the arrow keys select as they move. Here, the first `Tab` lands on the edge item even when another item is checked, so a screen reader may announce "not checked" first, and the arrow keys only move focus. This is React Aria's behaviour (`useToggleButtonGroup`, built on `useToolbar`), and UI Kit keeps it. When focus must land on the checked option, use `Radio.Group type="button"`: it draws the same joined row and follows the radio pattern.
+
+### Screen Reader Support
+
+- `single` mode: the group is a `radiogroup`, and each item a `radio` that is `checked` or not
+- `multiple` mode: the group is a `toolbar`, and each item a toggle button that is `pressed` or not
+- The field's label names the group, and its description and error message describe it
+- A disabled item with a tooltip is announced as disabled and keeps its tooltip as its description
+
+### ARIA Properties
+
+- `aria-label` / `aria-labelledby` — Name the group when it has no visible `label`
+- `aria-label` on an item — Names an icon-only item
+- `aria-required`, `aria-invalid` and `aria-readonly` — Set on the `radiogroup` in `single` mode. A `toolbar` and its toggle buttons take none of them, so in `multiple` mode the error message says the field is invalid, and nothing announces read-only
+
+## Best Practices
+
+1. **Do**: Use it when pressing the selected option again should clear it, or when several options can be on
+2. **Do**: Give every icon-only item an `aria-label`, and a `tooltip` with the same text for sighted users
+3. **Don't**: Use it when exactly one option must always be selected; use `Radio.Group type="button"`
+4. **Don't**: Use it for a row of actions that hold no value; use `Button.Split`
+
+## Related Components
+
+- [RadioGroup](/docs/forms-radiogroup--docs) - Exactly one option, with `type="button"` for the same look
+- [Picker](/docs/forms-picker--docs) - The same selection API, for options that don't fit on a row
+- [CheckboxGroup](/docs/forms-checkboxgroup--docs) - Several options as checkboxes
+- [Button.Split](/docs/actions-button-split--docs) - A joined row of actions

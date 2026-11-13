@@ -313,6 +313,8 @@ type       CubeTextItemProps
 type       CubeTextProps
 type       CubeTimeInputProps
 type       CubeTitleProps
+type       CubeToggleGroupItemProps
+type       CubeToggleGroupProps
 type       CubeTooltipProps
 type       CubeTooltipProviderProps
 type       CubeTooltipTriggerProps
@@ -727,6 +729,9 @@ type       ToastProgressProps
 type       ToastProps
 type       ToastType
 value      toFlatTree
+value      ToggleGroup
+type       ToggleGroupComponent
+type       ToggleGroupType
 type       ToggleSelectionProps
 value      TOKENS
 value      toLegacyColor

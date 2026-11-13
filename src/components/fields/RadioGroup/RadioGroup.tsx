@@ -1,5 +1,11 @@
 import { getActiveElement, useObjectRef } from '@react-aria/utils';
-import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
+import {
+  BaseProps,
+  filterBaseProps,
+  mergeStyles,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import { AriaRadioGroupProps, useFocusRing, useRadioGroup } from 'react-aria';
 import { RadioGroupState, useRadioGroupState } from 'react-stately';
@@ -25,8 +31,9 @@ import {
 } from '../../navigation/Tabs/segmented-styles';
 
 import { RadioContext } from './context';
+import { JOINED_GROUP_STYLES } from './joined-styles';
 
-import type { KeyboardEvent } from 'react';
+import type { DOMAttributes, KeyboardEvent } from 'react';
 
 export interface CubeRadioGroupProps
   extends
@@ -47,15 +54,14 @@ export interface CubeRadioGroupProps
   type?: 'radio' | 'button' | 'tabs';
 }
 
-// In tabs mode the group is the track of the segmented control `Tabs
-// type="radio"` shares (`segmented-styles.ts`), merged in after its own styles.
+// In button mode the group is the joined row `ToggleGroup` shares
+// (`joined-styles.ts`); in tabs mode it is the track of the segmented control
+// `Tabs type="radio"` shares (`segmented-styles.ts`). Both are merged in after
+// its own styles.
 const RadioGroupElement = tasty({
   qa: 'RadioGroup',
   styles: mergeStyles(
     {
-      display: 'flex',
-      placeItems: 'stretch',
-      placeContent: 'stretch',
       flow: {
         '': 'column',
         horizontal: 'row wrap',
@@ -72,18 +78,7 @@ const RadioGroupElement = tasty({
         '': '#clear',
         disabled: '#surface-4',
       },
-      width: {
-        '': 'max-content max-content initial',
-        // In a field its style props size, the group fills the field as every
-        // other input does.
-        'fill-width': 'auto',
-      },
-      flexShrink: 0,
-      gap: {
-        '': '1x',
-        button: 0,
-      },
-      whiteSpace: 'nowrap',
+      gap: '1x',
       // Keyboard focus ring on the group, shown only for the button layout,
       // where the items merge into one control. A classic radio shows a ring
       // on its circle, and a tabs segment one of its own, as a tab does.
@@ -92,6 +87,7 @@ const RadioGroupElement = tasty({
         'focused & button': '$ring-width #primary-text / $outline-offset',
       },
     },
+    JOINED_GROUP_STYLES,
     SEGMENTED_TRACK_STYLES,
     SEGMENTED_LIST_STYLES,
   ),
@@ -139,8 +135,24 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     buttonType,
     type,
     form,
+    mods,
   } = props;
   let domRef = useObjectRef(ref);
+
+  // The caller's base props (`qaVal`, `className`, `style`, `tokens`, `theme`,
+  // `data-*`, event handlers) reach the group, as on `ToggleGroup`. Not the
+  // ones `useRadioGroup` already handles: a native `change` bubbles up from
+  // each radio, so a forwarded `onChange` would be called with an event, and
+  // `isDisabled` would turn on a `disabled` fill the group never shows.
+  let {
+    onChange: _onChange,
+    onFocus: _onFocus,
+    onBlur: _onBlur,
+    onFocusChange: _onFocusChange,
+    isDisabled: _isDisabled,
+    mods: _mods,
+    ...baseProps
+  } = filterBaseProps(props, { eventProps: true });
 
   const fieldLayout = splitFieldLayout(props);
 
@@ -179,6 +191,9 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     isArrowKeyRef.current = true;
     onArrowKey?.(event);
     isArrowKeyRef.current = false;
+    // The caller's own handler, which the explicit prop below would replace.
+    // `filterBaseProps` forwards event handlers, but its type lists none.
+    (baseProps as DOMAttributes<HTMLDivElement>).onKeyDown?.(event);
   };
 
   // Keyboard-only focus ring on the group container (button layout).
@@ -193,7 +208,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
       ref={domRef}
       // Keep semantics and keyboard handling on the group: `isBare` omits
       // the field wrapper.
-      {...mergeProps(groupProps, groupFocusProps)}
+      {...mergeProps(baseProps, groupProps, groupFocusProps)}
       onKeyDown={onKeyDown}
       // `useRadioGroup` seeds its id once; the current one follows the form
       // binding.
@@ -207,10 +222,12 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
         'inside-form': insideForm,
         'side-label': labelPosition === 'side',
         button: type === 'button',
+        joined: type === 'button',
         tabs: type === 'tabs',
         segmented: type === 'tabs',
         focused: isFocusWithinVisible,
         'fill-width': fieldLayout.fillWidth,
+        ...mods,
       }}
     >
       <FormScopeMask

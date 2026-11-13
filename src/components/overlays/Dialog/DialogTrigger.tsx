@@ -13,7 +13,6 @@ import {
   OverlayTriggerProps,
   Placement,
   PositionProps,
-  useOverlayPosition,
   useOverlayTrigger,
 } from 'react-aria';
 import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
@@ -22,6 +21,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { isOwnActionsPress } from '../../actions/actions-run';
 import { Modal } from '../Modal/Modal';

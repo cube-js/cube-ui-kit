@@ -233,13 +233,22 @@ const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [25, 25] };
  *
  * Also "from white", in the same sense as {@link ACCENT_FILL_CONTRAST}: both solve
  * against `accent-selected-fill`, which is `oklch(0.975 0.0037 284.4)` in light — white
- * for every practical purpose, and the surface these labels actually sit on. These are
+ * for every practical purpose, and the surface links sit on. Selected outline, outline-2
+ * and clear labels sit on a 9% brand tint over `surface-2`, `surface-3` or the page,
+ * so they measure a little lower than a link does. These are
  * foreground spots, so they keep the default `fg` polarity and Glaze solves
  * `apcaContrast(text, base)`.
  *
  * Lc 60 is APCA's `content` tier, the floor for ordinary body text, which is what a
  * link is. The hover takes `body`/75 so the rest→hover intensify stays visible; one
  * preset step apart is what keeps the two from solving onto the same color.
+ *
+ * These floors stay below WCAG AA on purpose. A color seed is a customer's brand, and
+ * the rest link should read as that brand: a higher floor would darken a light brand's
+ * link away from it. So in light, normal contrast, a bright brand's links and selected
+ * labels can measure below 4.5:1. The unseeded arm solves against a WCAG floor and
+ * meets AA. Theming.docs.mdx ("A color seed is a request") gives the measured figures
+ * and tells a consumer who needs AA to seed a darker shade.
  *
  * The HC entries are spelled `85` and `92` rather than left to Glaze's +15, for the
  * same reason as {@link ACCENT_FILL_CONTRAST}, and they stay apart so the rest→hover
@@ -926,8 +935,9 @@ function accentTextColors(accent: AccentSeed): ColorMap {
   if (accent == null) {
     return {
       ...ACCENT_SELECTED_FILL,
-      // Stronger brand text for HOVERED selected outline/clear labels and LINK
-      // hover. Same anchor + preferred tone as `accent-text-soft`, but a higher
+      // Stronger brand text for HOVERED or KEYBOARD-FOCUSED selected
+      // outline/clear labels and LINK hover. Same anchor + preferred tone as
+      // `accent-text-soft`, but a higher
       // `contrast: [6, 11]` floor against `accent-selected-fill` so it reads as a
       // clear step up from the soft rest color while staying saturated (a bare
       // `AAA`/`7` floor over-darkens light and desaturates dark). The HC pair keeps
@@ -940,19 +950,19 @@ function accentTextColors(accent: AccentSeed): ColorMap {
         contrast: [6, 11],
       },
       // Rest brand text for selected outline/clear labels and LINK base color.
-      // Anchored to `accent-selected-fill` at 4.6:1: AA plus headroom, because
-      // that anchor reads lighter in light mode than the fills `fill` paints
-      // (see ACCENT_SELECTED_FILL). Glaze 3 lands on the floor itself, so with a
-      // bare 'AA' the focused clear-selected label fell to 4.47:1. Outline and
-      // outline-2 selected fills sit on the darker `surface-2` / `surface-3` and
-      // stay below AA, as they did on Glaze 2. Sits visibly less prominent than
-      // `accent-text` (lighter in light, darker in dark) so the rest→hover
-      // intensify is real.
+      // Anchored to `accent-selected-fill` at 5:1, because that anchor reads
+      // lighter in light mode than the fills `fill` paints (see
+      // ACCENT_SELECTED_FILL), and Glaze 3 lands on the floor itself. 5:1 keeps
+      // AA on the darkest of them: in light, the outline-2 selected label
+      // measures 4.59:1 on `surface-3`, outline 4.89:1 on `surface-2`, clear
+      // 5.17:1 (4.6:1 left outline at 4.47 and outline-2 at 4.20). Still visibly
+      // less prominent than `accent-text` (lighter in light, darker in dark), so
+      // the rest→hover intensify is real.
       'accent-text-soft': {
         base: 'accent-selected-fill',
         tone: '-49',
         saturation: 1,
-        contrast: [4.6, 'AAA'],
+        contrast: [5, 'AAA'],
       },
       'accent-icon': {
         base: 'surface',

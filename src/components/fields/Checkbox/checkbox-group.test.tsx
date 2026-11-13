@@ -168,4 +168,59 @@ describe('<CheckboxGroup />', () => {
 
     expect(getAllByRole('checkbox')[0]).toBeDisabled();
   });
+
+  it("puts the caller's base props on the group, with and without a label", () => {
+    for (const label of [undefined, 'Options']) {
+      const onChange = vi.fn();
+      const { unmount } = render(
+        <Checkbox.Group
+          aria-label={label ? undefined : 'Options'}
+          label={label}
+          qa="Channels"
+          qaVal="channels"
+          className="custom"
+          style={{ outline: '1px solid red' }}
+          tokens={{ '$probe-token': '7px' }}
+          mods={{ extra: true }}
+          data-section="alerts"
+          onChange={onChange}
+        >
+          <Checkbox value="one">One</Checkbox>
+        </Checkbox.Group>,
+      );
+
+      const group = screen.getByRole('group');
+
+      expect(group).toHaveAttribute('data-qa', 'Channels');
+      expect(group).toHaveAttribute('data-qaval', 'channels');
+      expect(group).toHaveAttribute('data-section', 'alerts');
+      expect(group).toHaveAttribute('data-extra');
+      expect(group).toHaveClass('custom');
+      expect(group).toHaveStyle({
+        outline: '1px solid red',
+        '--probe-token': '7px',
+      });
+
+      // A native `change` bubbles from the checkbox to the group: the caller's
+      // `onChange` still gets only the value.
+      act(() => screen.getByRole('checkbox').click());
+
+      expect(onChange.mock.calls).toEqual([[['one']]]);
+
+      unmount();
+    }
+  });
+
+  it('keeps its own qa when the caller sets none', () => {
+    render(
+      <Checkbox.Group aria-label="Options">
+        <Checkbox value="one">One</Checkbox>
+      </Checkbox.Group>,
+    );
+
+    expect(screen.getByRole('group')).toHaveAttribute(
+      'data-qa',
+      'CheckboxGroup',
+    );
+  });
 });

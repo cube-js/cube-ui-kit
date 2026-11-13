@@ -23,8 +23,8 @@ import { TextInputMapper } from '../../fields/TextInputMapper/TextInputMapper';
 import type { ComponentType } from 'react';
 
 /**
- * Inputs whose control ARIA gives no invalid state — a button, or a group
- * around one — so their error message is the only thing that says it.
+ * Inputs whose control ARIA gives no invalid state — a button, or a group or
+ * toolbar around one — so their error message is the only thing that says it.
  * `PasswordInput` does set `aria-invalid`, but its input has no role, and the
  * simulator reads no states without one.
  */
@@ -39,6 +39,7 @@ const NO_INVALID_STATE = new Set([
   'QuarterPicker',
   'Select',
   'TextInputMapper',
+  'ToggleGroup (multiple)',
   'WeekPicker',
   'YearPicker',
 ]);
@@ -56,6 +57,8 @@ const GROUPS = new Set([
   'RadioGroup',
   'RadioGroup (buttons)',
   'TextInputMapper',
+  'ToggleGroup',
+  'ToggleGroup (multiple)',
 ]);
 
 /** Mounts the input; its description and message ids are linked after layout. */
@@ -206,7 +209,7 @@ describe('every form-attachable input, read by a screen reader', () => {
       }
 
       const controls = phrases.filter((phrase) =>
-        /^(textbox|combobox|button|group|radiogroup|listbox|slider|checkbox|switch), /.test(
+        /^(textbox|combobox|button|group|radiogroup|toolbar|listbox|slider|checkbox|switch), /.test(
           phrase,
         ),
       );
@@ -288,7 +291,7 @@ describe('every form-attachable input, read by a screen reader', () => {
       await mount(labelledOnly(element));
 
       expect(await readWithScreenReader()).toContainEqual(
-        expect.stringMatching(/^(radio)?group, Billing name/),
+        expect.stringMatching(/^((radio)?group|toolbar), Billing name/),
       );
     },
   );
