@@ -36,6 +36,7 @@ import {
 } from '../../overlays/Tooltip/split-trigger-props';
 
 import { useRadioProvider } from './context';
+import { JOINED_ITEM_STYLES } from './joined-styles';
 import { RadioGroup } from './RadioGroup';
 
 import type { KeyboardEvent } from 'react';
@@ -45,80 +46,15 @@ import type { RadioGroupState } from 'react-stately';
 export { AriaRadioProps };
 export { useRadio };
 
-/**
- * Same columns as `Item`, but none of them stretches — a radio button is sized
- * by its content, not stretched like a list item. The label column still has a
- * zero minimum, the way `Item`'s `1sf` does, so a radio given less room than
- * its label truncates the label instead of overflowing the button — which is
- * also what lets the auto tooltip (`tooltip` / `tooltip={true}`) fire.
- */
-const RADIO_BUTTON_COLUMNS =
-  'max-content max-content minmax(0, max-content) max-content max-content max-content';
-
-/**
- * A `block` description spans every column, and a spanning item's width goes
- * to the columns with an intrinsic minimum. With a zero-minimum label column
- * that is every column but the label's — so the description's width lands in
- * the empty icon / prefix / suffix columns and the button grows to label plus
- * description instead of the wider of the two. Only this layout keeps the
- * all-`max-content` columns, and with them a label that does not truncate.
- */
-const RADIO_BUTTON_BLOCK_COLUMNS =
-  'max-content max-content max-content max-content max-content max-content';
-
-// In tabs mode a radio button is a segment of the control `Tabs type="radio"`
-// shares: its look comes from `segmented-styles.ts`, merged in after the
-// button's own styles.
+// A radio button is a button of the group `ToggleGroup` shares
+// (`joined-styles.ts`), joined to its neighbours in button mode. In tabs mode
+// it is a segment of the control `Tabs type="radio"` shares
+// (`segmented-styles.ts`), merged in on top.
 const RadioButtonElement = tasty(Item, {
   qa: 'RadioButton',
   as: 'label',
   styles: mergeStyles(
-    {
-      preset: 't3m / tight',
-      flexGrow: 1,
-      // Same areas as `Item`. The `description` rows have to be repeated here
-      // because a plain string would replace `Item`'s whole state map and leave
-      // the description without a grid area to land in.
-      gridTemplate: {
-        '': `"icon prefix label suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
-        'description=inline': `"icon prefix description suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
-        'description=inline & has-label': `"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
-        'description=block': `"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / ${RADIO_BUTTON_BLOCK_COLUMNS}`,
-      },
-      placeContent: 'center',
-      shadow: {
-        '': false,
-      },
-
-      // Mirror the ButtonSplit grouping: the corner radius is shared so the
-      // first/last items keep only their outer-side radius and middle items go
-      // square; a -1bw left margin overlaps adjacent borders into a single
-      // continuous edge. The selected button is bumped above its siblings so its
-      // brand-tinted border is visible from all four sides — without the bump
-      // the right edge of an adjacent sibling would paint over the selected
-      // button's left edge (and vice-versa).
-      radius: {
-        '': true,
-        '!tabs & !:last-child': '1r left',
-        '!tabs & !:first-child': '1r right',
-        '!tabs & !:first-child & !:last-child': 0,
-      },
-      margin: {
-        '': 0,
-        '!tabs & !:first-child': '-1bw left',
-      },
-      zIndex: {
-        '': 'auto',
-        '!tabs & selected': 1,
-      },
-
-      Label: {
-        placeSelf: {
-          '': 'center start',
-          '!has-prefix & !has-suffix & !has-icon & !has-right-icon': 'center',
-        },
-      },
-    },
+    JOINED_ITEM_STYLES,
     SEGMENTED_SEGMENT_STYLES,
     // A validated group keeps tinting its idle labels, as the `danger` and
     // `success` themes do; the selected chip's label stays neutral.
@@ -284,9 +220,9 @@ const RadioLabelElement = tasty({
  * - `size`, `type`, `theme`, `isSelected`, `isDisabled`, `mods`, `styles` —
  *   owned by the radio (they come from the prop/context/validation resolution
  *   below).
- * - `shape` — the radius is owned by the button-group layout below, which keeps
- *   only the outer-side radius on the first/last radio so the group reads as one
- *   continuous control. Forwarding `shape` would have no effect.
+ * - `shape` — the radius is owned by the joined layout (`joined-styles.ts`),
+ *   which keeps only the outer-side radius on the first/last radio so the group
+ *   reads as one continuous control. Forwarding `shape` would have no effect.
  * - `htmlType`, `as`, `insideWrapper`, `showActions`,
  *   `skipActionsWidthTransition` — internal to `Item` / `ItemButton`.
  * - `actions`, `autoHideActions`, `preserveActionsSpace`,
@@ -541,8 +477,10 @@ function Radio(props: CubeRadioProps, ref) {
     // sets these; a classic radio's circle and a segment draw a ring from them.
     focused: isFocused,
     'focus-visible': isFocused,
-    // `segmented` keys the shared segmented look (`segmented-styles.ts`);
-    // `tabs` keys this component's own tabs-mode layout. Same value.
+    // `joined` keys the shared joined look (`joined-styles.ts`), `segmented`
+    // the shared segmented look (`segmented-styles.ts`); `tabs` keys this
+    // component's own tabs-mode layout, the same value as `segmented`.
+    joined: isButton && !isSegmented,
     tabs: isSegmented,
     segmented: isSegmented,
   };

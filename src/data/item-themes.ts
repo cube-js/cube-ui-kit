@@ -107,8 +107,9 @@ export const DEFAULT_OUTLINE_STYLES: Styles = mergeStyles(
     // darker stripe. Selected FILL anchors to the *fixed* `#primary-accent-surface`
     // brand: anchoring to the adaptive `#primary-accent-text` would drift the
     // bg toward the text lightness in dark mode and collapse label↔bg contrast
-    // below AA. Selected label mirrors LINK: soft `#primary-accent-text-soft` at
-    // rest, intensifying to `#primary-accent-text` on hover. Both are solved in
+    // below AA. Selected label uses LINK's colors: soft `#primary-accent-text-soft`
+    // at rest, intensifying to `#primary-accent-text` on hover, as a link does,
+    // and on keyboard focus, where the fill darkens too. Both are solved in
     // `palette.ts` for AA against the BASE selected fill (`accent-selected-fill`).
     outline: {
       '': '0 #primary-accent-text.0',
@@ -154,7 +155,9 @@ export const DEFAULT_OUTLINE_STYLES: Styles = mergeStyles(
       hovered: '#surface-text-soft',
       pressed: '#surface-text',
       selected: '#primary-accent-text-soft',
-      'selected & hovered': '#primary-accent-text',
+      // The label intensifies with the fill: a focused selected fill is as
+      // dark as a hovered one, so the soft label would fall below AA on it.
+      'selected & (hovered | focused)': '#primary-accent-text',
       disabled: '#disabled-surface-text',
       'selected & disabled': '#primary-accent-disabled-text',
     },
@@ -201,14 +204,16 @@ export const DEFAULT_CLEAR_STYLES: Styles = mergeStyles(
       disabled: '#clear',
       'selected & disabled': '#primary-accent-surface.09',
     },
-    // Selected label mirrors LINK: soft at rest, `#primary-accent-text` on
-    // hover. See DEFAULT_OUTLINE_STYLES.
+    // Selected label uses LINK's colors: soft at rest, `#primary-accent-text`
+    // on hover or keyboard focus. See DEFAULT_OUTLINE_STYLES.
     color: {
       '': '#surface-text-soft',
       hovered: '#surface-text-soft',
       'pressed & !selected': '#surface-text',
       selected: '#primary-accent-text-soft',
-      'selected & hovered': '#primary-accent-text',
+      // The label intensifies with the fill: a focused selected fill is as
+      // dark as a hovered one, so the soft label would fall below AA on it.
+      'selected & (hovered | focused)': '#primary-accent-text',
       disabled: '#disabled-surface-text',
       'selected & disabled': '#primary-accent-disabled-text',
     },

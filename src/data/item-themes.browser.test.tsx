@@ -2,6 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { render } from '@testing-library/react';
 
 import { Root } from '../components/Root';
+import { contrast } from '../test/contrast';
 
 import { ITEM_VARIANTS } from './item-themes';
 
@@ -110,4 +111,74 @@ describe('item theme fill priority', () => {
       }
     },
   );
+});
+
+/** WCAG contrast of an element's text against its fill over the surface. */
+function labelContrast(element: Element) {
+  const style = getComputedStyle(element);
+
+  return contrast(
+    style.color,
+    getComputedStyle(element.parentElement!).backgroundColor,
+    style.backgroundColor,
+  );
+}
+
+const Surface = tasty({ styles: { fill: '#surface' } });
+
+// A selected label sits on a darker fill while it is hovered or keyboard
+// focused, and has to stay readable there too. Axe photographs stories at
+// rest, so only this check sees the focused state.
+describe('item theme selected label contrast', () => {
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-scheme');
+    document.documentElement.removeAttribute('data-contrast');
+  });
+
+  const SELECTED_STATES = [
+    { selected: true },
+    { selected: true, hovered: true },
+    { selected: true, focused: true },
+  ];
+
+  it.each([
+    ['light', 'normal'],
+    ['dark', 'normal'],
+    ['light', 'high'],
+    ['dark', 'high'],
+  ])('keeps AA on every selected fill in %s / %s contrast', (scheme, level) => {
+    document.documentElement.setAttribute('data-scheme', scheme);
+    document.documentElement.setAttribute('data-contrast', level);
+
+    // The special themes sit on their own fixed `#special-surface`, not on the
+    // `#surface` this check paints under the chip.
+    for (const variant of VARIANTS.filter(
+      (name) => !name.startsWith('special'),
+    )) {
+      const { fill, color } = ITEM_VARIANTS[variant];
+      const Chip = tasty({ styles: { fill, color, transition: 'none' } });
+
+      const view = render(
+        <>
+          {SELECTED_STATES.map((state, index) => (
+            <Surface key={index}>
+              <Chip qa={`chip-${index}`} mods={state}>
+                Label
+              </Chip>
+            </Surface>
+          ))}
+        </>,
+        { wrapper: Root },
+      );
+
+      for (const [index, state] of SELECTED_STATES.entries()) {
+        expect(
+          labelContrast(view.getByTestId(`chip-${index}`)),
+          `${variant}: ${JSON.stringify(state)}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+
+      view.unmount();
+    }
+  });
 });

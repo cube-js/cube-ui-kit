@@ -1,0 +1,5 @@
+---
+'@cube-dev/ui-kit': minor
+---
+
+**ToggleGroup:** a new form field, a joined row of toggle buttons that holds a value. In `selectionMode="single"` (the default) at most one item is on, and pressing it again clears the selection; in `selectionMode="multiple"` each item toggles on its own. It takes `Picker`'s selection API (`selectedKey` / `defaultSelectedKey`, `selectedKeys` / `defaultSelectedKeys`, `onSelectionChange`), binds to a `Form` as a key or `null` in single mode and an array of keys in multiple mode, and takes `size`, `type` (`outline`, `outline-2`, `clear`) and the field props. Items are `ToggleGroup.Item` with `icon`, `children`, `tooltip`, `aria-label` and `isDisabled`, keyed by their React `key` or an explicit `id`. A single group is a `radiogroup` and a multiple one a `toolbar`: the arrow keys move between the items, Space and Enter toggle them, and the group is one tab stop. A disabled item with a tooltip stays focusable so the keyboard can reach the reason. It looks like `Radio.Group type="button"`, and the two share one style definition. Use `Radio.Group type="button"` when exactly one option must always be selected.

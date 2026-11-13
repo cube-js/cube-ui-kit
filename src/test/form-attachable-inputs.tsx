@@ -41,6 +41,7 @@ import {
   TextInput,
   TextInputMapper,
   TimeInput,
+  ToggleGroup,
   WeekPicker,
   YearPicker,
 } from '../index';
@@ -129,6 +130,18 @@ export const FORM_ATTACHABLE_INPUTS: [string, ReactElement<any>][] = [
   ['TextInput', <TextInput label="TextInput" />],
   ['TextInputMapper', <TextInputMapper label="TextInputMapper" />],
   ['TimeInput', <TimeInput label="TimeInput" />],
+  [
+    'ToggleGroup',
+    <ToggleGroup label="ToggleGroup">
+      <ToggleGroup.Item key="one">One</ToggleGroup.Item>
+    </ToggleGroup>,
+  ],
+  [
+    'ToggleGroup (multiple)',
+    <ToggleGroup label="ToggleGroup" selectionMode="multiple">
+      <ToggleGroup.Item key="one">One</ToggleGroup.Item>
+    </ToggleGroup>,
+  ],
   ['WeekPicker', <WeekPicker label="WeekPicker" />],
   ['YearPicker', <YearPicker label="YearPicker" />],
 ];
