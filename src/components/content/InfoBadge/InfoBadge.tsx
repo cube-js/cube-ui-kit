@@ -250,14 +250,11 @@ export const InfoBadge = forwardRef(function InfoBadge(
   );
 
   // Whether a tap opened the tooltip, rather than hover or the consumer. Only
-  // a tooltip a tap opened stays open until it is dismissed.
+  // such a tooltip stays open until it is dismissed. Any close ends it, the
+  // consumer's own included.
   const [isTapped, setTapped] = useState(false);
-  const isTapOpen = isOpen && isTapped;
 
-  const changeOpen = (open: boolean, byTap = false) => {
-    setOpen(open);
-    setTapped(open && byTap);
-  };
+  if (!isOpen && isTapped) setTapped(false);
 
   // What a tap does to the tooltip, decided on `pointerdown` from the state
   // this render shows: React Aria's own `pointerdown` on the badge has already
@@ -276,7 +273,10 @@ export const InfoBadge = forwardRef(function InfoBadge(
           : !isOpen;
     },
     onClick: () => {
-      if (tapRef.current !== null) changeOpen(tapRef.current, true);
+      if (tapRef.current !== null) {
+        setOpen(tapRef.current);
+        setTapped(tapRef.current);
+      }
 
       tapRef.current = null;
     },
@@ -286,8 +286,8 @@ export const InfoBadge = forwardRef(function InfoBadge(
   // else closes it.
   useInteractOutside({
     ref: guardRef,
-    isDisabled: !isTapOpen,
-    onInteractOutside: () => changeOpen(false),
+    isDisabled: !isTapped,
+    onInteractOutside: () => setOpen(false),
   });
 
   const suffix =
@@ -381,10 +381,11 @@ export const InfoBadge = forwardRef(function InfoBadge(
           tooltip={{
             ...finalTooltip,
             isOpen,
-            onOpenChange: (open: boolean) => changeOpen(open),
+            onOpenChange: setOpen,
             // The tap that dismisses the tooltip lands on the tooltip. A
-            // material tooltip takes it, so it doesn't reach what it covers.
-            isMaterial: finalTooltip.isMaterial ?? isTapOpen,
+            // material tooltip takes it, so it doesn't reach what it covers,
+            // and the portal carries it to the guard, whose tap closes it.
+            isMaterial: finalTooltip.isMaterial ?? isTapped,
           }}
         />
       )}

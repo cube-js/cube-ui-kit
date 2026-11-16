@@ -254,6 +254,11 @@ function Tooltip(
       style={{ ...props.style, ...overlayProps?.style }}
       data-placement={placementDirection}
       data-phase={phase}
+      // A material tooltip takes presses, and it is portaled out of the
+      // Dialog or Popover its trigger sits in. React Aria never counts a press
+      // inside a top layer as outside an overlay, so a press on the tooltip
+      // does not close the overlay under it.
+      data-react-aria-top-layer={isMaterial || undefined}
     >
       {props.children}
       <TooltipTipElement
