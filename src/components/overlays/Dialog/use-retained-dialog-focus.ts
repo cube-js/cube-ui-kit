@@ -203,8 +203,9 @@ export function useRetainedDialogFocus(
     // Also lost when left in another overlay that closes with this one: a
     // nested dialog's own restore target is about to be hidden. `Overlay`,
     // `Select` and `ListBoxPopover` mark a closing overlay `="true"`; the
-    // notifications layer and a material tooltip carry it empty. React Aria's toast region also
-    // carries `"true"`, but nothing in the kit renders one.
+    // notifications layer and a material tooltip carry it empty. React
+    // Aria's toast region also carries `"true"`, but nothing in the kit
+    // renders one.
     const isFocusLost =
       !activeElement ||
       activeElement === document.body ||
