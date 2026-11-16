@@ -538,20 +538,22 @@ export function TabButton({
     if (ref.current) scrollTabIntoStrip(ref.current, placement);
   });
 
-  // Scroll the active tab into view, and keep it there while it settles. The
-  // mount commit lays a tab out before its actions run is measured, so it grows
-  // by the run's width a frame later: a tab scrolled into view at its first
-  // size can end up past the strip's edge. So the active tab's own size changes
-  // re-scroll the strip, until the user first interacts with the tab bar
-  // (wheel, pointer, touch or a key). From then on the strip stays where they
-  // left it, even if the tab resizes, until a tab becomes active again. Keyed
-  // off interaction events, not `scroll`: the re-scroll fires `scroll` too.
+  // Scroll the strip to the active tab, and keep it there while it settles.
+  // Only the strip: `scrollIntoView` would also scroll the page to a strip
+  // below the fold, which the user never asked for. The mount commit lays a tab
+  // out before its actions run is measured, so it grows by the run's width a
+  // frame later: a tab scrolled into view at its first size can end up past
+  // the strip's edge. So the active tab's own size changes re-scroll the strip,
+  // until the user first interacts with the tab bar (wheel, pointer, touch or a
+  // key). From then on the strip stays where they left it, even if the tab
+  // resizes, until a tab becomes active again. Keyed off interaction events,
+  // not `scroll`: the re-scroll fires `scroll` too.
   useEffect(() => {
     const tab = ref.current;
 
     if (!tab || !isActive) return;
 
-    tab.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    keepActiveTabInStrip();
 
     if (typeof ResizeObserver === 'undefined') return;
 

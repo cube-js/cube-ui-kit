@@ -347,6 +347,34 @@ describe('Active tab at the end of a crowded strip', () => {
     },
   );
 
+  // A strip below the fold: bringing the active tab into view must scroll the
+  // strip alone. Moving the page would open it scrolled down, past whatever
+  // sits above the tabs, without the user asking for it.
+  it('scrolls only the strip, not the page, when the strip sits below the fold', async () => {
+    renderWithRoot(
+      <div data-qa="Page" style={{ height: 300, overflow: 'auto' }}>
+        <div style={{ height: 1500 }} />
+        <CrowdedTabs />
+      </div>,
+    );
+
+    const page = screen.getByTestId('Page');
+    const tab = screen.getByTestId('Tab-preset2');
+    const scroller = tab.closest('[data-element="Scroll"]') as HTMLElement;
+
+    await settle();
+
+    expect(page.scrollTop).toBe(0);
+    // The strip still brings the active tab into its own view.
+    expect(scroller.scrollLeft).toBeGreaterThan(0);
+
+    const tabRect = tab.parentElement!.getBoundingClientRect();
+    const scrollRect = scroller.getBoundingClientRect();
+
+    expect(tabRect.left).toBeGreaterThanOrEqual(scrollRect.left - 0.5);
+    expect(tabRect.right).toBeLessThanOrEqual(scrollRect.right + 0.5);
+  });
+
   /** Grow the active tab after the strip has settled, as a counter in its title would. */
   async function growActiveTab(
     rerender: (ui: React.ReactElement) => void,
