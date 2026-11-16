@@ -801,6 +801,8 @@ When both are in the same slot:
 
 Use tabs without panel content for navigation purposes. Use this only when each tab leads to a different page or route; content that belongs to a tab goes in a panel (`renderPanel` or `Tab` children), so the tab can point screen readers at it.
 
+When each tab is a route of its own, with its own URL, use [NavTabs](/docs/navigation-navtabs--docs) instead: real links that look like these tabs, so the browser can open one in a new tab or copy its link.
+
 <Story of={TabsStories.NavigationOnly} />
 
 ```jsx
