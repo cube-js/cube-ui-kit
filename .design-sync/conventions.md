@@ -7,7 +7,7 @@
 ```jsx
 const { Root, Button } = window.CubeUIKit;
 
-<Root fontDisplay="auto">
+<Root>
   <Button type="primary">Save</Button>
 </Root>
 ```
@@ -46,7 +46,7 @@ Components carry their own design language — prefer it over restyling. `Button
 
 ## 5. Where the truth lives
 
-- `_ds/<folder>/styles.css` — the only stylesheet; it just `@import`s the Inter webfont. Component CSS is injected at runtime, so there is nothing else to read.
+- `_ds/<folder>/styles.css` — the only stylesheet. UI Kit loads no webfont (text uses the system font stack, `--font-sans`) and component CSS is injected at runtime, so there is nothing else to read.
 - `components/<group>/<Name>/<Name>.d.ts` — the real prop contract.
 - `components/<group>/<Name>/<Name>.prompt.md` — usage and examples.
 
@@ -55,7 +55,7 @@ Components carry their own design language — prefer it over restyling. `Button
 ```jsx
 const { Root, Card, Title, Paragraph, TextInput, Button, Flow, Space } = window.CubeUIKit;
 
-<Root fontDisplay="auto">
+<Root>
   <Flow gap="3x" padding="4x" fill="#surface" height="100%">
     <Card padding="3x" radius="1r" fill="#white" border="#border">
       <Flow gap="2x">

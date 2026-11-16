@@ -9,7 +9,7 @@ Working notes for `/design-sync`. Read this before doing anything; it is the onl
 - **Build:** `pnpm build` (tsdown) → `dist/`. Takes ~30s.
 - **`--entry` is required.** This is the package's own source repo, so `node_modules/@cube-dev/ui-kit` does not exist; the converter needs `--entry dist/index.js` (recorded as `cfg.entry`).
 - **`--node-modules`** is the repo root `node_modules` (react/react-dom live there).
-- **Provider:** `Root`, mounted with `fontDisplay="auto"`. It carries tokens, color scheme, i18n, and the portal/overlay/event-bus contexts — without it styles resolve to nothing and any overlay component throws. Set explicitly as `cfg.provider` (not left to decorator bundling) because the README and every `.prompt.md` generate their wrap guidance from config only.
+- **Provider:** `Root`, mounted with no props. It carries tokens, color scheme, i18n, and the portal/overlay/event-bus contexts — without it styles resolve to nothing and any overlay component throws. Set explicitly as `cfg.provider` (not left to decorator bundling) because the README and every `.prompt.md` generate their wrap guidance from config only.
 - **Styling is tasty (CSS-in-JS, runtime-injected).** There is no class vocabulary and `_ds_bundle.css` is an intentional stub — that is correct, not a `[CSS_*]` failure to chase.
 - **`STORYBOOK_MODE`** (set by the repo's own `build-storybook` script) only substitutes a favicon filename. Irrelevant to the sync; use `npx storybook build -c .storybook -o <repo-root>/.design-sync/sb-reference` per the skill, not the repo script.
 
@@ -22,7 +22,7 @@ The previous sync (at `@cube-dev/ui-kit@0.173.0`) left its **working state** (`d
 | Field | Recovered from | Confidence |
 | --- | --- | --- |
 | `globalName: CubeUIKit`, `shape: storybook` | `ds-bundle/.ds-build-meta.json` | certain |
-| `provider: Root {fontDisplay:"auto"}` | the literal `mount()` call in every emitted card html | certain |
+| `provider: Root {}` | the literal `mount()` call in every emitted card html | certain |
 | `overrides.*.cardMode` / `primaryStory` | `var MODE=` / `var PRIMARY=` in each card html | certain |
 | `overrides.*.viewport` | `@dsCard viewport=` on cards whose value differs from the 900x700 default | inferred — a card at exactly 900x700 cannot be told apart from an unset default, so a deliberate 900x700 override would have been lost |
 | no `skip` overrides | `skippedStoryIds: []` in `.ds-build-meta.json` | certain |
@@ -60,9 +60,9 @@ Probed directly, not inferred: SB `2025-06-15T12:00:00.000Z`, DS `2030-01-15T12:
 - **`ButtonSplit` was missing from the sync entirely.** Two separate causes, in sequence. (1) The lost `titleMap` left storybook title `Button.Split` unmapped, so it was dropped — that's what `[TITLE_UNMAPPED]` meant. (2) After mapping it to the `ButtonSplit` export, the subcomponent heuristic folded it under `Button` (it's a `Button.Split` compound member), which absorbed the export but **not its 6 stories** — they rendered nowhere, and Button's card still showed only its own 20 stories. Fixed by pinning `cfg.componentSrcMap.ButtonSplit` (a non-null pin forces root treatment). **Check this after any converter upgrade**: the symptom is silent — no warning fires, the component just vanishes from the roster.
 - **`cfg.docsMap`** added for `Block`, `Content`, `Paragraph`, `Portal`, `Text` — their `.docs.mdx` files exist but discovery missed them, cutting `[DOCS_UNMAPPED]` from 12 to 7. This matters: `.prompt.md` is the design agent's usage reference.
 
-## Network assets: only the Inter webfont
+## Network assets: none
 
-No story in this DS loads a remote image — a scan of every `*.stories.tsx` finds only link `href`s (docs.cube.dev, example.com, …), no remote `.png/.jpg/.svg`. The **only** network asset is the Inter webfont, pulled by the `@import` in `styles.css`. So the `[ASSETS_BLOCKED]` false-pass trap (sandboxed shell blanks assets on _both_ compare panels, so grades pass while users see different output) effectively cannot bite here — but still confirm fonts.googleapis.com is reachable before grading (it returned 200 on 2026-09-28). A blocked font would silently degrade every card.
+No story in this DS loads a remote image — a scan of every `*.stories.tsx` finds only link `href`s (docs.cube.dev, example.com, …), no remote `.png/.jpg/.svg`. No webfont either: text uses the system font stack (`--font-sans` in `src/components/GlobalStyles.tsx`). Storybook used to load an unused Inter webfont from `.storybook/preview-head.html`, which reached `styles.css` as an `@import`; it was removed on 2026-11-16, so after the next sync `styles.css` should carry no font `@import`. So the `[ASSETS_BLOCKED]` false-pass trap (sandboxed shell blanks assets on _both_ compare panels, so grades pass while users see different output) cannot bite here.
 
 ## GRADING TRAP: the two panels frame differently by construction
 
@@ -253,7 +253,7 @@ Set after an audit found the same phenomenon graded both ways. A story whose ref
 - **`DataTable / Pivot` clips horizontally on BOTH panels** — identical each side, grades `match`, no overflow warning fired. Nothing is broken; only a wider viewport would show the full pivot.
 - **`defaultOpen: true` args DO render statically** — unlike play-driven opens. `ColorInput / Open` and `ColorPicker / Open` use plain args and would grade normally if captured. Useful discriminator when triaging an "open overlay" story: check whether the open state is an ARG or a play.
 - **Timezone normalisation shifts rendered date literals on BOTH panels — not clock drift.** `DateRangeSeparatedPicker / WithSecondGranularity` passes `new Date('2020-09-10 18:19')` through `parseAbsoluteDate` and both panels render `16:19:00` (and `12:12:00` for the `14:12` end). Identical on each side = correct absolute-time conversion. The frozen capture clock holds: every date string was character-identical across panels on both pickers.
-- **Monospace cannot suffer `[FONT_MISSING]`.** `--font-mono` (`src/components/GlobalStyles.tsx`) is a pure _system_ stack with no webfont dependency. Only Inter is network-loaded. So the mono presets (`m1`-`m3`, `s2`-`s4`), `PrismCode`, `CopySnippet` and `HotKeys` glyphs render from local fonts on both panels by construction.
+- **No font can suffer `[FONT_MISSING]`.** `--font-sans` and `--font-mono` (`src/components/GlobalStyles.tsx`) are pure _system_ stacks with no webfont dependency. So text, the mono presets (`m1`-`m3`, `s2`-`s4`), `PrismCode`, `CopySnippet` and `HotKeys` glyphs render from local fonts on both panels by construction.
 
 ## [GENERAL] The card wrapper's zero height has TWO faces
 
@@ -281,13 +281,13 @@ The transform is **deliberate** — it is how the converter stops overlay bleed 
 
 ## Known-benign warnings (triaged — do not re-chase)
 
-- **`[CSS_PLACEHOLDER]`** — expected and correct. This DS styles through tasty (runtime CSS-in-JS); the converter itself writes `_ds_bundle.css` as `/* @ds-css-runtime: no extracted CSS — styles are runtime-generated */`. Do **not** set `cfg.cssEntry` chasing this. The real font dependency (Inter) arrives via the `@import` in `styles.css`, which is the closure designs get.
+- **`[CSS_PLACEHOLDER]`** — expected and correct. This DS styles through tasty (runtime CSS-in-JS); the converter itself writes `_ds_bundle.css` as `/* @ds-css-runtime: no extracted CSS — styles are runtime-generated */`. Do **not** set `cfg.cssEntry` chasing this. There is no font dependency to carry either: UI Kit uses system font stacks.
 - **7 × `[DOCS_UNMAPPED]`** (`DateInput`, `DateRangePicker`, `DateRangeSeparatedPicker`, `FieldWrapper`, `Notification`, `RangeSlider`, `TimeInput`) — these genuinely have no `.docs.mdx` anywhere. Not fixable by config; only by writing docs upstream.
 - **`[RENDER_THIN]` `NoDataIcon`, `Tooltip`** — 0px rendered height. Plausibly legitimate (Tooltip needs hover to appear; NoDataIcon is a bare icon), but **not yet visually confirmed** — see Re-sync risks.
 
 ## Conventions header: validated, not rewritten
 
-`.design-sync/conventions.md` was recovered from the 0.173.0 build and re-validated against 0.185.1 on 2026-09-28. Everything it enumerates still resolves: 16 component names, 19 color tokens, 26 typography presets, 51 style props, the `Root` provider with `fontDisplay="auto"`, and both unit values (`$gap: 8px` → `1x`, `$radius: 6px` → `1r`, from `src/tokens/base.ts`). Zero drift. Note `#dark-02`/`#dark-03` are _alias_ tokens declared in `src/tokens/colors.ts` as `'#dark-02': '#surface-text-soft'` — they do not emit `--dark-02-color` CSS vars, so a naive grep for the CSS var reports them missing. They are real. Re-validate against each build; do not rewrite (it is the prior author's content).
+`.design-sync/conventions.md` was recovered from the 0.173.0 build and re-validated against 0.185.1 on 2026-09-28. Everything it enumerates still resolves: 16 component names, 19 color tokens, 26 typography presets, 51 style props, the `Root` provider (then mounted with `fontDisplay="auto"`, a prop now deprecated and ignored), and both unit values (`$gap: 8px` → `1x`, `$radius: 6px` → `1r`, from `src/tokens/base.ts`). Zero drift. Note `#dark-02`/`#dark-03` are _alias_ tokens declared in `src/tokens/colors.ts` as `'#dark-02': '#surface-text-soft'` — they do not emit `--dark-02-color` CSS vars, so a naive grep for the CSS var reports them missing. They are real. Re-validate against each build; do not rewrite (it is the prior author's content).
 
 ## Re-sync risks
 

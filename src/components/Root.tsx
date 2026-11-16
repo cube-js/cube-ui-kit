@@ -162,8 +162,11 @@ export interface CubeRootProps extends BaseProps {
    */
   palette?: PaletteConfig;
   bodyStyles?: { [key: string]: string };
+  /** @deprecated UI Kit loads no webfont any more; this prop is ignored */
   fontDisplay?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional';
+  /** @deprecated UI Kit loads no webfont any more; this prop is ignored */
   fonts?: boolean;
+  /** @deprecated UI Kit loads no webfont any more; this prop is ignored */
   publicUrl?: string;
   navigation?: NavigationAdapter;
   font?: string;
@@ -186,9 +189,9 @@ export function Root(allProps: CubeRootProps) {
     children,
     /** Raw css styles for body element */
     bodyStyles,
-    fontDisplay = 'swap',
-    fonts,
-    publicUrl,
+    fontDisplay: _fontDisplay, // deprecated, ignored
+    fonts: _fonts, // deprecated, ignored
+    publicUrl: _publicUrl, // deprecated, ignored
     navigation,
     font,
     monospaceFont,
@@ -245,7 +248,6 @@ export function Root(allProps: CubeRootProps) {
               ref={ref}
               data-uikit={VERSION}
               data-tasty={TASTY_VERSION}
-              data-font-display={fontDisplay}
               {...filterBaseProps(props, { eventProps: true })}
               styles={styles}
               tokens={{
@@ -257,11 +259,8 @@ export function Root(allProps: CubeRootProps) {
             >
               <GlobalStyles
                 bodyStyles={bodyStyles}
-                publicUrl={publicUrl}
-                fonts={fonts}
                 font={font}
                 monospaceFont={monospaceFont}
-                fontDisplay={fontDisplay}
               />
               <ModalProvider>
                 <PortalProvider value={ref}>

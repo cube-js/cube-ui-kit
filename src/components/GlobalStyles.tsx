@@ -8,9 +8,6 @@ import type { Styles } from '@tenphi/tasty';
 
 interface GlobalStylesProps {
   bodyStyles?: { [key: string]: string };
-  fonts?: boolean;
-  fontDisplay?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional';
-  publicUrl?: string;
   font?: string;
   monospaceFont?: string;
   /** @deprecated Tokens are now always applied via useGlobalStyles */
