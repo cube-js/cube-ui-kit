@@ -115,7 +115,7 @@ export function Consumer() {
       <Button.Split fill="#danger" />
       <Button filter="grayscale(1)" />
       <AlertDialog content="Delete the file?" />
-      <Root font="Inter" />
+      <Root font="IBM Plex Sans" />
       <GridProvider gap={8} columns={12} />
       <ResizablePanel direction="left" padding="2x" />
       <CopyButton styles={{ fill: '#danger' }} />
