@@ -10,7 +10,9 @@
   "readmeHeader": ".design-sync/conventions.md",
   "provider": {
     "component": "Root",
-    "props": {}
+    "props": {
+      "fontDisplay": "auto"
+    }
   },
   "titleMap": {
     "Button.Split": "ButtonSplit",

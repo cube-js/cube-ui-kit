@@ -7,7 +7,7 @@
 ```jsx
 const { Root, Button } = window.CubeUIKit;
 
-<Root>
+<Root fontDisplay="auto">
   <Button type="primary">Save</Button>
 </Root>
 ```
@@ -55,7 +55,7 @@ Components carry their own design language — prefer it over restyling. `Button
 ```jsx
 const { Root, Card, Title, Paragraph, TextInput, Button, Flow, Space } = window.CubeUIKit;
 
-<Root>
+<Root fontDisplay="auto">
   <Flow gap="3x" padding="4x" fill="#surface" height="100%">
     <Card padding="3x" radius="1r" fill="#white" border="#border">
       <Flow gap="2x">

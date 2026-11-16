@@ -9,7 +9,7 @@ Working notes for `/design-sync`. Read this before doing anything; it is the onl
 - **Build:** `pnpm build` (tsdown) → `dist/`. Takes ~30s.
 - **`--entry` is required.** This is the package's own source repo, so `node_modules/@cube-dev/ui-kit` does not exist; the converter needs `--entry dist/index.js` (recorded as `cfg.entry`).
 - **`--node-modules`** is the repo root `node_modules` (react/react-dom live there).
-- **Provider:** `Root`, mounted with no props. It carries tokens, color scheme, i18n, and the portal/overlay/event-bus contexts — without it styles resolve to nothing and any overlay component throws. Set explicitly as `cfg.provider` (not left to decorator bundling) because the README and every `.prompt.md` generate their wrap guidance from config only.
+- **Provider:** `Root`, mounted with `fontDisplay="auto"`. It carries tokens, color scheme, i18n, and the portal/overlay/event-bus contexts — without it styles resolve to nothing and any overlay component throws. Set explicitly as `cfg.provider` (not left to decorator bundling) because the README and every `.prompt.md` generate their wrap guidance from config only.
 - **Styling is tasty (CSS-in-JS, runtime-injected).** There is no class vocabulary and `_ds_bundle.css` is an intentional stub — that is correct, not a `[CSS_*]` failure to chase.
 - **`STORYBOOK_MODE`** (set by the repo's own `build-storybook` script) only substitutes a favicon filename. Irrelevant to the sync; use `npx storybook build -c .storybook -o <repo-root>/.design-sync/sb-reference` per the skill, not the repo script.
 
@@ -22,7 +22,7 @@ The previous sync (at `@cube-dev/ui-kit@0.173.0`) left its **working state** (`d
 | Field | Recovered from | Confidence |
 | --- | --- | --- |
 | `globalName: CubeUIKit`, `shape: storybook` | `ds-bundle/.ds-build-meta.json` | certain |
-| `provider: Root {}` | the literal `mount()` call in every emitted card html | certain |
+| `provider: Root {fontDisplay:"auto"}` | the literal `mount()` call in every emitted card html | certain |
 | `overrides.*.cardMode` / `primaryStory` | `var MODE=` / `var PRIMARY=` in each card html | certain |
 | `overrides.*.viewport` | `@dsCard viewport=` on cards whose value differs from the 900x700 default | inferred — a card at exactly 900x700 cannot be told apart from an unset default, so a deliberate 900x700 override would have been lost |
 | no `skip` overrides | `skippedStoryIds: []` in `.ds-build-meta.json` | certain |
@@ -287,7 +287,7 @@ The transform is **deliberate** — it is how the converter stops overlay bleed 
 
 ## Conventions header: validated, not rewritten
 
-`.design-sync/conventions.md` was recovered from the 0.173.0 build and re-validated against 0.185.1 on 2026-09-28. Everything it enumerates still resolves: 16 component names, 19 color tokens, 26 typography presets, 51 style props, the `Root` provider (then mounted with `fontDisplay="auto"`, a prop now deprecated and ignored), and both unit values (`$gap: 8px` → `1x`, `$radius: 6px` → `1r`, from `src/tokens/base.ts`). Zero drift. Note `#dark-02`/`#dark-03` are _alias_ tokens declared in `src/tokens/colors.ts` as `'#dark-02': '#surface-text-soft'` — they do not emit `--dark-02-color` CSS vars, so a naive grep for the CSS var reports them missing. They are real. Re-validate against each build; do not rewrite (it is the prior author's content).
+`.design-sync/conventions.md` was recovered from the 0.173.0 build and re-validated against 0.185.1 on 2026-09-28. Everything it enumerates still resolves: 16 component names, 19 color tokens, 26 typography presets, 51 style props, the `Root` provider with `fontDisplay="auto"`, and both unit values (`$gap: 8px` → `1x`, `$radius: 6px` → `1r`, from `src/tokens/base.ts`). Zero drift. Note `#dark-02`/`#dark-03` are _alias_ tokens declared in `src/tokens/colors.ts` as `'#dark-02': '#surface-text-soft'` — they do not emit `--dark-02-color` CSS vars, so a naive grep for the CSS var reports them missing. They are real. Re-validate against each build; do not rewrite (it is the prior author's content).
 
 ## Re-sync risks
 
