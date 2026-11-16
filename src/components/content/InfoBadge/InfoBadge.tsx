@@ -12,6 +12,7 @@ import {
   useCallback,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import { useInteractOutside } from 'react-aria';
 
@@ -248,18 +249,34 @@ export const InfoBadge = forwardRef(function InfoBadge(
     tooltipProps.onOpenChange,
   );
 
-  // The state a tap leaves the tooltip in, decided on `pointerdown`, before
-  // React Aria closes the tooltip, and applied on `click`, which a scroll that
-  // starts on the badge never fires. `null` for a mouse: hover opens it.
+  // Whether a tap opened the tooltip, rather than hover or the consumer. Only
+  // a tooltip a tap opened stays open until it is dismissed.
+  const [isTapped, setTapped] = useState(false);
+  const isTapOpen = isOpen && isTapped;
+
+  const changeOpen = (open: boolean, byTap = false) => {
+    setOpen(open);
+    setTapped(open && byTap);
+  };
+
+  // What a tap does to the tooltip, decided on `pointerdown` from the state
+  // this render shows: React Aria's own `pointerdown` on the badge has already
+  // asked to close it, but that close lands on the next render. Applied on
+  // `click`, which a scroll that starts on the badge never fires. `null` for a
+  // mouse, whose hover opens the tooltip, and for a disabled tooltip, which
+  // would open unseen and take the next `Escape`.
   const tapRef = useRef<boolean | null>(null);
   const guardRef = useRef<HTMLSpanElement>(null);
 
   const tapHandlers = {
     onPointerDown: (event: PointerEvent) => {
-      tapRef.current = event.pointerType === 'mouse' ? null : !isOpen;
+      tapRef.current =
+        event.pointerType === 'mouse' || tooltipProps.isDisabled
+          ? null
+          : !isOpen;
     },
     onClick: () => {
-      if (tapRef.current !== null) setOpen(tapRef.current);
+      if (tapRef.current !== null) changeOpen(tapRef.current, true);
 
       tapRef.current = null;
     },
@@ -269,8 +286,8 @@ export const InfoBadge = forwardRef(function InfoBadge(
   // else closes it.
   useInteractOutside({
     ref: guardRef,
-    isDisabled: isInteractive || !isOpen,
-    onInteractOutside: () => setOpen(false),
+    isDisabled: !isTapOpen,
+    onInteractOutside: () => changeOpen(false),
   });
 
   const suffix =
@@ -361,7 +378,14 @@ export const InfoBadge = forwardRef(function InfoBadge(
         <ItemBadge
           ref={ref as ForwardedRef<HTMLDivElement>}
           {...sharedProps}
-          tooltip={{ ...finalTooltip, isOpen, onOpenChange: setOpen }}
+          tooltip={{
+            ...finalTooltip,
+            isOpen,
+            onOpenChange: (open: boolean) => changeOpen(open),
+            // The tap that dismisses the tooltip lands on the tooltip. A
+            // material tooltip takes it, so it doesn't reach what it covers.
+            isMaterial: finalTooltip.isMaterial ?? isTapOpen,
+          }}
         />
       )}
     </GuardElement>

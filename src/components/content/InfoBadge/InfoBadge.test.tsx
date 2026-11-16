@@ -363,5 +363,44 @@ describe('<InfoBadge />', () => {
       );
       expect(onOpenChange).toHaveBeenLastCalledWith(true);
     });
+
+    // Hover opens the tooltip for a mouse, and its press closes it.
+    it('leaves a mouse click to hover', async () => {
+      renderWithRoot(<InfoBadge tooltip="Some details" />);
+
+      await userEvent.click(screen.getByTestId('InfoBadge'), {
+        skipHover: true,
+      });
+
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    });
+
+    it('does not open a disabled tooltip', async () => {
+      const onOpenChange = vi.fn();
+
+      renderWithRoot(
+        <InfoBadge
+          tooltip={{ title: 'Configured', isDisabled: true, onOpenChange }}
+        />,
+      );
+
+      await tap(screen.getByTestId('InfoBadge'));
+
+      expect(onOpenChange).not.toHaveBeenCalled();
+    });
+
+    it('leaves a tooltip a tap did not open to a click elsewhere', async () => {
+      renderWithRoot(
+        <>
+          <InfoBadge tooltip={{ title: 'Configured', defaultOpen: true }} />
+          <p>Elsewhere</p>
+        </>,
+      );
+
+      await screen.findByRole('tooltip');
+      await userEvent.click(screen.getByText('Elsewhere'));
+
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Configured');
+    });
   });
 });

@@ -35,7 +35,7 @@ Every field's `labelTooltip` prop already renders an `InfoBadge` next to the lab
 
 The accessible name is the tooltip text when it's plain text. Rich tooltip content can't serve as a name, so a localized `More information` label is used instead — pass `aria-label` to override it (`label` still works but is deprecated).
 
-A non-interactive badge is exposed as `role="img"` with that name and is not a Tab stop. When `aria-label` replaces a plain-text tooltip as the name, the tooltip text becomes the badge's description, so screen reader users still get it. Its tooltip opens on mouse hover, and on a touch screen a tap opens it; a second tap, a tap elsewhere or `Escape` closes it. Rich tooltip content on a non-interactive badge is not reachable from the keyboard; make the badge interactive (`to` or `onPress`) when keyboard users need to read it.
+A non-interactive badge is exposed as `role="img"` with that name and is not a Tab stop. When `aria-label` replaces a plain-text tooltip as the name, the tooltip text becomes the badge's description, so screen reader users still get it. Its tooltip opens on mouse hover, and on a touch screen a tap opens it; a second tap, a tap on the tooltip or anywhere else, or `Escape` closes it. Rich tooltip content on a non-interactive badge is not reachable from the keyboard; make the badge interactive (`to` or `onPress`) when keyboard users need to read it.
 
 ### Base Properties
 
