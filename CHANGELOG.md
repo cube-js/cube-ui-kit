@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.214.1
+
+### Patch Changes
+
+- [`ca7619783`](https://github.com/cube-js/cube-ui-kit/commit/ca7619783aacf915491474820188826b26b4bcfb) Thanks [@claude](https://github.com/claude)! - `Root` docs: the `font` prop example uses a neutral font name instead of Inter. UI Kit uses the system font stack and loads no webfont, so the example no longer suggests a font that ships with the kit.
+
 ## 0.214.0
 
 ### Minor Changes
