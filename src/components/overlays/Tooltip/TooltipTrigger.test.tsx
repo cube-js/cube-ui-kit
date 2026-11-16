@@ -8,6 +8,9 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
+import { Button } from '../../actions/Button/Button';
+import { Dialog } from '../Dialog/Dialog';
+import { DialogTrigger } from '../Dialog/DialogTrigger';
 
 import { CubeTooltipProviderProps, TooltipProvider } from './TooltipProvider';
 
@@ -175,5 +178,41 @@ describe('tooltip positioning lifetime', () => {
       'aria-describedby',
       screen.getByRole('tooltip').id,
     );
+  });
+});
+
+/**
+ * A material tooltip takes presses, and it is portaled out of the overlay its
+ * trigger sits in, so React Aria counted a press on it as outside that overlay
+ * and closed it.
+ */
+describe('material tooltip', () => {
+  it('does not close the dialog its trigger sits in when pressed', async () => {
+    const onOpenChange = vi.fn();
+
+    renderWithRoot(
+      <DialogTrigger defaultOpen onOpenChange={onOpenChange}>
+        <Button>Open</Button>
+        <Dialog>
+          <TooltipProvider isMaterial defaultOpen title="Tip">
+            {(triggerProps, ref?: RefObject<HTMLElement>) => (
+              <button {...triggerProps} ref={ref as never} type="button">
+                Trigger
+              </button>
+            )}
+          </TooltipProvider>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    const tooltip = await screen.findByRole('tooltip');
+
+    // Empty, as a layer that stays: the kit marks a closing overlay `"true"`,
+    // and a retained dialog treats focus left in one as lost.
+    expect(tooltip).toHaveAttribute('data-react-aria-top-layer', '');
+
+    await userEvent.click(tooltip);
+
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 });
