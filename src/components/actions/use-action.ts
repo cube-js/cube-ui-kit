@@ -404,7 +404,9 @@ export const useAction = function useAction(
         filterBaseProps(props, FILTER_OPTIONS),
       ) as object),
       ref: domRef,
-      type: htmlType || 'button',
+      // Only a button has a `type`: on a link it would name the linked
+      // resource's MIME type. This also overrides the one `useButton` adds.
+      type: as === 'button' ? htmlType || 'button' : undefined,
       // `autoFocus` acts when the action mounts, and a dialog kept mounted
       // while closed (`hideOnClose`) mounts hidden: it focuses the marked
       // control on every open instead.

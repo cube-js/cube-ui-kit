@@ -5,6 +5,10 @@ import { NavigationAdapter } from '../../providers/navigation.types';
 import { renderWithRoot } from '../../test/render';
 import { Root } from '../Root';
 
+import { Button } from './Button/Button';
+import { ItemAction } from './ItemAction/ItemAction';
+import { ItemButton } from './ItemButton/ItemButton';
+import { Link } from './Link/Link';
 import { parseTo, performClickHandler, useAction } from './use-action';
 
 // Mock navigation adapter for testing
@@ -446,5 +450,48 @@ describe('Equivalence guarantees', () => {
 
     expect(targetResult.current.actionProps.target).toBe('_self');
     expect(targetResult.current.actionProps.as).toBe('a');
+  });
+});
+
+// On a link, `type` names the linked resource's MIME type, so `type="button"`
+// there is invalid markup. Only a button gets one.
+describe('the `type` attribute', () => {
+  const actions = [
+    ['Button', Button],
+    ['ItemButton', ItemButton],
+    ['ItemAction', ItemAction],
+    ['Link', Link],
+  ] as const;
+
+  it.each(actions)(
+    '%s with `to` renders a link without `type`',
+    (_, Action) => {
+      const { getByRole } = renderWithRoot(<Action to="/users">Users</Action>);
+      const link = getByRole('link', { name: 'Users' });
+
+      expect(link.tagName).toBe('A');
+      expect(link).toHaveAttribute('href', '/users');
+      expect(link).not.toHaveAttribute('type');
+    },
+  );
+
+  it.each(actions)('%s without `to` keeps `type="button"`', (_, Action) => {
+    const { getByRole } = renderWithRoot(<Action>Save</Action>);
+
+    expect(getByRole('button', { name: 'Save' })).toHaveAttribute(
+      'type',
+      'button',
+    );
+  });
+
+  it('keeps the `type` a button asks for', () => {
+    const { getByRole } = renderWithRoot(
+      <Button htmlType="submit">Save</Button>,
+    );
+
+    expect(getByRole('button', { name: 'Save' })).toHaveAttribute(
+      'type',
+      'submit',
+    );
   });
 });
