@@ -238,6 +238,8 @@ type       CubeMenuProps
 type       CubeMenuSectionProps
 type       CubeMenuTriggerProps
 type       CubeMonthPickerProps
+type       CubeNavTabsItemProps
+type       CubeNavTabsProps
 type       CubeNecessityIndicatorProps
 type       CubeNumberInputProps
 type       CubePaginationItem
@@ -523,6 +525,8 @@ type       NavigateArg
 type       NavigateLike
 type       NavigateOptions
 type       NavigationAdapter
+value      NavTabs
+type       NavTabsComponent
 type       NecessityIndicator
 value      NecessityIndicatorMark
 value      NoDataIcon

@@ -59,7 +59,7 @@ function renderNavTabs(path: string, { withRouter = true } = {}) {
 }
 
 describe('NavTabs', () => {
-  it.each(['top', 'left'] as const)(
+  it.each(['top', 'bottom', 'left', 'right'] as const)(
     'looks like Tabs with placement="%s"',
     async (placement) => {
       render(
@@ -116,6 +116,80 @@ describe('NavTabs', () => {
       expect(
         indicator(nav.querySelector('ul')!)!.getAttribute('aria-hidden'),
       ).toBe('true');
+    },
+  );
+
+  it.each(['top', 'left'] as const)(
+    'pads the item list with `tabListPadding` as Tabs does (placement="%s")',
+    (placement) => {
+      render(
+        <Root>
+          <Tabs label="Tabs" placement={placement} tabListPadding="4x">
+            <Tab key="profile" title="Profile" />
+          </Tabs>
+          <NavTabs label="Nav" placement={placement} tabListPadding="4x">
+            <NavTabs.Item key="profile" to="/profile">
+              Profile
+            </NavTabs.Item>
+          </NavTabs>
+        </Root>,
+      );
+
+      const padding = (list: Element) => {
+        const style = getComputedStyle(list);
+
+        return [
+          style.paddingTop,
+          style.paddingRight,
+          style.paddingBottom,
+          style.paddingLeft,
+        ];
+      };
+      const navList = screen
+        .getByRole('navigation', { name: 'Nav' })
+        .querySelector('ul')!;
+
+      expect(padding(navList)).toEqual(padding(screen.getByRole('tablist')));
+      // `4x` is 32px: the prop reached the list, not just the default.
+      expect(padding(navList)).toContain('32px');
+    },
+  );
+
+  it.each(['top', 'left'] as const)(
+    'scrolls the current item into a strip that overflows (placement="%s")',
+    async (placement) => {
+      const keys = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+
+      render(
+        <Root>
+          <NavTabs
+            label="Nav"
+            activeKey="seven"
+            placement={placement}
+            styles={{ width: '22x', height: '18x' }}
+          >
+            {keys.map((key) => (
+              <NavTabs.Item key={key} to={`/${key}`}>
+                Section {key}
+              </NavTabs.Item>
+            ))}
+          </NavTabs>
+        </Root>,
+      );
+
+      const nav = screen.getByRole('navigation', { name: 'Nav' });
+      const strip = nav.querySelector('[data-element="Scroll"]')!;
+      const current = within(nav).getByRole('link', { name: 'Section seven' });
+
+      await waitFor(() => {
+        const stripRect = strip.getBoundingClientRect();
+        const itemRect = current.getBoundingClientRect();
+
+        expect(itemRect.left).toBeGreaterThanOrEqual(stripRect.left - 1);
+        expect(itemRect.right).toBeLessThanOrEqual(stripRect.right + 1);
+        expect(itemRect.top).toBeGreaterThanOrEqual(stripRect.top - 1);
+        expect(itemRect.bottom).toBeLessThanOrEqual(stripRect.bottom + 1);
+      });
     },
   );
 

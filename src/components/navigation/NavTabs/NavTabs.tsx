@@ -1,4 +1,4 @@
-import { mergeStyles, OUTER_STYLES, tasty } from '@tenphi/tasty';
+import { OUTER_STYLES, tasty } from '@tenphi/tasty';
 import {
   Children,
   isValidElement,
@@ -10,11 +10,14 @@ import {
 } from 'react';
 import { useFocusVisible } from 'react-aria';
 
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { useMergeStyles } from '../../../utils/react/useMergeStyles';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
+import { scrollTabIntoStrip } from '../Tabs/scroll-tab-into-strip';
 import {
   TAB_ELEMENT_STYLES,
   TabContainer,
@@ -84,34 +87,31 @@ function NavTabsItem(_props: CubeNavTabsItemProps): ReactElement | null {
 
 NavTabsItem.displayName = 'CubeNavTabsItem';
 
-/** React prefixes keys it maps; the item's own key is what `activeKey` names. */
-function getItemKey(element: ReactElement): string | null {
-  if (element.key == null) return null;
-
-  const key = String(element.key);
-
-  return key.startsWith('.$') ? key.slice(2) : key;
-}
-
-function parseItems(children: ReactNode): ParsedItem[] {
+/** The `NavTabs.Item` children, keyed by the React `key` that `activeKey` names. */
+function parseItems(children: ReactNode) {
   const items: ParsedItem[] = [];
+  let hasUnkeyedItem = false;
 
   Children.forEach(children, (child) => {
     if (!isValidElement<CubeNavTabsItemProps>(child)) return;
+    if (child.type !== NavTabsItem) return;
 
-    const key = getItemKey(child);
-
-    if (key != null) items.push({ ...child.props, key });
+    if (child.key == null) hasUnkeyedItem = true;
+    else items.push({ ...child.props, key: String(child.key) });
   });
 
-  return items;
+  return { items, hasUnkeyedItem };
 }
 
 // A link wearing the tab look; `ItemButton` makes it one through `to`.
 const NavTabElement = tasty(ItemButton, { styles: TAB_ELEMENT_STYLES });
 
-// The strip's elements are a list: no markers, no default indent.
-const LIST_STYLES: Styles = { TabList: { margin: 0, listStyle: 'none' } };
+// The item list: a list without markers or the default indent. `TabList`'s
+// own padding reads `$tablist-padding`, so the list takes that token itself.
+const NavTabsList = tasty({
+  as: 'ul',
+  styles: { margin: 0, listStyle: 'none' },
+});
 
 function NavTab({
   item,
@@ -167,7 +167,15 @@ function NavTabsRoot(props: CubeNavTabsProps) {
     ref,
   } = props;
 
-  const items = parseItems(children);
+  const { items, hasUnkeyedItem } = parseItems(children);
+
+  useWarn(hasUnkeyedItem, {
+    key: ['nav-tabs-item-without-key'],
+    args: [
+      'NavTabs:',
+      'every `NavTabs.Item` needs a React `key`, which `activeKey` names. An item without one is not rendered.',
+    ],
+  });
   const orientation =
     placement === 'left' || placement === 'right' ? 'vertical' : 'horizontal';
 
@@ -196,10 +204,22 @@ function NavTabsRoot(props: CubeNavTabsProps) {
   const isVertical = orientation === 'vertical';
   const hasOverflow = isVertical ? hasOverflowY : hasOverflowX;
 
-  const styles = useMergeStyles(
-    mergeStyles(extractStyles(props, OUTER_STYLES), LIST_STYLES),
-    { Bar: barStyles, TabList: tabListStyles },
-  );
+  // Show the current item in a strip that overflows, as Tabs shows its selected
+  // tab. Only the strip scrolls, never the page.
+  useLayoutEffect(() => {
+    if (!listElement || activeKey == null) return;
+
+    const item = listElement.querySelector<HTMLElement>(
+      `[data-key="${CSS.escape(activeKey)}"]`,
+    );
+
+    if (item) scrollTabIntoStrip(item, placement);
+  }, [listElement, activeKey, placement]);
+
+  const styles = useMergeStyles(extractStyles(props, OUTER_STYLES), {
+    Bar: barStyles,
+    TabList: tabListStyles,
+  });
 
   return (
     <TabsElement
@@ -217,18 +237,21 @@ function NavTabsRoot(props: CubeNavTabsProps) {
         ...mods,
       }}
       styles={styles}
-      tokens={{
-        ...tokens,
-        // `TabList` pads itself with this.
-        ...(tabListPadding && { '$tablist-padding': tabListPadding }),
-        // The measured scrollbar handle wins over a caller's token of the same name.
-        ...(isVertical ? handleVTokens : handleHTokens),
-      }}
+      // The measured scrollbar handle wins over a caller's token of the same name.
+      tokens={{ ...tokens, ...(isVertical ? handleVTokens : handleHTokens) }}
     >
       <div data-element="Bar">
         <div data-element="ScrollWrapper">
           <div ref={scrollRef} data-element="Scroll">
-            <ul ref={setListElement} data-element="TabList">
+            <NavTabsList
+              ref={setListElement}
+              data-element="TabList"
+              tokens={
+                tabListPadding
+                  ? { '$tablist-padding': tabListPadding }
+                  : undefined
+              }
+            >
               {items.map((item) => (
                 <NavTab
                   key={item.key}
@@ -248,7 +271,7 @@ function NavTabsRoot(props: CubeNavTabsProps) {
                   }}
                 />
               )}
-            </ul>
+            </NavTabsList>
           </div>
           {hasOverflow && <div data-element="Scrollbar" />}
         </div>
@@ -259,6 +282,14 @@ function NavTabsRoot(props: CubeNavTabsProps) {
 
 NavTabsRoot.displayName = 'CubeNavTabs';
 
+/** `NavTabs` with its `Item`, named so a consumer's declarations can refer to it. */
+export interface NavTabsComponent {
+  (props: CubeNavTabsProps): ReactElement;
+  /** One link in the strip. Configuration only: `NavTabs` renders it. */
+  Item: (props: CubeNavTabsItemProps) => ReactElement | null;
+  displayName?: string;
+}
+
 /**
  * Route navigation that looks like `Tabs`.
  *
@@ -268,4 +299,6 @@ NavTabsRoot.displayName = 'CubeNavTabs';
  *   <NavTabs.Item key="users" to="/tenants/42/users">Users</NavTabs.Item>
  * </NavTabs>
  */
-export const NavTabs = Object.assign(NavTabsRoot, { Item: NavTabsItem });
+export const NavTabs: NavTabsComponent = Object.assign(NavTabsRoot, {
+  Item: NavTabsItem,
+});

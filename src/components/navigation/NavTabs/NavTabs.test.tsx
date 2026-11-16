@@ -5,6 +5,8 @@ import { NavTabs } from './NavTabs';
 
 import type { CubeNavTabsProps } from './NavTabs';
 
+vi.mock('../../../_internal/hooks/use-warn');
+
 describe('<NavTabs />', () => {
   const usersTo = { pathname: '/users', search: '?page=2' };
 
@@ -106,6 +108,26 @@ describe('<NavTabs />', () => {
     await userEvent.click(preview);
 
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('renders only keyed `NavTabs.Item` children', () => {
+    const { getByRole } = render(
+      <Root>
+        <NavTabs label="Tenant">
+          <NavTabs.Item key="profile" to="/profile">
+            Profile
+          </NavTabs.Item>
+          <div key="stray">Stray</div>
+          <NavTabs.Item to="/users">Users</NavTabs.Item>
+        </NavTabs>
+      </Root>,
+    );
+
+    const nav = getByRole('navigation', { name: 'Tenant' });
+
+    expect(within(nav).getAllByRole('listitem')).toHaveLength(1);
+    expect(within(nav).queryByText('Stray')).not.toBeInTheDocument();
+    expect(within(nav).queryByText('Users')).not.toBeInTheDocument();
   });
 
   it('names its parts for QA', () => {

@@ -1,9 +1,16 @@
 import { useSyncExternalStore } from 'react';
 import { expect, within } from 'storybook/test';
 
+import { Provider } from '../../../provider';
+
 import { NavTabs } from './NavTabs';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type {
+  NavigateLike,
+  NavigationAdapter,
+  To,
+} from '../../../providers/navigation.types';
 import type { CubeNavTabsProps } from './NavTabs';
 
 const meta = {
@@ -27,7 +34,8 @@ const meta = {
 
     /* Selection */
     activeKey: {
-      control: { type: 'text' },
+      // The stories take it from the URL, as an app takes it from its route.
+      control: { type: null },
       description:
         "Key of the item for the current page. A sub-page passes its section's key",
       table: { type: { summary: 'string' } },
@@ -67,6 +75,19 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+// Storybook has no router, so the URL hash stands in for one: a route goes
+// after `#`. An app passes its router's hooks to `Root` instead.
+const toPath = (to: To) => (typeof to === 'string' ? to : (to.pathname ?? ''));
+
+const HASH_NAVIGATION: NavigationAdapter = {
+  useHref: (to) => `#${toPath(to)}`,
+  useNavigate: () =>
+    ((to: To | number) => {
+      if (typeof to === 'number') window.history.go(to);
+      else window.location.hash = toPath(to);
+    }) as NavigateLike,
+};
+
 const subscribeToHash = (onChange: () => void) => {
   window.addEventListener('hashchange', onChange);
 
@@ -75,32 +96,32 @@ const subscribeToHash = (onChange: () => void) => {
 
 const SECTIONS = ['profile', 'users', 'groups'];
 
-/**
- * The URL hash stands in for the app's router: each item links to one, and the
- * current item follows it.
- */
+/** The current item follows the route, as `activeKey` would in an app. */
 function TenantNav(props: Partial<CubeNavTabsProps>) {
   const hash = useSyncExternalStore(
     subscribeToHash,
     () => window.location.hash,
   );
-  const activeKey = SECTIONS.find((key) => hash === `#${key}`) ?? SECTIONS[0];
+  const activeKey =
+    SECTIONS.find((key) => hash === `#/tenants/42/${key}`) ?? SECTIONS[0];
 
   return (
-    <NavTabs label="Tenant" {...props} activeKey={activeKey}>
-      <NavTabs.Item key="profile" to="#profile">
-        Profile
-      </NavTabs.Item>
-      <NavTabs.Item key="users" to="#users">
-        Users
-      </NavTabs.Item>
-      <NavTabs.Item key="groups" to="#groups">
-        Groups
-      </NavTabs.Item>
-      <NavTabs.Item key="preview" to="#preview" isDisabled>
-        Preview
-      </NavTabs.Item>
-    </NavTabs>
+    <Provider navigation={HASH_NAVIGATION}>
+      <NavTabs label="Tenant" {...props} activeKey={activeKey}>
+        <NavTabs.Item key="profile" to="/tenants/42/profile">
+          Profile
+        </NavTabs.Item>
+        <NavTabs.Item key="users" to="/tenants/42/users">
+          Users
+        </NavTabs.Item>
+        <NavTabs.Item key="groups" to="/tenants/42/groups">
+          Groups
+        </NavTabs.Item>
+        <NavTabs.Item key="preview" to="/tenants/42/preview" isDisabled>
+          Preview
+        </NavTabs.Item>
+      </NavTabs>
+    </Provider>
   );
 }
 
@@ -111,11 +132,10 @@ export const Default: Story = {
     const nav = canvas.getByRole('navigation', { name: 'Tenant' });
 
     await expect(
-      within(nav).getByRole('link', { name: 'Profile' }),
-    ).toHaveAttribute('aria-current', 'page');
-    await expect(
       within(nav).getByRole('link', { name: 'Users' }),
-    ).toHaveAttribute('href', '#users');
+    ).toHaveAttribute('href', '#/tenants/42/users');
+    // Exactly one item is the current page.
+    await expect(nav.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
   },
 };
 
