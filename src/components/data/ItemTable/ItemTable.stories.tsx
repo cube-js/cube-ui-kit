@@ -1055,12 +1055,26 @@ export const RowInteraction: Story = {
     const focusedRow = table.querySelector<HTMLTableRowElement>(
       'tbody tr[data-element="Row"][data-row-index="1"]',
     );
-    await Promise.all(
+    await waitFor(() => expect(focusedRow).toHaveFocus());
+
+    // Let the row's fill transitions finish before the snapshot. A style change
+    // can cancel a running transition and start another. The cancelled one's
+    // `finished` rejects with an AbortError, so wait for each to end either
+    // way, then check for its replacement.
+    const running = () =>
       Array.from<HTMLTableCellElement>(focusedRow?.cells ?? [])
         .flatMap((cell) => cell.getAnimations())
-        .map((animation) => animation.finished),
-    );
-    await waitFor(() => expect(focusedRow).toHaveFocus());
+        .filter((animation) => animation.playState === 'running');
+
+    for (
+      let animations = running();
+      animations.length;
+      animations = running()
+    ) {
+      await Promise.allSettled(
+        animations.map((animation) => animation.finished),
+      );
+    }
   },
 };
 
