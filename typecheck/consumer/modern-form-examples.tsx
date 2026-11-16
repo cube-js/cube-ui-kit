@@ -155,7 +155,7 @@ export function RemoteValidation({
   );
 }
 
-// Quickstart from docs/modern-form-guide.md.
+// Quickstart from src/components/form/Form/modern-form-guide.md.
 interface NullableProfile {
   email: string | null;
   notifications: boolean | null;

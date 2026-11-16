@@ -37,6 +37,29 @@ An `index.ts` only re-exports. A component's entry may also assemble the compoun
 
 When you do need to widen something inside `Root`'s tree, `node scripts/chromatic-report.mjs --trace <file>` shows what it costs before you commit to it.
 
+# Styling: keep components customizable
+
+A consumer customizes an element by passing `styles` (or style props) to it, and every styling fix must leave that working. The trap is a parent fixing a child's layout from outside, with any of these:
+
+- a sub-element selector aimed at an element the parent does not render, such as `$: '> form'` or `$: '> form > :not(:last-child)'`;
+- a blanket reset on another component's children, such as `margin: 0` on every child;
+- a selector built to outrank another component's rule, using an extra type selector, a doubled class or `!important`.
+
+Such a rule only works by beating the child's own styles, so it also beats the consumer's `styles` on that element, and their padding, gap or layout override silently stops applying. Fix the element in the component that owns it:
+
+- **The child owns its context, as a named state.** When a component must lay out differently inside another, declare a local state at the top of its own `styles` and use that name in the maps:
+  ```ts
+  '@in-dialog': '@parent(id=Dialog, >)', // `, >` = direct parent; drop it for any ancestor
+  display: { '': 'block', '@in-dialog': 'flex' },
+  ```
+  The rule keeps the child's own specificity and a consumer's `styles` key replaces it. Because the state travels with the styles, a consumer can also target the same case: `gap: { '': '3x', '@in-dialog': '1x' }`. Worked example: `FormElement` in `FormElement.tsx`. It replaced two `Dialog` rules that silently beat a form's own `display` and `gap` styles.
+- **Never build state keys in JS.** No `const IN_DIALOG = '@parent(…)'` spread as `[IN_DIALOG]: …`. The condition then lives outside the styles, a consumer can't name it, and every map carries the raw selector instead of a word. If several components need a state, register it with the global predefined states in `Root.tsx` (`setGlobalPredefinedStates`) rather than exporting a string.
+- **A parent passes values only through channels built for overriding.** Those channels are slot styles (a `SlotProvider` merges them under the consumer's own `styles`), custom properties the child reads (`$dialog-padding-h`), props and mods.
+- **Know what tasty's `gap` compiles to.** On `display: flex` or `grid` it becomes the CSS `gap` property. On `display: block` it becomes a bottom margin on every child but the last. Those margins land on whatever goes inside the container, and a `gap: 0` from outside never reaches them. So when a block container's spacing is wrong in some context, change the container's own `gap` for that context; don't reset its children. `Form` stays a block outside dialogs because a flex column would stretch a bare `Button` child to full width and stack inline content.
+- **Check before adding a rule.** Ask whether a consumer can still override it with ordinary `styles` on the element it affects. If their styles would lose, the rule is a hack: move the fix to the component that owns the element, and add a browser test that a consumer override still applies.
+
+**Never start a `:has()` with `~`** (`:has(~ X)`). jsdom before 27 matches selectors with nwsapi, which throws on it for any element without a parent. jsdom's `getComputedStyle` walks up to `<html>`, so once such a rule is on the page, every role query, `toBeVisible` and user-event click in a consumer's tests throws. Cube Cloud runs jsdom 26. This repo runs 29, so its tests never show it. Use `:last-child`, `:first-child` or a mod. 0.187.0 shipped one on ListBox options; `ListBox.test.tsx` guards them.
+
 # Inline style
 
 React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `tasty/no-style-prop` with `elements: 'all'`: Tasty elements, other components and native elements, in runtime code and stories alike. In specs it covers only Tasty elements, because specs set inline styles on native elements and components to stage layouts and to check that a consumer's `style` reaches the DOM.

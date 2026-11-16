@@ -85,9 +85,17 @@ function trackLook(track: HTMLElement, list: HTMLElement): Look {
 
 /** Lets hover and selection transitions finish before anything is read. */
 async function settle() {
-  await Promise.all(
-    document.getAnimations().map((animation) => animation.finished),
-  );
+  // A style change can cancel a running transition and start another. The
+  // cancelled one's `finished` rejects with an AbortError, so wait for each to
+  // end either way, then check for its replacement.
+  let running = () =>
+    document
+      .getAnimations()
+      .filter((animation) => animation.playState === 'running');
+
+  for (let animations = running(); animations.length; animations = running()) {
+    await Promise.allSettled(animations.map((animation) => animation.finished));
+  }
 }
 
 interface Controls {

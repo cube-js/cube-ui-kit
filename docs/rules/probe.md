@@ -26,7 +26,7 @@ TSX
 **`tokens`** — two shapes of the same palette, labelled rather than merged:
 
 - `resolved` is `renderColorTokens()`: flat literal values for **one** variant, chosen with `--scheme light|dark` and `--hc`. The legacy aliases come back **by reference** (`'#dark': '#surface-text'`) rather than resolved — deliberately, so a region preview re-resolves them against its own tokens — and the probe labels them so you cannot read one as a color.
-- `palette` is `getPaletteTokens()`: one tasty state map per token, keyed by scheme (`''` / `'@dark'` / `'@hc'` / `'@dark & @hc'`). This is the **four-variant view**, and it is the one a palette change has to be diffed across — see [`docs/glaze/`](../glaze/) on why light mode alone is misleading.
+- `palette` is `getPaletteTokens()`: one tasty state map per token, keyed by scheme (`''` / `'@dark'` / `'@hc'` / `'@dark & @hc'`). This is the **four-variant view**, and it is the one a palette change has to be diffed across — see Glaze's ["Light, dark, and high contrast"](../../node_modules/.harnesspm/pkgs/@tenphi/glaze/docs/schemes.mdx) on why light mode alone is misleading.
 
 ```bash
 pnpm probe tokens --json > /tmp/tokens-before.json

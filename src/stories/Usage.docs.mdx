@@ -6,14 +6,14 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 This guide covers the design system foundations — tokens, presets, colors, units, and patterns — needed to build and maintain components in Cube UI Kit.
 
-For styling engine internals see the [Tasty documentation](https://github.com/tenphi/tasty). Tasty docs are also bundled with this package in `docs/tasty/`:
+For styling engine internals see the [Tasty documentation](https://github.com/tenphi/tasty/tree/main/docs). Agents in projects that use [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm) get these pages for the installed Tasty through UI Kit's harness.
 
-- **usage.md** — `tasty()` component creation, state mappings, sub-elements, variants, extending components, hooks.
-- **configuration.md** — `configure()` options: tokens, recipes, custom units, style handlers, TypeScript module augmentation.
-- **styles.md** — Complete reference for all enhanced style properties (`fill`, `flow`, `preset`, `border`, `radius`, `transition`, etc.).
-- **debug.md** — `tastyDebug` runtime API for inspecting injected CSS and troubleshooting.
-- **injector.md** — Low-level style injector: `inject()`, `injectGlobal()`, deduplication, SSR.
-- **tasty-static.md** — Zero-runtime `tastyStatic()`, Babel plugin, Next.js/Vite integration.
+- [React API](https://github.com/tenphi/tasty/blob/main/docs/react-api.md) — `tasty()` component creation, state mappings, sub-elements, variants, extending components, style functions.
+- [Configuration](https://github.com/tenphi/tasty/blob/main/docs/configuration.md) — `configure()` options: tokens, recipes, custom units, style handlers, TypeScript module augmentation.
+- [Style properties](https://github.com/tenphi/tasty/blob/main/docs/styles.md) — Complete reference for all enhanced style properties (`fill`, `flow`, `preset`, `border`, `radius`, `transition`, etc.).
+- [Debug utilities](https://github.com/tenphi/tasty/blob/main/docs/debug.md) — `tastyDebug` runtime API for inspecting injected CSS and troubleshooting.
+- [Injector](https://github.com/tenphi/tasty/blob/main/docs/injector.md) — Low-level style injector: `inject()`, `injectGlobal()`, deduplication, SSR.
+- [Zero-runtime mode](https://github.com/tenphi/tasty/blob/main/docs/tasty-static.md) — Zero-runtime `tastyStatic()`, Babel plugin, Next.js/Vite integration.
 
 ## Navigation
 
@@ -259,27 +259,30 @@ Full contract, caveats and a live playground: [Theming](/docs/getting-started-th
 
 The previous token names continue to work as aliases (defined at the bottom of `src/tokens/colors.ts`). New code should prefer the Glaze tokens, but existing components do not need to be migrated:
 
-| Legacy                           | Resolves to                |
-| -------------------------------- | -------------------------- |
-| `#text`                          | `#surface-text-soft`       |
-| `#dark` / `#dark-01`             | `#surface-text`            |
-| `#dark-02`                       | `#surface-text-soft`       |
-| `#dark-03`                       | `#surface-text-soft-2`     |
-| `#dark-04`                       | `#placeholder`             |
-| `#dark-05`                       | `#border`                  |
-| `#minor`                         | `#surface-text-soft.65`    |
-| `#shadow`                        | `#shadow-md`               |
-| `#light`                         | `#surface-3`               |
-| `#dark-bg`                       | `#surface-2`               |
-| `#primary` / `#purple`           | `#primary-accent-surface`  |
-| `#primary-text` / `#purple-text` | `#primary-accent-text`     |
-| `#primary-bg` / `#purple-bg`     | `#primary-surface`         |
-| `#primary-icon` / `#purple-icon` | `#primary-accent-icon`     |
-| `#<status>`                      | `#<status>-accent-surface` |
-| `#<status>-text`                 | `#<status>-accent-text`    |
-| `#<status>-bg`                   | `#<status>-surface`        |
-| `#<status>-icon`                 | `#<status>-accent-icon`    |
-| `#<status>-disabled`             | `#disabled`                |
+| Legacy | Resolves to |
+| --- | --- |
+| `#text` | `#surface-text-soft` |
+| `#dark` / `#dark-01` | `#surface-text` |
+| `#dark-02` | `#surface-text-soft` |
+| `#dark-03` | `#surface-text-soft-2` |
+| `#dark-04` | `#placeholder` |
+| `#dark-05` | `#border` |
+| `#minor` | `#surface-text-soft.65` |
+| `#shadow` | `#shadow-md` |
+| `#light` | `#surface-3` |
+| `#dark-bg` | `#surface-2` |
+| `#<theme>` | `#<theme>-accent-surface` |
+| `#<theme>-text` | `#<theme>-accent-text` |
+| `#<theme>-text-soft` | `#<theme>-accent-text-soft` |
+| `#<theme>-bg` | `#<theme>-surface` |
+| `#<theme>-icon` | `#<theme>-accent-icon` |
+| `#<theme>-hover` | `#<theme>-accent-surface-hover` |
+| `#<theme>-desaturated` (all but `purple`) | `#<theme>-accent-surface-2` |
+| `#<theme>-disabled` | `#disabled` |
+| `#purple-01` / `#purple-02` / `#purple-03` | `#purple-accent-surface` / `-2` / `-3` |
+| `#purple-04` | `#purple-surface` |
+
+`<theme>` is `primary`, `purple`, `success`, `danger`, `warning` or `note`; the `purple-*` tokens are the legacy name of the `primary-*` ones and resolve to the same colors.
 
 `#white`, `#black`, and `#clear` are not defined in the palette — `#white` and `#black` are tasty's built-in named colors, and `#clear` is an alias for `transparent`.
 
@@ -453,6 +456,8 @@ An intended override takes a disable comment with its reason on the line before 
 ```
 
 With this rule on, `tasty/no-styles-prop` can stay off, so the primitives keep their `styles`.
+
+In a project that uses [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm), installing the plugin also gives agents its harness through UI Kit's: a rule to lint the styles they change, a page for every `tasty/*` rule, `tasty-lint:check`, and a hook that lints each file they edit. Trust `@tenphi/eslint-plugin-tasty` in `harnesspm.json` to turn on the tool and the hook. They run the plugin through ESLint's API, so they need `eslint` installed, also in a project that lints with Oxlint.
 
 The same `extends` gives the plugin's other rules the names UI Kit defines: its tokens, presets and recipes, and the `@dark`, `@hc`, `@mobile` and `@reduced-motion` state aliases. `tasty/valid-color-token`, `tasty/valid-custom-property`, `tasty/valid-preset`, `tasty/valid-recipe`, `tasty/valid-state-key` and `tasty/no-unknown-state-alias` then report only names that don't exist. The tokens include the ones a component's docs offer you, to read inside that component or set on it, such as a dialog's `$dialog-padding-h` or a layout's `$content-padding`. A component's other custom properties are internal and can change, so the rules report them too. List what your app defines itself, in its own `configure()` or `tokens`, in its own config, which adds to the lists it extends:
 
