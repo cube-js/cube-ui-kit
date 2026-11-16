@@ -3,13 +3,17 @@ import { fireEvent, within } from '@testing-library/react';
 import {
   act,
   hoverWithPointer,
+  render,
   renderWithRoot,
   userEvent,
   waitFor,
 } from '../../../test';
 import { Menu } from '../../actions/Menu';
+import { Root } from '../../Root';
 
 import { Tab, Tabs } from './Tabs';
+
+import type { CubeTabsProps } from './types';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
@@ -481,6 +485,127 @@ describe('<Tabs />', () => {
 
       expect(getByRole('tablist')).toBeInTheDocument();
       expect(queryByRole('tabpanel')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Link tabs (`to`)', () => {
+    const usersTo = { pathname: '/users', search: '?page=2' };
+
+    function renderLinkTabs(tabsProps: Partial<CubeTabsProps> = {}) {
+      const navigate = vi.fn();
+      const onChange = vi.fn();
+      const utils = render(
+        <Root
+          navigation={{
+            useHref: (to) =>
+              `/app${typeof to === 'string' ? to : `${to.pathname}${to.search}`}`,
+            useNavigate: () => navigate,
+          }}
+        >
+          <Tabs
+            label="Tenant"
+            activeKey="profile"
+            onChange={onChange}
+            {...tabsProps}
+          >
+            <Tab key="profile" title="Profile" to="/profile" />
+            <Tab key="users" title="Users" to={usersTo} />
+            <Tab key="groups" title="Groups" to="/groups" isDisabled />
+            <Tab key="docs" title="Docs" to="!/docs" />
+          </Tabs>
+        </Root>,
+      );
+
+      return { ...utils, navigate, onChange };
+    }
+
+    it('renders a tab link to the destination the router resolves', () => {
+      const { getByRole } = renderLinkTabs();
+      const profile = getByRole('tab', { name: 'Profile' });
+
+      expect(profile.tagName).toBe('A');
+      expect(profile).toHaveAttribute('href', '/app/profile');
+      expect(profile).toHaveAttribute('aria-selected', 'true');
+      expect(profile).not.toHaveAttribute('type');
+      // Panel-less: no `aria-controls` naming a panel that isn't there.
+      expect(profile).not.toHaveAttribute('aria-controls');
+      expect(getByRole('tab', { name: 'Users' })).toHaveAttribute(
+        'href',
+        '/app/users?page=2',
+      );
+    });
+
+    it('navigates once on a plain click and leaves the selection to the route', async () => {
+      const { getByRole, navigate, onChange } = renderLinkTabs();
+
+      await userEvent.click(getByRole('tab', { name: 'Users' }));
+
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(usersTo);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(getByRole('tab', { name: 'Profile' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
+
+    it('navigates once per keyboard activation: arrow keys and Enter', async () => {
+      const { getByRole, navigate } = renderLinkTabs();
+
+      await userEvent.tab();
+      expect(getByRole('tab', { name: 'Profile' })).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowRight}');
+      expect(getByRole('tab', { name: 'Users' })).toHaveFocus();
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(usersTo);
+
+      await userEvent.keyboard('{Enter}');
+      expect(navigate).toHaveBeenCalledTimes(2);
+      expect(navigate).toHaveBeenLastCalledWith(usersTo);
+    });
+
+    it('drops the destination of a disabled link tab', async () => {
+      const { getByRole, navigate } = renderLinkTabs();
+      const groups = getByRole('tab', { name: 'Groups' });
+
+      expect(groups).not.toHaveAttribute('href');
+      expect(groups).toHaveAttribute('aria-disabled', 'true');
+
+      await userEvent.click(groups);
+
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('leaves a new-tab destination to the browser', () => {
+      const { getByRole, navigate } = renderLinkTabs();
+      const docs = getByRole('tab', { name: 'Docs' });
+
+      expect(docs).toHaveAttribute('href', '/app/docs');
+      expect(docs).toHaveAttribute('target', '_blank');
+      expect(docs).toHaveAttribute('rel', 'noopener noreferrer');
+
+      // The browser opens it in a new tab: the router stays out of it.
+      const click = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+      });
+
+      act(() => {
+        docs.dispatchEvent(click);
+      });
+
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('opens a link tab picked from the tab picker', async () => {
+      const { getByRole, findByRole, navigate, onChange } = renderLinkTabs({
+        showTabPicker: true,
+      });
+
+      await userEvent.click(getByRole('button', { name: 'Select tab' }));
+      await userEvent.click(await findByRole('option', { name: 'Users' }));
+
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(usersTo);
+      expect(onChange).not.toHaveBeenCalled();
     });
   });
 

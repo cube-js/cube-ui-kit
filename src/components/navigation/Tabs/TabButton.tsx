@@ -44,6 +44,7 @@ import { TabContainer, TabElement } from './styled';
 import { TabDropIndicator } from './TabDropIndicator';
 import { useTabsContext } from './TabsContext';
 import { ParsedTab, RADIO_SIZE_MAP, TabPlacement } from './types';
+import { useTabLink } from './use-tab-link';
 
 import type { Key, Node } from '@react-types/shared';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
@@ -334,6 +335,10 @@ export function TabButton({
   const isDeletable = !!onDelete;
   const isEditing = editingKey === item.key;
 
+  // A tab with `to` is a link: `Tabs` flags it for React Aria.
+  const isLink = state.selectionManager.isLink(item.key);
+  const link = useTabLink(tabData.to, { isLink, isDisabled });
+
   // Spring-load: when a `BoardDragActiveProvider` reports a widget drag,
   // hovering an inactive tab header for a moment opens it, so the user
   // can drop the widget into (or move it between) tabs. This relies on the
@@ -354,7 +359,8 @@ export function TabButton({
   });
 
   const handleSpringLoadEnter = useEvent(() => {
-    if (!isBoardDragActive || isActive || isDisabled) return;
+    // A link tab opens a route; it is never selected in place.
+    if (!isBoardDragActive || isActive || isDisabled || isLink) return;
     if (springLoadTimerRef.current != null) return;
     setIsDropPending(true);
     springLoadTimerRef.current = window.setTimeout(() => {
@@ -640,6 +646,7 @@ export function TabButton({
     content: _content,
     key: _key,
     isDisabled: _isDisabled,
+    to: _to,
     prerender: _prerender,
     keepMounted: _keepMounted,
     size: _size,
@@ -755,14 +762,24 @@ export function TabButton({
             showActions={showActions}
             skipActionsWidthTransition={skipActionsWidthTransition}
             autoHideActions={effectiveAutoHideActions}
-            as="button"
+            as={isLink ? 'a' : 'button'}
             // A tab switches panels; inside a form it must not submit it.
-            htmlType="button"
-            {...mergeProps(tabProps, hoverProps, focusProps, {
-              onKeyDown: handleKeyDown,
-              onPointerEnter: handleSpringLoadEnter,
-              onPointerLeave: clearSpringLoad,
-            })}
+            htmlType={isLink ? undefined : 'button'}
+            {...mergeProps(
+              tabProps,
+              hoverProps,
+              focusProps,
+              {
+                onKeyDown: handleKeyDown,
+                onPointerEnter: handleSpringLoadEnter,
+                onPointerLeave: clearSpringLoad,
+              },
+              // After React Aria's own, which cancels every click but the one
+              // it opens the link with.
+              link?.handlers,
+            )}
+            // Replaces React Aria's placeholder href.
+            {...link?.attributes}
             {...ariaProps}
             {...omitComponentOwnedProps(itemStyleProps)}
             ref={ref}
