@@ -198,8 +198,9 @@ function disableTooltip(tooltip: ParsedTab['tooltip']): ParsedTab['tooltip'] {
 
 /**
  * Scroll the tab strip, and only the strip, so the tab is fully inside it.
- * Unlike `scrollIntoView` this never scrolls the page: it runs in response to a
- * layout change rather than to the user, so it must not move anything else.
+ * Unlike `scrollIntoView` this never scrolls the page or any other ancestor: a
+ * tab becoming active or changing size moves the strip alone, so a page with
+ * the strip below the fold stays where the user left it.
  */
 function scrollTabIntoStrip(tab: HTMLElement, placement: TabPlacement) {
   const strip = tab.closest<HTMLElement>('[data-element="Scroll"]');
@@ -538,16 +539,14 @@ export function TabButton({
     if (ref.current) scrollTabIntoStrip(ref.current, placement);
   });
 
-  // Scroll the strip to the active tab, and keep it there while it settles.
-  // Only the strip: `scrollIntoView` would also scroll the page to a strip
-  // below the fold, which the user never asked for. The mount commit lays a tab
-  // out before its actions run is measured, so it grows by the run's width a
-  // frame later: a tab scrolled into view at its first size can end up past
-  // the strip's edge. So the active tab's own size changes re-scroll the strip,
-  // until the user first interacts with the tab bar (wheel, pointer, touch or a
-  // key). From then on the strip stays where they left it, even if the tab
-  // resizes, until a tab becomes active again. Keyed off interaction events,
-  // not `scroll`: the re-scroll fires `scroll` too.
+  // Scroll the strip to the active tab, and keep it there while it settles. The
+  // mount commit lays a tab out before its actions run is measured, so it grows
+  // by the run's width a frame later: a tab scrolled into view at its first
+  // size can end up past the strip's edge. So the active tab's own size changes
+  // re-scroll the strip, until the user first interacts with the tab bar
+  // (wheel, pointer, touch or a key). From then on the strip stays where they
+  // left it, even if the tab resizes, until a tab becomes active again. Keyed
+  // off interaction events, not `scroll`: the re-scroll fires `scroll` too.
   useEffect(() => {
     const tab = ref.current;
 
