@@ -1,5 +1,5 @@
 import { IconCalendar } from '@tabler/icons-react';
-import { Key, RefObject, useRef, useState } from 'react';
+import { Key, RefObject, useRef, useState, useSyncExternalStore } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { DatabaseIcon } from '../../../icons/DatabaseIcon';
@@ -732,6 +732,51 @@ export const NavigationOnly: Story = {
         </Paragraph>
       </Space>
     );
+  },
+};
+
+const subscribeToHash = (onChange: () => void) => {
+  window.addEventListener('hashchange', onChange);
+
+  return () => window.removeEventListener('hashchange', onChange);
+};
+
+const ROUTE_KEYS = ['profile', 'users', 'groups'];
+
+/**
+ * Route tabs as real links. The URL hash stands in for the app's router here:
+ * each tab links to one, and the active tab follows it.
+ */
+export const RouteLinks: Story = {
+  render: function RouteLinksStory(args) {
+    const hash = useSyncExternalStore(
+      subscribeToHash,
+      () => window.location.hash,
+    );
+    const activeKey =
+      ROUTE_KEYS.find((key) => hash === `#${key}`) ?? ROUTE_KEYS[0];
+
+    return (
+      <Tabs {...args} label="Tenant" activeKey={activeKey}>
+        <Tab key="profile" title="Profile" to="#profile" />
+        <Tab key="users" title="Users" to="#users" />
+        <Tab key="groups" title="Groups" to="#groups" />
+        <Tab key="preview" title="Preview" to="#preview" isDisabled />
+      </Tabs>
+    );
+  },
+  // A link tab looks exactly like a button tab (`Tabs.browser.test.tsx`
+  // checks), and button tabs are photographed in `NavigationOnly`.
+  parameters: NO_SNAPSHOT,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const users = canvas.getByRole('tab', { name: 'Users' });
+
+    await expect(users.tagName).toBe('A');
+    await expect(users).toHaveAttribute('href', '#users');
+    await expect(
+      canvas.getByRole('tab', { name: 'Preview' }),
+    ).not.toHaveAttribute('href');
   },
 };
 

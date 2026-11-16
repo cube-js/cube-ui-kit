@@ -361,6 +361,7 @@ In addition, Tab accepts these tab-specific props:
 
 - **`title`** `ReactNode` — Content displayed in the tab button. Optional for icon-only tabs (`icon` / `rightIcon`); when omitted, supply an `aria-label` (and typically a `tooltip`) so the tab has an accessible name.
 - **`isDisabled`** `boolean` — Disables the tab
+- **`to`** `To` — Makes the tab a link to a route: it renders as `<a href role="tab">`. See [Route Links](#route-links)
 - **`size`** `TabSize` — Override tab size for this tab
 - **`type`** `TabType` — Override tab type for this tab
 - **`actions`** `ReactNode` — Custom actions to render in the tab, left of the built-in menu trigger and delete button. Use `Tab.Action`
@@ -799,7 +800,7 @@ When both are in the same slot:
 
 ### Navigation-Only Tabs
 
-Use tabs without panel content for navigation purposes. Use this only when each tab leads to a different page or route; content that belongs to a tab goes in a panel (`renderPanel` or `Tab` children), so the tab can point screen readers at it.
+Use tabs without panel content for navigation purposes. Use this only when each tab leads to a different page or route; content that belongs to a tab goes in a panel (`renderPanel` or `Tab` children), so the tab can point screen readers at it. When the tabs are routes, give them `to` instead of navigating in `onChange` (see [Route Links](#route-links)), so each tab is a real link.
 
 <Story of={TabsStories.NavigationOnly} />
 
@@ -818,6 +819,28 @@ const [view, setView] = useState('overview');
   view === 'settings' && <SettingsPage />;
 }
 ```
+
+### Route Links
+
+Give a tab `to` and it renders as a real link (`<a href role="tab">`). Activating it navigates through `Root`'s `navigation` adapter, as a `Button`'s `to` does, and the browser's own link features keep working: a modified or middle click opens a new tab, the context menu has "Copy link", and the URL shows on hover.
+
+<Story of={TabsStories.RouteLinks} />
+
+```jsx
+const { tenantId, section } = useParams();
+
+<Tabs label="Tenant" activeKey={section}>
+  <Tab key="profile" title="Profile" to={`/tenants/${tenantId}/profile`} />
+  <Tab key="users" title="Users" to={`/tenants/${tenantId}/users`} />
+  <Tab key="groups" title="Groups" to={`/tenants/${tenantId}/groups`} />
+</Tabs>;
+```
+
+- **The route selects the tab.** A link tab never selects itself, as in React Aria: pass the current route's tab as `activeKey`. `onChange` is not called for a link tab.
+- **One navigation per activation:** a click, `Enter`, `Space`, or an arrow key that moves focus to the tab.
+- **Destinations** are the ones `Button`'s `to` takes: a path or a `{ pathname, search, hash }` object, `!` to open a new tab, `@` for a full page load, or an external URL. Without a `navigation` adapter, the browser loads the page.
+- **A disabled link tab** has no `href`, so nothing opens it.
+- **In the tab picker**, picking a link tab opens it.
 
 ### Explicit Panels
 
@@ -999,7 +1022,7 @@ A board of draggable widgets (Cube Cloud owns one) can wrap the subtree it rende
 - `ArrowUp` / `ArrowDown` - Navigate between tabs (vertical placement, `left` / `right`)
 - `Home` - Move to first tab
 - `End` - Move to last tab
-- `Enter` / `Space` - Activate focused tab
+- `Enter` / `Space` - Activate focused tab (a [link tab](#route-links) navigates; so does an arrow key that moves to it)
 - `Shift+F10` - Open tab menu (when menu is present)
 - `Delete` - Delete focused tab (when deletable)
 - `F2` - Start editing tab title (when editable)
@@ -1012,6 +1035,7 @@ A board of draggable widgets (Cube Cloud owns one) can wrap the subtree it rende
 - Individual tabs announce as "tab" with selected state
 - Panels announce as "tabpanel" linked to their tab
 - Disabled tabs are announced as such
+- A [link tab](#route-links) is announced as a tab too; it is an `<a href>` underneath, so the browser's link features apply
 
 ### ARIA Properties
 
