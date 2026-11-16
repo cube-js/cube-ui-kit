@@ -1,6 +1,5 @@
 import type { OuterStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
-import type { To } from '../../../providers/navigation.types';
 import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import type { CubeItemActionProps } from '../../actions/ItemAction';
 import type { CubeMenuProps } from '../../actions/Menu';
@@ -86,7 +85,7 @@ type OmittedItemProps =
   | 'highlightCaseSensitive'
   | 'highlightStyles'
   | 'variant' // Tabs have internal variant logic
-  | 'htmlType' // Tab picks its own element: a button, or a link with `to`
+  | 'htmlType' // Tab is always a button
   | 'isSelected' // Handled internally by state
   | 'preserveActionsSpace' // Set internally in TabButton
   | 'disableActionsFocus' // Not used in Tab
@@ -298,17 +297,6 @@ export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {
   children?: ReactNode;
   /** Disables the tab (cannot be selected). */
   isDisabled?: boolean;
-  /**
-   * Makes the tab a link to a route: it renders as `<a href role="tab">`.
-   * Activating it navigates once through the app's navigation (`Root`'s
-   * `navigation` adapter); a modified or middle click, the context menu's
-   * "Copy link" and the hover URL keep the browser's own link behavior.
-   * Takes the same destinations as `Button`'s `to`.
-   *
-   * A link tab never selects itself: pass the current route's tab as
-   * `activeKey`. `onChange` is not called for it.
-   */
-  to?: To;
   /** Actions to render in the tab. Rendered before menu trigger if tab has menu. */
   actions?: ReactNode;
   /** Whether the tab title can be edited. Overrides the Tabs-level isEditable default. */

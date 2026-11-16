@@ -1,4 +1,3 @@
-import { openLink } from '@react-aria/utils';
 import { mergeStyles, OUTER_STYLES } from '@tenphi/tasty';
 import {
   Children,
@@ -20,7 +19,6 @@ import {
   Item as CollectionItem,
   DraggableCollectionState,
   DroppableCollectionState,
-  TabListState,
   useTabListState,
 } from 'react-stately';
 
@@ -29,11 +27,9 @@ import { useWarn } from '../../../_internal/hooks/use-warn';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { useMergeStyles } from '../../../utils/react/useMergeStyles';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
-import { parseTo } from '../../actions/use-action';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 
 import { useBoardDragActive } from './BoardDragActiveProvider';
@@ -397,10 +393,6 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
       <CollectionItem
         key={tab.key}
         textValue={typeof tab.title === 'string' ? tab.title : String(tab.key)}
-        // An `href` makes React Aria treat the tab as a link: it never selects
-        // it and opens it instead. Only the flag matters here; `TabButton`
-        // renders the destination `to` resolves to.
-        href={parseTo(tab.to).cleanTo !== undefined ? '.' : undefined}
       >
         {tab.title}
       </CollectionItem>
@@ -414,25 +406,8 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
     );
   }, [parsedTabs]);
 
-  // The list state, which React Stately builds from `handleSelectionChange`
-  // below: the handler reads it back through this ref.
-  const stateRef = useRef<TabListState<object>>(null);
-
   // Handle selection change (converts React Aria's Key to string for our API)
   const handleSelectionChange = useEvent((key: Key) => {
-    // Activating a link tab doesn't select it: React Aria puts the selection
-    // back, which reports the current tab again. That is no change.
-    const manager = stateRef.current?.selectionManager;
-
-    if (
-      manager &&
-      key === stateRef.current?.selectedKey &&
-      manager.focusedKey != null &&
-      manager.isLink(manager.focusedKey)
-    ) {
-      return;
-    }
-
     const keyStr = String(key);
     visitedKeysRef.current.add(keyStr);
     onChange?.(keyStr);
@@ -468,10 +443,6 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   // Create state using useTabListState
   const state = useTabListState(ariaProps);
 
-  useLayoutEffect(() => {
-    stateRef.current = state;
-  });
-
   // Track initial selected key for visited tabs
   useEffect(() => {
     if (state.selectedKey != null) {
@@ -484,17 +455,6 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
 
   // Handle selection from TabPicker (needs to update internal state in uncontrolled mode)
   const handleTabPickerSelect = useEvent((key: string) => {
-    // A link tab opens its link, as activating the tab itself does.
-    if (state.selectionManager.isLink(key)) {
-      const tab = listRef.current?.querySelector(
-        `[data-key="${CSS.escape(key)}"]`,
-      );
-
-      if (tab instanceof HTMLAnchorElement) openLink(tab, {});
-
-      return;
-    }
-
     // Update internal state (for uncontrolled mode)
     state.setSelectedKey(key);
     // Also call the external onChange handler
