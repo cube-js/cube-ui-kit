@@ -348,104 +348,107 @@ export const TabsElement = tasty({
 
 // A radio tab is a segment of the control `Radio.Tabs` shares: its look comes
 // from `segmented-styles.ts`, merged in after the tab's own styles.
-export const TabElement = tasty(Item, {
-  as: 'button',
-  styles: mergeStyles(
-    {
-      radius: {
-        '': false,
-        'type=default': true,
-        'type=narrow': 'top',
-        'type=narrow & placement=bottom': 'bottom',
-        'type=narrow & placement=left': 'left',
-        'type=narrow & placement=right': 'right',
-      },
-      // Tab colors read current tokens, not the legacy aliases that point at them
-      // (`#dark-02`, `#primary-text`, `#primary`). Root resolves an alias once, on
-      // the page root, so a caller re-declaring the current token on `Tabs` would
-      // never reach it. The contract is under "Theming" in `Tabs.docs.mdx`.
-      color: {
-        '': '#surface-text-soft',
-        'type=narrow & (hovered & !selected)': '#primary-accent-text',
-        '(type=default | type=narrow) & selected': '#primary-accent-text',
-        disabled: '#disabled-surface-text',
-      },
-      fill: {
-        '': '#clear',
-        'hovered & !type=narrow': '#surface-text.03',
-        'type=file': '#surface-3',
-        'type=file & hovered': '#surface-3.5',
-        'type=file & selected': '#surface',
-        // Spring-load hint: a widget is hovering this tab and it is about to open.
-        'drop-pending': '#primary-accent-surface.10',
-      },
-      border: {
-        '': '#clear',
-        'type=file': '0 #clear',
-      },
-      preset: {
-        '': 't3m',
-        'size=xsmall': 't4',
-      },
-      shadow: {
-        '': '$selection-shadow',
-        'focused & focus-visible':
-          'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
-        editing:
-          'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
-      },
-      outline: 'none',
-      // oxlint-disable-next-line tasty/require-default-state -- extends Item's own gridTemplate map
-      gridTemplate: {
-        // Sized by content like a radio button, but the label column keeps a
-        // zero minimum (as `Item`'s `1sf` does), so a tab given less room than
-        // its title truncates it — and gets the auto tooltip — instead of
-        // spilling the title out of the tab.
-        'type=radio':
-          '"icon prefix label suffix rightIcon actions" auto / max-content max-content minmax(0, max-content) max-content max-content max-content',
-      },
-      // File-type selection indicator: an inset shadow on the edge that faces
-      // the panel area. Flips with placement so the highlight always sits on
-      // the edge adjacent to the content.
-      '$selection-shadow': {
-        '': 'inset 0 0 0 0 #primary-accent-surface',
-        'type=file & selected':
-          'inset 0 (-1 * $tab-indicator-size) 0 0 #primary-accent-surface',
-        'type=file & selected & placement=bottom':
-          'inset 0 $tab-indicator-size 0 0 #primary-accent-surface',
-        'type=file & selected & placement=left':
-          'inset (-1 * $tab-indicator-size) 0 0 0 #primary-accent-surface',
-        'type=file & selected & placement=right':
-          'inset $tab-indicator-size 0 0 0 #primary-accent-surface',
-        '!type=file': 'inset 0 0 0 0 #primary-accent-surface.0',
-      },
-      // Collapse horizontal padding for narrow type
-      '$label-padding-left': {
-        '': '$inline-padding',
-        'has-start-content': 0,
-        'type=narrow': 0,
-      },
-      '$label-padding-right': {
-        '': '$inline-padding',
-        'has-end-content': 0,
-        'type=narrow': 0,
-      },
-      Label: {
-        placeSelf: {
-          '': 'center start',
-          'type=radio': 'center start',
-          'type=radio & !has-prefix & !has-suffix & !has-icon & !has-right-icon':
-            'center',
-        },
-      },
-      Actions: {
-        transition: false,
+// `NavTabs` items wear the same look, so it lives in one place.
+export const TAB_ELEMENT_STYLES = mergeStyles(
+  {
+    radius: {
+      '': false,
+      'type=default': true,
+      'type=narrow': 'top',
+      'type=narrow & placement=bottom': 'bottom',
+      'type=narrow & placement=left': 'left',
+      'type=narrow & placement=right': 'right',
+    },
+    // Tab colors read current tokens, not the legacy aliases that point at them
+    // (`#dark-02`, `#primary-text`, `#primary`). Root resolves an alias once, on
+    // the page root, so a caller re-declaring the current token on `Tabs` would
+    // never reach it. The contract is under "Theming" in `Tabs.docs.mdx`.
+    color: {
+      '': '#surface-text-soft',
+      'type=narrow & (hovered & !selected)': '#primary-accent-text',
+      '(type=default | type=narrow) & selected': '#primary-accent-text',
+      disabled: '#disabled-surface-text',
+    },
+    fill: {
+      '': '#clear',
+      'hovered & !type=narrow': '#surface-text.03',
+      'type=file': '#surface-3',
+      'type=file & hovered': '#surface-3.5',
+      'type=file & selected': '#surface',
+      // Spring-load hint: a widget is hovering this tab and it is about to open.
+      'drop-pending': '#primary-accent-surface.10',
+    },
+    border: {
+      '': '#clear',
+      'type=file': '0 #clear',
+    },
+    preset: {
+      '': 't3m',
+      'size=xsmall': 't4',
+    },
+    shadow: {
+      '': '$selection-shadow',
+      'focused & focus-visible':
+        'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
+      editing:
+        'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
+    },
+    outline: 'none',
+    // oxlint-disable-next-line tasty/require-default-state -- extends Item's own gridTemplate map
+    gridTemplate: {
+      // Sized by content like a radio button, but the label column keeps a
+      // zero minimum (as `Item`'s `1sf` does), so a tab given less room than
+      // its title truncates it — and gets the auto tooltip — instead of
+      // spilling the title out of the tab.
+      'type=radio':
+        '"icon prefix label suffix rightIcon actions" auto / max-content max-content minmax(0, max-content) max-content max-content max-content',
+    },
+    // File-type selection indicator: an inset shadow on the edge that faces
+    // the panel area. Flips with placement so the highlight always sits on
+    // the edge adjacent to the content.
+    '$selection-shadow': {
+      '': 'inset 0 0 0 0 #primary-accent-surface',
+      'type=file & selected':
+        'inset 0 (-1 * $tab-indicator-size) 0 0 #primary-accent-surface',
+      'type=file & selected & placement=bottom':
+        'inset 0 $tab-indicator-size 0 0 #primary-accent-surface',
+      'type=file & selected & placement=left':
+        'inset (-1 * $tab-indicator-size) 0 0 0 #primary-accent-surface',
+      'type=file & selected & placement=right':
+        'inset $tab-indicator-size 0 0 0 #primary-accent-surface',
+      '!type=file': 'inset 0 0 0 0 #primary-accent-surface.0',
+    },
+    // Collapse horizontal padding for narrow type
+    '$label-padding-left': {
+      '': '$inline-padding',
+      'has-start-content': 0,
+      'type=narrow': 0,
+    },
+    '$label-padding-right': {
+      '': '$inline-padding',
+      'has-end-content': 0,
+      'type=narrow': 0,
+    },
+    Label: {
+      placeSelf: {
+        '': 'center start',
+        'type=radio': 'center start',
+        'type=radio & !has-prefix & !has-suffix & !has-icon & !has-right-icon':
+          'center',
       },
     },
-    SEGMENTED_SEGMENT_STYLES,
-    // The spring-load hint stays above the segment's own fill.
-    { fill: { 'drop-pending': '@inherit' } },
-  ),
+    Actions: {
+      transition: false,
+    },
+  },
+  SEGMENTED_SEGMENT_STYLES,
+  // The spring-load hint stays above the segment's own fill.
+  { fill: { 'drop-pending': '@inherit' } },
+);
+
+export const TabElement = tasty(Item, {
+  as: 'button',
+  styles: TAB_ELEMENT_STYLES,
 });
 
 // =============================================================================

@@ -1,0 +1,217 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+import { NavTabs } from './NavTabs';
+import * as NavTabsStories from './NavTabs.stories';
+
+<Meta of={NavTabsStories} />
+
+# NavTabs
+
+Navigation between routes that looks like [Tabs](/docs/navigation-tabs--docs). It renders a navigation landmark holding a list of real links, and marks the link for the current page with `aria-current="page"`. Each link goes through the app's navigation adapter, as a `Button`'s `to` does, so a click routes in the app, and the browser's own link features keep working: a modified or middle click opens a new tab, the context menu has "Copy link", and the URL shows on hover.
+
+## When to Use
+
+- The items lead to different routes or pages, each with its own URL, such as the sections of a settings or detail page.
+- You want the look of `Tabs` for that navigation, at any width.
+- Use [Tabs](/docs/navigation-tabs--docs) instead when the items switch content in place, without a URL of their own.
+
+## Component
+
+<Story of={NavTabsStories.Default} />
+
+---
+
+### Properties
+
+- **`label`** `string` — Accessible name of the navigation landmark, such as the area it moves between. Required: a page with several navigation landmarks tells them apart by name.
+- **`activeKey`** `string` — Key of the item for the current page. A sub-page passes its section's key, so the section stays current.
+- **`placement`** `'top' | 'bottom' | 'left' | 'right'` (default: `'top'`) — Where the strip sits: `top` / `bottom` keep it horizontal, `left` / `right` make it vertical.
+- **`tabListPadding`** `string` — Inline padding for the item list (e.g. `"2x"` → `0 2x`), as on `Tabs`.
+- **`children`** `ReactNode` — `NavTabs.Item` elements, each with a React `key`.
+
+### NavTabs.Item Properties
+
+- **`to`** `To` — Where the item leads: a path or a `{ pathname, search, hash }` object, resolved by `Root`'s `navigation` adapter.
+- **`children`** `ReactNode` — The item's label. Optional for an icon-only item.
+- **`icon`** `ReactNode` — An icon before the label.
+- **`aria-label`** `string` — The accessible name of an icon-only item.
+- **`tooltip`** — A tooltip, as on `Item`. A label that doesn't fit is truncated and shown in a tooltip by default.
+- **`isDisabled`** `boolean` — A disabled item leads nowhere: it has no `href` and can't be activated.
+- **`qa`** `string` (default: `NavTab-<key>`) — QA selector.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root `nav` element.
+
+**Sub-elements:**
+
+- `Bar` - The strip holding the item list
+- `ScrollWrapper` - Wraps the scroll area and its scrollbar
+- `Scroll` - The scrollable area around the item list
+- `TabList` - The `ul` holding the items
+- `Scrollbar` - The thin scrollbar shown while the items overflow
+
+#### barStyles
+
+Customizes the `Bar` sub-element.
+
+#### tabListStyles
+
+Customizes the `TabList` sub-element.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `blockMargin`, `inlineMargin`, `inset`, `blockInset`, `inlineInset`, `position`, `scrollMargin`, `blockScrollMargin`, `inlineScrollMargin`, `scrollPadding`, `blockScrollPadding`, `inlineScrollPadding`
+- **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `blockBorder`, `inlineBorder`, `radius`, `shadow`, `outline`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers:
+
+- **`type`** `'default'` — Always `default`: NavTabs has the default Tabs look only
+- **`placement`** `'top' \| 'bottom' \| 'left' \| 'right'` — Current strip placement
+- **`scrolling`** `boolean` — True while the items are being scrolled
+- **`fade-start`** `boolean` — True when more items exist in the start direction (left for horizontal, top for vertical)
+- **`fade-end`** `boolean` — True when more items exist in the end direction (right for horizontal, bottom for vertical)
+
+For individual items:
+
+- **`selected`** `boolean` — True for the current item
+- **`disabled`** `boolean` — True when the item is disabled
+- **`hovered`** `boolean` — True when the item is hovered
+- **`focused`** / **`focus-visible`** `boolean` — True when the item has keyboard focus
+
+### Theming
+
+NavTabs reads the same tokens as [Tabs](/docs/navigation-tabs--docs), so a theme carries over when you move panel-less `Tabs` to `NavTabs`: `#surface-text-soft` for an item, `#primary-accent-text` for the current item and the focus ring, `#primary-accent-surface` for the indicator, and `$font-sans` for the font. Re-declare them through `tabListStyles`, `styles` or `tokens`.
+
+```jsx
+<NavTabs
+  label="Reports"
+  activeKey={section}
+  tabListStyles={{
+    '#surface-text-soft': '#success-accent-text-soft',
+    '#primary-accent-text': '#success-accent-text',
+    '#primary-accent-surface': '#success-accent-surface',
+  }}
+>
+  …
+</NavTabs>
+```
+
+## Examples
+
+### With a Router
+
+`activeKey` comes from the current route, here a route parameter. Items take the same destinations as the rest of the app's links.
+
+```jsx
+const { tenantId, section } = useParams();
+
+<NavTabs label="Tenant" activeKey={section}>
+  <NavTabs.Item key="profile" to={`/tenants/${tenantId}/profile`}>
+    Profile
+  </NavTabs.Item>
+  <NavTabs.Item key="users" to={`/tenants/${tenantId}/users`}>
+    Users
+  </NavTabs.Item>
+  <NavTabs.Item key="groups" to={`/tenants/${tenantId}/groups`}>
+    Groups
+  </NavTabs.Item>
+</NavTabs>;
+```
+
+### Sub-pages
+
+A sub-page, such as one user's page under Users, keeps its section current: pass the section's key, not the page's.
+
+```jsx
+// Matches `/tenants/42/users` and `/tenants/42/users/7` alike.
+const section = SECTIONS.find((key) =>
+  pathname.startsWith(`${basePath}/${key}`),
+);
+
+<NavTabs label="Tenant" activeKey={section}>
+  …
+</NavTabs>;
+```
+
+### Vertical
+
+<Story of={NavTabsStories.Vertical} />
+
+```jsx
+<NavTabs label="Tenant" activeKey={section} placement="left">
+  <NavTabs.Item key="profile" to="/tenants/42/profile">
+    Profile
+  </NavTabs.Item>
+  <NavTabs.Item key="users" to="/tenants/42/users">
+    Users
+  </NavTabs.Item>
+</NavTabs>
+```
+
+### Disabled Item
+
+```jsx
+<NavTabs label="Tenant" activeKey="profile">
+  <NavTabs.Item key="profile" to="/tenants/42/profile">
+    Profile
+  </NavTabs.Item>
+  <NavTabs.Item key="preview" to="/tenants/42/preview" isDisabled>
+    Preview
+  </NavTabs.Item>
+</NavTabs>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` / `Shift+Tab` - Move between the links, like any links on the page
+- `Enter` - Follows the focused link
+
+Arrow keys don't move between items: that is the `Tabs` pattern, for content that switches in place.
+
+### Screen Reader Support
+
+- The strip announces as a navigation landmark named by `label`, holding a list
+- Each item announces as a link; the current one as the current page
+- A disabled item announces as a dimmed button
+
+### ARIA Properties
+
+- `aria-label` - Set via `label` on the `nav` element
+- `aria-current="page"` - On the item `activeKey` names
+
+## Best Practices
+
+1. **Do**: Use `NavTabs` when each item is its own route
+
+   ```jsx
+   <NavTabs label="Billing" activeKey={section}>
+     <NavTabs.Item key="overview" to="/billing/overview">
+       Overview
+     </NavTabs.Item>
+     <NavTabs.Item key="usage" to="/billing/usage">
+       Usage
+     </NavTabs.Item>
+   </NavTabs>
+   ```
+
+2. **Don't**: Use `NavTabs` to switch content within a page; use `Tabs` for that
+
+3. **Do**: Name each navigation landmark, so a page with several tells them apart
+
+## Related Components
+
+- [Tabs](/docs/navigation-tabs--docs) - Switch content within a page, with panels
+- [Link](/docs/navigation-link--docs) - A single link in text

@@ -6,3 +6,4 @@ export type {
   CubeTabListProps,
 } from './Tabs';
 export * from './Pagination';
+export * from './NavTabs';

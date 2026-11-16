@@ -21,6 +21,19 @@ export interface IndicatorStyle {
 
 export type IndicatorOrientation = 'horizontal' | 'vertical';
 
+/**
+ * The item in `container` whose `data-key` is `key`: React Aria puts it on a
+ * tab, `NavTabs` on a link. Compared rather than put in a selector, because
+ * `CSS.escape` is missing in jsdom, which consumers' tests still run.
+ */
+export function findTabItem(container: HTMLElement, key: Key) {
+  for (const element of container.querySelectorAll<HTMLElement>('[data-key]')) {
+    if (element.dataset.key === String(key)) return element;
+  }
+
+  return null;
+}
+
 // =============================================================================
 // Hook
 // =============================================================================
@@ -32,7 +45,7 @@ export type IndicatorOrientation = 'horizontal' | 'vertical';
  * along the orientation axis. Returns null if disabled (e.g., for
  * non-default/narrow tab types).
  *
- * @param container - The tab list element. An element rather than a ref, so a
+ * @param container - The list element whose items carry `data-key`. An element rather than a ref, so a
  *   list that is replaced by a new one is watched in its place.
  * @param selectedKey - Currently selected tab key
  * @param enabled - Whether the indicator should be shown
@@ -54,11 +67,11 @@ export function useTabIndicator(
   if (!enabled && style) setStyle(null);
 
   const measure = useEffectEvent((container: HTMLElement) => {
-    const selectedTab = container.querySelector<HTMLElement>(
-      '[aria-selected="true"]',
-    );
+    // Found by key: a `NavTabs` link has no selected state of its own.
+    const selectedTab =
+      selectedKey == null ? null : findTabItem(container, selectedKey);
 
-    if (selectedKey == null || !selectedTab) {
+    if (!selectedTab) {
       setStyle(null);
       return;
     }
@@ -101,9 +114,9 @@ export function useTabIndicator(
     observer.observe(container, { box: 'border-box' });
 
     for (const child of container.children) {
-      // Skip the indicator, the one child without a tab: its own transition
+      // Skip the indicator, the one child without an item: its own transition
       // moves nothing.
-      if (child.querySelector('[role="tab"]')) observer.observe(child);
+      if (child.querySelector('[data-key]')) observer.observe(child);
     }
 
     return () => observer.disconnect();
