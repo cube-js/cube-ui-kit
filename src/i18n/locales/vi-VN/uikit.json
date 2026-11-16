@@ -149,8 +149,10 @@
     "unknownValue": "\"{{value}}\" không có trong danh sách",
     "unavailableValue": "\"{{value}}\" không khả dụng",
     "limitReached": "Bạn có thể thêm tối đa {{count}}",
-    "clearText": "Xóa văn bản",
-    "clearTextFor": "Xóa văn bản, {{label}}",
+    "clearAll": "Xóa tất cả",
+    "clearAllFor": "Xóa tất cả, {{label}}",
+    "noResults": "Không tìm thấy kết quả",
+    "loading": "Đang tải…",
     "backspaceHint": "Nhấn Backspace để chuyển đến các giá trị đã chọn."
   },
   "placeholder": {

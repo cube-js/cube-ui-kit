@@ -153,7 +153,7 @@ const meta = {
     isClearable: {
       control: { type: 'boolean' },
       description:
-        'Whether a button in the input clears the typed text. It shows while there is text',
+        'Whether a button in the input clears the field: the typed text and every chip but the locked ones. It shows while there is something to clear',
       table: { defaultValue: { summary: false } },
     },
     filter: {
@@ -164,8 +164,14 @@ const meta = {
     popoverTrigger: {
       options: ['focus', 'input', 'manual'],
       control: { type: 'radio' },
-      description: 'When the suggestions popover opens',
+      description:
+        'When the suggestions popover opens on its own: `input` on typing or a press in the input, `focus` on focus as well, `manual` only from the chevron and the arrow keys',
       table: { defaultValue: { summary: 'input' } },
+    },
+    emptyLabel: {
+      control: { type: 'text' },
+      description:
+        'What the popover says when no option matches the typed text, or while `isLoading` with no option to show. Defaults to "No results found", and to "Loading…" while loading',
     },
     hideTrigger: {
       control: { type: 'boolean' },
@@ -266,7 +272,8 @@ const meta = {
     },
     isLoading: {
       control: { type: 'boolean' },
-      description: 'Whether the field shows a loading indicator',
+      description:
+        'Whether options are loading: a spinner in the input, and "Loading…" in the popover while there is no option to show',
       table: { defaultValue: { summary: false } },
     },
     ...VALIDATION_ARGS,
@@ -671,7 +678,7 @@ LockedAndClearable.parameters = {
   docs: {
     description: {
       story:
-        '`isClearable` adds a button to the input that clears the typed text; it shows while there is text. A chip with `isDisabled` from `tagProps` is locked: it has no remove button and the keyboard skips it.',
+        '`isClearable` adds a button to the input that clears the field: the typed text and every chip but the locked ones. A chip with `isDisabled` from `tagProps` is locked: it has no remove button, the keyboard skips it and the clear button leaves it.',
     },
   },
 };

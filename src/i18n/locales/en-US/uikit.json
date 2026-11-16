@@ -149,8 +149,10 @@
     "unknownValue": "\"{{value}}\" is not in the list",
     "unavailableValue": "\"{{value}}\" is not available",
     "limitReached": "You can add up to {{count}}",
-    "clearText": "Clear text",
-    "clearTextFor": "Clear text, {{label}}",
+    "clearAll": "Clear all",
+    "clearAllFor": "Clear all, {{label}}",
+    "noResults": "No results found",
+    "loading": "Loading…",
     "backspaceHint": "Press Backspace to go to the selected values."
   },
   "placeholder": {

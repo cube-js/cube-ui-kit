@@ -149,8 +149,10 @@
     "unknownValue": "\"{{value}}\" no está en la lista",
     "unavailableValue": "\"{{value}}\" no está disponible",
     "limitReached": "Puedes agregar hasta {{count}}",
-    "clearText": "Borrar texto",
-    "clearTextFor": "Borrar texto, {{label}}",
+    "clearAll": "Borrar todo",
+    "clearAllFor": "Borrar todo, {{label}}",
+    "noResults": "No se encontraron resultados",
+    "loading": "Cargando…",
     "backspaceHint": "Presiona Retroceso para ir a los valores seleccionados."
   },
   "placeholder": {
