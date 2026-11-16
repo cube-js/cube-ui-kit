@@ -1,5 +1,6 @@
 import { act, fireEvent, waitFor, within } from '@testing-library/react';
 import { StrictMode, useState } from 'react';
+import { I18nProvider } from 'react-aria';
 
 import { Button, Dialog, DialogTrigger, Field } from '../../../index';
 import {
@@ -122,7 +123,7 @@ describe('<TagInput />', () => {
 
       await userEvent.type(input, 'x');
       expect(
-        getByRole('button', { name: 'Clear text Actions' }),
+        getByRole('button', { name: 'Clear all Actions' }),
       ).toBeInTheDocument();
       await userEvent.clear(input);
 
@@ -145,7 +146,7 @@ describe('<TagInput />', () => {
 
       await userEvent.type(input, 'x');
       expect(
-        getByRole('button', { name: 'Clear text Primary key orders' }),
+        getByRole('button', { name: 'Clear all Primary key orders' }),
       ).toBeInTheDocument();
       await userEvent.clear(input);
 
@@ -168,7 +169,7 @@ describe('<TagInput />', () => {
 
       await userEvent.type(input, 'x');
       expect(
-        getByRole('button', { name: 'Clear text, Values' }),
+        getByRole('button', { name: 'Clear all, Values' }),
       ).toBeInTheDocument();
       await userEvent.clear(input);
 
@@ -192,7 +193,7 @@ describe('<TagInput />', () => {
 
       await userEvent.type(input, 'x');
       expect(
-        getByRole('button', { name: 'Clear text, Values Primary key' }),
+        getByRole('button', { name: 'Clear all, Values Primary key' }),
       ).toBeInTheDocument();
       await userEvent.clear(input);
 
@@ -640,6 +641,164 @@ describe('<TagInput />', () => {
       expect(
         within(getAllByRole('row')[1]).getByTestId('Chip-two'),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('hidePlaceholderWithTags', () => {
+    it('shows the placeholder only while there is no tag', async () => {
+      const { getByRole } = render(
+        <TagInput
+          hidePlaceholderWithTags
+          label="Tags"
+          placeholder="Add a tag"
+        />,
+      );
+      const input = getByRole('textbox');
+
+      expect(input).toHaveAttribute('placeholder', 'Add a tag');
+
+      await userEvent.type(input, 'one{Enter}');
+      expect(input).not.toHaveAttribute('placeholder', 'Add a tag');
+
+      await userEvent.click(getByRole('button', { name: 'Remove one' }));
+      expect(input).toHaveAttribute('placeholder', 'Add a tag');
+    });
+
+    it('keeps the placeholder next to tags by default', () => {
+      const { getByRole } = render(
+        <TagInput
+          label="Tags"
+          placeholder="Add a tag"
+          defaultValue={['one']}
+        />,
+      );
+
+      expect(getByRole('textbox')).toHaveAttribute('placeholder', 'Add a tag');
+    });
+  });
+
+  describe('tagPlacement="inside"', () => {
+    function Inside(props: Partial<Parameters<typeof TagInput>[0]>) {
+      return (
+        <TagInput
+          label="Tags"
+          tagPlacement="inside"
+          defaultValue={['one', 'two', 'three']}
+          {...props}
+        />
+      );
+    }
+
+    it('puts the chips in the input box, before the input', () => {
+      const { getByRole, getByTestId } = render(<Inside />);
+      const box = getByTestId('InputWrapper');
+      const grid = getByRole('grid');
+
+      expect(box).toContainElement(grid);
+      expect(
+        grid.compareDocumentPosition(getByRole('textbox')) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('keeps the chips below the box by default', () => {
+      const { getByRole, getByTestId } = render(
+        <TagInput label="Tags" defaultValue={['one']} />,
+      );
+
+      expect(getByTestId('InputWrapper')).not.toContainElement(
+        getByRole('grid'),
+      );
+    });
+
+    it('steps from the start of the text to the last chip and back', async () => {
+      const { getByRole, getAllByRole } = render(<Inside />);
+      const input = getByRole('textbox') as HTMLInputElement;
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(getAllByRole('row')[2]).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowRight}');
+      expect(input).toHaveFocus();
+      expect(input.selectionStart).toBe(0);
+    });
+
+    it('moves the caret through the text before stepping out of it', async () => {
+      const { getByRole, getAllByRole } = render(<Inside />);
+      const input = getByRole('textbox');
+
+      await userEvent.type(input, 'ab{ArrowLeft}');
+      expect(input).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowLeft}{ArrowLeft}');
+      expect(getAllByRole('row')[2]).toHaveFocus();
+      expect(input).toHaveValue('ab');
+    });
+
+    it('keeps a modified arrow in the text', async () => {
+      const { getByRole } = render(<Inside />);
+      const input = getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{Shift>}{ArrowLeft}{/Shift}');
+
+      expect(input).toHaveFocus();
+    });
+
+    it('stops at the first chip instead of wrapping round', async () => {
+      const { getByRole, getAllByRole } = render(<Inside />);
+
+      await userEvent.click(getByRole('textbox'));
+      await userEvent.keyboard('{ArrowLeft}{ArrowLeft}{ArrowLeft}');
+      expect(getAllByRole('row')[0]).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(getAllByRole('row')[0]).toHaveFocus();
+    });
+
+    it('skips a locked last chip on the way to the text', async () => {
+      const { getByRole, getAllByRole } = render(
+        <Inside tagProps={(value) => ({ isDisabled: value === 'three' })} />,
+      );
+
+      await userEvent.click(getByRole('textbox'));
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(getAllByRole('row')[1]).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowRight}');
+      expect(getByRole('textbox')).toHaveFocus();
+    });
+
+    it('leaves the arrows to the text below the box', async () => {
+      const { getByRole } = render(
+        <TagInput label="Tags" defaultValue={['one']} />,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{ArrowLeft}');
+
+      expect(input).toHaveFocus();
+    });
+
+    it('mirrors the arrows right to left', async () => {
+      const { getByRole, getAllByRole } = render(
+        <I18nProvider locale="he-IL">
+          <Inside />
+        </I18nProvider>,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(input).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowRight}');
+      expect(getAllByRole('row')[2]).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(input).toHaveFocus();
     });
   });
 
@@ -1348,6 +1507,54 @@ describe('<TagInput />', () => {
       await waitFor(() => expect(queryByRole('listbox')).toBeNull());
     });
 
+    // Inside the box the chips are part of the popover's trigger, so a press
+    // on one is not an outside press and used to leave the list open.
+    it.each(['below', 'inside'] as const)(
+      'closes the list and keeps the text when a chip is removed with a press (%s)',
+      async (tagPlacement) => {
+        const { getByRole, getAllByRole } = renderWithRoot(
+          <Actions
+            tagPlacement={tagPlacement}
+            defaultValue={['read', 'deploy']}
+          />,
+        );
+        const input = getByRole('combobox');
+
+        await userEvent.type(input, 're');
+        await waitFor(() =>
+          expect(input).toHaveAttribute('aria-expanded', 'true'),
+        );
+
+        await userEvent.click(getByRole('button', { name: 'Remove read' }));
+
+        expect(getAllByRole('row')).toHaveLength(1);
+        expect(getAllByRole('row')[0]).toHaveFocus();
+        expect(input).toHaveValue('re');
+        await waitFor(() =>
+          expect(input).toHaveAttribute('aria-expanded', 'false'),
+        );
+      },
+    );
+
+    it('closes the list when a press inside the box moves to a chip', async () => {
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <Actions tagPlacement="inside" defaultValue={['read', 'deploy']} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.click(input);
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'true'),
+      );
+
+      await userEvent.click(getAllByRole('row')[0]);
+
+      expect(getAllByRole('row')[0]).toHaveFocus();
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'false'),
+      );
+    });
+
     it('goes back to the input with Escape', async () => {
       const onOuterKeyDown = vi.fn();
       const { getByRole, getAllByRole } = render(
@@ -1426,10 +1633,10 @@ describe('<TagInput />', () => {
   });
 
   describe('clear button', () => {
-    it('clears the typed text and keeps the values', async () => {
+    it('clears the typed text and the values', async () => {
       const onChange = vi.fn();
       const onClear = vi.fn();
-      const { getByRole, queryByRole, getAllByRole } = render(
+      const { getByRole, queryByRole } = render(
         <TagInput
           isClearable
           label="Tags"
@@ -1441,28 +1648,96 @@ describe('<TagInput />', () => {
       const input = getByRole('textbox');
 
       await userEvent.type(input, 'thr');
-      await userEvent.click(getByRole('button', { name: 'Clear text Tags' }));
+      await userEvent.click(getByRole('button', { name: 'Clear all Tags' }));
 
       expect(input).toHaveValue('');
       expect(input).toHaveFocus();
       expect(onClear).toHaveBeenCalledTimes(1);
-      expect(onChange).not.toHaveBeenCalled();
-      expect(getAllByRole('row')).toHaveLength(2);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenLastCalledWith([]);
+      expect(queryByRole('row')).toBeNull();
+      expect(getByRole('status')).toHaveTextContent('Removed one and two');
       expect(
-        queryByRole('button', { name: 'Clear text Tags' }),
+        queryByRole('button', { name: 'Clear all Tags' }),
       ).not.toBeInTheDocument();
     });
 
-    it('shows only while there is text', async () => {
-      const { getByRole, queryByRole } = render(
-        <TagInput isClearable label="Tags" defaultValue={['one']} />,
+    it('keeps the locked values', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getAllByRole, queryByRole } = render(
+        <TagInput
+          isClearable
+          label="Tags"
+          defaultValue={['you', 'ana', 'lee']}
+          tagProps={(value) =>
+            value === 'you' ? { isDisabled: true } : undefined
+          }
+          onChange={onChange}
+        />,
       );
 
-      expect(queryByRole('button', { name: /Clear text/ })).toBeNull();
+      await userEvent.click(getByRole('button', { name: 'Clear all Tags' }));
+
+      expect(onChange).toHaveBeenLastCalledWith(['you']);
+      expect(getAllByRole('row')).toHaveLength(1);
+      // Only a locked value is left, and it cannot be cleared.
+      expect(queryByRole('button', { name: /Clear all/ })).toBeNull();
+    });
+
+    it('shows while there is text or a value to clear', async () => {
+      const { getByRole, queryByRole, rerender } = render(
+        <TagInput isClearable label="Tags" />,
+      );
+
+      expect(queryByRole('button', { name: /Clear all/ })).toBeNull();
 
       await userEvent.type(getByRole('textbox'), 'a');
 
-      expect(getByRole('button', { name: /Clear text/ })).toBeInTheDocument();
+      expect(getByRole('button', { name: /Clear all/ })).toBeInTheDocument();
+
+      rerender(<TagInput isClearable label="Tags" value={['one']} />);
+      await userEvent.clear(getByRole('textbox'));
+
+      expect(getByRole('button', { name: /Clear all/ })).toBeInTheDocument();
+    });
+
+    it('leaves the values to the button: Escape clears only the text', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getAllByRole } = render(
+        <TagInput
+          isClearable
+          label="Tags"
+          defaultValue={['one']}
+          onChange={onChange}
+        />,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.type(input, 'two');
+      await userEvent.keyboard('{Escape}');
+
+      expect(input).toHaveValue('');
+      expect(onChange).not.toHaveBeenCalled();
+      expect(getAllByRole('row')).toHaveLength(1);
+    });
+
+    it('closes the list, also when it opens on focus', async () => {
+      const { getByRole } = renderWithRoot(
+        <Actions isClearable popoverTrigger="focus" defaultValue={['read']} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.click(input);
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'true'),
+      );
+
+      await userEvent.click(getByRole('button', { name: 'Clear all Actions' }));
+
+      expect(input).toHaveFocus();
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'false'),
+      );
     });
 
     it('is not a Tab stop, so Tab still commits the text and reaches the chips', async () => {
@@ -1490,10 +1765,217 @@ describe('<TagInput />', () => {
           isReadOnly
           label="Tags"
           defaultInputValue="one"
+          defaultValue={['two']}
         />,
       );
 
-      expect(queryByRole('button', { name: /Clear text/ })).toBeNull();
+      expect(queryByRole('button', { name: /Clear all/ })).toBeNull();
+    });
+  });
+
+  describe('popoverTrigger', () => {
+    it('opens the list on typing by default, not on focus', async () => {
+      const { getByRole } = renderWithRoot(<Actions />);
+      const input = getByRole('combobox');
+
+      await userEvent.tab();
+      expect(input).toHaveFocus();
+      expect(input).toHaveAttribute('aria-expanded', 'false');
+
+      await userEvent.keyboard('re');
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'true'),
+      );
+    });
+
+    it.each(['below', 'inside'] as const)(
+      'opens the list on focus with "focus" (%s)',
+      async (tagPlacement) => {
+        const onOpenChange = vi.fn();
+        const { getByRole } = renderWithRoot(
+          <Actions
+            popoverTrigger="focus"
+            tagPlacement={tagPlacement}
+            defaultValue={['read']}
+            onOpenChange={onOpenChange}
+          />,
+        );
+        const input = getByRole('combobox');
+
+        await userEvent.click(input);
+
+        await waitFor(() =>
+          expect(input).toHaveAttribute('aria-expanded', 'true'),
+        );
+        expect(onOpenChange).toHaveBeenLastCalledWith(true);
+      },
+    );
+
+    // The chevron's press moved focus to it, and handing focus back to the
+    // input opened the list again right after the chevron closed it.
+    it.each(['below', 'inside'] as const)(
+      'lets the chevron close the list with "focus" (%s)',
+      async (tagPlacement) => {
+        const { getByRole } = renderWithRoot(
+          <Actions popoverTrigger="focus" tagPlacement={tagPlacement} />,
+        );
+        const input = getByRole('combobox');
+
+        await userEvent.click(input);
+        await waitFor(() =>
+          expect(input).toHaveAttribute('aria-expanded', 'true'),
+        );
+
+        await userEvent.click(
+          getByRole('button', { name: 'Show options Actions' }),
+        );
+
+        expect(input).toHaveFocus();
+        await waitFor(() =>
+          expect(input).toHaveAttribute('aria-expanded', 'false'),
+        );
+      },
+    );
+
+    it.each(['input', 'focus'] as const)(
+      'opens the list on a press in the focused input after Escape (%s)',
+      async (popoverTrigger) => {
+        const { getByRole } = renderWithRoot(
+          <Actions popoverTrigger={popoverTrigger} />,
+        );
+        const input = getByRole('combobox');
+
+        await userEvent.click(input);
+        await waitFor(() =>
+          expect(input).toHaveAttribute('aria-expanded', 'true'),
+        );
+
+        await userEvent.keyboard('{Escape}');
+        expect(input).toHaveAttribute('aria-expanded', 'false');
+
+        await userEvent.click(input);
+        await waitFor(() =>
+          expect(input).toHaveAttribute('aria-expanded', 'true'),
+        );
+      },
+    );
+
+    it('only focuses the input from a click on the label', async () => {
+      const { getByRole, getByText } = renderWithRoot(<Actions />);
+      const input = getByRole('combobox');
+
+      await userEvent.click(getByText('Actions'));
+
+      expect(input).toHaveFocus();
+      expect(input).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('keeps the list closed on a press over text that matches nothing', async () => {
+      const { getByRole } = renderWithRoot(<Actions />);
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'zz');
+      await userEvent.keyboard('{Escape}');
+      expect(input).toHaveValue('zz');
+
+      await userEvent.click(input);
+
+      expect(input).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('opens the list from the box around the chips, not from a chip', async () => {
+      const { getByRole, getAllByRole, getByTestId } = renderWithRoot(
+        <Actions tagPlacement="inside" defaultValue={['read']} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.click(getAllByRole('row')[0]);
+      expect(input).toHaveAttribute('aria-expanded', 'false');
+
+      await userEvent.click(getByTestId('InputWrapper'));
+
+      expect(input).toHaveFocus();
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'true'),
+      );
+    });
+
+    it('opens the list only from the chevron or the arrow keys with "manual"', async () => {
+      const { getByRole } = renderWithRoot(<Actions popoverTrigger="manual" />);
+      const input = getByRole('combobox');
+
+      await userEvent.click(input);
+      await userEvent.keyboard('re');
+      expect(input).toHaveAttribute('aria-expanded', 'false');
+
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'true'),
+      );
+    });
+  });
+
+  describe('emptyLabel', () => {
+    it('says so when no option matches the typed text', async () => {
+      const { getByRole, getByText, getAllByRole } = renderWithRoot(
+        <Actions defaultValue={['read']} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'zz');
+
+      await waitFor(() =>
+        expect(getByText('No results found')).toBeInTheDocument(),
+      );
+      expect(input).toHaveAttribute('aria-expanded', 'true');
+
+      // Enter still refuses text that names no option.
+      await userEvent.keyboard('{Enter}');
+
+      expect(getByText('"zz" is not in the list')).toBeInTheDocument();
+      expect(getAllByRole('row')).toHaveLength(1);
+    });
+
+    it('takes a label of its own', async () => {
+      const { getByRole, getByText } = renderWithRoot(
+        <Actions emptyLabel="No such action" />,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'zz');
+
+      await waitFor(() =>
+        expect(getByText('No such action')).toBeInTheDocument(),
+      );
+    });
+
+    it('shows every option on ArrowDown', async () => {
+      const { getByRole, getByText } = renderWithRoot(<Actions />);
+
+      await userEvent.type(getByRole('combobox'), 'zz');
+      await waitFor(() =>
+        expect(getByText('No results found')).toBeInTheDocument(),
+      );
+
+      await userEvent.keyboard('{ArrowDown}');
+
+      await waitFor(() =>
+        expect(getByRole('option', { name: 'deploy' })).toBeInTheDocument(),
+      );
+    });
+
+    it('says it is loading while there is no option to show', async () => {
+      const { getByRole, getByText } = renderWithRoot(
+        <TagInput label="Actions" items={[] as { key: string }[]} isLoading>
+          {(item) => <TagInput.Item key={item.key}>{item.key}</TagInput.Item>}
+        </TagInput>,
+      );
+      const trigger = getByRole('button', { name: 'Show options Actions' });
+
+      expect(trigger).toHaveAttribute('data-loading');
+
+      await userEvent.click(trigger);
+
+      await waitFor(() => expect(getByText('Loading…')).toBeInTheDocument());
     });
   });
 
@@ -2226,7 +2708,11 @@ describe('<TagInput />', () => {
 
       await userEvent.click(getByRole('button', { name: 'After' }));
 
-      expect(queryByText('"one" is already added')).toBeNull();
+      // A press clears it in a task after mouseup (see the test below), which
+      // a loaded run can reach after the click resolves.
+      await waitFor(() =>
+        expect(queryByText('"one" is already added')).toBeNull(),
+      );
       expect(input).not.toHaveAttribute('aria-invalid');
     });
 

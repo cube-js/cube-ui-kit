@@ -149,8 +149,10 @@
     "unknownValue": "« {{value}} » ne figure pas dans la liste",
     "unavailableValue": "« {{value}} » n’est pas disponible",
     "limitReached": "Vous pouvez en ajouter jusqu’à {{count}}",
-    "clearText": "Effacer le texte",
-    "clearTextFor": "Effacer le texte, {{label}}",
+    "clearAll": "Tout effacer",
+    "clearAllFor": "Tout effacer, {{label}}",
+    "noResults": "Aucun résultat trouvé",
+    "loading": "Chargement…",
     "backspaceHint": "Appuyez sur Retour arrière pour accéder aux valeurs sélectionnées."
   },
   "placeholder": {

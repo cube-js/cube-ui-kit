@@ -153,7 +153,7 @@ const meta = {
     isClearable: {
       control: { type: 'boolean' },
       description:
-        'Whether a button in the input clears the typed text. It shows while there is text',
+        'Whether a button in the input clears the field: the typed text and every chip but the locked ones. It shows while there is something to clear',
       table: { defaultValue: { summary: false } },
     },
     filter: {
@@ -164,8 +164,14 @@ const meta = {
     popoverTrigger: {
       options: ['focus', 'input', 'manual'],
       control: { type: 'radio' },
-      description: 'When the suggestions popover opens',
+      description:
+        'When the suggestions popover opens on its own: `input` on typing or a press in the input, `focus` on focus as well, `manual` only from the chevron and the arrow keys',
       table: { defaultValue: { summary: 'input' } },
+    },
+    emptyLabel: {
+      control: { type: 'text' },
+      description:
+        'What the popover says when no option matches the typed text, or while `isLoading` with no option to show. Defaults to "No results found", and to "Loading…" while loading',
     },
     hideTrigger: {
       control: { type: 'boolean' },
@@ -208,6 +214,19 @@ const meta = {
       control: { type: 'radio' },
       description: 'Size of the input. The chips follow it',
       table: { defaultValue: { summary: 'medium' } },
+    },
+    tagPlacement: {
+      options: ['below', 'inside'],
+      control: { type: 'radio' },
+      description:
+        'Where the chips go: in a list below the input, or in the input box, in one wrapping row with the text',
+      table: { defaultValue: { summary: 'below' } },
+    },
+    hidePlaceholderWithTags: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the placeholder hides once there is a tag, so it only prompts for the first value',
+      table: { defaultValue: { summary: false } },
     },
     listGap: {
       control: { type: 'number' },
@@ -253,7 +272,8 @@ const meta = {
     },
     isLoading: {
       control: { type: 'boolean' },
-      description: 'Whether the field shows a loading indicator',
+      description:
+        'Whether options are loading: a spinner in the input, and "Loading…" in the popover while there is no option to show',
       table: { defaultValue: { summary: false } },
     },
     ...VALIDATION_ARGS,
@@ -440,6 +460,96 @@ export const Sizes: StoryFn<CubeTagInputProps> = (args) => (
 
 Sizes.args = { fieldStyles: { width: '100%' } };
 
+export const TagsInside: StoryFn<CubeTagInputProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
+    {(['small', 'medium', 'large'] as const).map((size) => (
+      <TagInput
+        key={size}
+        {...args}
+        tagPlacement="inside"
+        label={size}
+        size={size}
+        // Short enough to leave typing room on one row at every size.
+        defaultValue={['ana@acme.com', 'lee@acme.com']}
+      />
+    ))}
+    <TagInput
+      {...args}
+      tagPlacement="inside"
+      label="Wrapping, with suggestions"
+      defaultValue={ACTIONS.map((action) => action.key)}
+      defaultInputValue="ma"
+      isClearable
+    >
+      {ACTIONS.map((action) => (
+        <TagInput.Item key={action.key}>{action.label}</TagInput.Item>
+      ))}
+    </TagInput>
+    <TagInput
+      {...args}
+      tagPlacement="inside"
+      label="Long value, long placeholder"
+      placeholder="Add another recipient by name or address"
+      defaultValue={[
+        'quarterly-revenue-distribution-list@finance.acme-holdings.com',
+        'ana@acme.com',
+      ]}
+    />
+    <TagInput
+      {...args}
+      tagPlacement="inside"
+      label="Invalid"
+      defaultValue={['ana@acme.com', 'not an address']}
+      validateTag={validateEmail}
+      isInvalid
+      errorMessage="Fix the highlighted address"
+    />
+    <TagInput
+      {...args}
+      tagPlacement="inside"
+      isDisabled
+      label="Disabled"
+      defaultValue={['ana@acme.com', 'ops-team@acme.com']}
+    />
+  </Space>
+);
+
+TagsInside.args = { fieldStyles: { width: '100%' } };
+
+TagsInside.parameters = {
+  docs: {
+    description: {
+      story:
+        'The chips in the input box, in one wrapping row with the text. One row is the height of the input. Text that does not fit after the chips moves to a row of its own with the controls, and a long value or placeholder ends in an ellipsis.',
+    },
+  },
+};
+
+export const HidePlaceholderWithTags: StoryFn<CubeTagInputProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
+    <TagInput
+      {...args}
+      hidePlaceholderWithTags
+      tagPlacement="inside"
+      label="No tags yet"
+      placeholder="Add recipients"
+    />
+    <TagInput
+      {...args}
+      hidePlaceholderWithTags
+      tagPlacement="inside"
+      label="With tags"
+      placeholder="Add recipients"
+      defaultValue={['ana@acme.com']}
+    />
+  </Space>
+);
+
+HidePlaceholderWithTags.args = { fieldStyles: { width: '100%' } };
+
+// A field with no placeholder looks like any other: nothing new to photograph.
+HidePlaceholderWithTags.parameters = NO_SNAPSHOT;
+
 export const DisabledAndReadOnly: StoryFn<CubeTagInputProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
     <TagInput
@@ -568,7 +678,7 @@ LockedAndClearable.parameters = {
   docs: {
     description: {
       story:
-        '`isClearable` adds a button to the input that clears the typed text; it shows while there is text. A chip with `isDisabled` from `tagProps` is locked: it has no remove button and the keyboard skips it.',
+        '`isClearable` adds a button to the input that clears the field: the typed text and every chip but the locked ones. A chip with `isDisabled` from `tagProps` is locked: it has no remove button, the keyboard skips it and the clear button leaves it.',
     },
   },
 };

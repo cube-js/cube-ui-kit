@@ -1,6 +1,6 @@
 import { useControlledState } from '@react-stately/utils';
 import { Node as CollectionNode, Key } from '@react-types/shared';
-import { Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   ClipboardEvent,
   cloneElement,
@@ -9,6 +9,7 @@ import {
   forwardRef,
   isValidElement,
   KeyboardEvent,
+  PointerEvent,
   ReactElement,
   ReactNode,
   RefObject,
@@ -17,7 +18,13 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useFilter, useId, useTextField, VisuallyHidden } from 'react-aria';
+import {
+  useFilter,
+  useId,
+  useLocale,
+  useTextField,
+  VisuallyHidden,
+} from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
@@ -57,6 +64,7 @@ import { TextInputBase } from '../TextInput/TextInputBase';
 
 import { TagList, TagListEntry } from './TagList';
 import { useActiveOption } from './useActiveOption';
+import { useSuffixSpace } from './useSuffixSpace';
 import { useTagError } from './useTagError';
 
 import type { FieldBaseProps } from '../../../shared';
@@ -74,6 +82,11 @@ type FilterFn = (textValue: string, inputValue: string) => boolean;
 const showEveryOption: FilterFn = () => true;
 
 export type TagInputPopoverTrigger = 'focus' | 'input' | 'manual';
+
+// What a press in the input box goes to instead of the input, as in
+// `TextInputBase`: a chip, its remove button, the clear button, the chevron.
+const INTERACTIVE_ELEMENTS =
+  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
 
 /**
  * What `validateTag` returns: `true` (or nothing) accepts the value, `false`
@@ -102,6 +115,11 @@ export interface CubeTagInputProps<T = object>
   onInputChange?: (value: string) => void;
   /** Placeholder text for the input. */
   placeholder?: string;
+  /**
+   * Whether the placeholder hides once there is a tag, so it only prompts for
+   * the first value.
+   */
+  hidePlaceholderWithTags?: boolean;
   /** HTML `autocomplete` attribute for the input. */
   autoComplete?: string;
   /**
@@ -167,8 +185,8 @@ export interface CubeTagInputProps<T = object>
   /** Whether leaving the field commits the typed text. @default true */
   shouldCommitOnBlur?: boolean;
   /**
-   * Whether a button in the input clears the typed text. It shows while there
-   * is text; the chips have their own remove buttons.
+   * Whether a button in the input clears the field: the typed text and every
+   * chip but the locked ones. It shows while there is something to clear.
    */
   isClearable?: boolean;
   /** Called when the clear button is pressed. */
@@ -196,8 +214,19 @@ export interface CubeTagInputProps<T = object>
   filter?: FilterFn | false;
   /** Keys of options that cannot be picked. */
   disabledKeys?: Iterable<Key>;
-  /** When the suggestions popover opens. @default 'input' */
+  /**
+   * When the suggestions popover opens on its own, as in `ComboBox`: `'input'`
+   * on typing or a press in the input, `'focus'` on focus as well, `'manual'`
+   * only from the chevron and the arrow keys.
+   * @default 'input'
+   */
   popoverTrigger?: TagInputPopoverTrigger;
+  /**
+   * What the popover says when no option matches the typed text, or while
+   * `isLoading` with no option to show. Defaults to "No results found", and
+   * to "Loading…" while loading.
+   */
+  emptyLabel?: ReactNode;
   /** Called when the suggestions popover opens or closes. */
   onOpenChange?: (isOpen: boolean) => void;
   /** Whether to hide the button that toggles the suggestions popover. */
@@ -228,6 +257,13 @@ export interface CubeTagInputProps<T = object>
   suffixPosition?: 'before' | 'after';
   /** Size of the input. The chips follow it. @default 'medium' */
   size?: 'small' | 'medium' | 'large' | (string & {});
+  /**
+   * Where the chips go. `below`: a list under a fixed single-line input.
+   * `inside`: in the input box, in one wrapping row with the text, so the box
+   * grows a line at a time; for a row with no room below the field.
+   * @default 'below'
+   */
+  tagPlacement?: 'below' | 'inside';
 
   /** Ref to the input element. */
   inputRef?: RefObject<HTMLInputElement>;
@@ -279,6 +315,175 @@ const TAG_SIZES: Record<string, CubeTagProps['size']> = {
   medium: 'xsmall',
   large: 'small',
 };
+
+// Chips inside the box: one wrapping row of chips and text. The padding is the
+// same on every side and comes from the chip height, so one row is exactly the
+// input's height. The prefix box steps aside (`contents`) so the icon and the
+// chips are items of that row, and the caret follows the last chip.
+const INSIDE_WRAPPER_STYLES: Styles = {
+  display: 'flex',
+  flow: 'row wrap',
+  placeItems: 'center start',
+  gap: '.5x',
+  height: 'min $size',
+  padding: '$tag-inset',
+  // The fill reaches under the padding, which the default `content-box` clip
+  // would leave bare.
+  backgroundClip: 'padding-box',
+
+  '$tag-size': {
+    '': '$size-xs',
+    'size=small': '2.5x',
+    'size=large': '$size-sm',
+  },
+  '$tag-inset': '(($size - $tag-size - 2bw) / 2)',
+  // The suffix's width and the gap before it, measured by `useSuffixSpace`.
+  '$suffix-space': '0px',
+
+  Prefix: {
+    display: 'contents',
+  },
+
+  // On the end of the text, which reserves its room: the suffix takes none of
+  // its own in the row, so the two wrap together. The block margins let a
+  // full-height action sit in a chip-high row without growing it, flush with
+  // the edge as in a plain input.
+  Suffix: {
+    position: 'relative',
+    alignSelf: 'stretch',
+    margin: '(-1 * $tag-inset)',
+    marginLeft: '(-1 * $suffix-space)',
+  },
+};
+
+// The text takes what the last row leaves. It is as wide as what is typed,
+// never under 6x, so text that does not fit the rest of the row moves to a row
+// of its own, and is cut only past the full width. The placeholder is a hint:
+// it does not size the field, so it never takes a row of its own (which the
+// first typed letter would take back) and is cut with an ellipsis instead.
+// Without `field-sizing` the text keeps a fixed share of the row and scrolls.
+// With no chips it lines up with a plain input.
+const INSIDE_INPUT_STYLES: Styles = {
+  flexGrow: 1,
+  flexBasis: {
+    '': 0,
+    '@supports(field-sizing: content) & !:placeholder-shown': 'auto',
+  },
+  fieldSizing: {
+    '': 'content',
+    ':placeholder-shown': 'fixed',
+  },
+  textOverflow: 'ellipsis',
+  // `auto`, or a width would override `field-sizing`. The suffix's room counts
+  // toward the minimum, so typing room stays 6x beside it.
+  width: '(6x + $suffix-space) auto 100%',
+  // Its own line box would make the row taller than the chips.
+  height: '$tag-size',
+  padding:
+    '0 (1x - 1bw - $tag-inset + $suffix-space) 0 (1x - 1bw - $tag-inset)',
+};
+
+// The chips are items of the box's row, not a box of their own, and each one
+// fits the row height.
+const INSIDE_TAG_LIST_STYLES: Styles = {
+  display: 'contents',
+  // Off a flex box, tasty's `gap` turns into child margins; the box's own gap
+  // spaces the chips.
+  gap: 0,
+};
+
+const INSIDE_TAG_STYLES: Styles = {
+  $size: '$tag-size',
+  // The height comes from `$size` alone, the label centered in it, so a small
+  // field's chip can be shorter than the label's padded line.
+  '$block-padding': 0,
+};
+
+interface PartStyles {
+  wrapper?: Styles;
+  input?: Styles;
+  tagList?: Styles;
+  tag?: Styles;
+}
+
+/** What each part is styled with for a placement. The consumer's own win. */
+function getPlacementStyles(
+  placement: CubeTagInputProps['tagPlacement'],
+  own: PartStyles,
+): PartStyles {
+  if (placement !== 'inside') return own;
+
+  return {
+    wrapper: mergeStyles(INSIDE_WRAPPER_STYLES, own.wrapper),
+    input: mergeStyles(INSIDE_INPUT_STYLES, own.input),
+    tagList: mergeStyles(INSIDE_TAG_LIST_STYLES, own.tagList),
+    tag: mergeStyles(INSIDE_TAG_STYLES, own.tag),
+  };
+}
+
+/** The placeholder, unless it hides once there is a tag. */
+function shownPlaceholder(
+  placeholder: string | undefined,
+  hideWithTags: boolean | undefined,
+  tagCount: number,
+) {
+  return hideWithTags && tagCount > 0 ? undefined : placeholder;
+}
+
+/**
+ * Whether the popover shows: with an option to list, or to say there is none
+ * for the typed text, or none yet while loading (`emptyLabel`), rather than
+ * disappear under the user. With no options at all and nothing typed, it
+ * hides but stays open, so it comes back as soon as there is something.
+ */
+function isListShown({
+  isOpen,
+  hasResults,
+  term,
+  isLoading,
+}: {
+  isOpen: boolean;
+  hasResults: boolean;
+  term: string;
+  isLoading: boolean | undefined;
+}) {
+  return isOpen && (hasResults || term !== '' || !!isLoading);
+}
+
+/** What the popover says when it has no option to list. */
+function resolveEmptyLabel(
+  emptyLabel: ReactNode,
+  isLoading: boolean | undefined,
+  t: ReturnType<typeof useI18n>['t'],
+) {
+  if (emptyLabel !== undefined) return emptyLabel;
+
+  return isLoading
+    ? t('tagInput.loading', 'Loading…')
+    : t('tagInput.noResults', 'No results found');
+}
+
+/**
+ * Where the list of chips renders: inside, after the icon and the prefix and
+ * before the text; below, under the box.
+ */
+function placeTagList(
+  placement: CubeTagInputProps['tagPlacement'],
+  prefix: ReactNode,
+  tagList: ReactNode,
+) {
+  if (placement !== 'inside' || !tagList) return { prefix, below: tagList };
+
+  return {
+    prefix: (
+      <>
+        {prefix}
+        {tagList}
+      </>
+    ),
+    below: null,
+  };
+}
 
 const DEFAULT_DELIMITERS = [','];
 const LINE_BREAK = /\r\n|\r|\n/;
@@ -546,6 +751,25 @@ function isComposingKey(e: KeyboardEvent<HTMLInputElement>) {
   return e.nativeEvent.isComposing || e.keyCode === 229;
 }
 
+/**
+ * The arrow toward the start of the line, with the caret already there and
+ * nothing selected: the caret has nowhere to go, so it steps out to the chip
+ * before it. Modified arrows stay text editing.
+ */
+function isArrowPastStart(
+  e: KeyboardEvent<HTMLInputElement>,
+  direction: 'ltr' | 'rtl',
+) {
+  const { selectionStart, selectionEnd } = e.currentTarget;
+
+  return (
+    e.key === (direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft') &&
+    !(e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) &&
+    selectionStart === 0 &&
+    selectionEnd === 0
+  );
+}
+
 type RejectionReason =
   'invalid' | 'duplicate' | 'unknown' | 'unavailable' | 'limit';
 
@@ -643,10 +867,12 @@ function TagInputTrigger({
   onPress,
   isOpen,
   isDisabled,
+  isLoading,
   styles,
 }: FieldButtonProps & {
   isOpen: boolean;
   isDisabled: boolean;
+  isLoading?: boolean;
   styles?: Styles;
 }) {
   const { t } = useI18n();
@@ -660,7 +886,7 @@ function TagInputTrigger({
       size={size}
       isDisabled={isDisabled}
       styles={styles}
-      mods={{ pressed: isOpen }}
+      mods={{ pressed: isOpen, loading: !!isLoading }}
       // Arrow keys open the list from the input, so the button stays out of
       // the Tab order and Tab goes from the input straight to the chips.
       tabIndex={-1}
@@ -679,7 +905,7 @@ function TagInputTrigger({
   );
 }
 
-/** The button in the input that clears the typed text. */
+/** The button in the input that clears the typed text and the chips. */
 function TagInputClearButton({
   id,
   size,
@@ -695,15 +921,15 @@ function TagInputClearButton({
       qa="TagInputClearButton"
       icon={<CloseIcon />}
       size={size}
-      // Escape does the same from the keyboard. As a Tab stop it would take
-      // focus just as tabbing away commits the text and removes it.
+      // As a Tab stop it would take focus just as tabbing away commits the
+      // text, and with the text gone it could be the only thing left to clear.
       tabIndex={-1}
       aria-label={
         ariaLabel
-          ? t('tagInput.clearTextFor', 'Clear text, {{label}}', {
+          ? t('tagInput.clearAllFor', 'Clear all, {{label}}', {
               label: ariaLabel,
             })
-          : t('tagInput.clearText', 'Clear text')
+          : t('tagInput.clearAll', 'Clear all')
       }
       aria-labelledby={fieldLabelledby ? `${id} ${fieldLabelledby}` : undefined}
       onPress={onPress}
@@ -729,6 +955,8 @@ function TagInput<T extends object>(
 
   const { t } = useI18n();
   const { formatList } = useFormatter();
+  // The text direction; `direction` is where the popover opens.
+  const { direction: textDirection } = useLocale();
 
   let {
     qa,
@@ -741,6 +969,7 @@ function TagInput<T extends object>(
     defaultInputValue,
     onInputChange,
     placeholder,
+    hidePlaceholderWithTags,
     autoFocus,
     autoComplete = 'off',
     onFocus,
@@ -759,6 +988,7 @@ function TagInput<T extends object>(
     filter,
     disabledKeys,
     popoverTrigger = 'input',
+    emptyLabel,
     onOpenChange,
     hideTrigger,
     direction = 'bottom',
@@ -771,6 +1001,7 @@ function TagInput<T extends object>(
     suffix,
     suffixPosition,
     size = 'medium',
+    tagPlacement = 'below',
     isDisabled,
     isReadOnly,
     isRequired,
@@ -1043,10 +1274,10 @@ function TagInput<T extends object>(
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const isInteractive = !isDisabled && !isReadOnly;
   const shouldShowPopover =
-    hasOptions && isInteractive && isPopoverOpen && hasResults;
+    hasOptions &&
+    isInteractive &&
+    isListShown({ isOpen: isPopoverOpen, hasResults, term, isLoading });
 
-  // With no matching option the popover hides but stays open, so it comes back
-  // as soon as the text matches again.
   const notifiedOpenRef = useRef(false);
 
   useEffect(() => {
@@ -1322,7 +1553,9 @@ function TagInput<T extends object>(
 
     e.preventDefault();
 
-    if (!shouldShowPopover) {
+    // A closed list, or one that only says nothing matches, opens with every
+    // option.
+    if (!shouldShowPopover || !hasResults) {
       if (!hasResults) setIsFilterActive(false);
       setIsPopoverOpen(true);
 
@@ -1354,17 +1587,18 @@ function TagInput<T extends object>(
     }
   });
 
-  // The chips sit below the input, not beside the caret, so Backspace in an
-  // empty input moves to the last chip instead of removing it out of view.
-  // The chip comes into view with focus and says it is removable; the next
-  // Backspace removes it and moves to the one before.
-  const handleBackspaceKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
+  // Backspace in an empty input moves to the last chip instead of removing it,
+  // which below the input would be out of view. The chip comes into view with
+  // focus and says it is removable; the next Backspace removes it and moves to
+  // the one before. Inside the box, the arrow past the start of the text goes
+  // there too.
+  const handleToTagsKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
     if (isComposingKey(e)) return;
 
     e.preventDefault();
 
-    // A held Backspace that just emptied the input stops there, so it does
-    // not run on into the chips.
+    // A held key that just emptied the input, or brought the caret to its
+    // start, stops there, so it does not run on into the chips.
     if (e.repeat) return;
 
     setIsPopoverOpen(false);
@@ -1453,8 +1687,8 @@ function TagInput<T extends object>(
       e.stopPropagation();
       setDraft('');
       setTagError(null);
-      // It may be open but hidden for want of a match; the full list must
-      // not appear when the text goes.
+      // It may be open but hidden with nothing to list; options that arrive
+      // later must not open it once the text is gone.
       setIsPopoverOpen(false);
     }
   });
@@ -1468,11 +1702,12 @@ function TagInput<T extends object>(
       } else if ((e.key === 'Home' || e.key === 'End') && shouldShowPopover) {
         handleEdgeKey(e);
       } else if (
-        e.key === 'Backspace' &&
-        !draft &&
+        (e.key === 'Backspace'
+          ? !draft
+          : tagPlacement === 'inside' && isArrowPastStart(e, textDirection)) &&
         uniqueValues.some((value) => !isTagLocked(value))
       ) {
-        handleBackspaceKey(e);
+        handleToTagsKey(e);
       } else if (e.key === 'Enter') {
         handleEnterKey(e);
       } else if (delimiters.includes(e.key)) {
@@ -1591,20 +1826,24 @@ function TagInput<T extends object>(
     isDisabled,
   });
 
-  // Tabbing from the input to the chips stays inside the component, so the
-  // composite blur never fires: close the popover and settle the text on the
-  // way. A click on a chip's remove button also moves focus there, and leaves
-  // both alone.
+  // Moving from the input to the chips stays inside the component, so the
+  // composite blur never fires: close the popover on the way, as Backspace
+  // does. A press on a chip or its remove button needs this too: inside the
+  // box the chips are part of the popover's trigger, so the press is not an
+  // outside one. Tab also settles the text; a press keeps it. The clear button
+  // and the chevron hand focus back to the input, and are left alone.
   const handleInputBlur = useEvent((e: FocusEvent<HTMLInputElement>) => {
     const isTabbing = isTabbingRef.current;
     const next = e.relatedTarget as Node | null;
 
     isTabbingRef.current = false;
 
-    if (!isTabbing || !next || !rootRef.current?.contains(next)) return;
+    if (!next || !rootRef.current?.contains(next)) return;
+    if (!isTabbing && !tagListRef.current?.contains(next)) return;
 
     setIsPopoverOpen(false);
-    settleDraft();
+
+    if (isTabbing) settleDraft();
   });
 
   const handleInputFocus = useEvent(() => {
@@ -1612,6 +1851,39 @@ function TagInput<T extends object>(
       setIsPopoverOpen(true);
     }
   });
+
+  // A press in the input opens a closed list, as in ComboBox, focused or not:
+  // after Tab, or after Escape closed it. So does a press on the box around
+  // the input, which the box hands to the input; one on a chip or a button
+  // stays theirs. The field's label forwards its own click to the input with
+  // no pointerdown in the box, and that click only focuses. The list shows the
+  // options the typed text leaves, and text that matches nothing keeps it
+  // closed, so a press that moves the caret does not change what Enter adds.
+  const pressStartedInBoxRef = useRef(false);
+
+  const handleBoxPointerDown = (e: PointerEvent<HTMLElement>) => {
+    const box = e.currentTarget;
+    const target = e.target as Element;
+    const interactive = target.closest(INTERACTIVE_ELEMENTS);
+
+    pressStartedInBoxRef.current =
+      box.contains(target) &&
+      (!interactive ||
+        interactive === inputRef.current ||
+        !box.contains(interactive));
+  };
+
+  const handleBoxClick = () => {
+    const isBoxPress = pressStartedInBoxRef.current;
+
+    pressStartedInBoxRef.current = false;
+
+    if (!isBoxPress || popoverTrigger === 'manual') return;
+
+    if (hasOptions && isInteractive && !shouldShowPopover && hasResults) {
+      setIsPopoverOpen(true);
+    }
+  };
 
   // ---- chips --------------------------------------------------------------
   const tags: TagListEntry[] = uniqueValues.map((value) => {
@@ -1656,7 +1928,11 @@ function TagInput<T extends object>(
       id,
       label,
       value: draft,
-      placeholder,
+      placeholder: shownPlaceholder(
+        placeholder,
+        hidePlaceholderWithTags,
+        tags.length,
+      ),
       isDisabled,
       isReadOnly,
       isRequired,
@@ -1711,10 +1987,14 @@ function TagInput<T extends object>(
   const handleTriggerPress = useEvent(() => {
     const willOpen = !shouldShowPopover;
 
+    // Focus first: a press that took focus to the button brings it back to the
+    // input, and with `popoverTrigger="focus"` that focus opens the list. The
+    // button's own choice is set after it, so it wins.
+    inputRef.current?.focus();
+
     if (willOpen && !hasResults) setIsFilterActive(false);
 
     setIsPopoverOpen(willOpen);
-    inputRef.current?.focus();
   });
 
   const trigger =
@@ -1726,36 +2006,75 @@ function TagInput<T extends object>(
         fieldLabelledby={fieldLabelledby}
         isOpen={shouldShowPopover}
         isDisabled={!isInteractive}
+        isLoading={isLoading}
         styles={triggerStyles}
         onPress={handleTriggerPress}
       />
     ) : null;
 
-  // Clears what is typed, as Escape does. The chips below have their own
-  // remove buttons, so a button inside the input is about the text only.
-  const clearText = useEvent(() => {
-    // The button goes away with the text; keep focus in the field.
+  // Clears the whole field: the typed text and every chip but the locked ones.
+  // Escape clears only the text, so a stray key press never loses the values.
+  const clearAll = useEvent(() => {
+    // The button goes away with what it clears; keep focus in the field.
+    // Focus first, so a `popoverTrigger="focus"` open does not outlast it.
     inputRef.current?.focus();
     setDraft('');
-    setTagError(null);
     setIsPopoverOpen(false);
+    removeValues(uniqueValues);
+    setTagError(null);
     onClear?.();
   });
 
-  const canClear = !!isClearable && isInteractive && draft !== '';
+  const canClear =
+    !!isClearable && isInteractive && (draft !== '' || hasRemovableTags);
   const clearButton = canClear ? (
     <TagInputClearButton
       id={clearId}
       size={size}
       ariaLabel={ariaLabel}
       fieldLabelledby={fieldLabelledby}
-      onPress={clearText}
+      onPress={clearAll}
     />
   ) : null;
 
   // Not a bare fragment: an empty one would still mark the input as having a
   // suffix.
   const hasActions = clearButton != null || trigger != null;
+
+  useSuffixSpace(wrapperRef, tagPlacement === 'inside');
+
+  const partStyles = getPlacementStyles(tagPlacement, {
+    wrapper: wrapperStyles,
+    input: inputStyles,
+    tagList: tagListStyles,
+    tag: tagStyles,
+  });
+
+  const tagList = tags.length ? (
+    <TagList
+      id={tagListId}
+      listRef={tagListRef}
+      inputRef={inputRef}
+      aria-label={
+        ariaLabel
+          ? t('tagInput.selectedValuesFor', 'Selected values, {{label}}', {
+              label: ariaLabel,
+            })
+          : t('tagInput.selectedValues', 'Selected values')
+      }
+      aria-labelledby={fieldLabelledby}
+      tags={tags}
+      size={TAG_SIZES[size] ?? 'xsmall'}
+      isDisabled={isDisabled}
+      isReadOnly={isReadOnly}
+      isInline={tagPlacement === 'inside'}
+      styles={partStyles.tagList}
+      tagStyles={partStyles.tag}
+      onRemove={removeValues}
+    />
+  ) : null;
+
+  const placed = placeTagList(tagPlacement, prefix, tagList);
 
   const tagInputField = (
     <TagInputElement
@@ -1770,10 +2089,14 @@ function TagInput<T extends object>(
         qa={qa || 'TagInput'}
         inputRef={inputRef}
         wrapperRef={wrapperRef}
+        wrapperProps={{
+          onPointerDown: handleBoxPointerDown,
+          onClick: handleBoxClick,
+        }}
         inputProps={tagInputProps}
         mods={mods}
         icon={icon}
-        prefix={prefix}
+        prefix={placed.prefix}
         suffix={suffix}
         suffixPosition={suffixPosition}
         actions={
@@ -1791,31 +2114,10 @@ function TagInput<T extends object>(
         isLoading={isLoading}
         isInvalid={effectiveIsInvalid}
         isValid={isValid}
-        styles={wrapperStyles}
-        inputStyles={inputStyles}
+        styles={partStyles.wrapper}
+        inputStyles={partStyles.input}
       />
-      {tags.length ? (
-        <TagList
-          id={tagListId}
-          listRef={tagListRef}
-          inputRef={inputRef}
-          aria-label={
-            ariaLabel
-              ? t('tagInput.selectedValuesFor', 'Selected values, {{label}}', {
-                  label: ariaLabel,
-                })
-              : t('tagInput.selectedValues', 'Selected values')
-          }
-          aria-labelledby={fieldLabelledby}
-          tags={tags}
-          size={TAG_SIZES[size] ?? 'xsmall'}
-          isDisabled={isDisabled}
-          isReadOnly={isReadOnly}
-          styles={tagListStyles}
-          tagStyles={tagStyles}
-          onRemove={removeValues}
-        />
-      ) : null}
+      {placed.below}
       {/* Read only as the input's description, never on its own in browse mode. */}
       <span hidden id={summaryId}>
         {tags.length
@@ -1851,6 +2153,7 @@ function TagInput<T extends object>(
           listBoxStyles={listBoxStyles}
           optionStyles={optionStyles}
           optionHighlight={isFilterActive ? term : undefined}
+          emptyLabel={resolveEmptyLabel(emptyLabel, isLoading, t)}
           sectionStyles={sectionStyles}
           headingStyles={headingStyles}
           listGap={listGap}

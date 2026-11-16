@@ -5,7 +5,7 @@ import * as TagInputStories from './TagInput.stories';
 
 # TagInput
 
-A multi-value field. The user types a value into a single-line input and commits it with Enter or a comma, and each value becomes a removable chip listed below the input. The same component covers free-form lists (email addresses, numbers, IAM principals) and picking several values from suggestions, with an optional custom value on top.
+A multi-value field. The user types a value into a single-line input and commits it with Enter or a comma, and each value becomes a removable chip listed below the input, or, with `tagPlacement="inside"`, inside the input box. The same component covers free-form lists (email addresses, numbers, IAM principals) and picking several values from suggestions, with an optional custom value on top.
 
 ## When to Use
 
@@ -13,6 +13,7 @@ A multi-value field. The user types a value into a single-line input and commits
 - The user picks several values from a long list and should see what is picked while searching for the next one
 - A list of options where the user may also add a value that is not in it (`allowsCustomValue`)
 - Not for a short, fixed list of options: use [FilterPicker](/docs/forms-filterpicker--docs) or [CheckboxGroup](/docs/forms-checkboxgroup--docs)
+- Keep the chips below the input (the default) wherever there is room for them. Put them inside the box (`tagPlacement="inside"`) only where the field sits in a row with no room below it, such as a filter row
 
 ## Component
 
@@ -40,12 +41,15 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`normalizeTag`** `(value: string) => string` — Rewrites a typed value before it is checked and added. Return an empty string to drop it
 - **`maxTags`** `number` — The most values the field holds. Values past it are refused and stay in the input
 - **`shouldCommitOnBlur`** `boolean` (default: `true`) — Whether leaving the field commits the typed text
-- **`isClearable`** `boolean` (default: `false`) — Whether a button in the input clears the typed text. It shows while there is text
+- **`isClearable`** `boolean` (default: `false`) — Whether a button in the input clears the field: the typed text and every chip but the locked ones. It shows while there is something to clear
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter for the options, or `false` to show every option
-- **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — When the suggestions popover opens
+- **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — When the suggestions popover opens on its own, as in `ComboBox`: `input` on typing or a press in the input, `focus` on focus as well, `manual` only from the chevron and the arrow keys
+- **`emptyLabel`** `ReactNode` — What the popover says when no option matches the typed text, or while `isLoading` with no option to show. Defaults to "No results found", and to "Loading…" while loading
 - **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the button that toggles the popover
 - **`disabledKeys`** `Iterable<Key>` — Keys of options that cannot be picked
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the input. The chips follow it
+- **`tagPlacement`** `'below' | 'inside'` (default: `below`) — Where the chips go: in a list below the input, or in the input box, in one wrapping row with the text
+- **`hidePlaceholderWithTags`** `boolean` (default: `false`) — Whether the placeholder hides once there is a tag, so it only prompts for the first value
 - **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`)
 - **`direction`** `'bottom' | 'top'` (default: `bottom`) — Where the suggestions popover opens
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the popover flips when there is no room
@@ -75,6 +79,10 @@ A multi-value field. The user types a value into a single-line input and commits
 **maxTags** - A hard limit on the number of values. Past it, typed, pasted and picked values are refused with a message and stay in the input, while values up to the limit are still added. For a limit that only flags the field, use a `rules` entry instead.
 
 **tagProps** - Called per value. Return a theme, an icon or `qa` for the chip. A string `children` replaces the chip's text and also names the value in the input's description and in the "Added"/"Removed" announcements, for values whose label does not come from the options. `isDisabled: true` locks the chip: it has no remove button, the keyboard skips it, and its option cannot be unpicked. An invalid chip stays in the danger theme whatever theme it asks for.
+
+**tagPlacement** - `below` is the default and the preferred layout: the input is a fixed single line that never moves, stays level with a side label, and keeps the arrow keys for the suggestions. `inside` puts the chips in the input box for a field that has no room below it. The chips and the text share one wrapping row and the box grows a row at a time; one row is exactly the input's height. The text is as wide as what is typed, never under 6x: text that does not fit after the chips moves to a row of its own, and is cut only past the full width. The placeholder does not size the text, so a long one ends in an ellipsis instead of taking a row (`hidePlaceholderWithTags` hides it once there is a value). The suffix (validation icon, clear button, popover trigger) rides on the end of the text, so the two always wrap together. A long value shrinks to the box's width and ends in an ellipsis. Inside, the arrow keys cross between the text and the chips (see [Keyboard Navigation](#keyboard-navigation)). Moving to the chips closes the popover in either placement, by keyboard or with a press on a chip or its remove button, and a press keeps the typed text. Typed text sizes itself with `field-sizing`; a browser without it keeps a fixed share of the row for the text, which scrolls. Right-to-left layouts are not supported yet, as in the rest of UI Kit.
+
+**popoverTrigger** - When the suggestions popover opens on its own, with the same values as `ComboBox` and React Aria's `menuTrigger`. `input`, the default, opens it on typing and on a press in the input, also when the input already has focus, as after Escape closed it. A press on the box around the input counts too, with `tagPlacement="inside"` as well; a press on a chip or a button does not, and a click on the label only focuses the input. A press on typed text that matches no option keeps the popover closed, so a press that moves the caret does not change what Enter adds. `focus` also opens it whenever the input takes focus: from a click, Tab, or back from the chips. `manual` opens it only from the chevron and the arrow keys. With any of them, the chevron toggles the popover.
 
 **children / items** - Options turn the input into a combobox. Typing filters them and focuses the option the typed text names, or else the first match. Enter or a click toggles the focused option, and the popover stays open so the user can pick several in a row. A picked option is added as its own key, whatever other options its text resembles. Typed text means "add": pressing Enter on an option that is already a chip refuses it as a duplicate, and unpicking it takes the arrow keys, a click, or an empty input. A picked option shows a checked box. Typed text names an option by its exact label, then by its key, anywhere in the list, before any looser match counts, so `active` finds `active` even when `Active` comes first. Enter, a delimiter, a paste and blur all go by the same rule, and the option the text names stays listed and focused even when the filter would hide it, as when a key is typed, so they always add the same option. Without `allowsCustomValue`, typed text must name an option, and a label in another case or without its accents counts too: `production` adds `Production`. On blur a query that names nothing is dropped. With `allowsCustomValue`, only an exact match counts: `paris` next to an option `Paris` is a value of its own, offered and focused as its own row and added as typed, since a case-sensitive filter treats the two apart. A press on a control outside while the popover shows (a button, a link, another field) is not taken by it: it reaches the control, so a Save button saves on the first click, with the typed text already committed. A press anywhere else, such as blank space in or the backdrop of a dialog the field sits in, or a control outside the dialog or popover it sits in, only closes the popover, keeps the typed text in the input, and leaves the dialog open. An enabled UI Kit `Button` or `ItemButton` is the exception: it is reached from anywhere. A press on a disabled control never commits the typed text. The typed text is offered as its own option after the matches, the same way [FilterListBox](/docs/forms-filterlistbox--docs) does, and custom values already added are listed there too, checked and sorted, so they can be unpicked from the list as well as from their chips. One unpicked in the list stays there, unchecked, until focus leaves the field, so it can be picked back. An option in `disabledKeys` is refused however it is entered. A chip for an option shows the option's label, while the value holds its key. The label is remembered, so it survives server-side filtering (`filter={false}` with changing `items`).
 
@@ -117,7 +125,7 @@ Customizes the text input element.
 
 #### tagListStyles
 
-Customizes the wrapping row of chips.
+Customizes the wrapping row of chips. With `tagPlacement="inside"` the list is `display: contents`, so its chips are items of the input box's own row.
 
 #### tagStyles
 
@@ -179,6 +187,30 @@ The `mods` prop accepts the following modifiers for the bordered input box:
 ### Validation States
 
 <Story of={TagInputStories.Validation} />
+
+### Tags Inside the Input
+
+<Story of={TagInputStories.TagsInside} />
+
+```jsx
+<TagInput
+  tagPlacement="inside"
+  aria-label="Values"
+  placeholder="Add a value"
+  defaultValue={['active', 'pending']}
+/>
+```
+
+To prompt only for the first value, hide the placeholder once there is one:
+
+```jsx
+<TagInput
+  hidePlaceholderWithTags
+  tagPlacement="inside"
+  aria-label="Values"
+  placeholder="Add a value"
+/>
+```
 
 ### Disabled and Read-only
 
@@ -248,6 +280,23 @@ const members = [
 </TagInput>;
 ```
 
+### Nothing Found and Loading
+
+When no option matches the typed text, the popover stays open and says so, "No results found" by default, instead of disappearing while the user types. ArrowDown or the chevron brings back every option. With `isLoading`, the chevron takes the `loading` modifier and, while there is no option to show, the popover says "Loading…" instead, so a server-side search never reads "No results found" before its results arrive. Options already listed stay while new ones load. Pass `emptyLabel` for words of your own.
+
+```jsx
+<TagInput
+  label="Members"
+  items={results}
+  filter={false}
+  isLoading={isFetching}
+  emptyLabel={isFetching ? 'Searching members…' : 'No member matches'}
+  onInputChange={setQuery}
+>
+  {(member) => <TagInput.Item key={member.key}>{member.label}</TagInput.Item>}
+</TagInput>
+```
+
 ### Per-chip Props
 
 <Story of={TagInputStories.ChipThemes} />
@@ -296,11 +345,11 @@ const members = [
 
 Tab goes from the input to the chips. Backspace in the empty input does too, landing on the last chip without removing it; the next Backspace removes it and moves to the one before. From a chip, Escape goes back to the input, and so does typing, which carries on in the input.
 
-### Locked Values and Clearing the Text
+### Locked Values and Clearing the Field
 
 <Story of={TagInputStories.LockedAndClearable} />
 
-A locked chip has no remove button and the keyboard skips it. The clear button inside the input clears only the typed text, never the chips, and shows while there is text to clear.
+A locked chip has no remove button and the keyboard skips it. The clear button inside the input clears the whole field: the typed text and every chip but the locked ones. It shows while there is something to clear, and calls `onChange` once with what is left. `Escape` clears only the typed text, so a stray key press never loses the values.
 
 ```jsx
 <TagInput
@@ -399,9 +448,10 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 - `,` (or another delimiter) - Commits the text before the caret and keeps the rest typed
 - `Escape` - Closes the popover, or clears the typed text when it is closed. Either way it clears a message about the text, even once the input is empty
 - `Backspace` in the empty input - Moves focus to the last chip without removing it, and closes the popover. A Backspace held down to clear the text stops at the empty input
-- `ArrowDown` / `ArrowUp` - Opens the popover or moves through the options
+- `ArrowDown` / `ArrowUp` - Opens the popover or moves through the options. On typed text that matches no option, opens it with every option
 - `Home` / `End` - Moves to the first or last option while the popover is open
 - `ArrowLeft` / `ArrowRight` - Moves between chips. Locked chips are skipped
+- `ArrowLeft` at the start of the text, with `tagPlacement="inside"` - Moves focus to the last chip, as Backspace in the empty input does. `ArrowRight` on the last chip moves back to the text, with the caret at its start, and `ArrowLeft` on the first chip stays there instead of wrapping round. A modified arrow (Shift, Alt, Ctrl, Cmd) stays text editing. Below the box, the arrows in the input move the caret only
 - `Delete` / `Backspace` on a chip - Removes it and focuses its neighbour, or the input when no chip is left. Holding the key down removes one chip, not the whole row
 - `Escape` on a chip - Moves focus back to the input
 - Typing on a chip - Moves focus back to the input, where the typed character lands
@@ -412,11 +462,11 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 - The input's description reads the current values ("Selected: …") and says that Backspace moves to them, so the user hears what is already added and how to reach it
 - Focus on a chip reads its label, its position and React Aria's hint to press Delete or Backspace to remove it
 - A polite live region announces "Added …" and "Removed …" when the user adds or removes a value. Changes made from outside the field are not announced
-- The chips, the popover trigger, the clear button and the options listbox are named after the field, however the field is named. With a visible label or `aria-labelledby`, they point at the same elements: the grid reads "Selected values" followed by the field's name, the trigger "Show options" followed by it, and the listbox the field's name alone. An `aria-label` has no element to point at, so its text is joined in: "Selected values, …", "Show options, …", "Clear text, …", and the listbox takes the `aria-label`. Next to a visible label or `aria-labelledby` it comes first, as it does on the input itself: with `aria-label="Values"` and `aria-labelledby` pointing at "Primary key", the input reads "Values Primary key" and the grid "Selected values, Values Primary key". Each row of a table whose fields are labelled by a header and a row cell so gets its own names
+- The chips, the popover trigger, the clear button and the options listbox are named after the field, however the field is named. With a visible label or `aria-labelledby`, they point at the same elements: the grid reads "Selected values" followed by the field's name, the trigger "Show options" followed by it, and the listbox the field's name alone. An `aria-label` has no element to point at, so its text is joined in: "Selected values, …", "Show options, …", "Clear all, …", and the listbox takes the `aria-label`. Next to a visible label or `aria-labelledby` it comes first, as it does on the input itself: with `aria-label="Values"` and `aria-labelledby` pointing at "Primary key", the input reads "Values Primary key" and the grid "Selected values, Values Primary key". Each row of a table whose fields are labelled by a header and a row cell so gets its own names
 - Each chip is a row, and its remove button reads "Remove" followed by the chip's label. An invalid chip is described by its validation message, not only by its color
 - A rejected value marks the input invalid. With a visible label its message is shown under the field and announced as an alert, again for each new attempt. Without one, the message is announced through the live region
 - A disabled field's chips are out of the Tab order, and so are locked chips. A read-only field's chips stay focusable, without remove buttons
-- The clear button is named "Clear text" followed by the field's name. Escape does the same from the keyboard
+- The clear button is named "Clear all" followed by the field's name. It announces the removed values as "Removed …", as a chip's remove button does
 
 ### ARIA Properties
 
@@ -442,6 +492,8 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 3. **Do**: Say how to add a value in the `description` or `placeholder` when the delimiter is not obvious
 
 4. **Do**: Turn delimiters off with `delimiters={[]}` when a value may contain a comma
+
+5. **Don't**: Reach for `tagPlacement="inside"` by default. Chips below a fixed input are easier to read and to reach, and keep the field level with its neighbours; put them inside only where the field has no room below it
 
 ## Integration with Forms
 

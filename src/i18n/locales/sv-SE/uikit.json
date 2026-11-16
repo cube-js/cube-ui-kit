@@ -149,8 +149,10 @@
     "unknownValue": "”{{value}}” finns inte i listan",
     "unavailableValue": "”{{value}}” är inte tillgänglig",
     "limitReached": "Du kan lägga till upp till {{count}}",
-    "clearText": "Rensa text",
-    "clearTextFor": "Rensa text, {{label}}",
+    "clearAll": "Rensa allt",
+    "clearAllFor": "Rensa allt, {{label}}",
+    "noResults": "Inga resultat hittades",
+    "loading": "Läser in…",
     "backspaceHint": "Tryck på Backsteg för att gå till de valda värdena."
   },
   "placeholder": {

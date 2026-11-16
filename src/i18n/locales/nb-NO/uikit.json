@@ -149,8 +149,10 @@
     "unknownValue": "«{{value}}» finnes ikke i listen",
     "unavailableValue": "«{{value}}» er ikke tilgjengelig",
     "limitReached": "Du kan legge til opptil {{count}}",
-    "clearText": "Tøm tekst",
-    "clearTextFor": "Tøm tekst, {{label}}",
+    "clearAll": "Tøm alt",
+    "clearAllFor": "Tøm alt, {{label}}",
+    "noResults": "Ingen resultater funnet",
+    "loading": "Laster inn…",
     "backspaceHint": "Trykk på Tilbake for å gå til de valgte verdiene."
   },
   "placeholder": {
