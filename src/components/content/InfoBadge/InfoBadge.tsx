@@ -1,3 +1,4 @@
+import { useControlledState } from '@react-stately/utils';
 import { FocusableRefValue } from '@react-types/shared';
 import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
@@ -10,11 +11,14 @@ import {
   ReactNode,
   useCallback,
   useMemo,
+  useRef,
 } from 'react';
+import { useInteractOutside } from 'react-aria';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n/useI18n';
 import { InfoCircleIcon } from '../../../icons/InfoCircleIcon';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   CubeItemActionProps,
   ItemAction,
@@ -220,7 +224,10 @@ export const InfoBadge = forwardRef(function InfoBadge(
 
   const isInteractive = to != null || onPress != null;
 
-  const { title, tooltipProps } = useMemo(() => {
+  const { title, tooltipProps } = useMemo<{
+    title: ReactNode;
+    tooltipProps: Omit<CubeInfoBadgeTooltipConfig, 'title'>;
+  }>(() => {
     if (isTooltipConfig(tooltip)) {
       const { title, ...tooltipProps } = tooltip;
 
@@ -229,6 +236,42 @@ export const InfoBadge = forwardRef(function InfoBadge(
 
     return { title: tooltip, tooltipProps: {} };
   }, [tooltip]);
+
+  // React Aria opens a tooltip on mouse hover or on visible focus. A plain
+  // badge takes no focus, a touch has no hover, and a press closes the
+  // tooltip, so a tap on a phone opened nothing. The badge holds its tooltip's
+  // open state to toggle it on a tap; a consumer's `isOpen`, `defaultOpen` and
+  // `onOpenChange` still apply.
+  const [isOpen, setOpen] = useControlledState(
+    tooltipProps.isOpen,
+    tooltipProps.defaultOpen ?? false,
+    tooltipProps.onOpenChange,
+  );
+
+  // The state a tap leaves the tooltip in, decided on `pointerdown`, before
+  // React Aria closes the tooltip, and applied on `click`, which a scroll that
+  // starts on the badge never fires. `null` for a mouse: hover opens it.
+  const tapRef = useRef<boolean | null>(null);
+  const guardRef = useRef<HTMLSpanElement>(null);
+
+  const tapHandlers = {
+    onPointerDown: (event: PointerEvent) => {
+      tapRef.current = event.pointerType === 'mouse' ? null : !isOpen;
+    },
+    onClick: () => {
+      if (tapRef.current !== null) setOpen(tapRef.current);
+
+      tapRef.current = null;
+    },
+  };
+
+  // A tooltip a tap opened has no hover or focus to end, so a tap anywhere
+  // else closes it.
+  useInteractOutside({
+    ref: guardRef,
+    isDisabled: isInteractive || !isOpen,
+    onInteractOutside: () => setOpen(false),
+  });
 
   const suffix =
     tooltipSuffix === undefined
@@ -299,7 +342,12 @@ export const InfoBadge = forwardRef(function InfoBadge(
   };
 
   return (
-    <GuardElement {...GUARD_HANDLERS}>
+    <GuardElement
+      ref={guardRef}
+      {...(isInteractive
+        ? GUARD_HANDLERS
+        : mergeProps(GUARD_HANDLERS, tapHandlers))}
+    >
       {isInteractive ? (
         <ItemAction
           ref={actionRef}
@@ -310,7 +358,11 @@ export const InfoBadge = forwardRef(function InfoBadge(
           {...sharedProps}
         />
       ) : (
-        <ItemBadge ref={ref as ForwardedRef<HTMLDivElement>} {...sharedProps} />
+        <ItemBadge
+          ref={ref as ForwardedRef<HTMLDivElement>}
+          {...sharedProps}
+          tooltip={{ ...finalTooltip, isOpen, onOpenChange: setOpen }}
+        />
       )}
     </GuardElement>
   );
