@@ -1826,20 +1826,24 @@ function TagInput<T extends object>(
     isDisabled,
   });
 
-  // Tabbing from the input to the chips stays inside the component, so the
-  // composite blur never fires: close the popover and settle the text on the
-  // way. A click on a chip's remove button also moves focus there, and leaves
-  // both alone.
+  // Moving from the input to the chips stays inside the component, so the
+  // composite blur never fires: close the popover on the way, as Backspace
+  // does. A press on a chip or its remove button needs this too: inside the
+  // box the chips are part of the popover's trigger, so the press is not an
+  // outside one. Tab also settles the text; a press keeps it. The clear button
+  // and the chevron hand focus back to the input, and are left alone.
   const handleInputBlur = useEvent((e: FocusEvent<HTMLInputElement>) => {
     const isTabbing = isTabbingRef.current;
     const next = e.relatedTarget as Node | null;
 
     isTabbingRef.current = false;
 
-    if (!isTabbing || !next || !rootRef.current?.contains(next)) return;
+    if (!next || !rootRef.current?.contains(next)) return;
+    if (!isTabbing && !tagListRef.current?.contains(next)) return;
 
     setIsPopoverOpen(false);
-    settleDraft();
+
+    if (isTabbing) settleDraft();
   });
 
   const handleInputFocus = useEvent(() => {

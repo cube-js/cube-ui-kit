@@ -1507,6 +1507,54 @@ describe('<TagInput />', () => {
       await waitFor(() => expect(queryByRole('listbox')).toBeNull());
     });
 
+    // Inside the box the chips are part of the popover's trigger, so a press
+    // on one is not an outside press and used to leave the list open.
+    it.each(['below', 'inside'] as const)(
+      'closes the list and keeps the text when a chip is removed with a press (%s)',
+      async (tagPlacement) => {
+        const { getByRole, getAllByRole } = renderWithRoot(
+          <Actions
+            tagPlacement={tagPlacement}
+            defaultValue={['read', 'deploy']}
+          />,
+        );
+        const input = getByRole('combobox');
+
+        await userEvent.type(input, 're');
+        await waitFor(() =>
+          expect(input).toHaveAttribute('aria-expanded', 'true'),
+        );
+
+        await userEvent.click(getByRole('button', { name: 'Remove read' }));
+
+        expect(getAllByRole('row')).toHaveLength(1);
+        expect(getAllByRole('row')[0]).toHaveFocus();
+        expect(input).toHaveValue('re');
+        await waitFor(() =>
+          expect(input).toHaveAttribute('aria-expanded', 'false'),
+        );
+      },
+    );
+
+    it('closes the list when a press inside the box moves to a chip', async () => {
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <Actions tagPlacement="inside" defaultValue={['read', 'deploy']} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.click(input);
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'true'),
+      );
+
+      await userEvent.click(getAllByRole('row')[0]);
+
+      expect(getAllByRole('row')[0]).toHaveFocus();
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'false'),
+      );
+    });
+
     it('goes back to the input with Escape', async () => {
       const onOuterKeyDown = vi.fn();
       const { getByRole, getAllByRole } = render(
