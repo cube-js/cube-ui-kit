@@ -193,6 +193,69 @@ describe('NavTabs', () => {
     },
   );
 
+  it.each(['items that arrive after mount', 'a strip shown after mount'])(
+    'keeps the current item in view for %s',
+    async (scenario) => {
+      const keys = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+      const nav = (itemKeys: string[], hidden: boolean) => (
+        <Root>
+          <div hidden={hidden}>
+            <NavTabs label="Nav" activeKey="seven" styles={{ width: '22x' }}>
+              {itemKeys.map((key) => (
+                <NavTabs.Item key={key} to={`/${key}`}>
+                  Section {key}
+                </NavTabs.Item>
+              ))}
+            </NavTabs>
+          </div>
+        </Root>
+      );
+      const isLate = scenario.startsWith('items');
+      const { rerender } = render(
+        isLate ? nav(keys.slice(0, 2), false) : nav(keys, true),
+      );
+
+      rerender(nav(keys, false));
+
+      const strip = screen
+        .getByRole('navigation', { name: 'Nav' })
+        .querySelector('[data-element="Scroll"]')!;
+      const current = screen.getByRole('link', { name: 'Section seven' });
+
+      await waitFor(() => {
+        const stripRect = strip.getBoundingClientRect();
+        const itemRect = current.getBoundingClientRect();
+
+        expect(itemRect.width).toBeGreaterThan(0);
+        expect(itemRect.left).toBeGreaterThanOrEqual(stripRect.left - 1);
+        expect(itemRect.right).toBeLessThanOrEqual(stripRect.right + 1);
+      });
+    },
+  );
+
+  it("lets a consumer's `tabListStyles` restyle the list", () => {
+    render(
+      <Root>
+        <NavTabs
+          label="Nav"
+          tabListStyles={{ margin: '1x 0', listStyle: 'disc' }}
+        >
+          <NavTabs.Item key="profile" to="/profile">
+            Profile
+          </NavTabs.Item>
+        </NavTabs>
+      </Root>,
+    );
+
+    const list = screen
+      .getByRole('navigation', { name: 'Nav' })
+      .querySelector('ul')!;
+
+    // Over the list's own reset (no margin, no markers).
+    expect(getComputedStyle(list).marginTop).toBe('8px');
+    expect(getComputedStyle(list).listStyleType).toBe('disc');
+  });
+
   it('routes a plain click once, with no native navigation on top', async () => {
     const path = `${BASE}/plain`;
     const { users, navigate } = renderNavTabs(path);

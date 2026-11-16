@@ -39,7 +39,7 @@ import { createMockDragState } from '../../shared/DraggableCollection';
 
 import { useBoardDragActive } from './BoardDragActiveProvider';
 import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
-import { scrollTabIntoStrip } from './scroll-tab-into-strip';
+import { followTabInStrip, scrollTabIntoStrip } from './scroll-tab-into-strip';
 import { TabContainer, TabElement } from './styled';
 import { TabDropIndicator } from './TabDropIndicator';
 import { useTabsContext } from './TabsContext';
@@ -195,18 +195,6 @@ function disableTooltip(tooltip: ParsedTab['tooltip']): ParsedTab['tooltip'] {
 
   return tooltip;
 }
-
-/**
- * Events on the tab bar that mean the user has taken over the strip's scroll
- * position. Listened for on the whole `Bar`, not just the `Scroll` element: the
- * custom scrollbar and the scroll arrows sit outside it.
- */
-const STRIP_INTERACTION_EVENTS = [
-  'wheel',
-  'pointerdown',
-  'touchstart',
-  'keydown',
-] as const;
 
 // =============================================================================
 // TabButton Component
@@ -507,11 +495,8 @@ export function TabButton({
   // Scroll the strip to the active tab, and keep it there while it settles. The
   // mount commit lays a tab out before its actions run is measured, so it grows
   // by the run's width a frame later: a tab scrolled into view at its first
-  // size can end up past the strip's edge. So the active tab's own size changes
-  // re-scroll the strip, until the user first interacts with the tab bar
-  // (wheel, pointer, touch or a key). From then on the strip stays where they
-  // left it, even if the tab resizes, until a tab becomes active again. Keyed
-  // off interaction events, not `scroll`: the re-scroll fires `scroll` too.
+  // size can end up past the strip's edge. So the strip follows the active tab
+  // until the user takes over, and again whenever a tab becomes active.
   useEffect(() => {
     const tab = ref.current;
 
@@ -519,29 +504,7 @@ export function TabButton({
 
     keepActiveTabInStrip();
 
-    if (typeof ResizeObserver === 'undefined') return;
-
-    const bar = tab.closest<HTMLElement>('[data-element="Bar"]');
-    const observer = new ResizeObserver(keepActiveTabInStrip);
-    const stopFollowing = () => {
-      observer.disconnect();
-
-      for (const type of STRIP_INTERACTION_EVENTS) {
-        bar?.removeEventListener(type, stopFollowing, true);
-      }
-    };
-
-    observer.observe(tab);
-
-    for (const type of STRIP_INTERACTION_EVENTS) {
-      // Capture: a tab's own handlers may stop these from bubbling.
-      bar?.addEventListener(type, stopFollowing, {
-        capture: true,
-        passive: true,
-      });
-    }
-
-    return stopFollowing;
+    return followTabInStrip(tab, keepActiveTabInStrip);
   }, [isActive, keepActiveTabInStrip]);
 
   // Overflow trigger (hidden in context-only mode)

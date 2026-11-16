@@ -17,14 +17,17 @@ import { useMergeStyles } from '../../../utils/react/useMergeStyles';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
-import { scrollTabIntoStrip } from '../Tabs/scroll-tab-into-strip';
+import {
+  followTabInStrip,
+  scrollTabIntoStrip,
+} from '../Tabs/scroll-tab-into-strip';
 import {
   TAB_ELEMENT_STYLES,
   TabContainer,
   TabIndicatorElement,
   TabsElement,
 } from '../Tabs/styled';
-import { useTabIndicator } from '../Tabs/use-tab-indicator';
+import { findTabItem, useTabIndicator } from '../Tabs/use-tab-indicator';
 
 import type { OuterStyleProps, Styles } from '@tenphi/tasty';
 import type { To } from '../../../providers/navigation.types';
@@ -183,12 +186,15 @@ function NavTabsRoot(props: CubeNavTabsProps) {
   // The indicator watches the list element itself.
   const [listElement, setListElement] = useState<HTMLUListElement | null>(null);
 
+  // Changes when items come, go or move: both the indicator and the scroll
+  // below find the current item again.
+  const orderToken = items.map((item) => item.key).join(',');
   const indicator = useTabIndicator(
     listElement,
     activeKey ?? null,
     true,
     orientation,
-    items.map((item) => item.key).join(','),
+    orderToken,
   );
   const {
     handleHTokens,
@@ -204,17 +210,24 @@ function NavTabsRoot(props: CubeNavTabsProps) {
   const isVertical = orientation === 'vertical';
   const hasOverflow = isVertical ? hasOverflowY : hasOverflowX;
 
-  // Show the current item in a strip that overflows, as Tabs shows its selected
-  // tab. Only the strip scrolls, never the page.
+  // Show the current item in a strip that overflows, and keep it there while it
+  // settles, as Tabs does for its selected tab: an item that arrives late or a
+  // strip shown after mount still ends up in view. Only the strip scrolls,
+  // never the page.
   useLayoutEffect(() => {
-    if (!listElement || activeKey == null) return;
+    const item =
+      listElement && activeKey != null
+        ? findTabItem(listElement, activeKey)
+        : null;
 
-    const item = listElement.querySelector<HTMLElement>(
-      `[data-key="${CSS.escape(activeKey)}"]`,
-    );
+    if (!item) return;
 
-    if (item) scrollTabIntoStrip(item, placement);
-  }, [listElement, activeKey, placement]);
+    const keep = () => scrollTabIntoStrip(item, placement);
+
+    keep();
+
+    return followTabInStrip(item, keep);
+  }, [listElement, activeKey, placement, orderToken]);
 
   const styles = useMergeStyles(extractStyles(props, OUTER_STYLES), {
     Bar: barStyles,

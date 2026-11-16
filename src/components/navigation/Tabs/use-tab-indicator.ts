@@ -21,6 +21,19 @@ export interface IndicatorStyle {
 
 export type IndicatorOrientation = 'horizontal' | 'vertical';
 
+/**
+ * The item in `container` whose `data-key` is `key`: React Aria puts it on a
+ * tab, `NavTabs` on a link. Compared rather than put in a selector, because
+ * `CSS.escape` is missing in jsdom, which consumers' tests still run.
+ */
+export function findTabItem(container: HTMLElement, key: Key) {
+  for (const element of container.querySelectorAll<HTMLElement>('[data-key]')) {
+    if (element.dataset.key === String(key)) return element;
+  }
+
+  return null;
+}
+
 // =============================================================================
 // Hook
 // =============================================================================
@@ -54,14 +67,9 @@ export function useTabIndicator(
   if (!enabled && style) setStyle(null);
 
   const measure = useEffectEvent((container: HTMLElement) => {
-    // Every item carries its key: React Aria puts it on a tab, `NavTabs` on a
-    // link, which has no selected state of its own.
+    // Found by key: a `NavTabs` link has no selected state of its own.
     const selectedTab =
-      selectedKey == null
-        ? null
-        : container.querySelector<HTMLElement>(
-            `[data-key="${CSS.escape(String(selectedKey))}"]`,
-          );
+      selectedKey == null ? null : findTabItem(container, selectedKey);
 
     if (!selectedTab) {
       setStyle(null);
