@@ -1,3 +1,4 @@
+import { useControlledState } from '@react-stately/utils';
 import { FocusableRefValue } from '@react-types/shared';
 import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
@@ -10,11 +11,15 @@ import {
   ReactNode,
   useCallback,
   useMemo,
+  useRef,
+  useState,
 } from 'react';
+import { useInteractOutside } from 'react-aria';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n/useI18n';
 import { InfoCircleIcon } from '../../../icons/InfoCircleIcon';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   CubeItemActionProps,
   ItemAction,
@@ -220,7 +225,10 @@ export const InfoBadge = forwardRef(function InfoBadge(
 
   const isInteractive = to != null || onPress != null;
 
-  const { title, tooltipProps } = useMemo(() => {
+  const { title, tooltipProps } = useMemo<{
+    title: ReactNode;
+    tooltipProps: Omit<CubeInfoBadgeTooltipConfig, 'title'>;
+  }>(() => {
     if (isTooltipConfig(tooltip)) {
       const { title, ...tooltipProps } = tooltip;
 
@@ -229,6 +237,58 @@ export const InfoBadge = forwardRef(function InfoBadge(
 
     return { title: tooltip, tooltipProps: {} };
   }, [tooltip]);
+
+  // React Aria opens a tooltip on mouse hover or on visible focus. A plain
+  // badge takes no focus, a touch has no hover, and a press closes the
+  // tooltip, so a tap on a phone opened nothing. The badge holds its tooltip's
+  // open state to toggle it on a tap; a consumer's `isOpen`, `defaultOpen` and
+  // `onOpenChange` still apply.
+  const [isOpen, setOpen] = useControlledState(
+    tooltipProps.isOpen,
+    tooltipProps.defaultOpen ?? false,
+    tooltipProps.onOpenChange,
+  );
+
+  // Whether a tap opened the tooltip, rather than hover or the consumer. Only
+  // such a tooltip stays open until it is dismissed. Any close ends it, the
+  // consumer's own included.
+  const [isTapped, setTapped] = useState(false);
+
+  if (!isOpen && isTapped) setTapped(false);
+
+  // What a tap does to the tooltip, decided on `pointerdown` from the state
+  // this render shows: React Aria's own `pointerdown` on the badge has already
+  // asked to close it, but that close lands on the next render. Applied on
+  // `click`, which a scroll that starts on the badge never fires. `null` for a
+  // mouse, whose hover opens the tooltip, and for a disabled tooltip, which
+  // would open unseen and take the next `Escape`.
+  const tapRef = useRef<boolean | null>(null);
+  const guardRef = useRef<HTMLSpanElement>(null);
+
+  const tapHandlers = {
+    onPointerDown: (event: PointerEvent) => {
+      tapRef.current =
+        event.pointerType === 'mouse' || tooltipProps.isDisabled
+          ? null
+          : !isOpen;
+    },
+    onClick: () => {
+      if (tapRef.current !== null) {
+        setOpen(tapRef.current);
+        setTapped(tapRef.current);
+      }
+
+      tapRef.current = null;
+    },
+  };
+
+  // A tooltip a tap opened has no hover or focus to end, so a tap anywhere
+  // else closes it.
+  useInteractOutside({
+    ref: guardRef,
+    isDisabled: !isTapped,
+    onInteractOutside: () => setOpen(false),
+  });
 
   const suffix =
     tooltipSuffix === undefined
@@ -299,7 +359,12 @@ export const InfoBadge = forwardRef(function InfoBadge(
   };
 
   return (
-    <GuardElement {...GUARD_HANDLERS}>
+    <GuardElement
+      ref={guardRef}
+      {...(isInteractive
+        ? GUARD_HANDLERS
+        : mergeProps(GUARD_HANDLERS, tapHandlers))}
+    >
       {isInteractive ? (
         <ItemAction
           ref={actionRef}
@@ -310,7 +375,19 @@ export const InfoBadge = forwardRef(function InfoBadge(
           {...sharedProps}
         />
       ) : (
-        <ItemBadge ref={ref as ForwardedRef<HTMLDivElement>} {...sharedProps} />
+        <ItemBadge
+          ref={ref as ForwardedRef<HTMLDivElement>}
+          {...sharedProps}
+          tooltip={{
+            ...finalTooltip,
+            isOpen,
+            onOpenChange: setOpen,
+            // The tap that dismisses the tooltip lands on the tooltip. A
+            // material tooltip takes it, so it doesn't reach what it covers,
+            // and the portal carries it to the guard, whose tap closes it.
+            isMaterial: finalTooltip.isMaterial ?? isTapped,
+          }}
+        />
       )}
     </GuardElement>
   );

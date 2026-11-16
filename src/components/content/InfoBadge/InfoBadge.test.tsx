@@ -1,7 +1,11 @@
-import { createRef } from 'react';
+import { createRef, useState } from 'react';
 
-import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { Button } from '../../actions/Button/Button';
 import { Switch } from '../../fields/Switch';
+import { TextInput } from '../../fields/TextInput/TextInput';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { InfoBadge } from './InfoBadge';
 
@@ -267,5 +271,214 @@ describe('<InfoBadge />', () => {
     );
 
     expect(ref.current).toBe(screen.getByRole('link'));
+  });
+
+  /**
+   * React Aria opens a tooltip on mouse hover or on visible focus. Touch has
+   * no hover, the badge takes no focus, and a press closes the tooltip, so a
+   * tap on a phone opened nothing.
+   */
+  describe('on touch', () => {
+    const tap = (target: Element) =>
+      userEvent.pointer({ keys: '[TouchA]', target });
+
+    it('opens the tooltip on a tap', async () => {
+      renderWithRoot(<InfoBadge tooltip="Some details" />);
+
+      const badge = screen.getByTestId('InfoBadge');
+
+      await tap(badge);
+
+      const tooltip = await screen.findByRole('tooltip');
+
+      expect(tooltip).toHaveTextContent('Some details');
+      expect(badge).toHaveAttribute('aria-describedby', tooltip.id);
+    });
+
+    it('closes the tooltip on a second tap', async () => {
+      renderWithRoot(<InfoBadge tooltip="Some details" />);
+
+      const badge = screen.getByTestId('InfoBadge');
+
+      await tap(badge);
+      await screen.findByRole('tooltip');
+      await tap(badge);
+
+      await waitFor(() => {
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+      });
+      expect(badge).not.toHaveAttribute('aria-describedby');
+    });
+
+    it('closes the tooltip on a tap elsewhere', async () => {
+      renderWithRoot(
+        <>
+          <InfoBadge tooltip="Some details" />
+          <p>Elsewhere</p>
+        </>,
+      );
+
+      await tap(screen.getByTestId('InfoBadge'));
+      await screen.findByRole('tooltip');
+      await tap(screen.getByText('Elsewhere'));
+
+      await waitFor(() => {
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+      });
+    });
+
+    it('closes the tooltip on Escape', async () => {
+      renderWithRoot(<InfoBadge tooltip="Some details" />);
+
+      await tap(screen.getByTestId('InfoBadge'));
+      await screen.findByRole('tooltip');
+      await userEvent.keyboard('{Escape}');
+
+      await waitFor(() => {
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+      });
+    });
+
+    it('opens the tooltip without toggling the field it labels', async () => {
+      renderWithRoot(
+        <Switch
+          label="Enabled"
+          labelSuffix={<InfoBadge tooltip="Details" />}
+        />,
+      );
+
+      await tap(screen.getByTestId('InfoBadge'));
+
+      expect(await screen.findByRole('tooltip')).toHaveTextContent('Details');
+      expect(screen.getByRole('switch')).not.toBeChecked();
+    });
+
+    it("reports the tap to the tooltip's `onOpenChange`", async () => {
+      const onOpenChange = vi.fn();
+
+      renderWithRoot(
+        <InfoBadge tooltip={{ title: 'Configured', onOpenChange }} />,
+      );
+
+      await tap(screen.getByTestId('InfoBadge'));
+
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(
+        'Configured',
+      );
+      expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    });
+
+    // Hover opens the tooltip for a mouse, and its press closes it.
+    it('leaves a mouse click to hover', async () => {
+      renderWithRoot(<InfoBadge tooltip="Some details" />);
+
+      await userEvent.click(screen.getByTestId('InfoBadge'), {
+        skipHover: true,
+      });
+
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    });
+
+    it('does not open a disabled tooltip', async () => {
+      const onOpenChange = vi.fn();
+
+      renderWithRoot(
+        <InfoBadge
+          tooltip={{ title: 'Configured', isDisabled: true, onOpenChange }}
+        />,
+      );
+
+      await tap(screen.getByTestId('InfoBadge'));
+
+      expect(onOpenChange).not.toHaveBeenCalled();
+    });
+
+    /**
+     * The tooltip a tap opened takes the tap that dismisses it, and it is
+     * portaled out of the dialog, so the dialog counted that tap as outside
+     * and closed with the form in it.
+     */
+    it('closes on a tap on the tooltip and keeps the dialog it sits in', async () => {
+      const onDialogOpenChange = vi.fn();
+
+      renderWithRoot(
+        <DialogTrigger defaultOpen onOpenChange={onDialogOpenChange}>
+          <Button>Open</Button>
+          <Dialog>
+            <TextInput label="Scopes" labelTooltip="Space-separated scopes." />
+          </Dialog>
+        </DialogTrigger>,
+      );
+
+      await tap(await screen.findByTestId('InfoBadge'));
+      await tap(await screen.findByRole('tooltip'));
+
+      await waitFor(() => {
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+      });
+      expect(onDialogOpenChange).not.toHaveBeenCalled();
+    });
+
+    it('treats a tooltip the consumer closes and reopens as its own', async () => {
+      const onOpenChange = vi.fn();
+      let setOpenFromOutside: (isOpen: boolean) => void = () => {};
+
+      function Controlled() {
+        const [isOpen, setOpen] = useState(false);
+
+        setOpenFromOutside = setOpen;
+
+        return (
+          <>
+            <InfoBadge
+              tooltip={{
+                title: 'Configured',
+                isOpen,
+                onOpenChange: (open: boolean) => {
+                  onOpenChange(open);
+                  setOpen(open);
+                },
+              }}
+            />
+            <p>Elsewhere</p>
+          </>
+        );
+      }
+
+      renderWithRoot(<Controlled />);
+
+      await tap(screen.getByTestId('InfoBadge'));
+      await screen.findByRole('tooltip');
+
+      act(() => setOpenFromOutside(false));
+      await waitFor(() => {
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+      });
+
+      act(() => setOpenFromOutside(true));
+      await screen.findByRole('tooltip');
+      onOpenChange.mockClear();
+      await userEvent.click(screen.getByText('Elsewhere'));
+
+      expect(onOpenChange).not.toHaveBeenCalled();
+    });
+
+    it('leaves a tooltip a tap did not open to a click elsewhere', async () => {
+      const onOpenChange = vi.fn();
+
+      renderWithRoot(
+        <>
+          <InfoBadge
+            tooltip={{ title: 'Configured', defaultOpen: true, onOpenChange }}
+          />
+          <p>Elsewhere</p>
+        </>,
+      );
+
+      await screen.findByRole('tooltip');
+      await userEvent.click(screen.getByText('Elsewhere'));
+
+      expect(onOpenChange).not.toHaveBeenCalled();
+    });
   });
 });
