@@ -1,3 +1,4 @@
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import { render, userEvent, within } from '../../../test';
 import { Root } from '../../Root';
 
@@ -110,7 +111,9 @@ describe('<NavTabs />', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('renders only keyed `NavTabs.Item` children', () => {
+  it('renders only keyed `NavTabs.Item` children, and warns about a missing key', () => {
+    vi.mocked(useWarn).mockClear();
+
     const { getByRole } = render(
       <Root>
         <NavTabs label="Tenant">
@@ -128,6 +131,10 @@ describe('<NavTabs />', () => {
     expect(within(nav).getAllByRole('listitem')).toHaveLength(1);
     expect(within(nav).queryByText('Stray')).not.toBeInTheDocument();
     expect(within(nav).queryByText('Users')).not.toBeInTheDocument();
+    expect(useWarn).toHaveBeenCalledWith(
+      true,
+      expect.objectContaining({ key: ['nav-tabs-item-without-key'] }),
+    );
   });
 
   it('names its parts for QA', () => {

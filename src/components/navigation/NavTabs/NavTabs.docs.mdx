@@ -12,7 +12,7 @@ Navigation between routes that looks like [Tabs](/docs/navigation-tabs--docs). I
 
 - The items lead to different routes or pages, each with its own URL, such as the sections of a settings or detail page.
 - You want the look of `Tabs` for that navigation, at any width.
-- Use [Tabs](/docs/navigation-tabs--docs) instead when the items switch content in place: a tab always opens its own panel, and never leaves the page.
+- Use [Tabs](/docs/navigation-tabs--docs) instead when the items switch content in place, without a URL of their own.
 
 ## Component
 
@@ -71,6 +71,41 @@ These properties allow direct style application without using the `styles` prop:
 - **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `blockMargin`, `inlineMargin`, `inset`, `blockInset`, `inlineInset`, `position`, `scrollMargin`, `blockScrollMargin`, `inlineScrollMargin`, `scrollPadding`, `blockScrollPadding`, `inlineScrollPadding`
 - **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `blockBorder`, `inlineBorder`, `radius`, `shadow`, `outline`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers:
+
+- **`type`** `'default'` — Always `default`: NavTabs has the default Tabs look only
+- **`placement`** `'top' \| 'bottom' \| 'left' \| 'right'` — Current strip placement
+- **`scrolling`** `boolean` — True while the items are being scrolled
+- **`fade-start`** `boolean` — True when more items exist in the start direction (left for horizontal, top for vertical)
+- **`fade-end`** `boolean` — True when more items exist in the end direction (right for horizontal, bottom for vertical)
+
+For individual items:
+
+- **`selected`** `boolean` — True for the current item
+- **`disabled`** `boolean` — True when the item is disabled
+- **`hovered`** `boolean` — True when the item is hovered
+- **`focused`** / **`focus-visible`** `boolean` — True when the item has keyboard focus
+
+### Theming
+
+NavTabs reads the same tokens as [Tabs](/docs/navigation-tabs--docs), so a theme carries over when you move panel-less `Tabs` to `NavTabs`: `#surface-text-soft` for an item, `#primary-accent-text` for the current item and the focus ring, `#primary-accent-surface` for the indicator, and `$font-sans` for the font. Re-declare them through `tabListStyles`, `styles` or `tokens`.
+
+```jsx
+<NavTabs
+  label="Reports"
+  activeKey={section}
+  tabListStyles={{
+    '#surface-text-soft': '#success-accent-text-soft',
+    '#primary-accent-text': '#success-accent-text',
+    '#primary-accent-surface': '#success-accent-surface',
+  }}
+>
+  …
+</NavTabs>
+```
 
 ## Examples
 
@@ -172,7 +207,7 @@ Arrow keys don't move between items: that is the `Tabs` pattern, for content tha
    </NavTabs>
    ```
 
-2. **Don't**: Use `NavTabs` to switch content within a page; use `Tabs`, which links each tab to its panel
+2. **Don't**: Use `NavTabs` to switch content within a page; use `Tabs` for that
 
 3. **Do**: Name each navigation landmark, so a page with several tells them apart
 
