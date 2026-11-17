@@ -57,7 +57,10 @@ import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import { FilterTree } from './FilterTree';
 
-import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
+import type {
+  PointerType,
+  KeyboardEvent as RAKeyboardEvent,
+} from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 import type { CubeTreeNodeData } from '../../content/Tree/types';
 
@@ -102,6 +105,12 @@ export interface CubeFilterPickerProps<T>
   'aria-describedby'?: string;
   /** Placeholder text when no selection is made */
   placeholder?: string;
+  /**
+   * Whether the search input takes focus when the popover opens. By default it
+   * does, except when a touch opened the popover: on a phone, a focused input
+   * raises the on-screen keyboard. `true` always focuses it, `false` never.
+   */
+  autoFocus?: boolean;
   /** Size of the picker component */
   size?: 'small' | 'medium' | 'large';
   /** Custom styles for the list box popover */
@@ -434,6 +443,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Popover state — used as controlled prop for DialogTrigger
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  // The pointer of the trigger press that opened the popover, if a press did.
+  const [openPointerType, setOpenPointerType] = useState<PointerType | null>(
+    null,
+  );
+  // Focusing the search raises the on-screen keyboard after a touch, so it
+  // waits for the user to tap it there.
+  const shouldFocusSearch =
+    autoFocus ?? (openPointerType !== 'touch' && openPointerType !== 'pen');
   const cachedItemsOrder = useRef<T[] | null>(null);
   const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
   const { labelProps, fieldProps: triggerLabelProps } = useLabel({
@@ -634,6 +651,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     }
     setIsPopoverOpen(isOpen);
     if (!isOpen) {
+      setOpenPointerType(null);
       selectionsWhenClosed.current = { ...latestSelectionRef.current };
       cachedItemsOrder.current = null;
       onSearchChange?.('');
@@ -908,6 +926,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       description={triggerDescription}
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
+      onPress={(e) => {
+        if (!isPopoverOpen) setOpenPointerType(e.pointerType);
+      }}
       {...keyboardProps}
       {...mergeProps(triggerLabelProps, { id })}
       aria-describedby={ariaDescribedBy}
@@ -1045,7 +1066,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             <FocusScope restoreFocus>
               {treeData ? (
                 <FilterTree
-                  autoFocus
+                  autoFocus={shouldFocusSearch}
                   treeData={treeData}
                   checkedKeys={treeCheckedKeys}
                   expandedKeys={expandedKeys ?? internalExpandedKeys}
@@ -1073,7 +1094,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
               ) : (
                 <FilterListBox
                   isBare
-                  autoFocus
+                  autoFocus={shouldFocusSearch}
                   items={items ? (finalItems as typeof props.items) : undefined}
                   aria-label={pickerAriaLabel}
                   _internalCollection={localCollectionState.collection}

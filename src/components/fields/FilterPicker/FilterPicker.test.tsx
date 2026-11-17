@@ -1008,6 +1008,116 @@ describe('<FilterPicker />', () => {
     });
   });
 
+  describe('Search autofocus', () => {
+    // On a phone, focusing the search input raises the on-screen keyboard.
+    const tap = (target: Element) =>
+      user.pointer([{ keys: '[TouchA]', target }]);
+
+    // The popover Dialog moves focus in a timer after it mounts.
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 50));
+
+    function renderPicker(props: { autoFocus?: boolean } = {}) {
+      return renderWithRoot(
+        <FilterPicker label="Fruit" placeholder="Choose..." {...props}>
+          {basicItems}
+        </FilterPicker>,
+      );
+    }
+
+    it('focuses the search input when a mouse opens the popover', async () => {
+      const { getByRole, getByPlaceholderText } = renderPicker();
+
+      await user.click(getByRole('button'));
+      await settle();
+
+      expect(getByPlaceholderText('Search...')).toHaveFocus();
+    });
+
+    it('leaves the search input unfocused when a touch opens the popover', async () => {
+      const { getByRole, getByPlaceholderText } = renderPicker();
+
+      await tap(getByRole('button'));
+      await settle();
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      expect(searchInput).not.toHaveFocus();
+      expect(searchInput).not.toHaveAttribute('data-autofocus');
+      // Focus stays in the popover, not on the page behind it.
+      expect(getByRole('dialog')).toContainElement(
+        document.activeElement as HTMLElement,
+      );
+    });
+
+    it('focuses the search input after a touch open when a keyboard opens it next', async () => {
+      const { getByRole, getByPlaceholderText, queryByPlaceholderText } =
+        renderPicker();
+      const trigger = getByRole('button');
+
+      await tap(trigger);
+      await settle();
+      await user.keyboard('{Escape}');
+      await waitFor(() =>
+        expect(queryByPlaceholderText('Search...')).not.toBeInTheDocument(),
+      );
+
+      trigger.focus();
+      await user.keyboard('{ArrowDown}');
+      await settle();
+
+      expect(getByPlaceholderText('Search...')).toHaveFocus();
+    });
+
+    it('leaves the search input unfocused when a touch opens the popover inside a Dialog', async () => {
+      const { getByRole, getByText, getByPlaceholderText } = renderWithRoot(
+        <DialogTrigger isDismissable={false}>
+          <Button>Open Dialog</Button>
+          {() => (
+            <Dialog isDismissable={false}>
+              <FilterPicker label="Fruit" placeholder="Choose...">
+                {basicItems}
+              </FilterPicker>
+            </Dialog>
+          )}
+        </DialogTrigger>,
+      );
+
+      await user.click(getByRole('button'));
+      // Let the outer Dialog finish its open transition, as the spec above.
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      await tap(getByText('Choose...'));
+      await waitFor(() =>
+        expect(getByPlaceholderText('Search...')).toBeInTheDocument(),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      expect(getByPlaceholderText('Search...')).not.toHaveFocus();
+    });
+
+    it('never focuses the search input with autoFocus={false}', async () => {
+      const { getByRole, getByPlaceholderText } = renderPicker({
+        autoFocus: false,
+      });
+
+      await user.click(getByRole('button'));
+      await settle();
+
+      expect(getByPlaceholderText('Search...')).not.toHaveFocus();
+    });
+
+    it('focuses the search input on a touch open with autoFocus', async () => {
+      const { getByRole, getByPlaceholderText } = renderPicker({
+        autoFocus: true,
+      });
+
+      await tap(getByRole('button'));
+      await settle();
+
+      expect(getByPlaceholderText('Search...')).toHaveFocus();
+    });
+  });
+
   describe('isLoadingItems', () => {
     it('should show suffix spinner in popover search input when isLoadingItems is true', async () => {
       const { getByRole, baseElement } = renderWithRoot(
