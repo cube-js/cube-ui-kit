@@ -40,6 +40,41 @@ export async function waitForOverlay(role: string) {
 }
 
 /**
+ * Waits until nothing in `root` is still transitioning.
+ *
+ * An overlay reports `entered` before its CSS transitions end: a modal is
+ * still sliding in, and a popover is still fading in. So `waitForOverlay` can
+ * return while the overlay moves or is half transparent, and two things go
+ * wrong:
+ *
+ * - **The snapshot catches a frame of the transition.**
+ * - **An overlay opened from inside a moving one keeps the wrong place.** It is
+ *   positioned against where its trigger was at the click, and nothing moves
+ *   it once the trigger stops. A menu opened from a dialog that is still
+ *   sliding in lands a few pixels off, by a different amount on each run.
+ *
+ * Call it after `waitForOverlay`, which waits until the transition has
+ * started. Looped animations, such as a spinner, never end, so they are
+ * ignored.
+ */
+export async function waitForTransitions(root: Element = document.body) {
+  await waitFor(
+    () => {
+      const running = root
+        .getAnimations({ subtree: true })
+        .filter(
+          (animation) =>
+            animation.playState === 'running' &&
+            animation.effect?.getTiming().iterations !== Infinity,
+        );
+
+      expect(running).toHaveLength(0);
+    },
+    { timeout: 3000 },
+  );
+}
+
+/**
  * Opens `target`'s context menu and waits for it.
  *
  * The leading pointer move is load-bearing: `userEvent.pointer` dispatches the

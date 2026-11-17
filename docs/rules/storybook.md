@@ -171,6 +171,7 @@ Then:
 - Give the target a `qa` and find it with `findByTestId`, so the story does not depend on the order of roles on the page.
 - Pass `delay: 0` in the tooltip config. The default 250ms open delay is real time the snapshot would otherwise have to wait out, and it makes any retry racy.
 - End on an `await waitFor(...)` assertion for the state you want captured. It doubles as the wait Chromatic needs — a snapshot taken before the overlay has mounted is a flaky diff.
+- An overlay reports `entered` before its CSS transitions end, so "mounted" or "visible" is not "settled". When the snapshot shows an overlay, or a `play` opens one from inside another, follow `waitForOverlay` with `waitForTransitions` from `src/stories/interactions.ts`. A menu opened from a dialog that is still sliding in keeps the place its trigger had at the click, a few pixels off and different on each run (`Menu / InsideModal`).
 - Drive **one** element per story. Hovering a second one closes the first, and only the final state is snapshotted, so a story showing several variants should hover the most interesting one.
 - Chromatic is the only real check on a `play` function: it fails the build with "component threw an error during testing" when one throws. A local render test can pass while the story fails, because the mount-effect timing above only shows up in Storybook.
 

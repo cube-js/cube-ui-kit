@@ -24,6 +24,10 @@ import { MoreIcon } from '../../../icons/MoreIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
 import { TrashIcon } from '../../../icons/TrashIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
+import {
+  waitForOverlay,
+  waitForTransitions,
+} from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
 import { Alert } from '../../content/Alert/Alert';
@@ -435,13 +439,16 @@ export const InsideModal = () => {
 
 InsideModal.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const button = await canvas.findByTestId('ContextMenuButton');
 
-  await userEvent.click(button);
+  // The menu is placed against the button at the click, so the dialog has to
+  // stop sliding in first.
+  await waitForOverlay('alertdialog');
+  await waitForTransitions();
 
-  const list = await canvas.findByTestId('ContextMenuList');
+  await userEvent.click(await canvas.findByTestId('ContextMenuButton'));
 
-  await waitFor(() => expect(list).toBeInTheDocument());
+  await waitForOverlay('menu');
+  await waitForTransitions();
 };
 
 export const Sections = (props) => {

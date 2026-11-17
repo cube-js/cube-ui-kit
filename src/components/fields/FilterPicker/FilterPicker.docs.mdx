@@ -52,6 +52,7 @@ Choose a different component when the interaction has another shape:
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the picker component
 - **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`)
 - **`searchPlaceholder`** `string` — Placeholder text in the search input
+- **`autoFocus`** `boolean` (default: focuses, except when a touch or pen opened the popover) — Whether the search input takes focus when the popover opens. On a phone a focused input raises the on-screen keyboard, so after a touch or pen press the search waits for the user to tap it. `true` always focuses it, `false` never
 - **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state. It wraps to the list's width, so a long message, or an action in it, stays in view.
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function for determining if an option should be included in search results
 - **`header`** `ReactNode` — Custom header content
@@ -687,6 +688,7 @@ const [keyOrder, setKeyOrder] = useState([
 ### Keyboard Navigation
 
 - `Tab` - Moves focus to the trigger button
+- `Tab` (popover open, search not focused) - Moves focus to the search input. A touch or pen open, or `autoFocus={false}`, leaves focus on the popover, and the keys below work from the search
 - `Space/Enter` - Opens the dropdown popover
 - `Arrow Up/Down` - Opens the popover (when closed) or navigates through options (when open)
 - `Escape` - Closes the popover or clears search

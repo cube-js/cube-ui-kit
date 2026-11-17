@@ -74,6 +74,21 @@ describe('<FilterPicker treeData />', () => {
     await waitFor(() => expect(search()).toHaveFocus());
   };
 
+  it('leaves the search unfocused when a touch opens the popover', async () => {
+    const { getByRole } = renderWithRoot(
+      <FilterPicker label="Groups" treeData={GROUPS} />,
+    );
+
+    await user.pointer([
+      { keys: '[TouchA]', target: getByRole('button', { name: /Groups/ }) },
+    ]);
+    await waitFor(() => expect(search()).toBeInTheDocument());
+    // The popover Dialog moves focus in a timer after it mounts.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(search()).not.toHaveFocus();
+  });
+
   it('checks the subtree of a parent key and half-checks a partly checked parent', async () => {
     const { getByRole } = renderWithRoot(
       <FilterPicker
