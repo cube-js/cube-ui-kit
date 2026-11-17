@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.214.2
+
+### Patch Changes
+
+- [#1666](https://github.com/cube-js/cube-ui-kit/pull/1666) [`684488ef2`](https://github.com/cube-js/cube-ui-kit/commit/684488ef2491603204323f035bf50da7a05adb70) Thanks [@tenphi](https://github.com/tenphi)! - `FilterPicker` no longer focuses its search input when a touch or pen opens the popover, so a phone no longer raises the on-screen keyboard until the user taps the search. A mouse or keyboard open still focuses it. The `autoFocus` prop now works: `true` always focuses the search on open, `false` never does.
+
 ## 0.214.1
 
 ### Patch Changes
