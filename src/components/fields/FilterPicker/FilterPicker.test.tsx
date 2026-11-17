@@ -1095,6 +1095,24 @@ describe('<FilterPicker />', () => {
       expect(getByPlaceholderText('Search...')).not.toHaveFocus();
     });
 
+    it('returns focus to the trigger, not the search, when a touch closes the popover', async () => {
+      const { getByRole, queryByPlaceholderText } = renderPicker();
+      const trigger = getByRole('button');
+
+      await tap(trigger);
+      await settle();
+      await tap(trigger);
+
+      // The closing tap must not move focus into the search on its way out.
+      expect(queryByPlaceholderText('Search...')).not.toHaveFocus();
+
+      await waitFor(() =>
+        expect(queryByPlaceholderText('Search...')).not.toBeInTheDocument(),
+      );
+      // Focus comes back once the exit transition ends.
+      await waitFor(() => expect(trigger).toHaveFocus());
+    });
+
     it('never focuses the search input with autoFocus={false}', async () => {
       const { getByRole, getByPlaceholderText } = renderPicker({
         autoFocus: false,

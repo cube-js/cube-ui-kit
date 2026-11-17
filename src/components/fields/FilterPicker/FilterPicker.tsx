@@ -107,7 +107,7 @@ export interface CubeFilterPickerProps<T>
   placeholder?: string;
   /**
    * Whether the search input takes focus when the popover opens. By default it
-   * does, except when a touch opened the popover: on a phone, a focused input
+   * does, except when a touch or pen opened the popover: on a phone, a focused input
    * raises the on-screen keyboard. `true` always focuses it, `false` never.
    */
   autoFocus?: boolean;
@@ -447,8 +447,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const [openPointerType, setOpenPointerType] = useState<PointerType | null>(
     null,
   );
-  // Focusing the search raises the on-screen keyboard after a touch, so it
-  // waits for the user to tap it there.
+  // After a touch or pen press, focusing the search raises the on-screen
+  // keyboard, so the search waits for the user to tap it.
   const shouldFocusSearch =
     autoFocus ?? (openPointerType !== 'touch' && openPointerType !== 'pen');
   const cachedItemsOrder = useRef<T[] | null>(null);

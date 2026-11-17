@@ -144,9 +144,9 @@ const meta: Meta<typeof FilterPicker> = {
     autoFocus: {
       control: { type: 'boolean' },
       description:
-        'Whether the search input takes focus when the popover opens. By default it does, except when a touch opened the popover: on a phone, a focused input raises the on-screen keyboard. `true` always focuses it, `false` never.',
+        'Whether the search input takes focus when the popover opens. By default it does, except when a touch or pen opened the popover: on a phone, a focused input raises the on-screen keyboard. `true` always focuses it, `false` never.',
       table: {
-        defaultValue: { summary: 'true, except on touch' },
+        defaultValue: { summary: 'true, except on touch or pen' },
       },
     },
     emptyLabel: {
