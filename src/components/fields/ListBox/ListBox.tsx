@@ -1101,7 +1101,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       if (currentItem?.props?.description) {
         return SIZES.XL;
       }
-      return SIZES[SIZE_NAME_TO_KEY[size] as keyof typeof SIZES];
+      // An item's named size is its row's height; a custom one is measured.
+      return SIZES[
+        (SIZE_NAME_TO_KEY[currentItem?.props?.size] ??
+          SIZE_NAME_TO_KEY[size]) as keyof typeof SIZES
+      ];
     },
     // Options are positioned absolutely here, so their margins space nothing.
     // The virtualizer takes pixels: `1` matches the `$item-gap` default.
@@ -1727,9 +1731,10 @@ function Option({
         '$option-virtual-offset':
           virtualOffset == null ? undefined : `${virtualOffset}px`,
       }}
-      data-size={size}
+      // An item's own `size` wins over the list's, for that row only.
+      data-size={filteredItemProps.size ?? size}
       data-index={virtualIndex}
-      size={size}
+      size={filteredItemProps.size ?? size}
       display={isDraggable ? 'grid' : undefined}
       isSelected={isSelected}
       isDisabled={isDisabled}
