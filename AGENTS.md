@@ -269,6 +269,10 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 - Colors are UI Kit palette tokens, written `#name`, such as `#surface`, `#surface-text` or `#danger-accent-text`. Never paste raw `#rrggbb`, `rgb()` or `hsl()` values.
 - To find a color token, run `pnpm probe tokens --filter <part of its name>`, with `--scheme dark` or `--hc` for the other schemes. It reads the palette in `src/`. `uikit:colors` reads the build in `dist/`, which is missing or out of date while you work here. Put a text token on its base. The Usage guide lists the legacy aliases that new code avoids.
 
+#### Typography
+
+- To pick a typography preset (`preset: 't3'`) and see what it sets (size, line height, weight, bold weight and letter spacing), read the "Typography Presets" section of the Usage Guide in the UI Kit docs index.
+
 - Docs: node_modules/.harnesspm/docs/uikit/llms.txt (uikit:docs)
 - Script: `npx harnesspm run uikit:colors` — Look up UI Kit color tokens by name: values in light, dark and high contrast, and contrast against their base, or with --on against another surface (uikit:scripts/colors)
 
