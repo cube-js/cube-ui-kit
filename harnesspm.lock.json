@@ -113,7 +113,7 @@
     },
     "uikit:rules/usage": {
       "kind": "rules",
-      "hash": "2ba1a1c5f932ddae"
+      "hash": "e3c39078bbdb1d18"
     },
     "uikit:scripts/colors": {
       "kind": "scripts",
@@ -145,7 +145,7 @@
     },
     "uikit:rules/usage": {
       "harnesspm/patches/uikit-usage.patch.md": {
-        "Styling": "f25ddb9ecf445caa"
+        "Styling": "f8215c41049bf9aa"
       }
     }
   }
