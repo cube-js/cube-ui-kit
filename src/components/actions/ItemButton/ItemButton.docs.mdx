@@ -39,6 +39,7 @@ An interactive button component built on top of `Item` that provides all the lay
 - **`to`** `string` — URL for link behavior (makes button act as link)
 - **`htmlType`** `'button' | 'submit' | 'reset'` — HTML button type attribute
 - **`description`** `string` — Secondary text shown below the main content
+- **`wrapDescription`** `boolean` — Wrap a long description onto more lines instead of ending it in an ellipsis. Defaults to `true` for `type="card"`, `false` otherwise
 - **`isLoading`** `boolean` — Whether the button shows loading state with disabled interaction
 - **`actions`** `ReactNode` — Inline action buttons displayed on the right side. Use `ItemButton.Action` for consistent styling. Actions automatically inherit the parent button's `type` prop. Pass `null` to keep an empty run, so actions arriving later do not remount the button
 - **`actionsProps`** `HTMLAttributes<HTMLDivElement>` — Props spread on the actions run's container. Only meaningful together with `actions`
