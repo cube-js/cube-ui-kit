@@ -88,7 +88,7 @@ const COPY_BUTTON = `import { Button, tasty } from '@cube-dev/ui-kit';
 export const CopyButton = tasty(Button, { type: 'clear' });
 `;
 
-const CONSUMER = `import { Alert, AlertDialog, Button, ButtonGroup, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, GridProvider, ItemButton, Layout, Panel, Placeholder, ResizablePanel, Result, Root, Skeleton, Space, tasty, Text, TextArea } from '@cube-dev/ui-kit';
+const CONSUMER = `import { Alert, AlertDialog, Button, ButtonGroup, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, GridProvider, ItemButton, Layout, ListBox, Panel, Placeholder, ResizablePanel, Result, Root, Skeleton, Space, tasty, Text, TextArea } from '@cube-dev/ui-kit';
 
 import { CopyButton } from './CopyButton';
 
@@ -108,6 +108,12 @@ export function Consumer() {
       <ComboBox inputStyles={{ padding: '2x' }} />
       <ComboBox fill="#danger" />
       <ComboBox filter={false} direction="top" />
+      <ComboBox overlayStyles={{ width: 'min 40x' }} listBoxStyles={{ height: 'max 30x' }} />
+      <ComboBox overlayStyles={{ width: '40x', fill: '#dark' }} />
+      <ComboBox triggerStyles={{ width: '100%' }} />
+      <ListBox listStyles={{ margin: '.5x', height: 'max 30x' }} labelStyles={{ height: '2.5x' }} />
+      <ListBox headerStyles={{ padding: '.5x', gap: '1x' }} footerStyles={{ flow: 'column', padding: '.5x' }} />
+      <ListBox headerStyles={{ border: 'none' }} />
       <ColorSwatch color="#ff0000" />
       <TextArea resize="vertical" />
       <Button.Group direction="vertical" gap="1x" flow="row" />
@@ -354,7 +360,9 @@ describe('tasty.config.ts', () => {
   // and a component's own prop named like a style passes, while that name on
   // a component that doesn't own it (`<Button filter>`) is reported. A
   // sub-component counts as its export (`Button.Split`) unless the config
-  // names it (`Button.Group`).
+  // names it (`Button.Group`). A field's popover, list and label take sizes,
+  // and its header and footer a container's layout, while its trigger and a
+  // look on any of them are reported.
   it('protects components for a consumer that extends it', () => {
     const reported = lintConsumer(['no-protected-restyle'], {
       'CopyButton.tsx': COPY_BUTTON,
@@ -369,6 +377,9 @@ describe('tasty.config.ts', () => {
         '<Button fill="#danger" />',
         "<ItemButton styles={{ padding: '2x' }} />",
         "<ComboBox inputStyles={{ padding: '2x' }} />",
+        "<ComboBox overlayStyles={{ width: '40x', fill: '#dark' }} />",
+        "<ComboBox triggerStyles={{ width: '100%' }} />",
+        "<ListBox headerStyles={{ border: 'none' }} />",
         "<CopyButton styles={{ fill: '#danger' }} />",
         '<ComboBox fill="#danger" />',
         '<Button filter="grayscale(1)" />',
