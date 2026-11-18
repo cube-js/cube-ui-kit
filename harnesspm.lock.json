@@ -33,7 +33,7 @@
     },
     "glaze:rules/colors": {
       "kind": "rules",
-      "hash": "28a7337877a98c59"
+      "hash": "89af681acf9aeb97"
     },
     "glaze:scripts/color": {
       "kind": "scripts",
@@ -109,7 +109,7 @@
     },
     "uikit:docs": {
       "kind": "docs",
-      "hash": "97319c247efcc6b6"
+      "hash": "d463cec65031ed66"
     },
     "uikit:rules/usage": {
       "kind": "rules",

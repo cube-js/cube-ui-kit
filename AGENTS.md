@@ -123,7 +123,7 @@ The everyday commands. The others, from Chromatic and bundle size to the diagnos
 
 - `pnpm storybook` — start Storybook on port 6060
 - `pnpm build` — build library (`tsdown`, unbundled ESM)
-- `pnpm test` — run all tests (Vitest); add `-- ComponentName` to filter, `-u` to update snapshots
+- `pnpm test` — run all tests (Vitest); `pnpm test ComponentName` runs only the test files whose path contains it, and `-u` updates snapshots. Never put `--` before them: pnpm passes it on to Vitest, which ignores every argument after it and runs the whole suite
 - `pnpm test:once` — the full `pnpm test` (no test arguments), skipped when this exact tree is the last one that passed it in this worktree: a clean working tree (no changes, no untracked files, no tracked file written during that run) with the same Node, install and test environment (`KEYED_ENV` in the script; a test that reads another environment variable adds it there). It never selects tests by changed files. See [`scripts/test-once.mjs`](scripts/test-once.mjs)
 - `pnpm probe` — print the HTML, CSS or tokens a snippet actually produces, with the real config loaded. `pnpm probe:browser` for computed values, geometry and screenshots; `render --sr` for what a screen reader says. See [Inspecting Rendered HTML & CSS](#inspecting-rendered-html--css--pnpm-probe) and [Hearing What a Screen Reader Says](#hearing-what-a-screen-reader-says)
 - `pnpm fix` — lint + format (Oxlint + Prettier)
@@ -216,7 +216,7 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 
 #### Checking a theme
 
-- `glaze:inspect` cannot load UI Kit's palette: `palette.ts` builds it inside `getPalette()` and imports files without extensions. After a palette change, compare `pnpm probe tokens --json` before and after in all four schemes, as `docs/rules/probe.md` shows, and run `pnpm test -- src/tokens`.
+- `glaze:inspect` cannot load UI Kit's palette: `palette.ts` builds it inside `getPalette()` and imports files without extensions. After a palette change, compare `pnpm probe tokens --json` before and after in all four schemes, as `docs/rules/probe.md` shows, and run `pnpm test src/tokens`.
 - To try one color, such as a brand color, before you add it, run `glaze:color <color> --base <surface> --contrast AA`.
 - To check two literal colors, run `glaze:contrast <text> <background>`.
 
