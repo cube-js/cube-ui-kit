@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.215.0
+
+### Minor Changes
+
+- [#1676](https://github.com/cube-js/cube-ui-kit/pull/1676) [`a5e91d5e5`](https://github.com/cube-js/cube-ui-kit/commit/a5e91d5e5eab2b5598e535f327b741897ff0a622) Thanks [@tenphi](https://github.com/tenphi)! - `Item` takes `wrapDescription`: a long description wraps onto more lines instead of ending in an ellipsis. It works on every item that spreads `Item` props, such as `ListBox.Item`, `Select.Item`, `ComboBox.Item`, `FilterPicker.Item` and `Menu.Item`, so a list can show a sentence-long description or a disabled option's reason in full. It defaults to `true` for `type="card"` and `type="header"`, which wrapped before and still do, and `false` otherwise; a card can now pass `false` to keep its description on one line. It replaces a `Description: { whiteSpace: 'normal' }` override, which `tasty/no-protected-restyle` reports.
+
+### Patch Changes
+
+- [#1676](https://github.com/cube-js/cube-ui-kit/pull/1676) [`a5e91d5e5`](https://github.com/cube-js/cube-ui-kit/commit/a5e91d5e5eab2b5598e535f327b741897ff0a622) Thanks [@tenphi](https://github.com/tenphi)! - A `ListBox` option takes its item's own `size` over the list's, for that row only: `<ListBox.Item size="6x">` gives a row tall enough for an avatar beside a name. This covers `ComboBox`, `FilterPicker` and `FilterListBox`, which render their options through `ListBox`; `Select` already did it. The list used to override every item's `size`, so a `size` an item passed without effect now applies: check rows that set one. A named size also keeps the virtualized list's height estimate right.
+
 ## 0.214.4
 
 ### Patch Changes
