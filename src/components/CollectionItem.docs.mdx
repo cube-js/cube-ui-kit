@@ -106,12 +106,13 @@ const items = [{
 - **`prefix`** `ReactNode` — Content rendered before the label
 - **`suffix`** `ReactNode` — Content rendered after the label
 - **`description`** `ReactNode` — Secondary text below the main content
+- **`wrapDescription`** `boolean` (default: `false`) — Wrap a long description onto more lines instead of ending it in an ellipsis
 - **`tooltip`** `string | boolean | object` — Tooltip configuration
 - **`hotkeys`** `string` — Keyboard shortcut displayed and triggered
 - **`isSelected`** `boolean` — Whether the item shows as selected
 - **`isLoading`** `boolean` — Show loading state, replacing the icon slot with a spinner
 - **`actions`** `ReactNode` — Inline action buttons displayed on the right side
-- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline'` (default: `medium`) — Size of the item
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number | string` — Size of the item. In a list it defaults to the list's `size`, and an item's own value overrides it for that row; a number or a custom length such as `6x` sets the row height
 - **`autoHideActions`** `boolean` (default: `false`) — When true, actions are hidden by default and shown on hover or focus
 - **`preserveActionsSpace`** `boolean` (default: `false`) — Preserve the actions width when hidden (only changes opacity, not layout)
 - **`disableActionsFocus`** `boolean` (default: `false`) — Disable focus on action buttons by setting tabIndex to -1

@@ -317,6 +317,8 @@ Groups related items together with an optional heading.
 - `medium` - Standard size for general use (32px item height, default)
 - `large` - Emphasized size for important sections (40px item height)
 
+An item's own `size` overrides the list's for that row: `<ListBox.Item size="6x">` gives a row tall enough for an avatar beside a name. A named size (`small`, `large`, …) also keeps the virtualized list's height estimate right; a custom one is measured once rendered.
+
 ## Examples
 
 ### Basic Usage

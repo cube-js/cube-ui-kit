@@ -16,7 +16,11 @@ import { CubeItemActionProps } from '../ItemAction/ItemAction';
 
 export type BannerTheme = 'danger' | 'warning' | 'note' | 'success';
 
-export type BannerProps = Omit<CubeItemProps, 'type' | 'size' | 'theme'> & {
+// A banner's description always wraps, so it takes no `wrapDescription`.
+export type BannerProps = Omit<
+  CubeItemProps,
+  'type' | 'size' | 'theme' | 'wrapDescription'
+> & {
   /**
    * The visual theme of the banner.
    * @default 'note'

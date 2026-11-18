@@ -90,6 +90,48 @@ describe('<Item />', () => {
   });
 });
 
+describe('wrapDescription', () => {
+  const description = 'Can view every dashboard, but cannot edit them';
+
+  it.each([
+    ['an item', {}, false],
+    ['an item with the prop', { wrapDescription: true }, true],
+    ['a card', { type: 'card' as const }, true],
+    ['a header', { type: 'header' as const }, true],
+    [
+      'a card with the prop off',
+      { type: 'card' as const, wrapDescription: false },
+      false,
+    ],
+  ])('wraps the description of %s: %s', (_, props, wraps) => {
+    renderWithRoot(
+      <Item qa="Item" description={description} {...props}>
+        Viewer
+      </Item>,
+    );
+
+    const item = screen.getByTestId('Item');
+
+    if (wraps) {
+      expect(item).toHaveAttribute('data-wrap-description');
+    } else {
+      expect(item).not.toHaveAttribute('data-wrap-description');
+    }
+  });
+
+  it('has nothing to wrap without a description', () => {
+    renderWithRoot(
+      <Item wrapDescription qa="Item">
+        Viewer
+      </Item>,
+    );
+
+    expect(screen.getByTestId('Item')).not.toHaveAttribute(
+      'data-wrap-description',
+    );
+  });
+});
+
 describe('labelRef', () => {
   // `labelRef` used to fall through to the element's DOM attributes
   // (`labelref="[object Object]"`) and never reach the label.

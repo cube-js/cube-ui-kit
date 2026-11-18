@@ -80,6 +80,7 @@ export type ItemMods = Mods<{
   'has-prefix'?: boolean;
   'has-suffix'?: boolean;
   'has-description'?: boolean;
+  'wrap-description'?: boolean;
   'has-actions'?: boolean;
   'has-actions-content'?: boolean;
   'auto-hide-actions'?: boolean;
@@ -102,6 +103,11 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   suffix?: ReactNode;
   description?: ReactNode;
   descriptionPlacement?: 'inline' | 'block';
+  /**
+   * Whether a long description wraps onto more lines instead of ending in an ellipsis.
+   * @default true for `type="card"` and `type="header"`, false otherwise
+   */
+  wrapDescription?: boolean;
   /**
    * When true, the item is rendered inside a wrapper element to separate the actions from the item.
    * @default false
@@ -519,7 +525,7 @@ const ItemElement = tasty({
       overflow: 'hidden',
       whiteSpace: {
         '': 'nowrap',
-        'type=card | type=header': 'normal',
+        'wrap-description': 'normal',
       },
       textOverflow: 'ellipsis',
       width: 'initial 100% 100%',
@@ -908,6 +914,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     suffix,
     description,
     descriptionPlacement,
+    wrapDescription,
     labelProps,
     descriptionProps,
     keyboardShortcutProps,
@@ -1063,6 +1070,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     'has-prefix': !!finalPrefix,
     'has-suffix': !!finalSuffix,
     'has-description': showDescription,
+    'wrap-description':
+      showDescription &&
+      (wrapDescription ?? (type === 'card' || type === 'header')),
     'has-actions': !!actions,
     'has-actions-content': !!(actions && actions !== true),
     'menu-native-row': !!nativeMenuItemProps,

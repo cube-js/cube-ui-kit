@@ -1481,6 +1481,37 @@ describe('<ListBox />', () => {
       });
     });
   });
+
+  describe('option size', () => {
+    it("gives an option its item's own size over the list's", () => {
+      renderWithRoot(
+        <ListBox aria-label="Users" size="small">
+          <ListBox.Item key="list">List size</ListBox.Item>
+          <ListBox.Item key="named" size="large">
+            Named size
+          </ListBox.Item>
+          <ListBox.Item key="custom" size="6x">
+            Custom size
+          </ListBox.Item>
+        </ListBox>,
+      );
+
+      expect(screen.getByRole('option', { name: 'List size' })).toHaveAttribute(
+        'data-size',
+        'small',
+      );
+      expect(
+        screen.getByRole('option', { name: 'Named size' }),
+      ).toHaveAttribute('data-size', 'large');
+      // A custom size is the `$size` token the item sets, not a named size.
+      expect(
+        screen.getByRole('option', { name: 'Custom size' }).style.cssText,
+      ).toContain('--size:');
+      expect(
+        screen.getByRole('option', { name: 'List size' }).style.cssText,
+      ).not.toContain('--size:');
+    });
+  });
 });
 
 describe('ListBox id and description', () => {
