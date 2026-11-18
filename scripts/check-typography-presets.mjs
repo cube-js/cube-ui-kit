@@ -32,7 +32,11 @@ if (presets.length === 0) {
 }
 
 const guide = readFileSync(join(ROOT, 'src/stories/Usage.docs.mdx'), 'utf8');
-const section = guide.match(/\n## Typography Presets\n([\s\S]*?)(?=\n## |$)/);
+// The section ends at the next `##` heading, or at its Modifiers table, whose
+// `strong` and `em` rows are not presets.
+const section = guide.match(
+  /\n## Typography Presets\n([\s\S]*?)(?=\n## |\n### Modifiers\n|$)/,
+);
 
 if (!section) {
   console.error(
