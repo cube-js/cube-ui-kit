@@ -163,8 +163,8 @@ importers:
         specifier: ^1.20.0
         version: 1.20.0(@tenphi/tasty@3.19.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.8)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
       '@tenphi/harnesspm':
-        specifier: ^0.5.2
-        version: 0.5.2
+        specifier: ^0.6.0
+        version: 0.6.0
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -1632,8 +1632,8 @@ packages:
     resolution: {integrity: sha512-NOg3tsb6knAlNL1J9Y9Bkf0mDYf/1dHlTTcUHyYFoeOS5SGLXjBWMY4H85Zr342/p2UTpetSEVNCgCq2BN0Bfg==}
     engines: {node: '>=20'}
 
-  '@tenphi/harnesspm@0.5.2':
-    resolution: {integrity: sha512-fv1ouXRd0ziGcKFs3tAMzFh8dmSJhz7yPzmJe02Rw1R3t22NEeJ3MIqHDDNEbH9bfCRcs4dveZuowOfbWkPHTw==}
+  '@tenphi/harnesspm@0.6.0':
+    resolution: {integrity: sha512-fBwE9HO+EkPm6zX+va3axJkbTOmOY9PRrYoI2oQXJKoTvCUlZ9KlGMzK5fQRlgaqSsAUuM70/alUqU/hS1ss8w==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -7102,7 +7102,7 @@ snapshots:
 
   '@tenphi/glaze@3.1.0': {}
 
-  '@tenphi/harnesspm@0.5.2':
+  '@tenphi/harnesspm@0.6.0':
     dependencies:
       yaml: 2.9.1
 
