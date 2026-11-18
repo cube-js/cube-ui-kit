@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.214.3
+
+### Patch Changes
+
+- [#1669](https://github.com/cube-js/cube-ui-kit/pull/1669) [`d394cc4b7`](https://github.com/cube-js/cube-ui-kit/commit/d394cc4b7d51caef8fa4ae6c869797ed94bffa42) Thanks [@tenphi](https://github.com/tenphi)! - The published `tasty.config.ts` lets a field (`Select`, `ComboBox`, `Picker`, `FilterPicker`, `ListBox` and the rest) be sized from outside: with `@tenphi/eslint-plugin-tasty` 1.20.0 or newer, `tasty/no-protected-restyle` accepts `popoverStyles`, `overlayStyles`, `listBoxStyles` and `labelStyles` that set only sizing props (`width`, `height`, …), `listStyles` that also sets `margin` and the other placing props, and `headerStyles` and `footerStyles` that set only a container's layout props (`padding`, `gap`, `flow`, …). A look on any of them (`fill`, `border`, `preset`, …), and `triggerStyles`, `inputStyles` and `optionStyles`, are still reported. The optional `@tenphi/eslint-plugin-tasty` peer range rises to `^1.20.0`; an older plugin ignores the new allowances and keeps reporting these props as before.
+
 ## 0.214.2
 
 ### Patch Changes
