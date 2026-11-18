@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.214.4
+
+### Patch Changes
+
+- [#1675](https://github.com/cube-js/cube-ui-kit/pull/1675) [`3dfe5b15d`](https://github.com/cube-js/cube-ui-kit/commit/3dfe5b15d388a447a1d7d8a85eb87451114b0f82) Thanks [@tenphi](https://github.com/tenphi)! - The UI Kit agent rule now also covers raw colors in SVG `fill` and `stroke` attributes, and says how to theme them: `currentColor` in the attribute, with a palette token set through Tasty `color` on the SVG or a parent.
+
+- [#1673](https://github.com/cube-js/cube-ui-kit/pull/1673) [`fff6a45d8`](https://github.com/cube-js/cube-ui-kit/commit/fff6a45d8c2c11afa579a06df55e740bf8d627d5) Thanks [@tenphi](https://github.com/tenphi)! - The agent rule `uikit:rules/usage` gets a Typography section that points to the "Typography Presets" section of the Usage Guide, and that section now lists all 30 presets, `c3` and `text` included, each with its size, line height, weight, bold weight and letter spacing.
+
 ## 0.214.3
 
 ### Patch Changes
