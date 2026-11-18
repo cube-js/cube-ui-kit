@@ -15,7 +15,7 @@ Every `it()` name starts with one of four labels. They are greppable and they ar
 | `[undefined]` | Undefined legacy behaviour. Do not rely on it; warn where practical. The modern backend owes it nothing. |
 | `[design-input]` | Modern design input. Legacy behaviour recorded because the modern backend intentionally differs (see the plan, §7.2–§7.5). |
 
-Run the suite with `pnpm test -- legacy-contract`. It is part of `pnpm test`.
+Run the suite with `pnpm test legacy-contract`. It is part of `pnpm test`.
 
 ## Phase 0 baselines
 

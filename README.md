@@ -135,7 +135,7 @@ const StatusBadge = tasty({
 pnpm storybook        # Start Storybook dev server on port 6060
 pnpm build            # Build the library (tsdown, unbundled ESM)
 pnpm test             # Run all tests (Vitest)
-pnpm test -- Button   # Run tests matching "Button"
+pnpm test Button      # Run test files whose path contains "Button"
 pnpm fix              # Lint and format (Oxlint + Prettier)
 pnpm size             # Measure the bundle and check its dependencies
 pnpm chromatic        # Run visual regression tests

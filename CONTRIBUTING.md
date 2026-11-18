@@ -65,7 +65,7 @@ All bug fixes and new features should include tests. The project uses [Vitest](h
 
 ```bash
 pnpm test             # run all tests
-pnpm test -- Button   # run tests matching "Button"
+pnpm test Button      # run test files whose path contains "Button"
 pnpm test -u          # update snapshots
 pnpm chromatic        # visual regression (requires token)
 ```
