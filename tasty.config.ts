@@ -131,7 +131,8 @@ export default {
    * and typography primitives, the bases meant for extension and the icons,
    * whose `styles` are their API. Style props that place or size the root
    * stay allowed, and containers also keep the props that lay out their
-   * content. The first matching entry decides, so the last entry holds the
+   * content. A field's `*Styles` props for its popover, list, label, header
+   * and footer take what `allowedInnerStyleProps` lists for each. The first matching entry decides, so the last entry holds the
    * rest. A sub-component such as `Layout.Content` counts as the export it
    * hangs off, unless an entry names its member path, which then decides
    * first. Our own source imports components by relative path, which never
@@ -146,6 +147,13 @@ export default {
     // `resize` is a text field's resize handle. The fields share one entry, so
     // a field without one of these props still gets its name, which is no
     // plausible restyle of a field.
+    //
+    // A field's popover, overlay, list box and list can only be sized from
+    // outside: how wide they open and how tall they grow depends on the
+    // options and the screen they sit in. A label row may need its height
+    // pinned so the fields in a row line up. A header or footer holds content
+    // the consumer supplies, as a container does, so its layout and spacing
+    // are the consumer's. The trigger, input and options keep their look.
     {
       source: '@cube-dev/ui-kit',
       include: [
@@ -174,6 +182,15 @@ export default {
         'filter',
         'resize',
       ],
+      allowedInnerStyleProps: {
+        popoverStyles: ['dimension'],
+        overlayStyles: ['dimension'],
+        listBoxStyles: ['dimension'],
+        listStyles: ['position', 'dimension'],
+        labelStyles: ['dimension'],
+        headerStyles: containerStyleProps,
+        footerStyles: containerStyleProps,
+      },
     },
     {
       source: '@cube-dev/ui-kit',

@@ -6,9 +6,9 @@
       "project": true
     },
     "@tenphi/eslint-plugin-tasty": {
-      "version": "1.19.1",
+      "version": "1.20.0",
       "plugin": "tasty-lint",
-      "integrity": "sha512-QOibUelN/4dYMpCDCirZXYnCGpYBRpENJO5u96nFzRRT0Iu/LDFPyTa+bZoPiZS1tG+Np4I2t1HuX6LYQ13cjw=="
+      "integrity": "sha512-nrzwucI0sxDr9Dc0+8XhNL1D2wCc7jVJE6UbQInwnM5pFCuqunWhhjCY0UbqmC6moJZgCyPIVVxM8cFOjXwWWg=="
     },
     "@tenphi/glaze": {
       "version": "3.1.0",
@@ -77,7 +77,7 @@
     },
     "tasty-lint:docs": {
       "kind": "docs",
-      "hash": "e8d7edf40a04a04c"
+      "hash": "27b26a0d313b5a78"
     },
     "tasty-lint:hooks/check-edit": {
       "kind": "hooks",
@@ -109,7 +109,7 @@
     },
     "uikit:docs": {
       "kind": "docs",
-      "hash": "da1e936d1532fff8"
+      "hash": "97319c247efcc6b6"
     },
     "uikit:rules/usage": {
       "kind": "rules",
