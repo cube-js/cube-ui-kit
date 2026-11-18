@@ -126,6 +126,10 @@ jobs:
       - name: Check every published component token is documented
         run: pnpm check:component-tokens
 
+      # Same reason: a docs edit can drop a preset's row from the Usage guide.
+      - name: Check every typography preset has a row in the Usage guide
+        run: pnpm check:typography-presets
+
       - name: Validate the agent harness (harnesspm check)
         run: pnpm check:harness
 

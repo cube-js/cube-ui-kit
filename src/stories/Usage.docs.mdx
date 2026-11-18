@@ -292,71 +292,85 @@ Use via the `preset` style property. Modifiers are appended with a `/` separator
 
 Defined in `src/tokens/typography.ts`.
 
+Each row gives what a preset sets. **Bold Weight** is the weight `/ strong` (or `bold`) applies. **Letter Spacing** `0` means none. **Notes** name a text transform or a font family where a preset sets one.
+
+### Base
+
+| Preset | Size | Line Height | Weight | Bold Weight | Letter Spacing | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `text` | 14px | 20px | 400 | 600 | 0 | Basic text. Sets no bold weight, so `/ strong` falls back to the `default` one |
+| `default` | 14px | 20px | 400 | 600 | 0 | Aliases the `t3` values: the base text style |
+
 ### Headings
 
-| Preset | Size | Line Height | Weight |
-| ------ | ---- | ----------- | ------ |
-| `h1`   | 36px | 44px        | 600    |
-| `h2`   | 24px | 32px        | 600    |
-| `h3`   | 20px | 28px        | 600    |
-| `h4`   | 18px | 24px        | 600    |
-| `h5`   | 16px | 22px        | 600    |
-| `h6`   | 14px | 20px        | 600    |
+| Preset | Size | Line Height | Weight | Bold Weight | Letter Spacing | Notes |
+| ------ | ---- | ----------- | ------ | ----------- | -------------- | ----- |
+| `h1`   | 36px | 44px        | 600    | 700         | -0.01em        |       |
+| `h2`   | 24px | 32px        | 600    | 700         | 0              |       |
+| `h3`   | 20px | 28px        | 600    | 700         | 0              |       |
+| `h4`   | 18px | 24px        | 600    | 700         | 0              |       |
+| `h5`   | 16px | 22px        | 600    | 700         | 0              |       |
+| `h6`   | 14px | 20px        | 600    | 700         | 0.01em         |       |
 
 ### Text
 
-| Preset | Size | Line Height | Weight | Notes |
-| --- | --- | --- | --- | --- |
-| `t1` | 18px | 24px | 400 |  |
-| `t2` | 16px | 22px | 400 |  |
-| `t2m` | 16px | 22px | 500 | Medium weight variant |
-| `t3` | 14px | 20px | 400 | Base text size |
-| `t3m` | 14px | 20px | 500 | Medium weight variant |
-| `t4` | 12px | 18px | 500 | Small text |
-| `t4m` | 12px | 18px | 600 | Small text, semi-bold |
-| `t4n` | 12px | 18px | 400 | Small text, normal weight — for secondary metadata beside `t4` |
+| Preset | Size | Line Height | Weight | Bold Weight | Letter Spacing | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `t1` | 18px | 24px | 400 | 600 | 0 |  |
+| `t2` | 16px | 22px | 400 | 600 | 0 |  |
+| `t2m` | 16px | 22px | 500 | 600 | 0 | Medium weight variant |
+| `t3` | 14px | 20px | 400 | 600 | 0 | Base text size |
+| `t3m` | 14px | 20px | 500 | 600 | 0 | Medium weight variant |
+| `t4` | 12px | 18px | 500 | 600 | 0 | Small text |
+| `t4m` | 12px | 18px | 600 | 700 | 0 | Small text, semi-bold |
+| `t4n` | 12px | 18px | 400 | 600 | 0 | Small text, normal weight — for secondary metadata beside `t4` |
 
 ### Paragraph
 
 Paragraph presets have slightly increased line heights compared to text presets at the same size, optimized for multi-line reading.
 
-| Preset | Size | Line Height | Weight |
-| ------ | ---- | ----------- | ------ |
-| `p1`   | 18px | 28px        | 400    |
-| `p2`   | 16px | 24px        | 400    |
-| `p3`   | 14px | 22px        | 400    |
-| `p4`   | 12px | 20px        | 500    |
+| Preset | Size | Line Height | Weight | Bold Weight | Letter Spacing | Notes |
+| ------ | ---- | ----------- | ------ | ----------- | -------------- | ----- |
+| `p1`   | 18px | 28px        | 400    | 600         | 0              |       |
+| `p2`   | 16px | 24px        | 400    | 600         | 0              |       |
+| `p3`   | 14px | 22px        | 400    | 600         | 0              |       |
+| `p4`   | 12px | 20px        | 500    | 600         | 0              |       |
 
 ### Markdown / Prose
 
 Largest line heights, designed for long-form content blocks.
 
-| Preset | Size | Line Height | Weight |
-| ------ | ---- | ----------- | ------ |
-| `m1`   | 18px | 32px        | 400    |
-| `m2`   | 16px | 28px        | 400    |
-| `m3`   | 14px | 24px        | 400    |
+| Preset | Size | Line Height | Weight | Bold Weight | Letter Spacing | Notes |
+| ------ | ---- | ----------- | ------ | ----------- | -------------- | ----- |
+| `m1`   | 18px | 32px        | 400    | 600         | 0              |       |
+| `m2`   | 16px | 28px        | 400    | 600         | 0              |       |
+| `m3`   | 14px | 24px        | 400    | 600         | 0              |       |
 
 ### Snippet / Monospace
 
 Sized to parallel `t2`–`t4`. Each preset sets `font-family` to `var(--font-mono)` (the design-system monospace stack from `Root`).
 
-| Preset | Size | Line Height | Weight | Notes                                |
-| ------ | ---- | ----------- | ------ | ------------------------------------ |
-| `s2`   | 16px | 22px        | 400    | Larger code / snippet text           |
-| `s3`   | 14px | 20px        | 400    | Default snippet size (matches Prism) |
-| `s4`   | 12px | 18px        | 400    | Compact code / snippet text          |
+| Preset | Size | Line Height | Weight | Bold Weight | Letter Spacing | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `s2` | 16px | 22px | 400 | 600 | 0 | Monospace. Larger code / snippet text |
+| `s3` | 14px | 20px | 400 | 600 | 0 | Monospace. Default snippet size (matches Prism) |
+| `s4` | 12px | 18px | 400 | 600 | 0 | Monospace. Compact code / snippet text |
 
-### Special Presets
+### Captions and Tags
 
-| Preset    | Description                                    |
-| --------- | ---------------------------------------------- |
-| `c1`      | 14px, weight 600, uppercase — section captions |
-| `c2`      | 12px, weight 600, uppercase — small captions   |
-| `tag`     | 12px, weight 600 — tag/badge text              |
-| `strong`  | Inherits everything, applies bold weight       |
-| `em`      | Inherits everything, applies italic style      |
-| `default` | Aliases `t3` values — the base text style      |
+| Preset | Size | Line Height | Weight | Bold Weight | Letter Spacing | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `c1` | 14px | 20px | 600 | 700 | 0 | Uppercase. Section captions |
+| `c2` | 12px | 18px | 600 | 700 | 0.01em | Uppercase. Small captions |
+| `c3` | 11px | 16px | 600 | 700 | 0.02em | Uppercase. Smallest captions |
+| `tag` | 12px | 18px | 600 | 700 | 0.01em | Tag / badge text |
+
+### Modifiers
+
+| Modifier | Description                                           |
+| -------- | ----------------------------------------------------- |
+| `strong` | Inherits everything, applies the preset's bold weight |
+| `em`     | Inherits everything, applies italic style             |
 
 ## Resolving Tokens Outside CSS
 
