@@ -429,6 +429,7 @@ export const DEFAULTS: DefaultsRegistry = {
         size: { kind: 'default', value: 'medium' },
         theme: { kind: 'default', value: 'default' },
         tooltip: { kind: 'default', value: true },
+        wrapDescription: { kind: 'default', value: true },
       },
     },
     ItemTable: {

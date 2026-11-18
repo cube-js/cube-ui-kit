@@ -30,6 +30,7 @@ A foundational component that provides a standardized layout and styling for ite
 - **`suffix`** `ReactNode` — Element rendered after the content (before rightIcon)
 - **`description`** `ReactNode` — Description text displayed with the item
 - **`descriptionPlacement`** `'inline' | 'block'` (default: `inline`) — How the description is positioned relative to the main content. Defaults to `'block'` for `type="card"` and `type="header"`
+- **`wrapDescription`** `boolean` — Whether a long description wraps onto more lines instead of ending in an ellipsis. Defaults to `true` for `type="card"` and `type="header"`, `false` otherwise
 - **`type`** `'item' | 'header' | 'primary' | 'outline' | 'outline-2' | 'clear' | 'link' | 'card'` (default: `item`) — Visual style variant
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special' | 'current'` (default: `default`) — Semantic colour palette theme. `current` is not a brand palette: it mixes every color from the inherited text color, so the item adopts the color of whatever container it sits in
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Item size. Accepts custom number or string values
@@ -223,6 +224,18 @@ The `descriptionPlacement` prop controls where the description appears. It defau
 </Item>
 ```
 
+A description stays on one line and ends in an ellipsis, except on `type="card"` and `type="header"`, where it wraps. `wrapDescription` sets this either way. Wrap a description the user has to read in full, such as the one sentence that explains an option in a narrow list, or the reason a disabled option can't be picked:
+
+```jsx
+<Select.Item
+  key="viewer"
+  wrapDescription
+  description="Can view every dashboard and report, but cannot edit them"
+>
+  Viewer
+</Select.Item>
+```
+
 ### With Hotkeys
 
 ```jsx
@@ -402,7 +415,7 @@ Use `preserveActionsSpace` together with `autoHideActions` to keep the actions a
 
 ### With Tooltip
 
-By default, Item shows an auto tooltip when content overflows. The label and a string `description` are both checked, and the tooltip shows the text that is cut off: the label, the description, or both — then the description sits below the label as lighter secondary text. Text the row already shows in full is left out. A description that wraps (`type="card"` and `type="header"`) only triggers it if a word too long to break overflows. Pass `tooltip={false}` to turn the check off, for example in a very long list that renders every row at once.
+By default, Item shows an auto tooltip when content overflows. The label and a string `description` are both checked, and the tooltip shows the text that is cut off: the label, the description, or both — then the description sits below the label as lighter secondary text. Text the row already shows in full is left out. A description that wraps (`wrapDescription`, on by default for `type="card"` and `type="header"`) only triggers it if a word too long to break overflows. Pass `tooltip={false}` to turn the check off, for example in a very long list that renders every row at once.
 
 **Type:** `string | boolean | object`
 

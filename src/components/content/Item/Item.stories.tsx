@@ -67,6 +67,14 @@ export default {
         defaultValue: { summary: 'inline' },
       },
     },
+    wrapDescription: {
+      control: { type: 'boolean' },
+      description:
+        'Whether a long description wraps onto more lines instead of ending in an ellipsis',
+      table: {
+        defaultValue: { summary: 'true for card and header, false otherwise' },
+      },
+    },
 
     /* Presentation */
     size: {
