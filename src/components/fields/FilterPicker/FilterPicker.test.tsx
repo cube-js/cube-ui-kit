@@ -16,6 +16,11 @@ describe('<FilterPicker />', () => {
     <FilterPicker.Item key="elderberry">Elderberry</FilterPicker.Item>,
   ];
 
+  // Stable selections: a new array on each render would re-run the picker's
+  // selection effects.
+  const SORT_SELECTION = ['banana'];
+  const CUSTOM_SELECTION = ['date'];
+
   // Data arrays for testing sorting functionality (which requires items prop)
   const basicItemsData = [
     { key: 'apple', label: 'Apple' },
@@ -438,6 +443,39 @@ describe('<FilterPicker />', () => {
       expect(options[2]).toHaveTextContent('Banana');
       expect(options[3]).toHaveTextContent('Cherry');
       expect(options[4]).toHaveTextContent('Elderberry');
+    });
+
+    it('shows options that arrive while the popover is open', async () => {
+      // A page loaded on scroll, or a server search with `filter={false}`.
+      const renderPicker = (items: typeof basicItemsData) => (
+        <FilterPicker
+          label="Select fruits"
+          selectionMode="multiple"
+          selectedKeys={SORT_SELECTION}
+          items={items}
+        >
+          {(item) => (
+            <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+          )}
+        </FilterPicker>
+      );
+      const { getByRole, rerender } = renderWithRoot(
+        renderPicker(basicItemsData.slice(0, 3)),
+      );
+
+      await user.click(getByRole('button'));
+      rerender(renderPicker(basicItemsData));
+
+      const options = within(getByRole('listbox')).getAllByRole('option');
+
+      // Sorted by the selection the popover opened with, as before.
+      expect(options.map((option) => option.textContent)).toEqual([
+        'Banana',
+        'Apple',
+        'Cherry',
+        'Date',
+        'Elderberry',
+      ]);
     });
   });
 
@@ -882,6 +920,43 @@ describe('<FilterPicker />', () => {
       // Selected custom value and Apple should be at the top
       expect(options[0]).toHaveTextContent('mango');
       expect(options[1]).toHaveTextContent('Apple');
+    });
+
+    it('lists a selected custom value once it arrives among the options', async () => {
+      // A page loaded on scroll brings the value the picker showed as custom.
+      const renderPicker = (items: typeof basicItemsData) => (
+        <FilterPicker
+          label="Select fruits"
+          selectionMode="multiple"
+          selectedKeys={CUSTOM_SELECTION}
+          items={items}
+          allowsCustomValue
+        >
+          {(item) => (
+            <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+          )}
+        </FilterPicker>
+      );
+      const { getByRole, rerender } = renderWithRoot(
+        renderPicker(basicItemsData.slice(0, 3)),
+      );
+
+      await user.click(getByRole('button'));
+
+      expect(
+        within(getByRole('listbox'))
+          .getAllByRole('option')
+          .map((option) => option.textContent),
+      ).toEqual(['date', 'Apple', 'Banana', 'Cherry']);
+
+      rerender(renderPicker(basicItemsData));
+
+      // In the custom value's place at the top, not beside it.
+      expect(
+        within(getByRole('listbox'))
+          .getAllByRole('option')
+          .map((option) => option.textContent),
+      ).toEqual(['Date', 'Apple', 'Banana', 'Cherry', 'Elderberry']);
     });
   });
 

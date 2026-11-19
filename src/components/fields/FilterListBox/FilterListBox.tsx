@@ -332,8 +332,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
     const localFilter: FilterFn =
       typeof filter === 'function' ? filter : contains;
 
-    // Build React elements for custom values (kept stable via their key).
+    // Build React elements for custom values (kept stable via their key). A
+    // value that has since arrived among the options, in a page loaded on
+    // scroll, is listed once, as that option.
     const customArray = Array.from(customKeys)
+      .filter((key) => !originalKeys.has(key))
       .filter((key) => !term || localFilter(key, term))
       .map((key) => (
         <Item key={key} textValue={key} {...customValueProps}>
@@ -381,6 +384,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   }, [
     children,
     customKeys,
+    originalKeys,
     selectionMode,
     selectedKey,
     selectedKeys,
