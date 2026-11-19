@@ -800,6 +800,35 @@ describe('ListBox focus outside the rendered window', () => {
     },
   );
 
+  it('renders the options in view under a scaled ancestor', async () => {
+    // A popover opening with a scale animation, or an app zooming its page:
+    // client rects scale, the scroll offset doesn't.
+    renderWithRoot(
+      <div style={{ transform: 'scale(0.5)', transformOrigin: '0 0' }}>
+        <ListBox aria-label="Items" height="30x" items={ITEMS}>
+          {(item: (typeof ITEMS)[number]) => (
+            <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+          )}
+        </ListBox>
+      </div>,
+    );
+
+    const scroller = screen.getByRole('listbox').parentElement!;
+
+    act(() => {
+      scroller.scrollTop = 8000;
+      scroller.dispatchEvent(new Event('scroll'));
+    });
+
+    await waitFor(() => {
+      const inView = screen
+        .getAllByRole('option')
+        .filter((option) => isInView(option));
+
+      expect(inView.length).toBeGreaterThan(0);
+    });
+  });
+
   it('keeps paging down past the rendered window', async () => {
     renderList();
 

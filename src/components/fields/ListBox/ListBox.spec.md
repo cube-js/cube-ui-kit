@@ -21,7 +21,7 @@ ListBox (forwardRef)
 │   │       ├── LoadingMoreRow (while `isLoadingMore`; aria-hidden, not an option)
 │   │       └── LoadMoreSentinelElement (while `onLoadMore` and `hasMore`; zero height)
 │   ├── StyledFooter (optional footer)
-│   └── VisuallyHidden status region (while `onLoadMore` is set; announces loading)
+│   └── VisuallyHidden status region (while `onLoadMore` is set or `isLoadingMore`; announces loading)
 ```
 
 ### Core Dependencies

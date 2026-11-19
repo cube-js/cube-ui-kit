@@ -1161,18 +1161,18 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // list's coordinates and the scroll offset is moved by this at the DOM.
   // Otherwise a scroll to an option it hasn't rendered stopped this far short,
   // and End from a search input left the last option clipped. Read when the
-  // list scrolls, as a consumer's `listStyles` can move it.
+  // list scrolls, as a consumer's `listStyles` can move it. From layout, not
+  // client rects: a scaled ancestor (a popover's opening animation, a zoomed
+  // page) scales those but not the scroll offset.
   const getListOffset = () => {
     const list = listRef.current;
     const scrollElement = scrollRef.current;
 
     if (!list || !scrollElement) return 0;
 
-    return (
-      list.getBoundingClientRect().top -
-      scrollElement.getBoundingClientRect().top +
-      scrollElement.scrollTop
-    );
+    return list.offsetParent === scrollElement
+      ? list.offsetTop
+      : list.offsetTop - scrollElement.offsetTop - scrollElement.clientTop;
   };
 
   const rowVirtualizer = useVirtualizer({
@@ -1690,9 +1690,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         <div role="presentation" />
       )}
       {onLoadMore || isLoadingMore ? (
-        // In place while the list can load more and filled while it does: a
-        // live region announces a change of its text, and one inserted already
-        // filled is unreliable. Outside the listbox, which may hold only
+        // In place while the list has `onLoadMore`, and filled while it loads
+        // (`isLoadingMore`, which mounts it too): a live region announces a
+        // change of its text, and one inserted already filled is unreliable. Outside the listbox, which may hold only
         // options and groups.
         <VisuallyHidden>
           <span role="status">{isLoadingMore ? loadingMoreLabel : ''}</span>
