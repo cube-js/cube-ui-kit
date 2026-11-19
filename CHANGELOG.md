@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.215.2
+
+### Patch Changes
+
+- [#1682](https://github.com/cube-js/cube-ui-kit/pull/1682) [`dcebbe571`](https://github.com/cube-js/cube-ui-kit/commit/dcebbe57179b0e284781f354e5452a36e2dc1e31) Thanks [@tenphi](https://github.com/tenphi)! - `PasswordInput` keeps its value out of the browser's spellchecker, autocorrect and autocapitalization by default (`spellCheck="false"`, `autoCorrect="off"`, `autoCapitalize="none"`), so a shown password or a `multiLine` secret such as a private key is no longer underlined or sent to an enhanced spellchecker. Pass `spellCheck` or `autoCorrect`, or any of the three in `inputProps`, to override one. A `multiLine` `PasswordInput` no longer puts a `type` attribute on its textarea.
+
 ## 0.215.1
 
 ### Patch Changes
