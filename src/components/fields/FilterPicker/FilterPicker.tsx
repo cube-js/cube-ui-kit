@@ -399,6 +399,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onOpenChange,
     isReorderable,
     onReorder,
+    onLoadMore,
+    hasMore,
+    isLoadingMore,
+    loadMoreMargin,
     form,
     treeData,
     expandedKeys,
@@ -451,7 +455,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // keyboard, so the search waits for the user to tap it.
   const shouldFocusSearch =
     autoFocus ?? (openPointerType !== 'touch' && openPointerType !== 'pen');
-  const cachedItemsOrder = useRef<T[] | null>(null);
   const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
   const { labelProps, fieldProps: triggerLabelProps } = useLabel({
     id: props.id,
@@ -466,10 +469,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Measured lazily on popover open instead of on every render
   const triggerWidthRef = useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    cachedItemsOrder.current = null;
-  }, [items]);
 
   const isControlledSingle = selectedKey !== undefined;
   const isControlledMultiple = selectedKeys !== undefined;
@@ -653,7 +652,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     if (!isOpen) {
       setOpenPointerType(null);
       selectionsWhenClosed.current = { ...latestSelectionRef.current };
-      cachedItemsOrder.current = null;
       onSearchChange?.('');
     }
     onOpenChange?.(isOpen);
@@ -708,12 +706,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Ref values (selectionsWhenClosed.current) are read synchronously inside
   // the memo body; isPopoverOpen changing triggers recomputation at the right
-  // time (the ref is updated before the next render).
+  // time (the ref is updated before the next render). The order holds while
+  // the popover is open because the selection it sorts by is the one it opened
+  // with, so new `items` (a page loaded on scroll, a server search) are sorted
+  // the same way.
   const finalItems = useMemo(() => {
     if (!items) return items;
     if (!sortSelectedToTop) return items;
     if (!isPopoverOpen) return items;
-    if (cachedItemsOrder.current) return cachedItemsOrder.current;
 
     const selectedSet = new Set<string>();
 
@@ -770,11 +770,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     const itemsArray = Array.isArray(items)
       ? items
       : Array.from(items as Iterable<unknown>);
-    const sorted = sortArray(itemsArray) as T[];
-
-    cachedItemsOrder.current = sorted;
-
-    return sorted;
+    return sortArray(itemsArray) as T[];
   }, [items, sortSelectedToTop, selectionMode, isPopoverOpen]);
 
   // ---------------------------------------------------------------------------
@@ -1148,6 +1144,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   customValueProps={customValueProps}
                   newCustomValueProps={newCustomValueProps}
                   isReorderable={isReorderable}
+                  onLoadMore={onLoadMore}
+                  hasMore={hasMore}
+                  isLoadingMore={isLoadingMore}
+                  loadMoreMargin={loadMoreMargin}
                   onSearchChange={onSearchChange}
                   onReorder={onReorder}
                   onEscape={handleEscape}

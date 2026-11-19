@@ -175,7 +175,10 @@ export interface CubeItemTableProps<T = any>
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
-  /** How far before the end to prefetch, in px. @default 200 */
+  /**
+   * How far before the end to prefetch, in px. Defaults to the scroller's
+   * height, at least 200.
+   */
   loadMoreMargin?: number;
 
   /** Server mode: total rows across all pages. Preferred over `totalPages`. */

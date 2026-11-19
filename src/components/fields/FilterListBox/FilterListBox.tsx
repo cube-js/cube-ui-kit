@@ -227,6 +227,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
     _internalCollection,
     isReorderable = false,
     onReorder,
+    onLoadMore,
+    hasMore,
+    isLoadingMore,
+    loadMoreMargin,
     form,
   } = props;
 
@@ -312,8 +316,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     const keysToAdd = currentSelectedKeys.filter((k) => !originalKeys.has(k));
 
+    // Keys already there leave the state as it is. With `items` and a render
+    // function the options, and so this effect, are new on every render, and
+    // a new set each time would render again for good.
     if (keysToAdd.length) {
-      setCustomKeys((prev) => new Set([...Array.from(prev), ...keysToAdd]));
+      setCustomKeys((prev) =>
+        keysToAdd.every((key) => prev.has(key))
+          ? prev
+          : new Set([...prev, ...keysToAdd]),
+      );
     }
   }, [allowsCustomValue, selectedKeys, selectedKey, originalKeys]);
 
@@ -332,8 +343,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
     const localFilter: FilterFn =
       typeof filter === 'function' ? filter : contains;
 
-    // Build React elements for custom values (kept stable via their key).
+    // Build React elements for custom values (kept stable via their key). A
+    // value that has since arrived among the options, in a page loaded on
+    // scroll, is listed once, as that option.
     const customArray = Array.from(customKeys)
+      .filter((key) => !originalKeys.has(key))
       .filter((key) => !term || localFilter(key, term))
       .map((key) => (
         <Item key={key} textValue={key} {...customValueProps}>
@@ -381,6 +395,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   }, [
     children,
     customKeys,
+    originalKeys,
     selectionMode,
     selectedKey,
     selectedKeys,
@@ -809,10 +824,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
         // The collection is already filtered by React Stately via filterFn;
         // disabled options are skipped.
+        // Wrapping from the last loaded option to the first would skip the
+        // options still to load.
         const nextKey = getNextVisibleKey(
           listState,
           e.key === 'ArrowDown' ? 1 : -1,
-          { wrap: shouldFocusWrap },
+          { wrap: shouldFocusWrap && !(onLoadMore && hasMore) },
         );
 
         if (nextKey != null) {
@@ -1063,6 +1080,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
         }
         isReorderable={isReorderable && !searchValue.trim()}
         onReorder={onReorder}
+        onLoadMore={onLoadMore}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        loadMoreMargin={loadMoreMargin}
         onSelectionChange={handleSelectionChange}
         onEscape={onEscape}
         onOptionClick={handleOptionClick}

@@ -213,6 +213,29 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: 'All' },
       },
     },
+    hasMore: {
+      control: { type: 'boolean' },
+      description: 'Whether there are options left for `onLoadMore` to load',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isLoadingMore: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the page `onLoadMore` asked for is loading. Shows a loading row after the last option and holds `onLoadMore` back',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    loadMoreMargin: {
+      control: { type: 'number' },
+      description:
+        'How far before the end of the list to call `onLoadMore`, in pixels',
+      table: {
+        defaultValue: { summary: "the list's height, at least 200" },
+      },
+    },
 
     /* State */
     isDisabled: {
@@ -324,6 +347,11 @@ const meta: Meta<typeof FilterPicker> = {
     onOptionClick: {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
+    },
+    onLoadMore: {
+      action: 'load more',
+      description:
+        'Called when the end of the list comes within `loadMoreMargin` of view, or the options are too few to fill the list, while `hasMore` is true and `isLoadingMore` is false',
     },
 
     shouldFlip: {
@@ -2713,6 +2741,125 @@ export const AsyncSearch: Story = {
       description: {
         story:
           'Demonstrates server-side search with a simulated 1-second backend delay. Uses `filter={false}` to disable client-side filtering, controlled `searchValue`/`onSearchChange` for the search input, and dynamically replaces `items` when the server responds. A loading spinner appears in the search input suffix via `isLoadingItems` while the fetch is in flight. Search input is debounced at 300ms with in-flight request cancellation.',
+      },
+    },
+  },
+};
+
+const PAGE_SIZE = 50;
+
+/** One page of the items matching `query`, after a simulated server delay. */
+function simulateServerPage(
+  query: string,
+  offset: number,
+  signal: AbortSignal,
+): Promise<{ items: typeof ALL_ITEMS; hasMore: boolean }> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const term = query.trim().toLowerCase();
+      const matches = term
+        ? ALL_ITEMS.filter((item) => item.name.toLowerCase().includes(term))
+        : ALL_ITEMS;
+
+      resolve({
+        items: matches.slice(offset, offset + PAGE_SIZE),
+        hasMore: offset + PAGE_SIZE < matches.length,
+      });
+    }, 800);
+
+    signal.addEventListener('abort', () => {
+      clearTimeout(timer);
+      reject(new DOMException('Aborted', 'AbortError'));
+    });
+  });
+}
+
+export const LoadMoreOnScroll: Story = {
+  render: function LoadMoreOnScrollRender() {
+    const [items, setItems] = useState(() => ALL_ITEMS.slice(0, PAGE_SIZE));
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [isLoadingItems, setIsLoadingItems] = useState(false);
+    const [searchValue, setSearchValue] = useState('');
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+    const abortRef = useRef<AbortController | null>(null);
+
+    // One request at a time: a new search drops the page in flight.
+    const load = (query: string, offset: number) => {
+      abortRef.current?.abort();
+
+      const controller = new AbortController();
+
+      abortRef.current = controller;
+
+      if (offset === 0) {
+        setIsLoadingItems(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+
+      simulateServerPage(query, offset, controller.signal)
+        .then((page) => {
+          setItems((current) =>
+            offset === 0 ? page.items : [...current, ...page.items],
+          );
+          setHasMore(page.hasMore);
+          setIsLoadingItems(false);
+          setIsLoadingMore(false);
+        })
+        .catch(() => {});
+    };
+
+    const handleSearchChange = (value: string) => {
+      if (value === searchValue) return;
+
+      setSearchValue(value);
+      load(value, 0);
+    };
+
+    return (
+      <Space gap="2x" flow="column" placeItems="start" width="40x">
+        <FilterPicker
+          isCheckable
+          label="Load More on Scroll"
+          selectionMode="multiple"
+          searchPlaceholder="Search 500 items..."
+          fieldStyles={{ width: '100%' }}
+          items={items}
+          selectedKeys={selectedKeys}
+          searchValue={searchValue}
+          filter={false}
+          isLoadingItems={isLoadingItems}
+          // Not while a search is replacing the list.
+          hasMore={hasMore && !isLoadingItems}
+          isLoadingMore={isLoadingMore}
+          loadMoreMargin={800}
+          onLoadMore={() => load(searchValue, items.length)}
+          onSearchChange={handleSearchChange}
+          onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+        >
+          {(item: (typeof items)[number]) => (
+            <FilterPicker.Item key={item.id} textValue={item.name}>
+              {item.name}
+            </FilterPicker.Item>
+          )}
+        </FilterPicker>
+
+        <Text preset="t4" color="#surface-text-soft">
+          Loaded {items.length} items{hasMore ? '' : ', all of them'}
+          {selectedKeys.length > 0 && ` • Selected: ${selectedKeys.length}`}
+        </Text>
+      </Space>
+    );
+  },
+  parameters: {
+    // At rest a closed trigger, as in `Default`: the paging happens in the open
+    // popover. `ListBox / LoadingMore` captures the loading row.
+    ...NO_SNAPSHOT,
+    docs: {
+      description: {
+        story:
+          'Loads 50 items at a time from a simulated server (800 ms) as the list scrolls within 800 px of its end, with `hasMore`, `isLoadingMore` and `onLoadMore`. The search goes to the server too (`filter={false}`), and starts again from the first page. A loading row follows the last option while a page loads.',
       },
     },
   },

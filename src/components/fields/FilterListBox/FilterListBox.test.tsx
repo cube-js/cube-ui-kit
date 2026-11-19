@@ -1047,6 +1047,34 @@ describe('<FilterListBox />', () => {
   });
 
   describe('Custom values (allowsCustomValue)', () => {
+    it('lists a selected custom value with items and a render function', () => {
+      // The render function builds new options on every render, which used
+      // to re-run the custom values' effect, and its new state, forever.
+      const items = [
+        { key: 'apple', label: 'Apple' },
+        { key: 'banana', label: 'Banana' },
+      ];
+      const selectedKeys = ['mango'];
+
+      const { getAllByRole } = render(
+        <FilterListBox
+          label="Select a fruit"
+          selectionMode="multiple"
+          selectedKeys={selectedKeys}
+          items={items}
+          allowsCustomValue
+        >
+          {(item: (typeof items)[number]) => (
+            <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+          )}
+        </FilterListBox>,
+      );
+
+      expect(
+        getAllByRole('option').map((option) => option.textContent),
+      ).toEqual(['mango', 'Apple', 'Banana']);
+    });
+
     it('should not show custom option when allowsCustomValue is false', async () => {
       const { getByPlaceholderText, queryByText } = render(
         <FilterListBox

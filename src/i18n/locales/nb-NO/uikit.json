@@ -44,7 +44,8 @@
   },
   "listBox": {
     "selectAll": "Velg alle",
-    "noItems": "Ingen elementer"
+    "noItems": "Ingen elementer",
+    "loadingMore": "Laster inn flere…"
   },
   "filterListBox": {
     "searchPlaceholder": "Søk...",

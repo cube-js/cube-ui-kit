@@ -1,6 +1,7 @@
 import { ComponentProps, useEffect, useLayoutEffect, useState } from 'react';
 
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { FilterListBox } from '../FilterListBox/FilterListBox';
 import { Select } from '../Select/Select';
 
 import { ListBox } from './ListBox';
@@ -749,6 +750,85 @@ describe('ListBox focus outside the rendered window', () => {
     await expectFocusedInView(name);
   });
 
+  it.each([
+    ['{End}', 'Item 999'],
+    ['{End}{Home}', 'Item 0'],
+  ])(
+    'scrolls the option %s moves to wholly into view from a search input',
+    async (keys, name) => {
+      // DOM focus stays in the input, so only the scroll brings it into view.
+      const warn = vi.spyOn(console, 'warn');
+
+      renderWithRoot(
+        <FilterListBox aria-label="Items" height="30x" items={ITEMS}>
+          {(item: (typeof ITEMS)[number]) => (
+            <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+          )}
+        </FilterListBox>,
+      );
+
+      await userEvent.click(screen.getByRole('combobox'));
+      await userEvent.keyboard(keys);
+
+      await waitFor(
+        () => {
+          const option = screen.getByRole('option', { name });
+
+          expect(screen.getByRole('combobox')).toHaveAttribute(
+            'aria-activedescendant',
+            option.id,
+          );
+          expect(isInView(option)).toBe(true);
+        },
+        { timeout: 3000 },
+      );
+
+      if (name === 'Item 0') {
+        // The list's top margin shows above the first option.
+        expect(screen.getByRole('listbox').parentElement!.scrollTop).toBe(0);
+      }
+
+      // react-virtual re-checks where it scrolled for a few frames, and warns
+      // when the offset it reads never matches the one it scrolled to.
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      expect(warn).not.toHaveBeenCalledWith(
+        expect.stringContaining('Failed to scroll to index'),
+      );
+
+      warn.mockRestore();
+    },
+  );
+
+  it('renders the options in view under a scaled ancestor', async () => {
+    // A popover opening with a scale animation, or an app zooming its page:
+    // client rects scale, the scroll offset doesn't.
+    renderWithRoot(
+      <div style={{ transform: 'scale(0.5)', transformOrigin: '0 0' }}>
+        <ListBox aria-label="Items" height="30x" items={ITEMS}>
+          {(item: (typeof ITEMS)[number]) => (
+            <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+          )}
+        </ListBox>
+      </div>,
+    );
+
+    const scroller = screen.getByRole('listbox').parentElement!;
+
+    act(() => {
+      scroller.scrollTop = 8000;
+      scroller.dispatchEvent(new Event('scroll'));
+    });
+
+    await waitFor(() => {
+      const inView = screen
+        .getAllByRole('option')
+        .filter((option) => isInView(option));
+
+      expect(inView.length).toBeGreaterThan(0);
+    });
+  });
+
   it('keeps paging down past the rendered window', async () => {
     renderList();
 
@@ -990,5 +1070,226 @@ describe('ListBox press on a list that moves', () => {
       });
       expect(onSelectionChange).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+/**
+ * Loading more as the list nears its end (CUB-8550), against real layout. The
+ * jsdom spec decides by hand when the end is in range; here the browser's
+ * `IntersectionObserver` does, from real row heights and scroll offsets.
+ */
+describe('ListBox load more', () => {
+  interface Value {
+    key: string;
+    label: string;
+  }
+
+  const values = (count: number): Value[] =>
+    Array.from({ length: count }, (_, index) => ({
+      key: `v${index}`,
+      label: `Value ${index}`,
+    }));
+
+  /** A list about six rows tall that can load more. */
+  function List(props: Partial<CubeListBoxProps<Value>>) {
+    return (
+      <ListBox
+        aria-label="Values"
+        height="25x"
+        items={values(40)}
+        hasMore
+        {...props}
+      >
+        {(item: Value) => (
+          <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+        )}
+      </ListBox>
+    );
+  }
+
+  const scroller = () => screen.getByRole('listbox').parentElement!;
+
+  /** One frame to lay the scroll out, one for the observer to report it. */
+  async function settle() {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  async function scrollToEnd(distance = 0) {
+    const element = scroller();
+
+    act(() => {
+      element.scrollTop =
+        element.scrollHeight - element.clientHeight - distance;
+      element.dispatchEvent(new Event('scroll'));
+    });
+    await settle();
+  }
+
+  it('loads more once the end comes within loadMoreMargin', async () => {
+    const onLoadMore = vi.fn();
+
+    renderWithRoot(<List loadMoreMargin={100} onLoadMore={onLoadMore} />);
+    await settle();
+
+    expect(onLoadMore).not.toHaveBeenCalled();
+
+    await scrollToEnd(150);
+
+    expect(onLoadMore).not.toHaveBeenCalled();
+
+    await scrollToEnd(50);
+
+    await waitFor(() => expect(onLoadMore).toHaveBeenCalledTimes(1));
+  });
+
+  it('loads more at once when the options are too few to fill the list', async () => {
+    const onLoadMore = vi.fn();
+
+    renderWithRoot(<List items={values(3)} onLoadMore={onLoadMore} />);
+
+    await waitFor(() => expect(onLoadMore).toHaveBeenCalledTimes(1));
+  });
+
+  it.each([
+    ['End', '{End}'],
+    ['ArrowDown', '{ArrowDown>7/}'],
+  ])(
+    'loads more when %s reaches the last loaded option, with no margin',
+    async (_, keys) => {
+      const onLoadMore = vi.fn();
+
+      renderWithRoot(
+        <List items={values(8)} loadMoreMargin={0} onLoadMore={onLoadMore} />,
+      );
+
+      await userEvent.click(screen.getByRole('option', { name: 'Value 0' }));
+      await settle();
+
+      expect(onLoadMore).not.toHaveBeenCalled();
+
+      await userEvent.keyboard(keys);
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'Value 7' })).toHaveFocus();
+        expect(onLoadMore).toHaveBeenCalledTimes(1);
+      });
+    },
+  );
+
+  it('loads more when End from a search input reaches the last loaded option, with no margin', async () => {
+    const onLoadMore = vi.fn();
+
+    renderWithRoot(
+      <FilterListBox
+        aria-label="Values"
+        height="25x"
+        items={values(40)}
+        hasMore
+        loadMoreMargin={0}
+        onLoadMore={onLoadMore}
+      >
+        {(item: Value) => (
+          <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+        )}
+      </FilterListBox>,
+    );
+
+    await userEvent.click(screen.getByRole('combobox'));
+    await settle();
+
+    expect(onLoadMore).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{End}');
+
+    await waitFor(() => expect(onLoadMore).toHaveBeenCalledTimes(1));
+  });
+
+  it('shows the loading row to a viewer already at the end', async () => {
+    const { rerender } = renderWithRoot(<List onLoadMore={() => {}} />);
+
+    await scrollToEnd();
+    rerender(<List isLoadingMore onLoadMore={() => {}} />);
+    await settle();
+
+    const row = screen
+      .getByTestId('ListBoxLoadingMore')
+      .getBoundingClientRect();
+    const viewport = scroller().getBoundingClientRect();
+
+    expect(row.top).toBeGreaterThanOrEqual(viewport.top);
+    expect(row.bottom).toBeLessThanOrEqual(viewport.bottom + 1);
+  });
+
+  it('measures the loading row apart from an option with a numeric key', async () => {
+    // Numeric ids 1…N give the last option the key N, the loading row's index.
+    // Sharing a size, the two rows re-measured each other without end.
+    const items = Array.from({ length: 30 }, (_, index) => ({
+      id: index + 1,
+      label: `Value ${index + 1}`,
+    }));
+
+    renderWithRoot(
+      <ListBox
+        aria-label="Values"
+        height="25x"
+        items={items}
+        hasMore
+        isLoadingMore
+        onLoadMore={() => {}}
+      >
+        {(item: (typeof items)[number]) => (
+          <ListBox.Item size="6x">{item.label}</ListBox.Item>
+        )}
+      </ListBox>,
+    );
+
+    await scrollToEnd();
+
+    const last = screen.getByRole('option', { name: 'Value 30' });
+    const row = screen.getByTestId('ListBoxLoadingMore');
+
+    expect(row.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      last.getBoundingClientRect().bottom,
+    );
+  });
+
+  it('keeps the height of a list in flow', async () => {
+    // Reorderable, the options are in flow, and the last one keeps no gap.
+    const { rerender } = renderWithRoot(
+      <List isReorderable items={values(3)} listGap={8} height="auto" />,
+    );
+    const height = () => screen.getByRole('listbox').offsetHeight;
+    const before = height();
+
+    rerender(
+      <List
+        isReorderable
+        items={values(3)}
+        listGap={8}
+        height="auto"
+        onLoadMore={() => {}}
+      />,
+    );
+    await settle();
+
+    expect(height()).toBe(before);
+  });
+
+  it('keeps the scroll position and the focused option when a page arrives', async () => {
+    const { rerender } = renderWithRoot(
+      <List isLoadingMore onLoadMore={() => {}} />,
+    );
+
+    await scrollToEnd(300);
+    await userEvent.click(screen.getByRole('option', { name: 'Value 33' }));
+
+    const scrollTop = scroller().scrollTop;
+
+    rerender(<List items={values(80)} onLoadMore={() => {}} />);
+    await settle();
+
+    expect(scroller().scrollTop).toBe(scrollTop);
+    expect(screen.getByRole('option', { name: 'Value 33' })).toHaveFocus();
   });
 });

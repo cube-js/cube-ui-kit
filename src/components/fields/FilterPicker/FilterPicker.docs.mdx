@@ -95,6 +95,10 @@ Choose a different component when the interaction has another shape:
 - **`onExpand`** `(expandedKeys: string[]) => void` — Called when the user expands or collapses a node in tree mode, outside a search
 - **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop item reordering in the dropdown list
 - **`onReorder`** `(newOrder: string[]) => void` — Callback when items are reordered via drag-and-drop or keyboard (Alt+Arrow)
+- **`onLoadMore`** `() => void` — Called when the end of the list comes within `loadMoreMargin` of view, or the options are too few to fill the list, while `hasMore` is true and `isLoadingMore` is false. Append the next page to `items`
+- **`hasMore`** `boolean` (default: `false`) — Whether there are options left for `onLoadMore` to load
+- **`isLoadingMore`** `boolean` (default: `false`) — Whether the page `onLoadMore` asked for is loading. Shows a loading row after the last option and holds `onLoadMore` back
+- **`loadMoreMargin`** `number` (default: the list's height, at least `200`) — How far before the end of the list to call `onLoadMore`, in pixels
 
 ### Base Properties
 
@@ -570,7 +574,7 @@ Pass `treeData` to pick from a tree. The popover shows a checkable [Tree](/docs/
 - **Summary.** The default trigger summary lists the topmost checked nodes: "Design" rather than "Design, Dieter Rams, Susan Kare". `renderSummary` receives every checked key, conducted over the tree and in tree order, as `onSelectionChange` reports them.
 - **Disabling.** Disable a node with its own `isDisabled` or `isCheckboxDisabled`; `disabledKeys` does not apply. A disabled node's key in the value still checks its subtree, and Enter or Space on a row whose checkbox is disabled does nothing. The cascade passes through a disabled node: checking its parent checks the enabled nodes below it, and its own state follows them.
 - **Expansion.** Uncontrolled expansion starts from `defaultExpandedKeys`, read once when the picker mounts, and is kept across opening and closing the popover. For nodes that arrive later, pass `expandedKeys`.
-- **List-only props.** These apply to the flat list and have no effect with `treeData`: `items`, `children`, `disabledKeys`, `allowsCustomValue`, `showSelectAll`, `selectAllLabel`, `isCheckable`, `disallowEmptySelection`, `sortSelectedToTop`, `isReorderable`, `onReorder`, `onOptionClick`, `focusOnHover`, `listGap`, `listStyles`, `optionStyles`, `sectionStyles` and `headingStyles`.
+- **List-only props.** These apply to the flat list and have no effect with `treeData`: `items`, `children`, `disabledKeys`, `allowsCustomValue`, `showSelectAll`, `selectAllLabel`, `isCheckable`, `disallowEmptySelection`, `sortSelectedToTop`, `isReorderable`, `onReorder`, `onLoadMore`, `hasMore`, `isLoadingMore`, `loadMoreMargin`, `onOptionClick`, `focusOnHover`, `listGap`, `listStyles`, `optionStyles`, `sectionStyles` and `headingStyles`.
 
 ```jsx
 const userGroups = [
@@ -623,6 +627,36 @@ Use `isLoadingItems` to indicate that items are currently being fetched. Unlike 
   <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
 </FilterPicker>
 ```
+
+### Loading More on Scroll
+
+<Story of={FilterPickerStories.LoadMoreOnScroll} />
+
+For a list too long to load at once, pass the pages loaded so far as `items` and load the next one in `onLoadMore`. It fires once the end of the list comes within `loadMoreMargin` pixels of view, and when the options are too few to fill the list. A loading row follows the last option while `isLoadingMore` is true, and screen readers hear that more options are loading. The props match the list's in [ListBox](/docs/forms-listbox--docs) and [ItemTable](/docs/data-itemtable--docs)'s infinite scroll.
+
+```jsx
+const { data, hasNextPage, isFetchingNextPage, fetchNextPage } = useValues(search);
+
+<FilterPicker
+  label="Clients"
+  selectionMode="multiple"
+  isCheckable
+  items={data}
+  filter={false}
+  searchValue={search}
+  onSearchChange={setSearch}
+  hasMore={hasNextPage}
+  isLoadingMore={isFetchingNextPage}
+  loadMoreMargin={1600}
+  onLoadMore={fetchNextPage}
+>
+  {(item) => <FilterPicker.Item key={item.id}>{item.name}</FilterPicker.Item>}
+</FilterPicker>
+```
+
+- **Server search**: with `filter={false}`, the search goes to your server; start again from its first page.
+- **Selected options**: with `sortSelectedToTop`, the selection the popover opened with goes to the top of the options loaded so far. A selected option that only arrives in a later page joins the top when it loads, which moves the options below it down a row. To show every selected option at the top from the start, load the selected values with the first page. With `allowsCustomValue`, a selected value not loaded yet is listed at the top as a custom value, and its option takes that place when its page arrives.
+- **Margin**: set `loadMoreMargin` to about as many pixels as the rows a page takes to arrive (`1600` is about 50 rows), so the next page is there before the viewer reaches the end.
 
 ### Complex Example
 

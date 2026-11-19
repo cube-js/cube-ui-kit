@@ -17,8 +17,11 @@ ListBox (forwardRef)
 │   │   ├── Empty label (when there are no items; describes the listbox)
 │   │   └── ListElement (ul container, kept when empty)
 │   │       ├── Option components (li items)
-│   │       └── ListBoxSection components (grouped sections)
-│   └── StyledFooter (optional footer)
+│   │       ├── ListBoxSection components (grouped sections)
+│   │       ├── LoadingMoreRow (while `isLoadingMore`; aria-hidden, not an option)
+│   │       └── LoadMoreSentinelElement (while `onLoadMore` and `hasMore`; zero height)
+│   ├── StyledFooter (optional footer)
+│   └── VisuallyHidden status region (while `onLoadMore` is set or `isLoadingMore`; announces loading)
 ```
 
 ### Core Dependencies
@@ -45,6 +48,14 @@ ListBox (forwardRef)
 - Uses `@tanstack/react-virtual` for performance optimization
 - Dynamic height estimation based on content (descriptions, size)
 - Overscan of 10 items for smooth scrolling
+- While `isLoadingMore`, the loading row is one more virtual row after the options
+
+### 2a. Loading More
+- An `IntersectionObserver` rooted at the scroll element watches a zero-height sentinel at the end of the last row, with `rootMargin` set from `loadMoreMargin`, as ItemTable's infinite scroll does
+- `onLoadMore` fires while `hasMore` is true and `isLoadingMore` is false; the observer is armed again when the option count changes, so a list too short to scroll keeps loading
+- Keyboard navigation loads too, since it scrolls the last option into view; focus doesn't wrap past the last loaded option while more can load
+- A viewer at the end follows the loading row into view; a status region outside the listbox announces it
+- Without an `IntersectionObserver` (jsdom), nothing loads and nothing throws
 
 ### 3. Accessibility Features
 - Full ARIA listbox pattern implementation
@@ -101,6 +112,10 @@ interface BehaviorProps {
   isCheckable?: boolean;            // Show checkboxes in multiple mode
   onEscape?: () => void;            // Custom escape key handling
   onOptionClick?: (key: Key) => void; // Click handler for option content
+  onLoadMore?: () => void;          // Load the next page near the end of the list
+  hasMore?: boolean;                // Options left to load (default: false)
+  isLoadingMore?: boolean;          // A page is loading: loading row, onLoadMore waits
+  loadMoreMargin?: number;          // px before the end (default: list height, min 200)
 }
 ```
 

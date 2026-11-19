@@ -44,7 +44,8 @@
   },
   "listBox": {
     "selectAll": "すべて選択",
-    "noItems": "項目がありません"
+    "noItems": "項目がありません",
+    "loadingMore": "さらに読み込んでいます…"
   },
   "filterListBox": {
     "searchPlaceholder": "検索...",
