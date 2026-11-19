@@ -1,6 +1,7 @@
 import { ComponentProps, useEffect, useLayoutEffect, useState } from 'react';
 
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { FilterListBox } from '../FilterListBox/FilterListBox';
 import { Select } from '../Select/Select';
 
 import { ListBox } from './ListBox';
@@ -749,6 +750,44 @@ describe('ListBox focus outside the rendered window', () => {
     await expectFocusedInView(name);
   });
 
+  it.each([
+    ['{End}', 'Item 999'],
+    ['{End}{Home}', 'Item 0'],
+  ])(
+    'scrolls the option %s moves to wholly into view from a search input',
+    async (keys, name) => {
+      // DOM focus stays in the input, so only the scroll brings it into view.
+      renderWithRoot(
+        <FilterListBox aria-label="Items" height="30x" items={ITEMS}>
+          {(item: (typeof ITEMS)[number]) => (
+            <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+          )}
+        </FilterListBox>,
+      );
+
+      await userEvent.click(screen.getByRole('combobox'));
+      await userEvent.keyboard(keys);
+
+      await waitFor(
+        () => {
+          const option = screen.getByRole('option', { name });
+
+          expect(screen.getByRole('combobox')).toHaveAttribute(
+            'aria-activedescendant',
+            option.id,
+          );
+          expect(isInView(option)).toBe(true);
+        },
+        { timeout: 3000 },
+      );
+
+      if (name === 'Item 0') {
+        // The list's top margin shows above the first option.
+        expect(screen.getByRole('listbox').parentElement!.scrollTop).toBe(0);
+      }
+    },
+  );
+
   it('keeps paging down past the rendered window', async () => {
     renderList();
 
@@ -1096,6 +1135,34 @@ describe('ListBox load more', () => {
       });
     },
   );
+
+  it('loads more when End from a search input reaches the last loaded option, with no margin', async () => {
+    const onLoadMore = vi.fn();
+
+    renderWithRoot(
+      <FilterListBox
+        aria-label="Values"
+        height="25x"
+        items={values(40)}
+        hasMore
+        loadMoreMargin={0}
+        onLoadMore={onLoadMore}
+      >
+        {(item: Value) => (
+          <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+        )}
+      </FilterListBox>,
+    );
+
+    await userEvent.click(screen.getByRole('combobox'));
+    await settle();
+
+    expect(onLoadMore).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{End}');
+
+    await waitFor(() => expect(onLoadMore).toHaveBeenCalledTimes(1));
+  });
 
   it('shows the loading row to a viewer already at the end', async () => {
     const { rerender } = renderWithRoot(<List onLoadMore={() => {}} />);

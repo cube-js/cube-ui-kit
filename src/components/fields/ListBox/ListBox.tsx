@@ -1,6 +1,7 @@
 import { useHover } from '@react-aria/interactions';
 import { IconMinus } from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { elementScroll, observeElementOffset } from '@tanstack/virtual-core';
 import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   DOMAttributes,
@@ -1147,6 +1148,25 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Scroll container ref for virtualization
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Where the list starts in its scroll element, below its own top margin.
+  // The virtualizer places options from the list's top, so it works in the
+  // list's coordinates and the scroll offset is moved by this at the DOM.
+  // Otherwise a scroll to an option it hasn't rendered stopped this far short,
+  // and End from a search input left the last option clipped. Read when the
+  // list scrolls, as a consumer's `listStyles` can move it.
+  const getListOffset = () => {
+    const list = listRef.current;
+    const scrollElement = scrollRef.current;
+
+    if (!list || !scrollElement) return 0;
+
+    return (
+      list.getBoundingClientRect().top -
+      scrollElement.getBoundingClientRect().top +
+      scrollElement.scrollTop
+    );
+  };
+
   const rowVirtualizer = useVirtualizer({
     // The loading row is one more row after the options, placed and measured
     // like them.
@@ -1176,6 +1196,18 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     // The virtualizer takes pixels: `1` matches the `$item-gap` default.
     gap: listGap ?? 1,
     overscan: 10,
+    observeElementOffset: (instance, onOffset) =>
+      observeElementOffset(instance, (offset, isScrolling) =>
+        onOffset(offset - getListOffset(), isScrolling),
+      ),
+    // The list's top is the scroll element's, so the margin above the first
+    // option shows.
+    scrollToFn: (offset, options, instance) =>
+      elementScroll(
+        offset > 0 ? offset + getListOffset() : offset,
+        options,
+        instance,
+      ),
   });
 
   // The virtualizer caches positions without the gap, so re-measure when it

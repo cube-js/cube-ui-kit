@@ -47,6 +47,9 @@ importers:
       '@tanstack/react-virtual':
         specifier: ^3.13.12
         version: 3.13.12(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@tanstack/virtual-core':
+        specifier: ^3.13.12
+        version: 3.13.12
       '@tenphi/glaze':
         specifier: 3.1.0
         version: 3.1.0
