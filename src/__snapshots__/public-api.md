@@ -201,6 +201,7 @@ type       CubeHueSliderProps
 value      CubeIcon
 type       CubeIconProps
 type       CubeIconSwitchProps
+type       CubeIdentifierInputProps
 type       CubeInfoBadgeProps
 type       CubeInfoBadgeTooltipConfig
 type       CubeInlineInputEditTrigger

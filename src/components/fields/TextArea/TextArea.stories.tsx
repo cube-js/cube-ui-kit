@@ -137,6 +137,12 @@ export default {
       description:
         'HTML `autocomplete` token telling the browser what to autofill (`street-address`, `off`, …)',
     },
+    isIdentifier: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the field holds identifiers: no autocapitalization, autocorrect, spellcheck or autofill',
+      table: { defaultValue: { summary: false } },
+    },
 
     /* Events */
     onChange: {

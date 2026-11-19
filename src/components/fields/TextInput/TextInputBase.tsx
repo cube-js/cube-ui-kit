@@ -373,6 +373,25 @@ export interface CubeBufferedValueProps {
 }
 
 /**
+ * Mixed into the fields whose free text can be an identifier — `TextInput`, `TextArea`,
+ * `TagInput` — rather than declared on `CubeTextInputBaseProps`, for the reason
+ * `CubeBufferedValueProps` gives. `PasswordInput` keeps its value out of the text services by
+ * default already, and `autocomplete="off"` would keep password managers away from it.
+ */
+export interface CubeIdentifierInputProps {
+  /**
+   * Whether the field holds an identifier, such as a name, key, token or attribute name, rather
+   * than prose. Turns off the browser's text services for it: `autocapitalize="none"`,
+   * `autocorrect="off"`, `spellcheck="false"` and `autocomplete="off"`, so a phone keyboard
+   * neither starts it with a capital nor rewrites it, and the browser offers no past entries. An
+   * explicit `autoComplete`, `autoCorrect` or `spellCheck` prop, or the same attribute in
+   * `inputProps`, still wins. iOS still offers contact AutoFill above the keyboard: no attribute
+   * turns that off.
+   */
+  isIdentifier?: boolean;
+}
+
+/**
  * The presentational base for text-like inputs. It renders the input chrome and the field wrapper, but
  * never wires form state — that is the job of the component rendering it (`TextInput`, `TextArea`,
  * `PasswordInput`, `NumberInput`, `SearchInput`, `CommandTextArea`).

@@ -309,6 +309,33 @@ describe('<TagInput />', () => {
       expect(getByRole('textbox')).toHaveAttribute('enterkeyhint', 'done');
     });
 
+    it('turns off the text services with isIdentifier', () => {
+      const { getByRole } = render(
+        <TagInput isIdentifier label="Recipients" inputMode="email" />,
+      );
+      const input = getByRole('textbox');
+
+      expect(input).toHaveAttribute('autocapitalize', 'none');
+      expect(input).toHaveAttribute('autocorrect', 'off');
+      expect(input).toHaveAttribute('spellcheck', 'false');
+      expect(input).toHaveAttribute('autocomplete', 'off');
+    });
+
+    it('lets an explicit autoComplete win over isIdentifier', () => {
+      const { getByRole } = render(
+        <TagInput isIdentifier label="Recipients" autoComplete="email" />,
+      );
+
+      expect(getByRole('textbox')).toHaveAttribute('autocomplete', 'email');
+    });
+
+    it('leaves autocapitalization to the browser without isIdentifier', () => {
+      const { getByRole } = render(<TagInput label="Tags" />);
+
+      expect(getByRole('textbox')).not.toHaveAttribute('autocapitalize');
+      expect(getByRole('textbox')).not.toHaveAttribute('spellcheck');
+    });
+
     it('commits the typed text when focus leaves the field', async () => {
       const onChange = vi.fn();
       const { getByRole } = render(

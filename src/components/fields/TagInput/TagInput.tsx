@@ -60,7 +60,11 @@ import {
   ListStateLike,
 } from '../ListBoxPopover/listNavigation';
 import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
-import { TextInputBase } from '../TextInput/TextInputBase';
+import { getIdentifierTextServices } from '../TextInput/identifier-text-services';
+import {
+  CubeIdentifierInputProps,
+  TextInputBase,
+} from '../TextInput/TextInputBase';
 
 import { TagList, TagListEntry } from './TagList';
 import { useActiveOption } from './useActiveOption';
@@ -99,7 +103,8 @@ export interface CubeTagInputProps<T = object>
   extends
     ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps,
-    FieldBaseProps<readonly string[] | null | undefined> {
+    FieldBaseProps<readonly string[] | null | undefined>,
+    CubeIdentifierInputProps {
   /** The values in controlled mode. */
   value?: readonly string[];
   /** The initial values in uncontrolled mode. */
@@ -972,6 +977,7 @@ function TagInput<T extends object>(
     hidePlaceholderWithTags,
     autoFocus,
     autoComplete = 'off',
+    isIdentifier,
     onFocus,
     onBlur,
     onKeyDown,
@@ -1925,6 +1931,10 @@ function TagInput<T extends object>(
   const { labelProps, inputProps } = useTextField(
     {
       ...otherProps,
+      ...getIdentifierTextServices(isIdentifier, {
+        ...otherProps,
+        autoComplete,
+      }),
       id,
       label,
       value: draft,

@@ -12,8 +12,10 @@ import { useBufferedValue } from '../../../utils/react/useBufferedValue';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 
 import { useDisplayedValidation } from './displayed-validation';
+import { getIdentifierTextServices } from './identifier-text-services';
 import {
   CubeBufferedValueProps,
+  CubeIdentifierInputProps,
   CubeTextInputBaseProps,
   TextInputBase,
 } from './TextInputBase';
@@ -27,6 +29,7 @@ export type CubeTextInputProps = WithNullableValue<
   Omit<CubeTextInputBaseProps, 'validate'>
 > &
   CubeBufferedValueProps &
+  CubeIdentifierInputProps &
   TextFieldKeyboardProps & {
     field?: FieldBaseProps<string | null | undefined>['field'];
     validate?: AriaTextFieldProps['validate'];
@@ -54,6 +57,7 @@ export const TextInput = forwardRef(function TextInput(
     inputRef: propsInputRef,
     form,
     isBuffered,
+    isIdentifier,
     ...restProps
   } = props;
   let localInputRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
@@ -71,6 +75,7 @@ export const TextInput = forwardRef(function TextInput(
   let { labelProps, inputProps, ...validation } = useTextField(
     displayedValidation.trackTouched({
       ...restProps,
+      ...getIdentifierTextServices(isIdentifier, restProps),
       value: buffered.value,
       onChange: buffered.onChange,
       onBlur: chain(restProps.onBlur, buffered.reset),

@@ -11,8 +11,10 @@ import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { useBufferedValue } from '../../../utils/react/useBufferedValue';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
+import { getIdentifierTextServices } from '../TextInput/identifier-text-services';
 import {
   CubeBufferedValueProps,
+  CubeIdentifierInputProps,
   CubeTextInputBaseProps,
   TextInputBase,
 } from '../TextInput/TextInputBase';
@@ -26,7 +28,8 @@ export interface CubeTextAreaProps
       CubeTextInputBaseProps,
       'validate' | 'inputRef' | 'onFocus' | 'onBlur'
     >,
-    CubeBufferedValueProps {
+    CubeBufferedValueProps,
+    CubeIdentifierInputProps {
   field?: FieldBaseProps<string | null | undefined>['field'];
   inputRef?: RefObject<HTMLTextAreaElement | null>;
   validate?: AriaTextFieldProps<HTMLTextAreaElement>['validate'];
@@ -69,6 +72,7 @@ function TextArea(
     // The form instance, not the DOM `form` id `useTextField` forwards.
     form,
     isBuffered,
+    isIdentifier,
     ...otherProps
   } = props;
 
@@ -98,6 +102,7 @@ function TextArea(
   let { labelProps, inputProps, ...validation } = useTextField(
     displayedValidation.trackTouched({
       ...otherProps,
+      ...getIdentifierTextServices(isIdentifier, otherProps),
       value: buffered.value,
       isDisabled,
       isReadOnly,

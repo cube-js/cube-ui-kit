@@ -767,6 +767,7 @@ export const DEFAULTS: DefaultsRegistry = {
         hidePlaceholderWithTags: { kind: 'default', value: false },
         hideTrigger: { kind: 'default', value: false },
         isClearable: { kind: 'default', value: false },
+        isIdentifier: { kind: 'default', value: false },
         overlayOffset: { kind: 'default', value: 8 },
         popoverTrigger: { kind: 'default', value: 'input' },
         shouldCommitOnBlur: { kind: 'default', value: true },
@@ -786,6 +787,7 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         autoSize: { kind: 'default', value: false },
         isBuffered: { kind: 'default', value: true },
+        isIdentifier: { kind: 'default', value: false },
         maxRows: { kind: 'default', value: 10 },
         rows: { kind: 'default', value: 3 },
         shape: { kind: 'default', value: 'default' },
@@ -796,6 +798,7 @@ export const DEFAULTS: DefaultsRegistry = {
     TextInput: {
       props: {
         isBuffered: { kind: 'default', value: true },
+        isIdentifier: { kind: 'default', value: false },
         multiLine: { kind: 'default', value: false },
         shape: { kind: 'default', value: 'default' },
         size: { kind: 'default', value: 'medium' },
