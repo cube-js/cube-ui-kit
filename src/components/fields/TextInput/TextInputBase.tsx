@@ -384,8 +384,8 @@ export interface CubeIdentifierInputProps {
    * than prose. Turns off the browser's text services for it: `autocapitalize="none"`,
    * `autocorrect="off"`, `spellcheck="false"` and `autocomplete="off"`, so a phone keyboard
    * neither starts it with a capital nor rewrites it, and the browser offers no past entries. Any of
-   * these the caller sets explicitly, as a prop or in `inputProps`, still wins. iOS still offers contact AutoFill above the keyboard: no attribute
-   * turns that off.
+   * these the caller sets explicitly still wins. iOS still offers contact AutoFill above the
+   * keyboard: no attribute turns that off.
    */
   isIdentifier?: boolean;
 }
