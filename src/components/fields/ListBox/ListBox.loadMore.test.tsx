@@ -129,6 +129,29 @@ describe('ListBox load more', () => {
     expect(onLoadMore).toHaveBeenCalledTimes(1);
   });
 
+  it('loads nothing, and throws nothing, without an IntersectionObserver', () => {
+    // As in jsdom, where consumers run their tests.
+    vi.stubGlobal('IntersectionObserver', undefined);
+
+    const onLoadMore = vi.fn();
+
+    render(<List hasMore onLoadMore={onLoadMore} />);
+
+    expect(sentinel()).toBeInTheDocument();
+    expect(onLoadMore).not.toHaveBeenCalled();
+  });
+
+  it('starts a list height before the end by default, as ItemTable does', () => {
+    // jsdom lays nothing out, so the list's height is given here.
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(500);
+
+    render(<List hasMore onLoadMore={() => {}} />);
+
+    expect(watching()[0].options.rootMargin).toBe('0px 0px 500px 0px');
+
+    vi.restoreAllMocks();
+  });
+
   it('starts loadMoreMargin pixels before the end', () => {
     render(<List hasMore loadMoreMargin={1600} onLoadMore={() => {}} />);
 

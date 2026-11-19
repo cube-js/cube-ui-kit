@@ -113,10 +113,9 @@ interface AdvancedProps {
 ### Option Sorting Algorithm
 ```typescript
 const getSortedChildren = useCallback(() => {
-  // 1. Cache current order when popover is open to prevent re-flow
-  if (!isPopoverOpen && cachedChildrenOrder.current) {
-    return cachedChildrenOrder.current;
-  }
+  // 1. Sort only while the popover is open, by the selection it opened
+  //    with, so options that arrive while it is open (a page loaded on
+  //    scroll, a server search) follow the same order
 
   // 2. Only sort when there were selections in previous session
   if (!hadSelectionsWhenClosed) {
@@ -199,9 +198,6 @@ const latestSelectionRef = useRef({ single: null, multiple: [] });
 
 // Selection state when popover was last closed (for sorting)
 const selectionsWhenClosed = useRef({ single: null, multiple: [] });
-
-// Cached children order during open session (prevents re-flow)
-const cachedChildrenOrder = useRef(null);
 ```
 
 ## Styling System
@@ -256,7 +252,7 @@ mods={{
 
 ### Sorting Optimization
 - **Memoization**: Sorting is memoized based on selection state and popover state
-- **Layout Stability**: Cached order prevents re-flow during fade-out animations
+- **Stable order while open**: the sort reads the selection the popover opened with, not the live one, so selecting an option doesn't move it, and new `items` are sorted by the same rule
 - **Conditional Sorting**: Only sorts when there were previous selections
 
 ### Selection Processing

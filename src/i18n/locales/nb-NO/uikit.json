@@ -45,7 +45,7 @@
   "listBox": {
     "selectAll": "Velg alle",
     "noItems": "Ingen elementer",
-    "loadingMore": "Laster inn flere …"
+    "loadingMore": "Laster inn flere…"
   },
   "filterListBox": {
     "searchPlaceholder": "Søk...",

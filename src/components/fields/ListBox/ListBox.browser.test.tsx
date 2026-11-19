@@ -1075,7 +1075,7 @@ describe('ListBox load more', () => {
     ['End', '{End}'],
     ['ArrowDown', '{ArrowDown>7/}'],
   ])(
-    'loads more when %s reaches the last loaded option, at any margin',
+    'loads more when %s reaches the last loaded option, with no margin',
     async (_, keys) => {
       const onLoadMore = vi.fn();
 
@@ -1111,6 +1111,28 @@ describe('ListBox load more', () => {
 
     expect(row.top).toBeGreaterThanOrEqual(viewport.top);
     expect(row.bottom).toBeLessThanOrEqual(viewport.bottom + 1);
+  });
+
+  it('keeps the height of a list in flow', async () => {
+    // Reorderable, the options are in flow, and the last one keeps no gap.
+    const { rerender } = renderWithRoot(
+      <List isReorderable items={values(3)} listGap={8} height="auto" />,
+    );
+    const height = () => screen.getByRole('listbox').offsetHeight;
+    const before = height();
+
+    rerender(
+      <List
+        isReorderable
+        items={values(3)}
+        listGap={8}
+        height="auto"
+        onLoadMore={() => {}}
+      />,
+    );
+    await settle();
+
+    expect(height()).toBe(before);
   });
 
   it('keeps the scroll position and the focused option when a page arrives', async () => {

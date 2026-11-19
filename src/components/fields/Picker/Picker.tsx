@@ -52,10 +52,18 @@ import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
 export interface CubePickerProps<T>
+  // Picker loads no more options as its list scrolls.
   extends
     Omit<
       CubeListBoxProps<T>,
-      'size' | 'shape' | 'emptyLabel' | 'isFocusWithin'
+      | 'size'
+      | 'shape'
+      | 'emptyLabel'
+      | 'isFocusWithin'
+      | 'onLoadMore'
+      | 'hasMore'
+      | 'isLoadingMore'
+      | 'loadMoreMargin'
     >,
     // `tooltip` is declared below, for the trigger; the label's info badge is
     // `labelTooltip`. Of the item's style props, only the field layout ones

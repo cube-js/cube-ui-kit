@@ -45,7 +45,7 @@
   "listBox": {
     "selectAll": "Markera alla",
     "noItems": "Inga objekt",
-    "loadingMore": "Läser in fler …"
+    "loadingMore": "Läser in fler…"
   },
   "filterListBox": {
     "searchPlaceholder": "Sök...",

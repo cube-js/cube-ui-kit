@@ -271,6 +271,13 @@ const LoadMoreSentinelElement = tasty({
   styles: {
     display: 'block',
     height: 0,
+    // In flow after the last option: cancels the `$list-gap` that option keeps
+    // while it is not the last child, as the drop indicator does. A section
+    // keeps no gap to cancel.
+    margin: {
+      '': '(-1 * $list-gap) top',
+      'virtualized | sections': 0,
+    },
     position: {
       '': false,
       virtualized: 'absolute',
@@ -574,10 +581,13 @@ export interface CubeListBoxProps<T>
   isLoadingMore?: boolean;
   /**
    * How far before the end of the list to call `onLoadMore`, in pixels.
-   * @default 200
+   * Defaults to the list's visible height, at least 200, as in ItemTable.
    */
   loadMoreMargin?: number;
 }
+
+/** The least `loadMoreMargin` defaults to, in pixels, for a short list. */
+const MIN_LOAD_MORE_MARGIN = 200;
 
 /** A collection with no options, for a list state that isn't needed. */
 const NO_OPTIONS: ListProps<any> = { children: [], selectionMode: 'none' };
@@ -889,7 +899,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     onLoadMore,
     hasMore = false,
     isLoadingMore = false,
-    loadMoreMargin = 200,
+    loadMoreMargin,
     form,
   } = props;
 
@@ -1259,11 +1269,21 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
     if (!canLoadMore || isLoadingMore || !root || !sentinel) return;
 
+    // jsdom, where consumers run tests, has no observer: the list then loads
+    // nothing rather than throw.
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    // One screen ahead by default, as in ItemTable: the page is asked for
+    // while a viewport of options is left to read, so a fast scroll doesn't
+    // reach the end before it arrives. Read when armed, not tracked.
+    const margin =
+      loadMoreMargin ?? Math.max(root.clientHeight, MIN_LOAD_MORE_MARGIN);
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) loadMore();
       },
-      { root, rootMargin: `0px 0px ${loadMoreMargin}px 0px` },
+      { root, rootMargin: `0px 0px ${margin}px 0px` },
     );
 
     observer.observe(sentinel);
@@ -1370,7 +1390,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       qa="ListBoxLoadMoreSentinel"
       role="presentation"
       aria-hidden="true"
-      mods={{ virtualized: shouldVirtualize }}
+      mods={{ virtualized: shouldVirtualize, sections: hasSections }}
     />
   ) : null;
 

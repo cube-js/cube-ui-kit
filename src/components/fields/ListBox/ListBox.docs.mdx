@@ -61,7 +61,7 @@ A versatile list selection component that allows users to select one or more ite
 - **`onLoadMore`** `() => void` — Called when the end of the list comes within `loadMoreMargin` of view, or the options are too few to fill the list, while `hasMore` is true and `isLoadingMore` is false. Append the next page to the options
 - **`hasMore`** `boolean` (default: `false`) — Whether there are options left for `onLoadMore` to load
 - **`isLoadingMore`** `boolean` (default: `false`) — Whether the page `onLoadMore` asked for is loading. Shows a loading row after the last option and holds `onLoadMore` back
-- **`loadMoreMargin`** `number` (default: `200`) — How far before the end of the list to call `onLoadMore`, in pixels
+- **`loadMoreMargin`** `number` (default: the list's height, at least `200`) — How far before the end of the list to call `onLoadMore`, in pixels
 
 ### Base Properties
 
@@ -771,7 +771,7 @@ const { data, hasNextPage, isFetchingNextPage, fetchNextPage } = useValues();
 </ListBox>
 ```
 
-- **When it fires**: once the end of the list comes within `loadMoreMargin` pixels of view (200 by default), and at once when the options are too few to fill the list. It fires again when a page arrives and the end is still in range, so a short page keeps loading. While `isLoadingMore` is true, or `hasMore` is false, it waits.
+- **When it fires**: once the end of the list comes within `loadMoreMargin` pixels of view (by default the list's height, at least 200, so a page is asked for while a screen of options is left), and at once when the options are too few to fill the list. It fires again when a page arrives and the end is still in range, so a short page keeps loading. While `isLoadingMore` is true, or `hasMore` is false, it waits.
 - **Keyboard**: moving focus to the last loaded option (`End`, `ArrowDown`) scrolls it into view, which loads the next page. While more can load, focus doesn't wrap from the last loaded option to the first, even with `shouldFocusWrap`.
 - **Loading row**: while `isLoadingMore` is true, a "Loading more…" row follows the last option. It can't be focused or selected. A viewer already at the end of the list sees it come into view.
 - **Appending**: a page appended to the options keeps the scroll position and the focused option.

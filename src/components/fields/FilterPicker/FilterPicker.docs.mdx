@@ -98,7 +98,7 @@ Choose a different component when the interaction has another shape:
 - **`onLoadMore`** `() => void` — Called when the end of the list comes within `loadMoreMargin` of view, or the options are too few to fill the list, while `hasMore` is true and `isLoadingMore` is false. Append the next page to `items`
 - **`hasMore`** `boolean` (default: `false`) — Whether there are options left for `onLoadMore` to load
 - **`isLoadingMore`** `boolean` (default: `false`) — Whether the page `onLoadMore` asked for is loading. Shows a loading row after the last option and holds `onLoadMore` back
-- **`loadMoreMargin`** `number` (default: `200`) — How far before the end of the list to call `onLoadMore`, in pixels
+- **`loadMoreMargin`** `number` (default: the list's height, at least `200`) — How far before the end of the list to call `onLoadMore`, in pixels
 
 ### Base Properties
 

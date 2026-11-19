@@ -233,7 +233,7 @@ const meta: Meta<typeof FilterPicker> = {
       description:
         'How far before the end of the list to call `onLoadMore`, in pixels',
       table: {
-        defaultValue: { summary: 200 },
+        defaultValue: { summary: "the list's height, at least 200" },
       },
     },
 
