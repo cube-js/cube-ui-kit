@@ -213,10 +213,10 @@ export default {
       allowedStyleProps: ['position', 'dimension', 'gap'],
     },
     // Containers that draw a surface of their own: a fill, a border, a
-    // radius or a theme. `Alert`, `Result` and `Skeleton` hold content the
-    // consumer supplies, so how that content is spaced is the consumer's
-    // call. A member path decides before the export it hangs off, so
-    // `Layout.Panel` and `Layout.PanelHeader` are listed before `Layout`.
+    // radius or a theme. `Alert` and `Result` hold content the consumer
+    // supplies, so how that content is spaced is the consumer's call. A
+    // member path decides before the export it hangs off, so `Layout.Panel`
+    // and `Layout.PanelHeader` are listed before `Layout`.
     {
       source: '@cube-dev/ui-kit',
       include: [
@@ -225,13 +225,15 @@ export default {
         'Layout.PanelHeader',
         'Alert',
         'Result',
-        'Skeleton',
       ],
       allowedStyleProps: containerStyleProps,
     },
     // Layout's sections draw no fill, so the backdrop is the consumer's; their
     // border is UI Kit's, which separates stacked sections or underlines a
-    // header, so it stays protected.
+    // header, so it stays protected. A `Skeleton` is the same: it lays its
+    // placeholders out in a plain `Flow`, `Space` or `Grid`, so a fill behind
+    // them is the backdrop of the region it stands in for, while the line
+    // under its `topbar` layout is UI Kit's.
     {
       source: '@cube-dev/ui-kit',
       include: [
@@ -244,6 +246,7 @@ export default {
         'Layout.Grid',
         'Layout.Center',
         'Layout.Container',
+        'Skeleton',
       ],
       allowedStyleProps: [...containerStyleProps, 'fill'],
     },

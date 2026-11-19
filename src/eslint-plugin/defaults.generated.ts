@@ -553,9 +553,13 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     PasswordInput: {
       props: {
+        autoCorrect: { kind: 'default', value: 'off' },
         isBuffered: { kind: 'default', value: true },
+        multiLine: { kind: 'default', value: false },
+        rows: { kind: 'default', value: 1 },
         shape: { kind: 'default', value: 'default' },
         size: { kind: 'default', value: 'medium' },
+        spellCheck: { kind: 'default', value: 'false' },
         suffixPosition: { kind: 'default', value: 'after' },
       },
     },

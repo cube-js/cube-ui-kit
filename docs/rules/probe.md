@@ -45,7 +45,7 @@ A `render` snippet may also export **`play`**, run after the mount and before an
 
 jsdom is the default only because it is quicker: it reports the CSS tasty generated, which is what most questions are actually about. Know its two blind spots so you can recognise when an answer is jsdom's rather than the truth — it does not resolve custom properties (`backgroundColor` comes back as the literal `var(--surface-2-color)`, `--gap` as empty), and it _discards_ `@container style()` and `@property` rules rather than degrading them, which the probe warns about when it happens.
 
-**`pnpm probe:browser`** answers the four things jsdom cannot: computed values, geometry, pointer behaviour, and screenshots. It runs real Chromium, so it costs a browser binary and a slower start — that is the only reason it is not the default. `pnpm install` does **not** fetch that binary, so the first run on a fresh checkout needs a one-time `pnpm exec playwright install chromium`. Playwright says so itself if you skip it, but the message arrives at the bottom of a long stack.
+**`pnpm probe:browser`** answers the four things jsdom cannot: computed values, geometry, pointer behaviour, and screenshots. It runs real Chromium, so it costs a browser binary and a slower start — that is the only reason it is not the default. `pnpm install` does **not** fetch that binary, so the first run on a fresh checkout needs a one-time `pnpm exec playwright install chromium`. If you skip it, the run fails with `Executable doesn't exist at …` near the top of its output, above stack traces. Playwright's own box below it suggests `pnpm exec playwright install`, which fetches every browser; Chromium is enough.
 
 ```bash
 pnpm probe:browser render --computed '[data-qa="Card"]' backgroundColor padding
@@ -55,9 +55,19 @@ pnpm probe:browser render --rect '[data-qa="Card"]'
 
 The same component, both tiers: `var(--surface-2-color)` / `calc(3 * var(--gap))` under `probe`, versus `rgb(248, 248, 249)` / `24px` under `probe:browser`. `--computed` and `--rect` take a CSS selector, so give the component a `qa` prop and select on `[data-qa="…"]`.
 
+`--computed <sel> [prop...]` reads the **first** element `<sel>` matches; with no properties it reads `backgroundColor`, `color`, `padding`, `fontSize` and `borderRadius`. Every word up to the next flag the probe knows is a property name, so a custom property such as `--gap` is read too. Repeat `--computed` to read several elements in one run, each with its own properties. The output prints one `=== COMPUTED <sel> (real browser) ===` block per selector, and `--json` keys `computed` by selector:
+
+```bash
+pnpm probe:browser render \
+  --computed '[data-qa="Card"]' padding --gap \
+  --computed '[data-qa="Title"]' fontSize color
+```
+
+`--rect <sel>` reads the first match too, one selector per run. A property the browser does not know reads `(unknown property)`, and a custom property no rule sets reads `(not set)`. A `--computed` or `--rect` selector that matches nothing, or is not a valid selector, prints one line naming the flag and the selector and exits 1 (under `--json`, a result with `"ok": false` and `"kind": "selector"`).
+
 Scheme and contrast are independent axes, driven through the `<html>` attributes the `@dark` / `@hc` states resolve against — so `--scheme dark --hc` reaches the fourth variant, which no single `--scheme` value can express. `--scheme hc` stays accepted as the spelling Cloud's probe uses and means light + high contrast.
 
-**Nothing is silently ignored.** `--computed`, `--rect` and `--screenshot` are rejected on the jsdom tier rather than no-oping: asking for computed values and getting none back reads as "no styles applied", the opposite of the truth. Likewise `probe:browser` refuses every mode but `render`; `--scheme` / `--hc` are refused on modes that have no scheme (`styles` and `globals` already report every scheme at once — their state maps and `@media` blocks _are_ the per-scheme answer); an unknown `--scheme` is rejected by the CLI rather than reaching the token renderer, where it surfaces as a stack trace that reads like a harness bug instead of a typo; and a flag that needs a value says so instead of defaulting to off — including when the value it would have swallowed is the next flag (`--computed --scheme dark`).
+**Nothing is silently ignored.** `--computed`, `--rect` and `--screenshot` are rejected on the jsdom tier rather than no-oping: asking for computed values and getting none back reads as "no styles applied", the opposite of the truth. Likewise `probe:browser` refuses every mode but `render`; `--scheme` / `--hc` are refused on modes that have no scheme (`styles` and `globals` already report every scheme at once — their state maps and `@media` blocks _are_ the per-scheme answer); an unknown `--scheme` is rejected by the CLI rather than reaching the token renderer, where it surfaces as a stack trace that reads like a harness bug instead of a typo; a flag that needs a value says so instead of defaulting to off — including when the value it would have swallowed is the next flag (`--computed --scheme dark`) or an empty string; and a second `--rect`, or the same `--computed` selector twice, is refused rather than answered for one of them.
 
 A snippet that does not compile is reported the same way on both tiers: the parse error, with its file, line and code frame. That takes a detour on the browser tier, because Chromium hands the harness only `Failed to fetch dynamically imported module: <url>` — the real error is in the 500 body it keeps from script, so the harness re-requests the module to read it. When the module itself compiles and the break is in something it _imports_, only Vite's log names the file, so the probe prints that log under the message instead of dropping it.
 

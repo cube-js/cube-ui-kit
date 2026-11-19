@@ -140,6 +140,8 @@ export function Consumer() {
       <Alert fill="#danger" />
       <Layout fill="#surface-2" border="right" />
       <Panel fill="#surface" border="top" />
+      <Skeleton layout="table" fill="#surface" />
+      <Skeleton layout="topbar" border="none" />
       <Layout.Toolbar fill="#surface-2" />
       <Card textAlign="center" />
       <Layout styles={{ container: 'page / inline-size' }} />
@@ -355,8 +357,8 @@ describe('tasty.config.ts', () => {
   // A consumer that extends this config gets `protectedComponents`, so
   // restyling a component reports, its primitives stay open, containers keep
   // the props that lay out their content, a frame with no surface of its own
-  // also takes a fill and a border (a Layout section only a fill, since its
-  // border is UI Kit's), a placeholder keeps its `radius`,
+  // also takes a fill and a border (a Layout section or a Skeleton only a
+  // fill, since its border is UI Kit's), a placeholder keeps its `radius`,
   // and a component's own prop named like a style passes, while that name on
   // a component that doesn't own it (`<Button filter>`) is reported. A
   // sub-component counts as its export (`Button.Split`) unless the config
@@ -387,6 +389,7 @@ describe('tasty.config.ts', () => {
         '<Card fill="#danger" />',
         '<Alert fill="#danger" />',
         '<Layout.Header border="none" />',
+        '<Skeleton layout="topbar" border="none" />',
         '<Layout.Panel fill="#surface-2" />',
         '<Placeholder padding="2x" />',
       ].sort(),
