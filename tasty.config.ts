@@ -230,7 +230,10 @@ export default {
     },
     // Layout's sections draw no fill, so the backdrop is the consumer's; their
     // border is UI Kit's, which separates stacked sections or underlines a
-    // header, so it stays protected.
+    // header, so it stays protected. A `Skeleton` is the same: it lays its
+    // placeholders out in a plain `Flow`, `Space` or `Grid`, so a fill behind
+    // them is the backdrop of the region it stands in for, while the line
+    // under its `topbar` layout is UI Kit's.
     {
       source: '@cube-dev/ui-kit',
       include: [
@@ -243,14 +246,13 @@ export default {
         'Layout.Grid',
         'Layout.Center',
         'Layout.Container',
+        'Skeleton',
       ],
       allowedStyleProps: [...containerStyleProps, 'fill'],
     },
     // Frames that draw neither a fill nor a border, such as a page `Layout`
     // or a plain `Panel`: there is no surface to protect, so a fill or a
-    // border on one is the consumer's, as on a `Block`. A `Skeleton` lays its
-    // placeholders out in a plain `Flow`, `Space` or `Grid`, so a fill behind
-    // them is the backdrop of the region it stands in for.
+    // border on one is the consumer's, as on a `Block`.
     {
       source: '@cube-dev/ui-kit',
       include: [
@@ -261,7 +263,6 @@ export default {
         'Footer',
         'Layout',
         'GridLayout',
-        'Skeleton',
       ],
       allowedStyleProps: [...containerStyleProps, 'fill', 'border'],
     },
