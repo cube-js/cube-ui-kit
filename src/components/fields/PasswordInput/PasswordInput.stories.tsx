@@ -131,14 +131,15 @@ export default {
     spellCheck: {
       control: { type: 'text' },
       description:
-        "Keeps the value out of the browser's spellchecker, which a shown or multiline password would otherwise reach",
+        "Whether the browser may spellcheck the value, `'true'` or `'false'`. Off by default: a shown or multiline password would otherwise reach the spellchecker",
       table: {
         defaultValue: { summary: "'false'" },
       },
     },
     autoCorrect: {
       control: { type: 'text' },
-      description: 'Keeps the value out of autocorrect, for the same reason',
+      description:
+        "Whether the browser may autocorrect the value, `'on'` or `'off'`. Off by default for the same reason",
       table: {
         defaultValue: { summary: "'off'" },
       },
