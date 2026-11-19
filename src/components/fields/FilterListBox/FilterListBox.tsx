@@ -316,8 +316,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     const keysToAdd = currentSelectedKeys.filter((k) => !originalKeys.has(k));
 
+    // Keys already there leave the state as it is. With `items` and a render
+    // function the options, and so this effect, are new on every render, and
+    // a new set each time would render again for good.
     if (keysToAdd.length) {
-      setCustomKeys((prev) => new Set([...Array.from(prev), ...keysToAdd]));
+      setCustomKeys((prev) =>
+        keysToAdd.every((key) => prev.has(key))
+          ? prev
+          : new Set([...prev, ...keysToAdd]),
+      );
     }
   }, [allowsCustomValue, selectedKeys, selectedKey, originalKeys]);
 
