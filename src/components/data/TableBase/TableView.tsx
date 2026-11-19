@@ -2337,6 +2337,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       return;
     }
 
+    // jsdom, where consumers run tests, has no observer: the table then loads
+    // nothing rather than throw. ListBox does the same.
+    if (typeof IntersectionObserver === 'undefined') return;
+
     // One screen ahead by default: the request goes out while the user still
     // has a viewport of rows left to read, so the batch is usually there before
     // they arrive. Read at arm time rather than tracked — a resize mid-scroll

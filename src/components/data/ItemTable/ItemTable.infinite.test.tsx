@@ -99,6 +99,26 @@ describe('ItemTable infinite scroll', () => {
     expect(screen.queryByRole('button', { name: 'Page 1' })).toBeNull();
   });
 
+  it('loads nothing, and throws nothing, without an IntersectionObserver', () => {
+    // As in jsdom, where consumers run their tests.
+    vi.stubGlobal('IntersectionObserver', undefined);
+
+    const onLoadMore = vi.fn();
+
+    renderWithRoot(
+      <ItemTable
+        data={ROWS}
+        columns={COLUMNS}
+        paginationMode="infinite"
+        hasMore
+        onLoadMore={onLoadMore}
+      />,
+    );
+
+    expect(sentinel()).toBeInTheDocument();
+    expect(onLoadMore).not.toHaveBeenCalled();
+  });
+
   it('loads more when the end comes into view', async () => {
     const onLoadMore = vi.fn();
 
