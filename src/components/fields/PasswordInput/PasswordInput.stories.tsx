@@ -65,6 +65,21 @@ export default {
         defaultValue: { summary: 'default' },
       },
     },
+    multiLine: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the field is a multiline textarea, for a secret with line breaks such as a PEM private key. A font masks its text while it holds a value',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    rows: {
+      control: { type: 'number' },
+      description: 'The number of visible rows of a `multiLine` field',
+      table: {
+        defaultValue: { summary: 1 },
+      },
+    },
 
     tooltip: {
       control: { type: 'text' },
@@ -112,6 +127,21 @@ export default {
       control: { type: 'text' },
       description:
         'HTML `autocomplete` token telling the browser what to autofill (`current-password`, `new-password`, `off`, …)',
+    },
+    spellCheck: {
+      control: { type: 'text' },
+      description:
+        "Keeps the value out of the browser's spellchecker, which a shown or multiline password would otherwise reach",
+      table: {
+        defaultValue: { summary: "'false'" },
+      },
+    },
+    autoCorrect: {
+      control: { type: 'text' },
+      description: 'Keeps the value out of autocorrect, for the same reason',
+      table: {
+        defaultValue: { summary: "'off'" },
+      },
     },
 
     /* Events */

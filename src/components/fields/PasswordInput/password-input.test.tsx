@@ -137,20 +137,35 @@ describe('<PasswordInput />', () => {
     },
   );
 
-  it('lets a caller turn the text services back on', () => {
+  it('lets a caller turn the text services back on with props', () => {
+    const { getByTestId } = renderWithRoot(
+      <PasswordInput label="Password" spellCheck="true" autoCorrect="on" />,
+    );
+
+    const input = getByTestId('Input');
+
+    expect(input).toHaveAttribute('spellcheck', 'true');
+    expect(input).toHaveAttribute('autocorrect', 'on');
+    expect(input).toHaveAttribute('autocapitalize', 'none');
+  });
+
+  it('lets a caller turn the text services back on through inputProps', () => {
     const { getByTestId } = renderWithRoot(
       <PasswordInput
         label="Password"
-        spellCheck="true"
-        inputProps={{ autoCapitalize: 'sentences' }}
+        inputProps={{
+          spellCheck: 'true',
+          autoCorrect: 'on',
+          autoCapitalize: 'sentences',
+        }}
       />,
     );
 
     const input = getByTestId('Input');
 
     expect(input).toHaveAttribute('spellcheck', 'true');
+    expect(input).toHaveAttribute('autocorrect', 'on');
     expect(input).toHaveAttribute('autocapitalize', 'sentences');
-    expect(input).toHaveAttribute('autocorrect', 'off');
   });
 
   it('masks a multiline password with a font, with no type on its textarea', async () => {
