@@ -9,7 +9,7 @@
  * Every flag `parseArgs` knows. A `--computed` group's property list runs up
  * to the next of these, so a custom property such as `--gap` is read as a
  * property name rather than dropped as an unknown flag. A new flag goes here
- * as well as into the parser.
+ * as well as into the parser; the spec fails when the two differ.
  */
 export const KNOWN_FLAGS = new Set([
   '--full-css',

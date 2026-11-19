@@ -136,11 +136,11 @@ function readProperty(style: CSSStyleDeclaration, prop: string): string {
     return style.getPropertyValue(prop).trim() || '(not set)';
   }
 
-  // `length`, `item`, `parentRule` and the numeric indexes are members of the
-  // declaration, not CSS properties.
+  // `cssText`, `length`, `item`, `parentRule` and the numeric indexes are
+  // members of the declaration, not CSS properties.
   const value: unknown = style[prop as never];
 
-  return typeof value === 'string' && !/^\d+$/.test(prop)
+  return typeof value === 'string' && prop !== 'cssText' && !/^\d+$/.test(prop)
     ? value
     : '(unknown property)';
 }

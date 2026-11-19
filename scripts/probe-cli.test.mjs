@@ -1,4 +1,6 @@
 // @vitest-environment node
+import { readFileSync } from 'node:fs';
+
 import { KNOWN_FLAGS, parseArgs, print } from './probe-cli.mjs';
 
 describe('parseArgs', () => {
@@ -45,6 +47,20 @@ describe('parseArgs', () => {
       { selector: '.a', props: ['--gap', 'padding'] },
     ]);
     expect(options.json).toBe(true);
+  });
+
+  it('lists exactly the flags the parser handles', () => {
+    // A handled flag missing from KNOWN_FLAGS would be read as a property
+    // name after a --computed group, so check the list both ways.
+    const source = readFileSync(
+      new URL('./probe-cli.mjs', import.meta.url),
+      'utf8',
+    );
+    const handled = new Set(
+      [...source.matchAll(/arg === '(--[a-z-]+)'/g)].map(([, flag]) => flag),
+    );
+
+    expect(handled).toEqual(KNOWN_FLAGS);
   });
 
   it.each([...KNOWN_FLAGS])('ends a --computed group at %s', (flag) => {
