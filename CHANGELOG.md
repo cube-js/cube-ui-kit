@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.216.0
+
+### Minor Changes
+
+- [#1684](https://github.com/cube-js/cube-ui-kit/pull/1684) [`087917a8b`](https://github.com/cube-js/cube-ui-kit/commit/087917a8b7825aa31283ba3e7773ba1b41aad267) Thanks [@tenphi](https://github.com/tenphi)! - `ListBox`, `FilterListBox` and `FilterPicker` can load more options as the list scrolls near its end, with the props `ItemTable` uses for infinite scroll: `onLoadMore`, `hasMore`, `isLoadingMore` and `loadMoreMargin`, which defaults as there to the list's height, at least 200 px. `onLoadMore` fires once the end of the list comes within `loadMoreMargin` of view, when the options are too few to fill the list, and when keyboard navigation reaches the last loaded option; it waits while `isLoadingMore` is true. While a page loads, a "Loading more…" row follows the last option, and screen readers hear that more options are loading. While more can load, focus doesn't wrap from the last loaded option to the first.
+
+### Patch Changes
+
+- [#1684](https://github.com/cube-js/cube-ui-kit/pull/1684) [`087917a8b`](https://github.com/cube-js/cube-ui-kit/commit/087917a8b7825aa31283ba3e7773ba1b41aad267) Thanks [@tenphi](https://github.com/tenphi)! - A standalone `FilterListBox` with `items`, a render function and `allowsCustomValue` no longer throws "Maximum update depth exceeded" when a selected key isn't among the items: the selected value is listed at the top as a custom value. `FilterPicker` wasn't affected.
+
+- [#1684](https://github.com/cube-js/cube-ui-kit/pull/1684) [`087917a8b`](https://github.com/cube-js/cube-ui-kit/commit/087917a8b7825aa31283ba3e7773ba1b41aad267) Thanks [@tenphi](https://github.com/tenphi)! - `FilterPicker` shows options that arrive while its popover is open, such as a server search's results with `filter={false}`. With `sortSelectedToTop`, which is on when `items` is set, it kept showing the options it opened with until the next change. With `allowsCustomValue`, a selected value shown as a custom value is listed once when it arrives among the options, in place of the custom value, instead of twice.
+
+- [#1684](https://github.com/cube-js/cube-ui-kit/pull/1684) [`087917a8b`](https://github.com/cube-js/cube-ui-kit/commit/087917a8b7825aa31283ba3e7773ba1b41aad267) Thanks [@tenphi](https://github.com/tenphi)! - `ItemTable` in `paginationMode="infinite"` no longer throws where there is no `IntersectionObserver`, as in jsdom tests: it loads nothing more there, as `ListBox` does.
+
+- [#1684](https://github.com/cube-js/cube-ui-kit/pull/1684) [`087917a8b`](https://github.com/cube-js/cube-ui-kit/commit/087917a8b7825aa31283ba3e7773ba1b41aad267) Thanks [@tenphi](https://github.com/tenphi)! - A virtualized `ListBox` scrolls an option it hasn't rendered yet wholly into view. Moving to it from a search input, as End does in `FilterPicker` and `FilterListBox`, stopped short by the list's top margin and left the last option clipped.
+
+- [#1684](https://github.com/cube-js/cube-ui-kit/pull/1684) [`087917a8b`](https://github.com/cube-js/cube-ui-kit/commit/087917a8b7825aa31283ba3e7773ba1b41aad267) Thanks [@tenphi](https://github.com/tenphi)! - `Picker` shows options that arrive while its popover is open, such as a server search's results. With `sortSelectedToTop`, which is on when `items` is set, it kept showing the options it opened with until the next change. The order still holds while the popover is open: it follows the selection the popover opened with, so selecting an option moves nothing, even when the parent passes new `items` on every render.
+
 ## 0.215.2
 
 ### Patch Changes
