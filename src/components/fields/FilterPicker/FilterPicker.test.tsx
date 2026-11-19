@@ -1,4 +1,4 @@
-import { createRef } from 'react';
+import { createRef, useState } from 'react';
 
 import { Dialog, DialogTrigger, FilterPicker } from '../../../index';
 import { renderWithRoot, userEvent, waitFor, within } from '../../../test';
@@ -443,6 +443,49 @@ describe('<FilterPicker />', () => {
       expect(options[2]).toHaveTextContent('Banana');
       expect(options[3]).toHaveTextContent('Cherry');
       expect(options[4]).toHaveTextContent('Elderberry');
+    });
+
+    it('keeps the order while open, even as the parent rebuilds items', async () => {
+      function Controlled() {
+        const [keys, setKeys] = useState<any>(SORT_SELECTION);
+
+        return (
+          <FilterPicker
+            label="Select fruits"
+            selectionMode="multiple"
+            isCheckable
+            showSelectAll
+            selectedKeys={keys}
+            // New items on every render, as `data.map(…)` in a parent gives.
+            items={basicItemsData.map((item) => ({ ...item }))}
+            onSelectionChange={setKeys}
+          >
+            {(item) => (
+              <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+            )}
+          </FilterPicker>
+        );
+      }
+
+      const { getByRole } = renderWithRoot(<Controlled />);
+      const names = () =>
+        within(getByRole('listbox'))
+          .getAllByRole('option')
+          .map((option) => option.textContent);
+      const order = ['Banana', 'Apple', 'Cherry', 'Date', 'Elderberry'];
+
+      await user.click(getByRole('button'));
+
+      expect(names()).toEqual(order);
+
+      // On the checkbox: a press on the label closes a checkable picker.
+      await user.click(
+        getByRole('option', { name: 'Date' }).querySelector(
+          '[data-element="CheckboxWrapper"]',
+        )!,
+      );
+
+      expect(names()).toEqual(order);
     });
 
     it('shows options that arrive while the popover is open', async () => {

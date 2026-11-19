@@ -377,9 +377,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     }
   }, [externalListStateRef]);
 
-  // Cache for sorted items array when using `items` prop
-  const cachedItemsOrder = useRef<T[] | null>(null);
-
   const latestSelectionRef = useRef<{
     single: string | null;
     multiple: string[];
@@ -418,10 +415,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
   });
 
   useEffect(() => {
-    cachedItemsOrder.current = null;
-  }, [items]);
-
-  useEffect(() => {
     if (!isPopoverOpen) {
       selectionWhenClosed.current = {
         single:
@@ -439,18 +432,19 @@ export const Picker = forwardRef(function Picker<T extends object>(
     selectionMode,
   ]);
 
+  // Sorted by the selection the popover opened with, never the live one, so
+  // selecting while it's open moves nothing, even when the parent passes new
+  // `items` on every render. New options (a page loaded on scroll, a server
+  // search) are sorted the same way. A selection of `'all'` is an empty list
+  // here, which sorts nothing.
   const finalItems = useMemo(() => {
     if (!items || !shouldSortSelectedToTop) return items;
     if (!isPopoverOpen) return items;
-    if (cachedItemsOrder.current) return cachedItemsOrder.current;
 
     const selectedKeySet = new Set<string>();
 
     if (selectionMode === 'multiple') {
-      if (
-        selectionWhenClosed.current.multiple.length === 0 ||
-        effectiveSelectedKeys === 'all'
-      ) {
+      if (selectionWhenClosed.current.multiple.length === 0) {
         return items;
       }
       selectionWhenClosed.current.multiple.forEach((k) =>
@@ -475,11 +469,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       }
     });
 
-    const sorted = [...selectedItems, ...unselectedItems];
-
-    cachedItemsOrder.current = sorted;
-
-    return sorted;
+    return [...selectedItems, ...unselectedItems];
   }, [items, shouldSortSelectedToTop, selectionMode, isPopoverOpen]);
 
   // Create local collection state for reading item data (labels, etc.)
@@ -543,7 +533,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     setIsPopoverOpen(isOpen);
     if (!isOpen) {
       selectionWhenClosed.current = { ...latestSelectionRef.current };
-      cachedItemsOrder.current = null;
     }
     onOpenChange?.(isOpen);
   });

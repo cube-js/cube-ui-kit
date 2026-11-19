@@ -1,4 +1,4 @@
-import { createRef } from 'react';
+import { createRef, useState } from 'react';
 
 import { Picker } from '../../../index';
 import { act, renderWithRoot, userEvent, waitFor, within } from '../../../test';
@@ -187,6 +187,84 @@ describe('<Picker />', () => {
   });
 
   describe('Selection sorting functionality', () => {
+    const FRUITS = [
+      { key: 'apple', label: 'Apple' },
+      { key: 'banana', label: 'Banana' },
+      { key: 'cherry', label: 'Cherry' },
+      { key: 'date', label: 'Date' },
+      { key: 'elderberry', label: 'Elderberry' },
+    ];
+    const DATE_SELECTED = ['date'];
+
+    const optionNames = (listbox: HTMLElement) =>
+      within(listbox)
+        .getAllByRole('option')
+        .map((option) => option.textContent);
+
+    it('keeps the order while open, even as the parent rebuilds items', async () => {
+      function Controlled() {
+        const [keys, setKeys] = useState<any>(DATE_SELECTED);
+
+        return (
+          <Picker
+            label="Select fruits"
+            selectionMode="multiple"
+            showSelectAll
+            selectedKeys={keys}
+            // New items on every render, as `data.map(…)` in a parent gives.
+            items={FRUITS.map((fruit) => ({ ...fruit }))}
+            onSelectionChange={setKeys}
+          >
+            {(item) => <Picker.Item key={item.key}>{item.label}</Picker.Item>}
+          </Picker>
+        );
+      }
+
+      const { getByRole } = renderWithRoot(<Controlled />);
+      const order = ['Date', 'Apple', 'Banana', 'Cherry', 'Elderberry'];
+
+      await userEvent.click(getByRole('button'));
+
+      expect(optionNames(getByRole('listbox'))).toEqual(order);
+
+      await userEvent.click(getByRole('option', { name: 'Cherry' }));
+
+      expect(optionNames(getByRole('listbox'))).toEqual(order);
+
+      await userEvent.click(getByRole('checkbox', { name: 'All' }));
+
+      expect(optionNames(getByRole('listbox'))).toEqual(order);
+    });
+
+    it('shows options that arrive while the popover is open', async () => {
+      // A page loaded on scroll, or a server search.
+      const renderPicker = (items: typeof FRUITS) => (
+        <Picker
+          label="Select fruits"
+          selectionMode="multiple"
+          selectedKeys={DATE_SELECTED}
+          items={items}
+        >
+          {(item) => <Picker.Item key={item.key}>{item.label}</Picker.Item>}
+        </Picker>
+      );
+      const { getByRole, rerender } = renderWithRoot(
+        renderPicker(FRUITS.slice(0, 2)),
+      );
+
+      await userEvent.click(getByRole('button'));
+      rerender(renderPicker(FRUITS));
+
+      // Sorted by the selection the popover opened with.
+      expect(optionNames(getByRole('listbox'))).toEqual([
+        'Date',
+        'Apple',
+        'Banana',
+        'Cherry',
+        'Elderberry',
+      ]);
+    });
+
     it('should NOT sort selected items to top while popover is open', async () => {
       const { getByRole, getByText } = renderWithRoot(
         <Picker
