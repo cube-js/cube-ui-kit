@@ -74,11 +74,18 @@ function PasswordInput(
   let { labelProps, inputProps, ...validation } = useTextField(
     displayedValidation.trackTouched({
       ...rest,
+      // A browser spares only a masked `<input>` its text services. A shown
+      // password and a multiline one (a textarea masked by a font) are plain
+      // text to it, so keep the secret out of its spellchecker and autocorrect.
+      spellCheck: rest.spellCheck ?? 'false',
+      autoCorrect: rest.autoCorrect ?? 'off',
+      autoCapitalize: 'none',
       value: buffered.value,
       onChange: buffered.onChange,
       onBlur: chain(rest.onBlur, buffered.reset),
       onKeyDown: withOverlayKeys(rest.onKeyDown),
       type,
+      inputElementType: multiLine ? 'textarea' : 'input',
     }),
     inputRef as RefObject<HTMLInputElement | null>,
   );

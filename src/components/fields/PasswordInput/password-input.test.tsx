@@ -108,6 +108,72 @@ describe('<PasswordInput />', () => {
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
   });
 
+  // A browser spares only a masked `<input>` its spellchecker and autocorrect;
+  // a shown password and a font-masked textarea are plain text to it.
+  it.each([
+    ['single-line', false],
+    ['multiline', true],
+  ])(
+    'keeps a %s password out of the text services, shown or not',
+    async (_case, multiLine) => {
+      const { getByRole, getByTestId } = renderWithRoot(
+        <PasswordInput
+          label="Password"
+          defaultValue="secret"
+          multiLine={multiLine}
+        />,
+      );
+
+      const input = getByTestId('Input');
+      const expectNoTextServices = () => {
+        expect(input).toHaveAttribute('spellcheck', 'false');
+        expect(input).toHaveAttribute('autocorrect', 'off');
+        expect(input).toHaveAttribute('autocapitalize', 'none');
+      };
+
+      expectNoTextServices();
+      await userEvent.click(getByRole('button', { name: 'Show password' }));
+      expectNoTextServices();
+    },
+  );
+
+  it('lets a caller turn the text services back on', () => {
+    const { getByTestId } = renderWithRoot(
+      <PasswordInput
+        label="Password"
+        spellCheck="true"
+        inputProps={{ autoCapitalize: 'sentences' }}
+      />,
+    );
+
+    const input = getByTestId('Input');
+
+    expect(input).toHaveAttribute('spellcheck', 'true');
+    expect(input).toHaveAttribute('autocapitalize', 'sentences');
+    expect(input).toHaveAttribute('autocorrect', 'off');
+  });
+
+  it('masks a multiline password with a font, with no type on its textarea', async () => {
+    const value = 'line one\nline two';
+    const { getByRole, getByTestId } = renderWithRoot(
+      <PasswordInput multiLine label="Key" defaultValue={value} />,
+    );
+
+    const textarea = getByTestId('Input') as HTMLTextAreaElement;
+    const toggle = getByRole('button', { name: 'Show password' });
+
+    expect(textarea.tagName).toBe('TEXTAREA');
+    expect(textarea).not.toHaveAttribute('type');
+    expect(textarea.style.fontFamily).toBe('text-security-disc');
+
+    await userEvent.click(toggle);
+
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(textarea).not.toHaveAttribute('type');
+    expect(textarea.style.fontFamily).toBe('');
+    expect(textarea).toHaveValue(value);
+  });
+
   it('places the toggle after the input in the Tab order', async () => {
     const { getByRole, getByTestId } = renderWithRoot(
       <PasswordInput label="Password" />,
