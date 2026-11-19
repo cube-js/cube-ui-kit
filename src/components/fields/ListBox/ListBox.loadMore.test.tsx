@@ -207,12 +207,23 @@ describe('ListBox load more', () => {
     expect(screen.getByRole('status')).toHaveTextContent('');
   });
 
-  it('shows the loading row, not the empty label, while an empty list loads', () => {
+  it('shows the loading row, not the empty label, while an empty list loads', async () => {
     render(<List items={[]} hasMore isLoadingMore onLoadMore={() => {}} />);
+
+    const listbox = screen.getByRole('listbox');
 
     expect(loadingRow()).toBeInTheDocument();
     expect(screen.queryByText('No items')).not.toBeInTheDocument();
-    expect(screen.getByRole('listbox')).not.toHaveAttribute('aria-describedby');
+    // Described by the loading status, as by the empty label otherwise.
+    expect(listbox).toHaveAccessibleDescription('Loading more…');
+
+    // With no option to take it, focus rests on the list, and the card shows it.
+    await userEvent.tab();
+
+    expect(listbox).toHaveFocus();
+    expect(screen.getByTestId('ListBoxWrapper')).toHaveAttribute(
+      'data-focused',
+    );
   });
 
   it('keeps keyboard focus on the options and does not wrap while more can load', async () => {

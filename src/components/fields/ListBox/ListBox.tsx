@@ -592,6 +592,22 @@ export interface CubeListBoxProps<T>
   loadMoreMargin?: number;
 }
 
+/**
+ * Where a list starts in its scroll element: below its own top margin. From
+ * layout, not client rects: a scaled ancestor (a popover's opening animation,
+ * a zoomed page) scales those but not the scroll offset.
+ */
+function getListOffset(
+  list: HTMLElement | null,
+  scrollElement: HTMLElement | null,
+): number {
+  if (!list || !scrollElement) return 0;
+
+  return list.offsetParent === scrollElement
+    ? list.offsetTop
+    : list.offsetTop - scrollElement.offsetTop - scrollElement.clientTop;
+}
+
 /** The loading row's key, for the virtualizer and React. */
 const LOADING_ROW_KEY = '__ListBoxLoadingMore__';
 
@@ -1156,24 +1172,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Scroll container ref for virtualization
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Where the list starts in its scroll element, below its own top margin.
   // The virtualizer places options from the list's top, so it works in the
-  // list's coordinates and the scroll offset is moved by this at the DOM.
-  // Otherwise a scroll to an option it hasn't rendered stopped this far short,
-  // and End from a search input left the last option clipped. Read when the
-  // list scrolls, as a consumer's `listStyles` can move it. From layout, not
-  // client rects: a scaled ancestor (a popover's opening animation, a zoomed
-  // page) scales those but not the scroll offset.
-  const getListOffset = () => {
-    const list = listRef.current;
-    const scrollElement = scrollRef.current;
-
-    if (!list || !scrollElement) return 0;
-
-    return list.offsetParent === scrollElement
-      ? list.offsetTop
-      : list.offsetTop - scrollElement.offsetTop - scrollElement.clientTop;
-  };
+  // list's coordinates and the scroll offset is moved by the list's offset at
+  // the DOM. Otherwise a scroll to an option it hasn't rendered stopped that
+  // far short, and End from a search input left the last option clipped. Read
+  // when the list scrolls, as a consumer's `listStyles` can move it.
+  const listOffset = () => getListOffset(listRef.current, scrollRef.current);
 
   const rowVirtualizer = useVirtualizer({
     // The loading row is one more row after the options, placed and measured
@@ -1211,13 +1215,13 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     // that it arrived.
     observeElementOffset: (instance, onOffset) =>
       observeElementOffset(instance, (offset, isScrolling) =>
-        onOffset(Math.max(offset - getListOffset(), 0), isScrolling),
+        onOffset(Math.max(offset - listOffset(), 0), isScrolling),
       ),
     // The list's top is the scroll element's, so the margin above the first
     // option shows.
     scrollToFn: (offset, options, instance) =>
       elementScroll(
-        offset > 0 ? offset + getListOffset() : offset,
+        offset > 0 ? offset + listOffset() : offset,
         options,
         instance,
       ),
@@ -1372,17 +1376,20 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     delete mergedListBoxProps.tabIndex;
   }
 
-  // An empty list keeps its listbox, which ids from outside point at (a search
-  // input's `aria-controls`, the label's `aria-labelledby`), and says why it is
-  // empty through its description: a listbox may hold only options and groups.
-  // One loading more options shows its loading row instead.
-  const isEmpty = listState.collection.size === 0 && !isLoadingMore;
+  // A list with no options keeps its listbox, which ids from outside point at
+  // (a search input's `aria-controls`, the label's `aria-labelledby`), and says
+  // why it has none through its description: a listbox may hold only options
+  // and groups. While it loads, that is its loading row and status instead of
+  // the empty label.
+  const hasNoOptions = listState.collection.size === 0;
+  const isEmpty = hasNoOptions && !isLoadingMore;
   const emptyLabelId = `${listBoxProps.id}-empty`;
+  const loadingMoreLabelId = `${listBoxProps.id}-loading-more`;
 
-  if (isEmpty) {
+  if (hasNoOptions) {
     mergedListBoxProps['aria-describedby'] = [
       mergedListBoxProps['aria-describedby'],
-      emptyLabelId,
+      isEmpty ? emptyLabelId : loadingMoreLabelId,
     ]
       .filter(Boolean)
       .join(' ');
@@ -1399,7 +1406,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       .map((i) => String(i.key));
   }, [isReorderable, itemsArray]);
 
-  const isCardFocused = isFocused || (isEmpty && isListElementFocused);
+  // With no option to take it, focus rests on the list itself, so the card
+  // shows it.
+  const isCardFocused = isFocused || (hasNoOptions && isListElementFocused);
 
   const mods = useMemo(
     () => ({
@@ -1690,13 +1699,13 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         <div role="presentation" />
       )}
       {onLoadMore || isLoadingMore ? (
-        // In place while the list has `onLoadMore`, and filled while it loads
-        // (`isLoadingMore`, which mounts it too): a live region announces a
-        // change of its text, and one inserted already filled is unreliable. Outside the listbox, which may hold only
-        // options and groups.
-        <VisuallyHidden>
-          <span role="status">{isLoadingMore ? loadingMoreLabel : ''}</span>
-        </VisuallyHidden>
+        // In place while the list has `onLoadMore`; `isLoadingMore` mounts it
+        // too. A list with no options is described by it while it loads.
+        <LoadingMoreStatus
+          id={loadingMoreLabelId}
+          label={loadingMoreLabel}
+          isLoading={isLoadingMore}
+        />
       ) : null}
     </ListBoxWrapperElement>
   );
@@ -2046,6 +2055,30 @@ function LoadingMoreRow({
     >
       {label}
     </ListBoxItem>
+  );
+}
+
+/**
+ * Tells screen readers that more options are loading. Filled while they load,
+ * and empty otherwise rather than gone: a live region announces a change of its
+ * text, and one inserted already filled is unreliable. Outside the listbox,
+ * which may hold only options and groups.
+ */
+function LoadingMoreStatus({
+  id,
+  label,
+  isLoading,
+}: {
+  id: string;
+  label: string;
+  isLoading: boolean;
+}) {
+  return (
+    <VisuallyHidden>
+      <span id={id} role="status">
+        {isLoading ? label : ''}
+      </span>
+    </VisuallyHidden>
   );
 }
 
