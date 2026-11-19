@@ -2822,7 +2822,6 @@ export const LoadMoreOnScroll: Story = {
         <FilterPicker
           isCheckable
           label="Load More on Scroll"
-          placeholder="Select items..."
           selectionMode="multiple"
           searchPlaceholder="Search 500 items..."
           fieldStyles={{ width: '100%' }}
