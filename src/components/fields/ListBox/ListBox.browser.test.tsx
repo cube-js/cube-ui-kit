@@ -757,6 +757,8 @@ describe('ListBox focus outside the rendered window', () => {
     'scrolls the option %s moves to wholly into view from a search input',
     async (keys, name) => {
       // DOM focus stays in the input, so only the scroll brings it into view.
+      const warn = vi.spyOn(console, 'warn');
+
       renderWithRoot(
         <FilterListBox aria-label="Items" height="30x" items={ITEMS}>
           {(item: (typeof ITEMS)[number]) => (
@@ -785,6 +787,16 @@ describe('ListBox focus outside the rendered window', () => {
         // The list's top margin shows above the first option.
         expect(screen.getByRole('listbox').parentElement!.scrollTop).toBe(0);
       }
+
+      // react-virtual re-checks where it scrolled for a few frames, and warns
+      // when the offset it reads never matches the one it scrolled to.
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      expect(warn).not.toHaveBeenCalledWith(
+        expect.stringContaining('Failed to scroll to index'),
+      );
+
+      warn.mockRestore();
     },
   );
 
@@ -1178,6 +1190,39 @@ describe('ListBox load more', () => {
 
     expect(row.top).toBeGreaterThanOrEqual(viewport.top);
     expect(row.bottom).toBeLessThanOrEqual(viewport.bottom + 1);
+  });
+
+  it('measures the loading row apart from an option with a numeric key', async () => {
+    // Numeric ids 1…N give the last option the key N, the loading row's index.
+    // Sharing a size, the two rows re-measured each other without end.
+    const items = Array.from({ length: 30 }, (_, index) => ({
+      id: index + 1,
+      label: `Value ${index + 1}`,
+    }));
+
+    renderWithRoot(
+      <ListBox
+        aria-label="Values"
+        height="25x"
+        items={items}
+        hasMore
+        isLoadingMore
+        onLoadMore={() => {}}
+      >
+        {(item: (typeof items)[number]) => (
+          <ListBox.Item size="6x">{item.label}</ListBox.Item>
+        )}
+      </ListBox>,
+    );
+
+    await scrollToEnd();
+
+    const last = screen.getByRole('option', { name: 'Value 30' });
+    const row = screen.getByTestId('ListBoxLoadingMore');
+
+    expect(row.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      last.getBoundingClientRect().bottom,
+    );
   });
 
   it('keeps the height of a list in flow', async () => {

@@ -1,7 +1,12 @@
 import { useHover } from '@react-aria/interactions';
 import { IconMinus } from '@tabler/icons-react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { elementScroll, observeElementOffset } from '@tanstack/virtual-core';
+// The helpers come through react-virtual, so a consumer gets them from the
+// same copy of virtual-core as the virtualizer.
+import {
+  elementScroll,
+  observeElementOffset,
+  useVirtualizer,
+} from '@tanstack/react-virtual';
 import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   DOMAttributes,
@@ -586,6 +591,9 @@ export interface CubeListBoxProps<T>
    */
   loadMoreMargin?: number;
 }
+
+/** The loading row's key, for the virtualizer and React. */
+const LOADING_ROW_KEY = '__ListBoxLoadingMore__';
 
 /** The least `loadMoreMargin` defaults to, in pixels, for a short list. */
 const MIN_LOAD_MORE_MARGIN = 200;
@@ -1178,8 +1186,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     // A new key function makes the virtualizer recompute positions from the
     // heights it has measured per key. ListBox isn't compiled (useVirtualizer),
     // so that is every render. Reading `itemsArray` keeps new items bringing a
-    // new function should it ever compile.
-    getItemKey: (index: number) => itemsArray[index]?.key ?? index,
+    // new function should it ever compile. The row after the options is the
+    // loading row, with a key of its own: an index could be an option's key
+    // (ids 1…N), and two rows sharing a measured size re-measure each other.
+    getItemKey: (index: number) => itemsArray[index]?.key ?? LOADING_ROW_KEY,
     estimateSize: (index: number) => {
       const currentItem: any = itemsArray[index];
 
@@ -1196,9 +1206,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     // The virtualizer takes pixels: `1` matches the `$item-gap` default.
     gap: listGap ?? 1,
     overscan: 10,
+    // Above the list's top, the scroll element's top reads as the list's:
+    // `scrollToFn` scrolls there for offset 0, and react-virtual re-checks
+    // that it arrived.
     observeElementOffset: (instance, onOffset) =>
       observeElementOffset(instance, (offset, isScrolling) =>
-        onOffset(offset - getListOffset(), isScrolling),
+        onOffset(Math.max(offset - getListOffset(), 0), isScrolling),
       ),
     // The list's top is the scroll element's, so the margin above the first
     // option shows.
@@ -1568,7 +1581,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                   if (!item) {
                     return (
                       <LoadingMoreRow
-                        key="__loading-more__"
+                        key={LOADING_ROW_KEY}
                         rowRef={loadingRowRef}
                         size={size}
                         label={loadingMoreLabel}
