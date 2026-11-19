@@ -992,3 +992,141 @@ describe('ListBox press on a list that moves', () => {
     });
   });
 });
+
+/**
+ * Loading more as the list nears its end (CUB-8550), against real layout. The
+ * jsdom spec decides by hand when the end is in range; here the browser's
+ * `IntersectionObserver` does, from real row heights and scroll offsets.
+ */
+describe('ListBox load more', () => {
+  interface Value {
+    key: string;
+    label: string;
+  }
+
+  const values = (count: number): Value[] =>
+    Array.from({ length: count }, (_, index) => ({
+      key: `v${index}`,
+      label: `Value ${index}`,
+    }));
+
+  /** A list about six rows tall that can load more. */
+  function List(props: Partial<CubeListBoxProps<Value>>) {
+    return (
+      <ListBox
+        aria-label="Values"
+        height="25x"
+        items={values(40)}
+        hasMore
+        {...props}
+      >
+        {(item: Value) => (
+          <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+        )}
+      </ListBox>
+    );
+  }
+
+  const scroller = () => screen.getByRole('listbox').parentElement!;
+
+  /** One frame to lay the scroll out, one for the observer to report it. */
+  async function settle() {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  async function scrollToEnd(distance = 0) {
+    const element = scroller();
+
+    act(() => {
+      element.scrollTop =
+        element.scrollHeight - element.clientHeight - distance;
+      element.dispatchEvent(new Event('scroll'));
+    });
+    await settle();
+  }
+
+  it('loads more once the end comes within loadMoreMargin', async () => {
+    const onLoadMore = vi.fn();
+
+    renderWithRoot(<List loadMoreMargin={100} onLoadMore={onLoadMore} />);
+    await settle();
+
+    expect(onLoadMore).not.toHaveBeenCalled();
+
+    await scrollToEnd(150);
+
+    expect(onLoadMore).not.toHaveBeenCalled();
+
+    await scrollToEnd(50);
+
+    await waitFor(() => expect(onLoadMore).toHaveBeenCalledTimes(1));
+  });
+
+  it('loads more at once when the options are too few to fill the list', async () => {
+    const onLoadMore = vi.fn();
+
+    renderWithRoot(<List items={values(3)} onLoadMore={onLoadMore} />);
+
+    await waitFor(() => expect(onLoadMore).toHaveBeenCalledTimes(1));
+  });
+
+  it.each([
+    ['End', '{End}'],
+    ['ArrowDown', '{ArrowDown>7/}'],
+  ])(
+    'loads more when %s reaches the last loaded option, at any margin',
+    async (_, keys) => {
+      const onLoadMore = vi.fn();
+
+      renderWithRoot(
+        <List items={values(8)} loadMoreMargin={0} onLoadMore={onLoadMore} />,
+      );
+
+      await userEvent.click(screen.getByRole('option', { name: 'Value 0' }));
+      await settle();
+
+      expect(onLoadMore).not.toHaveBeenCalled();
+
+      await userEvent.keyboard(keys);
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'Value 7' })).toHaveFocus();
+        expect(onLoadMore).toHaveBeenCalledTimes(1);
+      });
+    },
+  );
+
+  it('shows the loading row to a viewer already at the end', async () => {
+    const { rerender } = renderWithRoot(<List onLoadMore={() => {}} />);
+
+    await scrollToEnd();
+    rerender(<List isLoadingMore onLoadMore={() => {}} />);
+    await settle();
+
+    const row = screen
+      .getByTestId('ListBoxLoadingMore')
+      .getBoundingClientRect();
+    const viewport = scroller().getBoundingClientRect();
+
+    expect(row.top).toBeGreaterThanOrEqual(viewport.top);
+    expect(row.bottom).toBeLessThanOrEqual(viewport.bottom + 1);
+  });
+
+  it('keeps the scroll position and the focused option when a page arrives', async () => {
+    const { rerender } = renderWithRoot(
+      <List isLoadingMore onLoadMore={() => {}} />,
+    );
+
+    await scrollToEnd(300);
+    await userEvent.click(screen.getByRole('option', { name: 'Value 33' }));
+
+    const scrollTop = scroller().scrollTop;
+
+    rerender(<List items={values(80)} onLoadMore={() => {}} />);
+    await settle();
+
+    expect(scroller().scrollTop).toBe(scrollTop);
+    expect(screen.getByRole('option', { name: 'Value 33' })).toHaveFocus();
+  });
+});

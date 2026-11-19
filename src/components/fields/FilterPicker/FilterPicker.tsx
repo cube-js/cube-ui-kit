@@ -399,6 +399,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onOpenChange,
     isReorderable,
     onReorder,
+    onLoadMore,
+    hasMore,
+    isLoadingMore,
+    loadMoreMargin,
     form,
     treeData,
     expandedKeys,
@@ -1140,6 +1144,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   customValueProps={customValueProps}
                   newCustomValueProps={newCustomValueProps}
                   isReorderable={isReorderable}
+                  onLoadMore={onLoadMore}
+                  hasMore={hasMore}
+                  isLoadingMore={isLoadingMore}
+                  loadMoreMargin={loadMoreMargin}
                   onSearchChange={onSearchChange}
                   onReorder={onReorder}
                   onEscape={handleEscape}

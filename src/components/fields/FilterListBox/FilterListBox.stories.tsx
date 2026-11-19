@@ -148,6 +148,29 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
+    hasMore: {
+      control: { type: 'boolean' },
+      description: 'Whether there are options left for `onLoadMore` to load',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isLoadingMore: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the page `onLoadMore` asked for is loading. Shows a loading row after the last option and holds `onLoadMore` back',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    loadMoreMargin: {
+      control: { type: 'number' },
+      description:
+        'How far before the end of the list to call `onLoadMore`, in pixels',
+      table: {
+        defaultValue: { summary: 200 },
+      },
+    },
 
     /* State */
     isLoading: {
@@ -199,6 +222,11 @@ const meta: any = {
     onOptionClick: {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
+    },
+    onLoadMore: {
+      action: 'load more',
+      description:
+        'Called when the end of the list comes within `loadMoreMargin` of view, or the options are too few to fill the list, while `hasMore` is true and `isLoadingMore` is false',
     },
     showSelectAll: {
       control: { type: 'boolean' },

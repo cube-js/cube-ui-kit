@@ -13,6 +13,7 @@ import {
   ReactNode,
   RefObject,
   useEffect,
+  useEffectEvent,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -28,6 +29,7 @@ import {
   useListBox,
   useListBoxSection,
   useOption,
+  VisuallyHidden,
 } from 'react-aria';
 import {
   Section as BaseSection,
@@ -42,6 +44,7 @@ import { useI18n } from '../../../i18n/useI18n';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { GripVerticalIcon } from '../../../icons/GripVerticalIcon';
 import { Icon } from '../../../icons/Icon';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react/mergeProps';
@@ -255,6 +258,26 @@ const ListBoxDropIndicatorElement = tasty({
       height: '$drop-indicator-size',
       fill: '#primary',
       radius: 'round',
+    },
+  },
+});
+
+// The end of the list, which the load-more observer watches: zero height,
+// right after the last row, so a row scrolled into view brings it into view at
+// any margin. In flow it follows the last option. Virtualized, the options are
+// placed absolutely and the spacer's height is where the last one ends.
+const LoadMoreSentinelElement = tasty({
+  as: 'li',
+  styles: {
+    display: 'block',
+    height: 0,
+    position: {
+      '': false,
+      virtualized: 'absolute',
+    },
+    inset: {
+      '': false,
+      virtualized: '$list-virtual-height 0 auto 0',
     },
   },
 });
@@ -533,6 +556,27 @@ export interface CubeListBoxProps<T>
    * Called with the new array of item keys in their new order.
    */
   onReorder?: (newOrder: string[]) => void;
+
+  /**
+   * Called when the end of the list comes within `loadMoreMargin` of view, or
+   * the options are too few to fill the list, while `hasMore` is true and
+   * `isLoadingMore` is false. Append the next page to the options. Focus does
+   * not wrap past the last loaded option while more can load.
+   */
+  onLoadMore?: () => void;
+  /** Whether there are options left for `onLoadMore` to load. */
+  hasMore?: boolean;
+  /**
+   * Whether the page `onLoadMore` asked for is loading. The list shows a
+   * loading row after the last option, screen readers hear that more options
+   * are loading, and `onLoadMore` waits until it is false again.
+   */
+  isLoadingMore?: boolean;
+  /**
+   * How far before the end of the list to call `onLoadMore`, in pixels.
+   * @default 200
+   */
+  loadMoreMargin?: number;
 }
 
 /** A collection with no options, for a list state that isn't needed. */
@@ -842,6 +886,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     shape = 'card',
     isReorderable = false,
     onReorder,
+    onLoadMore,
+    hasMore = false,
+    isLoadingMore = false,
+    loadMoreMargin = 200,
     form,
   } = props;
 
@@ -1048,10 +1096,15 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   const shouldVirtualize = !hasSections && !isReorderable;
 
+  const canLoadMore = !!onLoadMore && hasMore;
+
   const { listBoxProps, labelProps } = useListBox(
     {
       ...props,
       id: id,
+      // Wrapping from the last loaded option to the first would skip the
+      // options still to load.
+      shouldFocusWrap: props.shouldFocusWrap && !canLoadMore,
       // Only disable isVirtualized for reorderable lists (DnD needs real DOM focus).
       // Section-based lists keep isVirtualized: true to preserve ARIA attributes.
       isVirtualized: !isReorderable,
@@ -1085,7 +1138,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
-    count: shouldVirtualize ? itemsArray.length : 0,
+    // The loading row is one more row after the options, placed and measured
+    // like them.
+    count: shouldVirtualize ? itemsArray.length + (isLoadingMore ? 1 : 0) : 0,
     getScrollElement: () => scrollRef.current,
     // Use the actual item key to ensure React properly reconciles DOM elements
     // when items are filtered, added, or removed. Without this, the virtualizer
@@ -1188,6 +1243,53 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     rowVirtualizer,
   ]);
 
+  // ----- Load more -----
+  // An `IntersectionObserver` on a sentinel at the end of the list, as in
+  // ItemTable: `rootMargin` says "this far before the end" directly, it costs
+  // nothing per scroll, and a list too short to scroll has its sentinel in
+  // range at once. Keyboard navigation loads too, since it scrolls the focused
+  // option into view. An observer reports only a change of intersection, so it
+  // is armed again when a page arrives: a list still too short fires again.
+  const sentinelRef = useRef<HTMLLIElement>(null);
+  const loadMore = useEffectEvent(() => onLoadMore?.());
+
+  useEffect(() => {
+    const root = scrollRef.current;
+    const sentinel = sentinelRef.current;
+
+    if (!canLoadMore || isLoadingMore || !root || !sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) loadMore();
+      },
+      { root, rootMargin: `0px 0px ${loadMoreMargin}px 0px` },
+    );
+
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [canLoadMore, isLoadingMore, loadMoreMargin, itemsArray.length]);
+
+  // The loading row makes the list longer by its own height, so a viewer who
+  // had reached the end would find it just out of view. One that close to the
+  // end follows it; one further up reads on undisturbed.
+  const loadingRowRef = useRef<HTMLLIElement>(null);
+
+  useLayoutEffect(() => {
+    const scrollElement = scrollRef.current;
+    const row = loadingRowRef.current;
+
+    if (!isLoadingMore || !scrollElement || !row) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+    const rowBlock = row.offsetHeight + (listGap ?? 1);
+
+    if (scrollHeight - scrollTop - clientHeight <= rowBlock + 1) {
+      scrollElement.scrollTop = scrollHeight;
+    }
+  }, [isLoadingMore, listGap]);
+
   // Merge React Aria listbox props with custom keyboard props so both sets of
   // event handlers (e.g. Arrow navigation *and* our Escape handler) are
   // preserved.
@@ -1208,7 +1310,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // An empty list keeps its listbox, which ids from outside point at (a search
   // input's `aria-controls`, the label's `aria-labelledby`), and says why it is
   // empty through its description: a listbox may hold only options and groups.
-  const isEmpty = listState.collection.size === 0;
+  // One loading more options shows its loading row instead.
+  const isEmpty = listState.collection.size === 0 && !isLoadingMore;
   const emptyLabelId = `${listBoxProps.id}-empty`;
 
   if (isEmpty) {
@@ -1258,6 +1361,28 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const customizationProps = pickBaseCustomizationProps(props);
   const listGapTokens =
     listGap == null ? undefined : { '$list-gap': `${listGap}px` };
+
+  const loadingMoreLabel = t('listBox.loadingMore', 'Loading more…');
+
+  const loadMoreSentinel = canLoadMore ? (
+    <LoadMoreSentinelElement
+      ref={sentinelRef}
+      qa="ListBoxLoadMoreSentinel"
+      role="presentation"
+      aria-hidden="true"
+      mods={{ virtualized: shouldVirtualize }}
+    />
+  ) : null;
+
+  // Virtualized, the loading row is the virtualizer's last row instead.
+  const loadingMoreRow =
+    isLoadingMore && !shouldVirtualize ? (
+      <LoadingMoreRow
+        rowRef={loadingRowRef}
+        size={size}
+        label={loadingMoreLabel}
+      />
+    ) : null;
 
   const listBoxField = (
     <ListBoxWrapperElement
@@ -1353,6 +1478,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       onClick={onOptionClick}
                     />
                   ))}
+                {loadingMoreRow}
+                {loadMoreSentinel}
               </ListElement>
             )}
           </DraggableListBox>
@@ -1384,6 +1511,21 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             {shouldVirtualize
               ? rowVirtualizer.getVirtualItems().map((virtualItem) => {
                   const item = itemsArray[virtualItem.index];
+
+                  // The row after the last option is the loading row.
+                  if (!item) {
+                    return (
+                      <LoadingMoreRow
+                        key="__loading-more__"
+                        rowRef={loadingRowRef}
+                        size={size}
+                        label={loadingMoreLabel}
+                        virtualRef={rowVirtualizer.measureElement as any}
+                        virtualOffset={virtualItem.start}
+                        virtualIndex={virtualItem.index}
+                      />
+                    );
+                  }
 
                   return (
                     <Option
@@ -1470,6 +1612,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
                   return renderedItems;
                 })()}
+            {loadingMoreRow}
+            {loadMoreSentinel}
           </ListElement>
         )}
       </ListBoxScrollElement>
@@ -1480,6 +1624,15 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       ) : (
         <div role="presentation" />
       )}
+      {onLoadMore || isLoadingMore ? (
+        // In place while the list can load more and filled while it does: a
+        // live region announces a change of its text, and one inserted already
+        // filled is unreliable. Outside the listbox, which may hold only
+        // options and groups.
+        <VisuallyHidden>
+          <span role="status">{isLoadingMore ? loadingMoreLabel : ''}</span>
+        </VisuallyHidden>
+      ) : null}
     </ListBoxWrapperElement>
   );
 
@@ -1779,6 +1932,55 @@ function Option({
         dropState={dropState}
       />
     </>
+  );
+}
+
+/**
+ * The row after the last option while more options load. Not an option, so a
+ * viewer can neither focus nor select it, and hidden from assistive tech: the
+ * list's status region announces the loading instead.
+ */
+function LoadingMoreRow({
+  size,
+  label,
+  rowRef,
+  virtualRef,
+  virtualOffset,
+  virtualIndex,
+}: {
+  size: 'small' | 'medium' | 'large';
+  label: string;
+  rowRef: RefObject<HTMLLIElement | null>;
+  /** react-virtual's `measureElement`, as for an option */
+  virtualRef?: (element: HTMLElement | null) => void;
+  /** The row's offset from the list's top, in pixels, when virtualized */
+  virtualOffset?: number;
+  virtualIndex?: number;
+}) {
+  // Measured during the commit, as an option is.
+  useLayoutEffect(() => {
+    virtualRef?.(rowRef.current);
+  });
+
+  return (
+    <ListBoxItem
+      ref={rowRef}
+      qa="ListBoxLoadingMore"
+      aria-hidden="true"
+      data-size={size}
+      data-index={virtualIndex}
+      size={size}
+      preset="t4"
+      color="#surface-text-soft-2"
+      icon={<LoadingIcon />}
+      tokens={{
+        '$option-virtual-offset':
+          virtualOffset == null ? undefined : `${virtualOffset}px`,
+      }}
+      mods={{ virtual: virtualOffset != null }}
+    >
+      {label}
+    </ListBoxItem>
   );
 }
 

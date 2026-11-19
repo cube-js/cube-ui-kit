@@ -227,6 +227,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
     _internalCollection,
     isReorderable = false,
     onReorder,
+    onLoadMore,
+    hasMore,
+    isLoadingMore,
+    loadMoreMargin,
     form,
   } = props;
 
@@ -813,10 +817,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
         // The collection is already filtered by React Stately via filterFn;
         // disabled options are skipped.
+        // Wrapping from the last loaded option to the first would skip the
+        // options still to load.
         const nextKey = getNextVisibleKey(
           listState,
           e.key === 'ArrowDown' ? 1 : -1,
-          { wrap: shouldFocusWrap },
+          { wrap: shouldFocusWrap && !(onLoadMore && hasMore) },
         );
 
         if (nextKey != null) {
@@ -1067,6 +1073,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
         }
         isReorderable={isReorderable && !searchValue.trim()}
         onReorder={onReorder}
+        onLoadMore={onLoadMore}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        loadMoreMargin={loadMoreMargin}
         onSelectionChange={handleSelectionChange}
         onEscape={onEscape}
         onOptionClick={handleOptionClick}

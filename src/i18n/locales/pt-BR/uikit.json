@@ -44,7 +44,8 @@
   },
   "listBox": {
     "selectAll": "Selecionar tudo",
-    "noItems": "Nenhum item"
+    "noItems": "Nenhum item",
+    "loadingMore": "Carregando mais…"
   },
   "filterListBox": {
     "searchPlaceholder": "Pesquisar...",

@@ -44,7 +44,8 @@
   },
   "listBox": {
     "selectAll": "Chọn tất cả",
-    "noItems": "Không có mục nào"
+    "noItems": "Không có mục nào",
+    "loadingMore": "Đang tải thêm…"
   },
   "filterListBox": {
     "searchPlaceholder": "Tìm kiếm...",

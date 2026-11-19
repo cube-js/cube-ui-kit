@@ -149,6 +149,29 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
+    hasMore: {
+      control: { type: 'boolean' },
+      description: 'Whether there are options left for `onLoadMore` to load',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isLoadingMore: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the page `onLoadMore` asked for is loading. Shows a loading row after the last option and holds `onLoadMore` back',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    loadMoreMargin: {
+      control: { type: 'number' },
+      description:
+        'How far before the end of the list to call `onLoadMore`, in pixels',
+      table: {
+        defaultValue: { summary: 200 },
+      },
+    },
 
     /* State */
     isDisabled: {
@@ -193,6 +216,11 @@ const meta: any = {
     onOptionClick: {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
+    },
+    onLoadMore: {
+      action: 'load more',
+      description:
+        'Called when the end of the list comes within `loadMoreMargin` of view, or the options are too few to fill the list, while `hasMore` is true and `isLoadingMore` is false',
     },
     showSelectAll: {
       control: { type: 'boolean' },
@@ -1089,6 +1117,34 @@ VirtualizedList.parameters = {
     description: {
       story:
         'When a ListBox has no sections and is not reorderable, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
+    },
+  },
+};
+
+export const LoadingMore: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => (
+  <ListBox
+    {...args}
+    label="Clients"
+    items={Array.from({ length: 4 }, (_, index) => ({
+      key: `client-${index + 1}`,
+      name: `Client ${index + 1}`,
+    }))}
+    hasMore
+    isLoadingMore
+  >
+    {(item: { key: string; name: string }) => (
+      <ListBox.Item key={item.key}>{item.name}</ListBox.Item>
+    )}
+  </ListBox>
+);
+
+LoadingMore.parameters = {
+  docs: {
+    description: {
+      story:
+        "While `isLoadingMore` is true, a loading row follows the last option. It is not an option: it can't be focused or selected, and a status region tells screen readers that more options are loading.",
     },
   },
 };

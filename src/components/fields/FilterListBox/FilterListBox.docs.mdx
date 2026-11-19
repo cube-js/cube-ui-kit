@@ -57,6 +57,10 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`autoFocus`** `boolean` — Whether the search input should have autofocus
 - **`customValueProps`** `Partial<CubeItemProps>` — Props to apply to existing custom values (already selected but not in predefined options)
 - **`newCustomValueProps`** `Partial<CubeItemProps>` — Props to apply to new custom values appearing in search results (merged with `customValueProps`)
+- **`onLoadMore`** `() => void` — Called when the end of the list comes within `loadMoreMargin` of view, or the options are too few to fill the list, while `hasMore` is true and `isLoadingMore` is false. Append the next page to `items`
+- **`hasMore`** `boolean` (default: `false`) — Whether there are options left for `onLoadMore` to load
+- **`isLoadingMore`** `boolean` (default: `false`) — Whether the page `onLoadMore` asked for is loading. Shows a loading row after the last option and holds `onLoadMore` back
+- **`loadMoreMargin`** `number` (default: `200`) — How far before the end of the list to call `onLoadMore`, in pixels
 
 ### Base Properties
 
@@ -468,6 +472,25 @@ const categories = [
       <Badge type="purple">$19/month</Badge>
     </Space>
   </FilterListBox.Item>
+</FilterListBox>
+```
+
+### Loading More on Scroll
+
+Pass the pages loaded so far as `items` and load the next one in `onLoadMore`, as with [ListBox](/docs/forms-listbox--docs#loading-more-options). Keyboard navigation from the search input loads too: moving to the last loaded option scrolls it into view. While more can load, focus doesn't wrap from the last loaded option to the first. With `allowsCustomValue`, a selected value listed as a custom value gives way to its option once a page brings it.
+
+```jsx
+<FilterListBox
+  label="Clients"
+  items={data}
+  filter={false}
+  searchValue={search}
+  onSearchChange={setSearch}
+  hasMore={hasNextPage}
+  isLoadingMore={isFetchingNextPage}
+  onLoadMore={fetchNextPage}
+>
+  {(item) => <FilterListBox.Item key={item.id}>{item.name}</FilterListBox.Item>}
 </FilterListBox>
 ```
 
