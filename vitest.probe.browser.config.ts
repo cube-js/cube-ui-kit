@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { mergeConfig } from 'vite';
 import { defineConfig } from 'vitest/config';
 
-import browserConfig from './vitest.browser.config';
+import browserConfig from './vitest.browser.config.ts';
 
 /**
  * The probe's browser project, run by `pnpm probe:browser`.

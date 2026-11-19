@@ -34,8 +34,8 @@ import type { Play, Spoken } from './play';
 declare const __PROBE_INPUT__: string;
 
 const input = JSON.parse(__PROBE_INPUT__) as ProbeInput & {
-  computed?: string;
-  computedProps?: string[];
+  /** One group per `--computed` flag. Empty `props` reads the defaults. */
+  computed?: { selector: string; props: string[] }[];
   rect?: string;
   screenshot?: boolean;
   scheme?: 'light' | 'dark' | 'hc';
@@ -66,6 +66,83 @@ function applyScheme(scheme: string | undefined, highContrast: boolean): void {
   if (scheme === 'hc' || highContrast) {
     root.setAttribute('data-contrast', 'high');
   }
+}
+
+/** Write a failed run's result, which the CLI prints by its `kind`. */
+async function writeFailure(
+  kind: string,
+  message: string,
+  extra: Record<string, unknown> = {},
+): Promise<void> {
+  await commands.writeFile(
+    input.outPath,
+    JSON.stringify({
+      runId: input.runId,
+      mode: 'render',
+      tier: 'browser',
+      ok: false,
+      kind,
+      message,
+      ...extra,
+    }),
+  );
+}
+
+/**
+ * The first element a `--computed` / `--rect` selector matches, or undefined
+ * after writing a one-line `selector` failure. Written rather than thrown: a
+ * throw leaves no result file, so the CLI would bury the message in vitest's
+ * log of a failed test.
+ */
+async function findTarget(
+  flag: string,
+  selector: string,
+): Promise<Element | undefined> {
+  let target: Element | null;
+
+  try {
+    target = document.querySelector(selector);
+  } catch (error) {
+    if (!(error instanceof DOMException && error.name === 'SyntaxError')) {
+      throw error;
+    }
+
+    await writeFailure(
+      'selector',
+      `probe:browser ${flag}: "${selector}" is not a valid selector.`,
+    );
+
+    return undefined;
+  }
+
+  if (!target) {
+    await writeFailure(
+      'selector',
+      `probe:browser ${flag}: no element matched "${selector}".`,
+    );
+
+    return undefined;
+  }
+
+  return target;
+}
+
+/**
+ * One computed value, labelled where an empty string would mislead: a name the
+ * browser does not know, or a custom property no rule sets.
+ */
+function readProperty(style: CSSStyleDeclaration, prop: string): string {
+  if (prop.startsWith('--')) {
+    return style.getPropertyValue(prop).trim() || '(not set)';
+  }
+
+  // `cssText`, `length`, `item`, `parentRule` and the numeric indexes are
+  // members of the declaration, not CSS properties.
+  const value: unknown = style[prop as never];
+
+  return typeof value === 'string' && prop !== 'cssText' && !/^\d+$/.test(prop)
+    ? value
+    : '(unknown property)';
 }
 
 /**
@@ -209,18 +286,7 @@ it('probe:browser', async () => {
       input.snippetUrl!,
     );
 
-    await commands.writeFile(
-      input.outPath,
-      JSON.stringify({
-        runId: input.runId,
-        mode: 'render',
-        tier: 'browser',
-        ok: false,
-        kind: 'compile',
-        message,
-        needsServerLog,
-      }),
-    );
+    await writeFailure('compile', message, { needsServerLog });
 
     return;
   }
@@ -244,16 +310,9 @@ it('probe:browser', async () => {
       </Root>,
     );
   } catch (error) {
-    await commands.writeFile(
-      input.outPath,
-      JSON.stringify({
-        runId: input.runId,
-        mode: 'render',
-        tier: 'browser',
-        ok: false,
-        kind: 'render',
-        message: error instanceof Error ? error.message : String(error),
-      }),
+    await writeFailure(
+      'render',
+      error instanceof Error ? error.message : String(error),
     );
 
     return;
@@ -267,17 +326,7 @@ it('probe:browser', async () => {
   } catch (error) {
     if (!(error instanceof PlayError)) throw error;
 
-    await commands.writeFile(
-      input.outPath,
-      JSON.stringify({
-        runId: input.runId,
-        mode: 'render',
-        tier: 'browser',
-        ok: false,
-        kind: error.kind,
-        message: error.message,
-      }),
-    );
+    await writeFailure(error.kind, error.message);
 
     return;
   }
@@ -310,42 +359,30 @@ it('probe:browser', async () => {
     .map((node) => normalise(node.outerHTML));
 
   // The whole point of this tier: real resolved values, not `var(...)` text.
-  let computed: Record<string, string> | undefined;
+  // Keyed by selector, one entry per `--computed` group.
+  let computed: Record<string, Record<string, string>> | undefined;
 
-  if (input.computed) {
-    const target = document.querySelector(input.computed);
+  for (const { selector, props } of input.computed ?? []) {
+    const target = await findTarget('--computed', selector);
 
-    if (!target) {
-      throw new Error(
-        `probe:browser --computed: no element matched "${input.computed}".`,
-      );
-    }
+    if (!target) return;
 
     const style = getComputedStyle(target);
 
-    computed = Object.fromEntries(
-      (input.computedProps?.length
-        ? input.computedProps
+    (computed ??= {})[selector] = Object.fromEntries(
+      (props.length
+        ? props
         : ['backgroundColor', 'color', 'padding', 'fontSize', 'borderRadius']
-      ).map((prop) => [
-        prop,
-        prop.startsWith('--')
-          ? style.getPropertyValue(prop).trim()
-          : String(style[prop as never] ?? ''),
-      ]),
+      ).map((prop) => [prop, readProperty(style, prop)]),
     );
   }
 
   let rect: DOMRect | undefined;
 
   if (input.rect) {
-    const target = document.querySelector(input.rect);
+    const target = await findTarget('--rect', input.rect);
 
-    if (!target) {
-      throw new Error(
-        `probe:browser --rect: no element matched "${input.rect}".`,
-      );
-    }
+    if (!target) return;
 
     rect = target.getBoundingClientRect();
   }
