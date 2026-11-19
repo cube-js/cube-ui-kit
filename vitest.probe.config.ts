@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { mergeConfig } from 'vite';
 import { defineConfig } from 'vitest/config';
 
-import baseConfig from './vitest.config';
+import baseConfig from './vitest.config.ts';
 
 /**
  * The probe's vitest project, run by `pnpm probe` — never by `pnpm test`.

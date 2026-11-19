@@ -31,6 +31,8 @@ import {
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { parseArgs, print } from './probe-cli.mjs';
+
 const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SCRATCH_DIR = resolve(ROOT_DIR, '.probe');
 
@@ -59,8 +61,13 @@ Options
   --json              print the raw result JSON
 
 Options for 'pnpm probe:browser' only (these need a real browser)
-  --computed <sel> [prop...]   resolved values — jsdom reports var(...) as text
-  --rect <sel>                 geometry — jsdom sizes everything at 0
+  --computed <sel> [prop...]   resolved values — jsdom reports var(...) as text.
+                               Reads the first element <sel> matches; with no
+                               props: backgroundColor color padding fontSize
+                               borderRadius. Custom properties (--gap) count as
+                               props. Repeat it to read more elements in one run
+  --rect <sel>                 geometry of the first match — jsdom sizes
+                               everything at 0. One per run
   --screenshot                 write a PNG beside the result
   --scheme <name>              render: drive <html> into light | dark | hc
   --hc                         render: high contrast, composable with --scheme
@@ -78,11 +85,16 @@ Notes
   is the virtual screen reader; --sr prints what it said during play, before
   the reading of the final page.
 
-Example
+Examples
   pnpm probe render <<'TSX'
   import { Button } from '@cube-dev/ui-kit';
   <Button type="primary">Hello</Button>
   TSX
+
+  # Two elements, each with its own properties, in one run:
+  pnpm probe:browser render < snippet.tsx \\
+    --computed '[data-qa="Card"]' padding --gap \\
+    --computed '[data-qa="Title"]' fontSize color
 `.trim();
 
 /**
@@ -105,75 +117,6 @@ function checkScreenReaderOptions(options) {
   }
 
   return null;
-}
-
-function parseArgs(argv) {
-  const [mode, ...rest] = argv;
-  const options = { mode, positional: [], errors: [] };
-
-  /**
-   * Consume the value after a flag that requires one.
-   *
-   * A missing value used to land as `undefined`, which every downstream check
-   * reads as "flag absent" — so `probe:browser render --computed` produced a
-   * plain render and looked like an answer to a computed-values question that was
-   * never asked. Worse, `--computed --scheme dark` took `--scheme` itself as the
-   * selector, silently dropping the scheme too. Both are the failure this tool
-   * refuses to commit elsewhere, so they are errors rather than defaults.
-   */
-  const takeValue = (flag, index) => {
-    const value = rest[index];
-
-    if (value === undefined) {
-      options.errors.push(`${flag} needs a value.`);
-
-      return undefined;
-    }
-
-    if (value.startsWith('--')) {
-      options.errors.push(
-        `${flag} needs a value, but the next argument is the flag "${value}".`,
-      );
-
-      return undefined;
-    }
-
-    return value;
-  };
-
-  for (let i = 0; i < rest.length; i += 1) {
-    const arg = rest[i];
-
-    if (arg === '--full-css') {
-      options.fullCss = true;
-    } else if (arg === '--canonical') {
-      options.canonical = true;
-    } else if (arg === '--sr') {
-      options.screenReader = true;
-    } else if (arg === '--json') {
-      options.json = true;
-    } else if (arg === '--hc') {
-      options.highContrast = true;
-    } else if (arg === '--scheme') {
-      options.scheme = takeValue(arg, (i += 1));
-    } else if (arg === '--filter') {
-      options.filter = takeValue(arg, (i += 1));
-    } else if (arg === '--screenshot') {
-      options.screenshot = true;
-    } else if (arg === '--rect') {
-      options.rect = takeValue(arg, (i += 1));
-    } else if (arg === '--computed') {
-      options.computed = takeValue(arg, (i += 1));
-      // Any bare words that follow are property names.
-      while (rest[i + 1] && !rest[i + 1].startsWith('--')) {
-        (options.computedProps ??= []).push(rest[(i += 1)]);
-      }
-    } else {
-      options.positional.push(arg);
-    }
-  }
-
-  return options;
 }
 
 function readStdin() {
@@ -418,7 +361,6 @@ function main() {
     input.scheme = options.scheme;
     input.highContrast = Boolean(options.highContrast);
     input.computed = options.computed;
-    input.computedProps = options.computedProps;
     input.rect = options.rect;
     input.screenshot = Boolean(options.screenshot);
   }
@@ -538,148 +480,6 @@ function readJsdomVersion() {
     ).version;
   } catch {
     return 'unknown';
-  }
-}
-
-function print(result, options, harnessLog = '') {
-  // Diagnostics go to stderr on every mode, `--json` included: the log is what
-  // tells you which file to open, and redirecting stdout to a file is exactly
-  // when you would otherwise lose it.
-  const printHarnessLog = () => {
-    if (harnessLog) {
-      console.error(`\n--- dev server log ---\n${harnessLog}`);
-    }
-  };
-
-  if (options.json) {
-    console.log(JSON.stringify(result, null, 2));
-    printHarnessLog();
-
-    return;
-  }
-
-  if (result.ok === false) {
-    console.error(
-      {
-        play: `The snippet's play() failed:\n`,
-        read: `The screen reader could not read the page:\n`,
-        compile: `Snippet failed to compile:\n`,
-      }[result.kind] ?? `Snippet failed to render:\n`,
-    );
-    console.error(result.message);
-    printHarnessLog();
-
-    return;
-  }
-
-  if (result.mode === 'styles') {
-    for (const rule of result.styles ?? []) {
-      const body = `${rule.selector || '&'} { ${rule.declarations} }`;
-
-      // At-rules come back alongside the rule rather than wrapped around it, so
-      // print them nested — a `@media` or `@container` condition is usually the
-      // whole point of the question.
-      console.log(
-        rule.atRules?.length
-          ? `${rule.atRules.join(' { ')} { ${body} ${'}'.repeat(rule.atRules.length)}`
-          : body,
-      );
-    }
-  }
-
-  if (result.mode === 'tokens') {
-    const entries = Object.entries(result.resolved ?? {}).filter(
-      ([name]) => !options.filter || name.includes(options.filter),
-    );
-
-    console.log(`# resolved — ${result.scheme} (${entries.length} tokens)`);
-    for (const [name, value] of entries) {
-      // Legacy aliases come back by reference, not resolved — flagged so a
-      // '#surface-text' value is not read as a literal color.
-      const alias = typeof value === 'string' && value.startsWith('#');
-
-      console.log(
-        `${name}: ${value}${alias ? '   (alias, not resolved)' : ''}`,
-      );
-    }
-
-    const palette = Object.entries(result.palette ?? {}).filter(
-      ([name]) => !options.filter || name.includes(options.filter),
-    );
-
-    console.log(
-      `\n# <Root> palette (${palette.length} tokens, state maps: '' | @dark | @hc | @dark & @hc)`,
-    );
-    for (const [name, value] of palette) {
-      console.log(`${name}: ${JSON.stringify(value)}`);
-    }
-  }
-
-  if (result.mode === 'globals') {
-    console.log(result.css);
-    console.error(
-      `\n# ${result.ruleCount} rules on the page with only <Root> mounted. ` +
-        `Of those, ${result.subtractedRuleCount} are attributed to a node and so are what ` +
-        `'render' subtracts; the rest — the :root token block, body styles, @font-face, ` +
-        `keyframes — is injected globally and never enters a per-node dump at all.`,
-    );
-  }
-
-  if (result.computed) {
-    console.log('=== COMPUTED (real browser) ===');
-    for (const [prop, value] of Object.entries(result.computed)) {
-      console.log(`${prop}: ${value}`);
-    }
-    console.log('');
-  }
-
-  if (result.rect) {
-    console.log(`=== RECT === ${JSON.stringify(result.rect)}\n`);
-  }
-
-  if (result.screenshotPath) {
-    console.log(`=== SCREENSHOT ===\n${result.screenshotPath}\n`);
-  }
-
-  const printSpoken = (title, phrases) => {
-    console.log(`=== ${title} ===`);
-    console.log(phrases.length ? phrases.join('\n') : '(nothing is announced)');
-    console.log('');
-  };
-
-  if (result.spokenDuringPlay) {
-    printSpoken('SCREEN READER — during play()', result.spokenDuringPlay);
-  }
-
-  if (result.spoken) {
-    printSpoken('SCREEN READER — reading the page', result.spoken);
-  }
-
-  if (result.mode === 'render') {
-    console.log('=== HTML ===');
-    console.log(result.html);
-
-    if (result.portalHtml?.length) {
-      console.log(`\n=== PORTALS (${result.portalHtml.length}) ===`);
-      console.log('# Overlays mount at the Root, not inside the tree above.\n');
-      for (const markup of result.portalHtml) {
-        console.log(markup);
-      }
-    }
-
-    // Under `--sr` the question is what is announced; the CSS stays in `--json`.
-    if (!result.spoken) {
-      console.log(`\n=== CSS (${result.ruleCount} rules) ===`);
-      console.log(result.css);
-    }
-  }
-
-  if (result.warnings?.length) {
-    console.error(
-      `\n⚠ jsdom discarded ${result.warnings.length} CSS rule(s) it cannot represent ` +
-        `(@container style() / @property). This output is INCOMPLETE — ` +
-        `re-run with \`pnpm probe:browser\` for those.`,
-    );
   }
 }
 
