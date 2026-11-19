@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.215.1
+
+### Patch Changes
+
+- [#1679](https://github.com/cube-js/cube-ui-kit/pull/1679) [`7e76d4a5f`](https://github.com/cube-js/cube-ui-kit/commit/7e76d4a5f961e1ec95d457832bbe29f7d4850c3b) Thanks [@tenphi](https://github.com/tenphi)! - The published `tasty.config.ts` lets a `Skeleton` take a `fill` style prop without a `tasty/no-protected-restyle` report, as `Layout`'s sections do. A skeleton lays its placeholders out in a plain flow or grid that draws no surface of its own, so a fill behind them is the backdrop of the region it stands in for, the consumer's choice. Its `border` stays protected: the line under the `topbar` layout is UI Kit's.
+
 ## 0.215.0
 
 ### Minor Changes
