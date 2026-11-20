@@ -51,6 +51,7 @@ Rules:
 - **`valuePropsMapper`** — maps the form value onto the component's own value API. Required whenever the component does not use `value`/`onChange` verbatim (`selectedKey`/`onSelectionChange`, `isSelected`/`onChange`, `selectedKeys`, …).
 - **`unsafe__isDisabled`** — opts out of field wiring for the lifetime of the mount. Only for components that can be nested inside a group that owns the form connection (`Checkbox` inside `CheckboxGroup`). The value must be stable across renders.
 - **`showsValidateErrors`** — the control shows the errors of its `validate` under itself (`TextInput`, `TextArea`, `PasswordInput`, `NumberInput`), so a `validate` asks for the field chrome without a label.
+- **`controlRules`** — the control's own form rules, run ahead of the caller's `rules` on every backend (`NumberInput`'s `isInteger`). A field outside a form ignores them without the warning the caller's own `rules` get. Use it for a check the control's own prop implies, not for rules a caller could pass.
 
 ### Modes
 

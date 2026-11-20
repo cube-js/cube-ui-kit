@@ -110,7 +110,8 @@
     "stepUp": "Tăng {{label}}",
     "stepDown": "Giảm {{label}}",
     "increase": "Tăng",
-    "decrease": "Giảm"
+    "decrease": "Giảm",
+    "integer": "Nhập số nguyên."
   },
   "textInputMapper": {
     "key": "Khóa",

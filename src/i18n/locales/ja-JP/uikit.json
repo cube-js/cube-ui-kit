@@ -110,7 +110,8 @@
     "stepUp": "{{label}}を増やす",
     "stepDown": "{{label}}を減らす",
     "increase": "増やす",
-    "decrease": "減らす"
+    "decrease": "減らす",
+    "integer": "整数を入力してください。"
   },
   "textInputMapper": {
     "key": "キー",

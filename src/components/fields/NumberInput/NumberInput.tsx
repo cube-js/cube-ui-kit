@@ -34,6 +34,7 @@ import { StepButton } from './StepButton';
 import type { TextInputDOMEvents } from '@react-types/shared';
 import type {
   FieldBaseProps,
+  FieldValidationRule,
   TextFieldKeyboardProps,
 } from '../../../shared/form';
 
@@ -59,12 +60,38 @@ export interface CubeNumberInputProps
   /** Whether or to hide stepper */
   hideStepper?: boolean;
   /**
+   * Accepts whole numbers only: a phone shows its digit keyboard, and a
+   * typed fraction stays as typed and marks the field invalid, with the
+   * message of a `{ type: 'integer', message }` rule if it has one. Use it instead
+   * of `formatOptions.maximumFractionDigits: 0`, which drops a typed decimal
+   * separator, and leave `step` unset, as a `step` rounds a fraction.
+   */
+  isInteger?: boolean;
+  /**
    * Whether the suffix goes before or after the stepper buttons. Defaults to
    * `before`, so a unit sits next to the number. The validation and loading
    * icons always come before both.
    */
   suffixPosition?: 'before' | 'after';
 }
+
+/**
+ * The caller's own `{ type: 'integer' }` rule with a text message, from the
+ * field's descriptor (whose rules replace the `rules` prop) or its `rules`.
+ */
+const findIntegerRule = ({ field, rules }: CubeNumberInputProps) =>
+  (field && 'rules' in field.options ? field.options.rules : rules)
+    ?.flat(Infinity)
+    .find(
+      (rule): rule is FieldValidationRule & { message: string } =>
+        rule?.type === 'integer' && typeof rule.message === 'string',
+    );
+
+/** An empty field is `isRequired`'s concern, not a fraction. */
+const isFraction = (value: unknown) =>
+  typeof value === 'number' &&
+  Number.isFinite(value) &&
+  !Number.isInteger(value);
 
 const StyledTextInputBase = tasty(TextInputBase, {
   inputStyles: {
@@ -91,10 +118,52 @@ function NumberInput(
 
   // `NaN` is the number field's own empty value.
   rawProps = castNullableNumberValue(rawProps);
-  let props = useFieldProps(rawProps, { showsValidateErrors: true });
+
+  let { isInteger, validate } = rawProps;
+  // A caller's own `{ type: 'integer', message }` rule gives the text.
+  let integerError =
+    (isInteger ? findIntegerRule(rawProps)?.message : undefined) ??
+    t('numberInput.integer', 'Enter a whole number.');
+
+  // The field keeps a fraction rather than dropping its separator, and refuses
+  // it: under the field through `validate`, and in a form through a rule.
+  // React Aria rounds a committed value to `maximumFractionDigits` (3 by
+  // default, and 0 drops the separator), so every typed digit is kept. A whole
+  // number shows no fraction digits, even in a currency, which shows 2 by
+  // default.
+  if (isInteger) {
+    rawProps = {
+      ...rawProps,
+      formatOptions: {
+        ...rawProps.formatOptions,
+        minimumFractionDigits:
+          rawProps.formatOptions?.minimumFractionDigits ?? 0,
+        maximumFractionDigits: 20,
+      },
+      validate: (value) =>
+        isFraction(value) ? integerError : validate?.(value),
+    };
+  }
+
+  let props = useFieldProps(rawProps, {
+    showsValidateErrors: true,
+    // Kept next to a caller's integer rule, which a `transform` may defeat:
+    // running first with the same text, it shows that text once.
+    controlRules: isInteger
+      ? [
+          {
+            message: integerError,
+            // Rejected, not returned: the legacy form ignores a returned error.
+            validator: (_rule, value) =>
+              isFraction(value) ? Promise.reject() : undefined,
+          },
+        ]
+      : undefined,
+  });
 
   let {
     hideStepper,
+    isInteger: _isInteger,
     suffix,
     value,
     defaultValue,
@@ -201,7 +270,19 @@ function NumberInput(
         // through react-aria's own `mergeProps` updates that seed, so the
         // input, its label and the steppers' `aria-controls` follow the id
         // when the form binding changes after mount.
-        mergeAriaProps({ ...inputProps, ...keyboardProps }, { id: props.id }),
+        mergeAriaProps(
+          {
+            ...inputProps,
+            // React Aria picks `decimal` only for a field that takes
+            // fractions; what it picks for one that doesn't is `numeric`.
+            inputMode:
+              isInteger && inputProps.inputMode === 'decimal'
+                ? 'numeric'
+                : inputProps.inputMode,
+            ...keyboardProps,
+          },
+          { id: props.id },
+        ),
         { 'data-input-type': 'numberinput' },
         userInputProps,
       )}

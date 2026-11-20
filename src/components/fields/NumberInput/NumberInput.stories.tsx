@@ -1,6 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
-import { within } from 'storybook/test';
+import { userEvent, waitFor, within } from 'storybook/test';
 
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { openTooltip } from '../../../stories/interactions';
@@ -45,6 +45,14 @@ export default {
     hideStepper: {
       control: { type: 'boolean' },
       description: 'Whether to hide the stepper buttons',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isInteger: {
+      control: { type: 'boolean' },
+      description:
+        'Accepts whole numbers only: a phone shows its digit keyboard, and a fraction marks the field invalid instead of losing its decimal separator',
       table: {
         defaultValue: { summary: false },
       },
@@ -246,6 +254,34 @@ export const Validation: StoryFn<any> = (props) => (
     <NumberInput {...props} label="Invalid" isInvalid defaultValue={-1} />
   </Space>
 );
+
+export const Integer: StoryFn<CubeNumberInputProps> = (args) => (
+  <NumberInput {...args} />
+);
+
+Integer.args = {
+  label: 'Budget amount',
+  isInteger: true,
+  minValue: 0,
+};
+
+Integer.parameters = {
+  docs: {
+    description: {
+      story:
+        'A typed fraction stays as typed and marks the field invalid. `minValue={0}` gives an iPhone its digit pad, which has no minus key.',
+    },
+  },
+};
+
+Integer.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const input = canvas.getByRole('textbox');
+
+  await userEvent.type(input, '1000.50');
+  await userEvent.tab();
+  await waitFor(() => canvas.getByText('Enter a whole number.'));
+};
 
 export const Disabled = Template.bind({});
 Disabled.args = {

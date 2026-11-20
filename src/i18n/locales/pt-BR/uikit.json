@@ -110,7 +110,8 @@
     "stepUp": "Aumentar {{label}}",
     "stepDown": "Diminuir {{label}}",
     "increase": "Aumentar",
-    "decrease": "Diminuir"
+    "decrease": "Diminuir",
+    "integer": "Insira um número inteiro."
   },
   "textInputMapper": {
     "key": "Chave",
