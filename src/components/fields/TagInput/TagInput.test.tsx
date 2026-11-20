@@ -327,6 +327,7 @@ describe('<TagInput />', () => {
       );
 
       expect(getByRole('textbox')).toHaveAttribute('autocomplete', 'email');
+      expect(getByRole('textbox')).toHaveAttribute('autocapitalize', 'none');
     });
 
     it('leaves autocapitalization to the browser without isIdentifier', () => {

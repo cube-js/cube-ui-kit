@@ -182,8 +182,6 @@ describe('isIdentifier', () => {
             isIdentifier: true,
             inputProps: {
               autoCapitalize: 'characters',
-              autoCorrect: 'on',
-              spellCheck: 'true',
               autoComplete: 'one-time-code',
             },
           }),
@@ -191,9 +189,9 @@ describe('isIdentifier', () => {
       );
 
       expect(input).toHaveAttribute('autocapitalize', 'characters');
-      expect(input).toHaveAttribute('autocorrect', 'on');
-      expect(input).toHaveAttribute('spellcheck', 'true');
       expect(input).toHaveAttribute('autocomplete', 'one-time-code');
+      expect(input).toHaveAttribute('autocorrect', 'off');
+      expect(input).toHaveAttribute('spellcheck', 'false');
     });
   });
 

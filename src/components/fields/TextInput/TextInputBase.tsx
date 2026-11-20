@@ -376,7 +376,7 @@ export interface CubeBufferedValueProps {
  * Mixed into the fields whose free text can be an identifier — `TextInput`, `TextArea`,
  * `TagInput` — rather than declared on `CubeTextInputBaseProps`, for the reason
  * `CubeBufferedValueProps` gives. `PasswordInput` keeps its value out of the text services by
- * default already, and `autocomplete="off"` would keep password managers away from it.
+ * default already, and it is the field a password manager should fill.
  */
 export interface CubeIdentifierInputProps {
   /**
