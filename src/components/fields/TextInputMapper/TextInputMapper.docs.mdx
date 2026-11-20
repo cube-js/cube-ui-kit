@@ -35,6 +35,14 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 
 <Canvas of={TextInputMapperStories.Validation} />
 
+## Identifier Keys
+
+Keys such as claim or attribute names are identifiers. Pass `isIdentifier: true` in `keyProps` (or `valueProps`) to keep a phone keyboard from capitalizing or autocorrecting them and the browser from offering past entries, as [`isIdentifier` on TextInput](/docs/forms-textinput--docs) does. It applies when `inputType` is `input` (the default) or `textarea`: a `password` input keeps its own text-service defaults, and a `combobox` input ignores it.
+
+```jsx
+<TextInputMapper label="Claims" keyProps={{ isIdentifier: true }} />
+```
+
 ## Sub-elements
 
 The TextInputMapper component is a complex compound component that doesn't expose styled sub-elements via the `styles` prop. Instead, it uses internal layout components and delegates styling to its key and value input components.

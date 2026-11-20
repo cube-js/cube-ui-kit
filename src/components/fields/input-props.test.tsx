@@ -5,6 +5,7 @@ import {
   SearchInput,
   TextArea,
   TextInput,
+  TextInputMapper,
 } from '../../index';
 import { act, renderWithRoot, userEvent } from '../../test';
 
@@ -116,5 +117,129 @@ describe('inputProps', () => {
     );
 
     expect(getInput(container)).toHaveAttribute('autocomplete', 'email');
+  });
+});
+
+const IDENTIFIER_FIELDS = [
+  {
+    name: 'TextInput',
+    render: (props: Props) => <TextInput label="field" {...props} />,
+  },
+  {
+    name: 'multiLine TextInput',
+    render: (props: Props) => <TextInput multiLine label="field" {...props} />,
+  },
+  {
+    name: 'TextArea',
+    render: (props: Props) => <TextArea label="field" {...props} />,
+  },
+] as const;
+
+describe('isIdentifier', () => {
+  describe.each(IDENTIFIER_FIELDS)('<$name />', ({ render }) => {
+    it('turns off the text services', () => {
+      const input = getInput(
+        renderWithRoot(render({ isIdentifier: true })).container,
+      );
+
+      expect(input).toHaveAttribute('autocapitalize', 'none');
+      expect(input).toHaveAttribute('autocorrect', 'off');
+      expect(input).toHaveAttribute('spellcheck', 'false');
+      expect(input).toHaveAttribute('autocomplete', 'off');
+    });
+
+    it('leaves them to the browser without the flag', () => {
+      const input = getInput(renderWithRoot(render({})).container);
+
+      expect(input).not.toHaveAttribute('autocapitalize');
+      expect(input).not.toHaveAttribute('autocorrect');
+      expect(input).not.toHaveAttribute('spellcheck');
+      expect(input).not.toHaveAttribute('autocomplete');
+    });
+
+    it('lets explicit props win', () => {
+      const input = getInput(
+        renderWithRoot(
+          render({
+            isIdentifier: true,
+            autoComplete: 'username',
+            autoCorrect: 'on',
+            spellCheck: 'true',
+          }),
+        ).container,
+      );
+
+      expect(input).toHaveAttribute('autocomplete', 'username');
+      expect(input).toHaveAttribute('autocorrect', 'on');
+      expect(input).toHaveAttribute('spellcheck', 'true');
+      expect(input).toHaveAttribute('autocapitalize', 'none');
+    });
+
+    it('lets inputProps win', () => {
+      const input = getInput(
+        renderWithRoot(
+          render({
+            isIdentifier: true,
+            inputProps: {
+              autoCapitalize: 'characters',
+              autoComplete: 'one-time-code',
+            },
+          }),
+        ).container,
+      );
+
+      expect(input).toHaveAttribute('autocapitalize', 'characters');
+      expect(input).toHaveAttribute('autocomplete', 'one-time-code');
+      expect(input).toHaveAttribute('autocorrect', 'off');
+      expect(input).toHaveAttribute('spellcheck', 'false');
+    });
+  });
+
+  it('turns them off on the TextInputMapper key and value inputs', () => {
+    const { getAllByRole } = renderWithRoot(
+      <TextInputMapper
+        aria-label="Attributes"
+        value={{ email: 'mail' }}
+        keyProps={{ isIdentifier: true }}
+      />,
+    );
+
+    const [key, value] = getAllByRole('textbox');
+
+    expect(key).toHaveAttribute('autocapitalize', 'none');
+    expect(key).toHaveAttribute('autocorrect', 'off');
+    expect(key).toHaveAttribute('spellcheck', 'false');
+    expect(key).toHaveAttribute('autocomplete', 'off');
+    expect(value).not.toHaveAttribute('autocapitalize');
+  });
+
+  it('turns them off on a TextInputMapper textarea input', () => {
+    const { container } = renderWithRoot(
+      <TextInputMapper
+        aria-label="Attributes"
+        value={{ email: 'mail' }}
+        keyProps={{ isIdentifier: true, inputType: 'textarea' }}
+      />,
+    );
+
+    const key = container.querySelector('textarea');
+
+    expect(key).toHaveAttribute('autocapitalize', 'none');
+    expect(key).toHaveAttribute('autocomplete', 'off');
+  });
+
+  it('leaves a TextInputMapper password input to its own defaults', () => {
+    const { container } = renderWithRoot(
+      <TextInputMapper
+        aria-label="Secrets"
+        value={{ token: 'secret' }}
+        valueProps={{ isIdentifier: true, inputType: 'password' }}
+      />,
+    );
+
+    const value = container.querySelector('input[type="password"]');
+
+    expect(value).not.toHaveAttribute('autocomplete', 'off');
+    expect(value).not.toHaveAttribute('isidentifier');
   });
 });

@@ -187,6 +187,12 @@ const meta = {
       description: 'HTML `autocomplete` attribute for the input',
       table: { defaultValue: { summary: 'off' } },
     },
+    isIdentifier: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the values are identifiers: no autocapitalization, autocorrect or spellcheck',
+      table: { defaultValue: { summary: false } },
+    },
     inputMode: {
       options: [
         'text',
