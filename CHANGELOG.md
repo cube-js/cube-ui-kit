@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.216.1
+
+### Patch Changes
+
+- [#1690](https://github.com/cube-js/cube-ui-kit/pull/1690) [`9efb152d9`](https://github.com/cube-js/cube-ui-kit/commit/9efb152d987cdc26a524e9c2dc10c2e4bddd00b3) Thanks [@tenphi](https://github.com/tenphi)! - An open popover placed above or below its trigger now keeps its horizontal place while the trigger changes width in place, so a picker whose trigger shows its value (Picker or FilterPicker with multiple selection, a DialogTrigger around a range control) no longer slides sideways under the pointer as the user picks. The popover still follows a trigger that moves, or that resizes and moves at once as a reflow does, still moves back on screen when it grows, and anchors afresh on every opening. Popovers placed beside their trigger are unchanged.
+
 ## 0.216.0
 
 ### Minor Changes
