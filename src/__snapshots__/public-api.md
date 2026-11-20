@@ -249,6 +249,7 @@ type       CubePaginationType
 type       CubePanelProps
 type       CubeParagraphProps
 type       CubePasswordInputProps
+type       CubePasswordManagerIgnoreProps
 value      CubePauseIcon
 type       CubePeriodPickerProps
 type       CubePickerProps

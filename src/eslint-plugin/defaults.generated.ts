@@ -554,6 +554,7 @@ export const DEFAULTS: DefaultsRegistry = {
     PasswordInput: {
       props: {
         autoCorrect: { kind: 'default', value: 'off' },
+        ignorePasswordManagers: { kind: 'default', value: false },
         isBuffered: { kind: 'default', value: true },
         multiLine: { kind: 'default', value: false },
         rows: { kind: 'default', value: 1 },
@@ -786,6 +787,7 @@ export const DEFAULTS: DefaultsRegistry = {
     TextArea: {
       props: {
         autoSize: { kind: 'default', value: false },
+        ignorePasswordManagers: { kind: 'default', value: false },
         isBuffered: { kind: 'default', value: true },
         isIdentifier: { kind: 'default', value: false },
         maxRows: { kind: 'default', value: 10 },
@@ -797,6 +799,7 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     TextInput: {
       props: {
+        ignorePasswordManagers: { kind: 'default', value: false },
         isBuffered: { kind: 'default', value: true },
         isIdentifier: { kind: 'default', value: false },
         multiLine: { kind: 'default', value: false },

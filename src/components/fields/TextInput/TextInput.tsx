@@ -13,9 +13,11 @@ import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 
 import { useDisplayedValidation } from './displayed-validation';
 import { getIdentifierTextServices } from './identifier-text-services';
+import { getPasswordManagerIgnoreProps } from './password-manager-ignore';
 import {
   CubeBufferedValueProps,
   CubeIdentifierInputProps,
+  CubePasswordManagerIgnoreProps,
   CubeTextInputBaseProps,
   TextInputBase,
 } from './TextInputBase';
@@ -30,6 +32,7 @@ export type CubeTextInputProps = WithNullableValue<
 > &
   CubeBufferedValueProps &
   CubeIdentifierInputProps &
+  CubePasswordManagerIgnoreProps &
   TextFieldKeyboardProps & {
     field?: FieldBaseProps<string | null | undefined>['field'];
     validate?: AriaTextFieldProps['validate'];
@@ -58,6 +61,7 @@ export const TextInput = forwardRef(function TextInput(
     form,
     isBuffered,
     isIdentifier,
+    ignorePasswordManagers,
     ...restProps
   } = props;
   let localInputRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
@@ -94,7 +98,11 @@ export const TextInput = forwardRef(function TextInput(
       {...displayedValidation.getDisplayedValidation(restProps, validation)}
       ref={ref}
       labelProps={mergedLabelProps}
-      inputProps={mergeProps(inputProps, userInputProps)}
+      inputProps={mergeProps(
+        inputProps,
+        getPasswordManagerIgnoreProps(ignorePasswordManagers),
+        userInputProps,
+      )}
       inputRef={inputRef}
     />
   );

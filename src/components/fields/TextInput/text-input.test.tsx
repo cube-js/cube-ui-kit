@@ -422,6 +422,88 @@ describe('<TextInput />', () => {
   });
 });
 
+describe('ignorePasswordManagers', () => {
+  const OPT_OUT = {
+    'data-1p-ignore': 'true',
+    'data-lpignore': 'true',
+    'data-bwignore': 'true',
+    'data-protonpass-ignore': 'true',
+    'data-form-type': 'other',
+  };
+
+  it.each([
+    ['TextInput', TextInput, false],
+    ['multiline TextInput', TextInput, true],
+    ['PasswordInput', PasswordInput, false],
+    ['multiline PasswordInput', PasswordInput, true],
+    ['TextArea', TextArea, false],
+  ])(
+    'sets every password manager opt-out on the %s control',
+    (_, Control, multiLine) => {
+      const { getByTestId } = renderWithRoot(
+        <Control ignorePasswordManagers label="Secret" multiLine={multiLine} />,
+      );
+
+      const input = getByTestId('Input');
+
+      for (const [name, value] of Object.entries(OPT_OUT)) {
+        expect(input).toHaveAttribute(name, value);
+      }
+    },
+  );
+
+  it.each([
+    ['TextInput', TextInput],
+    ['PasswordInput', PasswordInput],
+    ['TextArea', TextArea],
+  ])('sets none of them on the %s control by default', (_, Control) => {
+    const { getByTestId } = renderWithRoot(<Control label="Secret" />);
+
+    const input = getByTestId('Input');
+
+    for (const name of Object.keys(OPT_OUT)) {
+      expect(input).not.toHaveAttribute(name);
+    }
+  });
+
+  it.each([
+    ['TextInput', TextInput],
+    ['PasswordInput', PasswordInput],
+    ['TextArea', TextArea],
+  ])(
+    'lets the same attribute in inputProps win over the flag on the %s control',
+    (_, Control) => {
+      const { getByTestId } = renderWithRoot(
+        <Control
+          ignorePasswordManagers
+          label="Secret"
+          inputProps={{ 'data-form-type': 'password' }}
+        />,
+      );
+
+      const input = getByTestId('Input');
+
+      expect(input).toHaveAttribute('data-form-type', 'password');
+      expect(input).toHaveAttribute('data-1p-ignore', 'true');
+    },
+  );
+
+  it('drops one attribute passed as null in inputProps', () => {
+    const { getByTestId } = renderWithRoot(
+      <PasswordInput
+        ignorePasswordManagers
+        label="Secret"
+        inputProps={{ 'data-protonpass-ignore': null }}
+      />,
+    );
+
+    const input = getByTestId('Input');
+
+    expect(input).not.toHaveAttribute('data-protonpass-ignore');
+    expect(input).toHaveAttribute('data-1p-ignore', 'true');
+  });
+});
+
 describe('<TextInput /> tooltip', () => {
   const wrapperOf = (input: HTMLElement) =>
     input.closest('[data-qa="InputWrapper"]') as HTMLElement;
