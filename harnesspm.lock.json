@@ -16,9 +16,9 @@
       "integrity": "sha512-NOg3tsb6knAlNL1J9Y9Bkf0mDYf/1dHlTTcUHyYFoeOS5SGLXjBWMY4H85Zr342/p2UTpetSEVNCgCq2BN0Bfg=="
     },
     "@tenphi/harnesspm": {
-      "version": "0.7.0",
+      "version": "0.8.0",
       "plugin": "harnesspm",
-      "integrity": "sha512-EEME6F1ZwQtVJxOzmfkW2b4QrLqVEPO78fbrwb1l1kQCu7dop6/AScuaPB8T+hj+X1a7jxc9CjgJcEHa6AmTpw=="
+      "integrity": "sha512-CDFNdXgu+boT/hazKiDurQ4aHVAJBnzc3XbTWmDUq+u2hTEJ2aKp+qweDMEAI0j1onLr475drfASJYEA5jXXlA=="
     },
     "@tenphi/tasty": {
       "version": "3.19.1",
@@ -53,11 +53,11 @@
     },
     "harnesspm:docs": {
       "kind": "docs",
-      "hash": "0d6de53aeb503416"
+      "hash": "2a19bdf840b20b02"
     },
     "harnesspm:rules/generated-files": {
       "kind": "rules",
-      "hash": "91b0cd8b178bda8f"
+      "hash": "755c5b2ec8e867ce"
     },
     "harnesspm:rules/harnesspm-config": {
       "kind": "rules",
@@ -65,11 +65,11 @@
     },
     "harnesspm:skills/harnesspm-export": {
       "kind": "skills",
-      "hash": "8dad2fc67c32d3d5"
+      "hash": "fb92aa8cb29e1e26"
     },
     "harnesspm:skills/harnesspm-import": {
       "kind": "skills",
-      "hash": "8e7aa9e64aa32bc2"
+      "hash": "749fe5d4f3178085"
     },
     "harnesspm:skills/harnesspm-improve": {
       "kind": "skills",

@@ -21,6 +21,7 @@
         "colors": {
           "file": "./dev.harnesspm/scripts/colors.mjs",
           "description": "Look up UI Kit color tokens by name: values in light, dark and high contrast, and contrast against their base, or with --on against another surface",
+          "usage": "[<part of a token name>...] [--on <surface>] [--format hex|okhsl|okhst|rgb|hsl|oklch] [--json]",
           "allow": true
         }
       }
