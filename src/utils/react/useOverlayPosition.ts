@@ -30,14 +30,13 @@ interface HorizontalAnchor {
  * the edge of the screen. This observer attaches on every opening instead.
  *
  * **The trigger changes width.** An overlay placed above or below its trigger
- * keeps its horizontal place. A picker's trigger shows its value, so picking
- * inside the overlay resizes the trigger, and React Aria re-places the overlay
- * on every trigger resize: it slid sideways under the pointer, and the next
- * pick landed on whatever had slid there. A trigger that moves without
- * resizing (a reflow, a scroll with `keepOpenOnScroll`) still carries the
- * overlay with it, and every opening anchors to the trigger as it is then.
- * An overlay placed beside its trigger still moves, so a wider trigger does
- * not cover it.
+ * keeps its horizontal place while the trigger resizes in place. A picker's
+ * trigger shows its value, so picking inside the overlay resizes the trigger,
+ * and React Aria re-places the overlay on every trigger resize: it slid
+ * sideways under the pointer, and the next pick landed on whatever had slid
+ * there. See `keepHorizontalPlace` for when the overlay still follows its
+ * trigger. Every opening anchors to the trigger as it is then. An overlay
+ * placed beside its trigger still moves, so a wider trigger does not cover it.
  */
 export function useOverlayPosition(props: AriaPositionProps): PositionAria {
   const {
@@ -108,10 +107,19 @@ export function useOverlayPosition(props: AriaPositionProps): PositionAria {
 }
 
 /**
- * The trigger's rect for React Aria to place the overlay against, with the
- * trigger's live vertical place and the horizontal place the overlay already
- * has. A trigger that resized leaves that place as it was; one that moved
- * without resizing moves it by the same distance.
+ * The trigger's rect for React Aria to place the overlay against: the
+ * trigger's live vertical place, and a horizontal place that depends on how
+ * the trigger changed since the last placement.
+ *
+ * - **Moved without resizing** (a reflow, a scroll with `keepOpenOnScroll`,
+ *   CommandTextArea's zero-width caret anchor on every keystroke): the place
+ *   moves by the same distance.
+ * - **Resized in place**, with its start edge, end edge or middle where it
+ *   was, as content that grew or shrank leaves it: the place stays. A layout
+ *   change that resizes a trigger in place (a fluid field on a window resize)
+ *   keeps it too, until the next opening.
+ * - **Resized and moved at once** (a reflow of a fluid field): the place
+ *   anchors to the trigger as it is now.
  */
 function keepHorizontalPlace(
   target: Element,
@@ -123,12 +131,12 @@ function keepHorizontalPlace(
   let left = trigger.left;
   let width = trigger.width;
 
-  if (last) {
+  if (last && trigger.width === last.triggerWidth) {
+    left = last.left + trigger.left - last.triggerLeft;
     width = last.width;
-    left =
-      trigger.width === last.triggerWidth
-        ? last.left + trigger.left - last.triggerLeft
-        : last.left;
+  } else if (last && isResizedInPlace(trigger, last)) {
+    left = last.left;
+    width = last.width;
   }
 
   anchorRef.current = {
@@ -139,4 +147,19 @@ function keepHorizontalPlace(
   };
 
   return new DOMRect(left, trigger.top, width, trigger.height);
+}
+
+/** Whether the trigger's start edge, end edge or middle stayed within a pixel. */
+function isResizedInPlace(
+  trigger: { left: number; width: number },
+  last: HorizontalAnchor,
+): boolean {
+  const shift = (ratio: number) =>
+    Math.abs(
+      trigger.left +
+        trigger.width * ratio -
+        (last.triggerLeft + last.triggerWidth * ratio),
+    );
+
+  return shift(0) <= 1 || shift(1) <= 1 || shift(0.5) <= 1;
 }

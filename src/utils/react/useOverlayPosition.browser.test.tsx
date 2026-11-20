@@ -531,31 +531,65 @@ describe('an open overlay whose trigger changes width', () => {
     await nextFrames(4);
     expectAt(rectOf('Overlay').left, opened.left + 40);
     expectAt(rectOf('Overlay').top, opened.top + 60);
+  });
 
-    // A trigger that resized first, then moved, carries the overlay from
-    // where it stayed, not from the trigger's new edge.
+  it('carries the place it kept along as the trigger then moves without resizing', async () => {
+    const view = renderWithRoot(
+      <ResizingHost
+        label={SHORT}
+        placement="bottom start"
+        spot={{ top: 100, right: 400 }}
+      />,
+    );
+
+    // Clear of the screen edge, so the overlay is not held there instead.
+    await nextFrames(2);
+    const opened = rectOf('Overlay');
+
     view.rerender(
       <ResizingHost
         label={LONG}
         placement="bottom start"
-        spot={{ top: 160, right: 100 }}
+        spot={{ top: 100, right: 400 }}
       />,
     );
     await nextFrames(4);
-    const resized = rectOf('Overlay');
+    expectAt(rectOf('Overlay').left, opened.left);
 
-    expectAt(resized.left, opened.left + 40);
-
+    // From where it stayed, not from the trigger's new start edge.
     view.rerender(
       <ResizingHost
         label={LONG}
         placement="bottom start"
-        spot={{ top: 160, right: 130 }}
+        spot={{ top: 100, right: 430 }}
       />,
     );
     window.dispatchEvent(new Event('resize'));
     await nextFrames(4);
-    expectAt(rectOf('Overlay').left, resized.left - 30);
+    expectAt(rectOf('Overlay').left, opened.left - 30);
+  });
+
+  it('follows a trigger that resizes and moves at once, as a reflow does', async () => {
+    const view = renderWithRoot(
+      <ResizingHost
+        label={SHORT}
+        placement="bottom start"
+        spot={{ top: 100, left: 500 }}
+      />,
+    );
+
+    await nextFrames(2);
+
+    // Neither edge nor the middle stays where it was.
+    view.rerender(
+      <ResizingHost
+        label={LONG}
+        placement="bottom start"
+        spot={{ top: 100, left: 300 }}
+      />,
+    );
+    await nextFrames(4);
+    expectAt(rectOf('Overlay').left, rectOf('Trigger').left);
   });
 
   it('anchors to the trigger as it is now on the next opening', async () => {
