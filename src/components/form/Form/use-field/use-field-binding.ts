@@ -112,7 +112,14 @@ export function useFieldBinding<
   });
   const trigger =
     props.validateTrigger ?? params.defaultValidationTrigger ?? 'onBlur';
-  const onChange = useEvent((value: unknown, dontTouch: boolean) => {
+  const onChange = useEvent((input: unknown, dontTouch: boolean) => {
+    // A control reports `NaN` for a number field the user cleared. A modern
+    // form stores `null`, its empty value, so `required` judges the field, its
+    // format rules skip it, and it compares equal to an empty default. The
+    // legacy form keeps `NaN`: its rules run on empty values and tell the two
+    // apart.
+    const value = controller && Number.isNaN(input) ? null : input;
+
     if (controller && props.shouldUpdate !== undefined) {
       const previous = controller.getValues();
       if (

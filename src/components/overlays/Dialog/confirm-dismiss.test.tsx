@@ -4,6 +4,7 @@ import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';
 import { Header } from '../../content/Header';
 import { Title } from '../../content/Title';
+import { NumberInput } from '../../fields/NumberInput/NumberInput';
 import { TextInput } from '../../fields/TextInput/TextInput';
 import { Form } from '../../form/Form/index';
 import { createFormController } from '../../form/Form/modern/controller';
@@ -184,6 +185,35 @@ describe('confirmDismiss', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Load' }));
     expect(input).toHaveValue('From the server');
+    await userEvent.keyboard('{Escape}');
+
+    await expectClosed();
+    expect(question()).not.toBeInTheDocument();
+  });
+
+  // A cleared number field is stored as `null`, equal to its `null` default.
+  it('does not count a number typed into and cleared back to empty', async () => {
+    const form = createFormController<{ count: number | null }>({
+      defaultValues: { count: null },
+    });
+
+    renderWithRoot(
+      <DialogTrigger>
+        <Button>Open</Button>
+        <DialogForm form={form} title="Budget">
+          <NumberInput name="count" label="Count" />
+        </DialogForm>
+      </DialogTrigger>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open' }));
+
+    const input = await screen.findByRole('textbox', { name: 'Count' });
+
+    await userEvent.type(input, '5');
+    await userEvent.tab();
+    await userEvent.clear(input);
+    await userEvent.tab();
     await userEvent.keyboard('{Escape}');
 
     await expectClosed();

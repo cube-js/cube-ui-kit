@@ -19,7 +19,7 @@ interface Profile {
   email: string;
   profile: { name: string };
   enabled: boolean;
-  amount: number;
+  amount: number | null;
 }
 
 export function ModernFieldTypes({ form }: { form: FormController<Profile> }) {
@@ -35,7 +35,7 @@ export function ModernFieldTypes({ form }: { form: FormController<Profile> }) {
   const field = form.field('email', {
     validate: (value, context) => {
       const text: string | undefined = value;
-      const amount: number | undefined = context.getValue('amount');
+      const amount: number | null | undefined = context.getValue('amount');
       // @ts-expect-error validator values are inferred from the model
       const number: number = value;
       // @ts-expect-error validation context checks literal paths

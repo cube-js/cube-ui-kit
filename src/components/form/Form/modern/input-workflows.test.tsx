@@ -74,6 +74,7 @@ function renderWorkflow(
   );
   return {
     ...view,
+    modern,
     onSubmit,
     onValuesChange,
     values: () =>
@@ -293,3 +294,123 @@ describe.each<Binding>(['legacy', 'tuple name', 'descriptor'])(
     });
   },
 );
+
+// A cleared NumberInput reports `NaN`. A modern form stores `null`, its empty
+// value, so only `required` judges the field. The legacy form keeps `NaN`.
+describe.each<Binding>(['tuple name', 'descriptor'])(
+  '%s cleared number',
+  (binding) => {
+    const wholeDollars = { type: 'integer', message: 'Whole dollars' } as const;
+
+    it('stores and submits a cleared optional number as null without running its type rule', async () => {
+      const seen: unknown[] = [];
+      const validated: unknown[] = [];
+      const changes = vi.fn();
+      const view = renderWorkflow(binding, { count: 3 }, (bind) => (
+        <NumberInput
+          {...bind('count')}
+          label="Count"
+          rules={[
+            wholeDollars,
+            {
+              validator: async (_rule, value) => {
+                validated.push(value);
+              },
+            },
+          ]}
+          shouldUpdate={(_previous, next: any) => {
+            seen.push(next.profile.count);
+            return true;
+          }}
+          onChange={changes}
+        />
+      ));
+      const count = view.getByRole('textbox', { name: 'Count' });
+      await userEvent.clear(count);
+      await userEvent.tab();
+      expect(view.values()).toEqual({ profile: { count: null } });
+      expect(seen).toEqual([null]);
+      // The input's own `onChange` still gets React Aria's `NaN`.
+      expect(changes).toHaveBeenLastCalledWith(NaN);
+      expect(validated.at(-1)).toBeNull();
+      expect(view.onValuesChange.mock.lastCall?.[0]).toEqual({
+        profile: { count: null },
+      });
+      expect(count).toHaveValue('');
+      await userEvent.click(view.getByRole('button', { name: 'Save' }));
+      await waitFor(() => expect(view.onSubmit).toHaveBeenCalledTimes(1));
+      expect(view.onSubmit.mock.calls[0][0]).toEqual({
+        profile: { count: null },
+      });
+      expect(view.queryByText('Whole dollars')).not.toBeInTheDocument();
+    });
+
+    it('lets required speak for a cleared required number', async () => {
+      const view = renderWorkflow(binding, { count: 3 }, (bind) => (
+        <NumberInput
+          {...bind('count')}
+          label="Count"
+          // The type rule first: on a cleared field it must not get a say.
+          rules={[wholeDollars, { required: true, message: 'Enter a count' }]}
+        />
+      ));
+      await userEvent.clear(view.getByRole('textbox', { name: 'Count' }));
+      await userEvent.click(view.getByRole('button', { name: 'Save' }));
+      expect(await view.findByText('Enter a count')).toBeInTheDocument();
+      expect(view.queryByText('Whole dollars')).not.toBeInTheDocument();
+      expect(view.onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('lets isRequired speak for a cleared number', async () => {
+      const view = renderWorkflow(binding, { count: 3 }, (bind) => (
+        <NumberInput
+          {...bind('count')}
+          isRequired
+          label="Count"
+          rules={[wholeDollars]}
+        />
+      ));
+      await userEvent.clear(view.getByRole('textbox', { name: 'Count' }));
+      await userEvent.click(view.getByRole('button', { name: 'Save' }));
+      await waitFor(() =>
+        expect(
+          view.modern.getSnapshot().fields['profile.count']?.errors,
+        ).toHaveLength(1),
+      );
+      expect(view.queryByText('Whole dollars')).not.toBeInTheDocument();
+      expect(view.onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('is not dirty after a number is typed and cleared back to a null default', async () => {
+      const view = renderWorkflow(binding, { count: null }, (bind) => (
+        <NumberInput {...bind('count')} label="Count" />
+      ));
+      const count = view.getByRole('textbox', { name: 'Count' });
+      await userEvent.type(count, '5');
+      await userEvent.tab();
+      expect(view.modern.getSnapshot().isDirty).toBe(true);
+      await userEvent.clear(count);
+      await userEvent.tab();
+      expect(view.modern.getSnapshot().isDirty).toBe(false);
+    });
+
+    it('still checks a NaN that code sets', async () => {
+      const view = renderWorkflow(binding, { count: 3 }, (bind) => (
+        <NumberInput {...bind('count')} label="Count" rules={[wholeDollars]} />
+      ));
+      act(() => view.set('count', NaN));
+      await userEvent.click(view.getByRole('button', { name: 'Save' }));
+      expect(await view.findByText('Whole dollars')).toBeInTheDocument();
+      expect(view.onSubmit).not.toHaveBeenCalled();
+    });
+  },
+);
+
+it('keeps NaN for a cleared number in the legacy form', async () => {
+  const view = renderWorkflow('legacy', { count: 3 }, (bind) => (
+    <NumberInput {...bind('count')} label="Count" />
+  ));
+  await userEvent.clear(view.getByRole('textbox', { name: 'Count' }));
+  await userEvent.tab();
+  expect(view.values()).toEqual({ profile: { count: NaN } });
+});

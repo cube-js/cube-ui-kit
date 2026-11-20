@@ -172,7 +172,7 @@ Use `setValue(path, value)` for one path and `setValues(partial)` for several to
 | Validation case | Start here |
 | --- | --- |
 | Required field with a visible marker | Input `isRequired`; it adds required validation too. |
-| Email, length, range, pattern, or enum | Input `rules` using the built-in constraints, or descriptor `rules` when using `field`. They skip an empty value (`''`, `undefined`, `null`; an empty array is not one), so an optional field passes while empty; add `required` to reject one. |
+| Email, length, range, pattern, or enum | Input `rules` using the built-in constraints, or descriptor `rules` when using `field`. They skip an empty value (`''`, `undefined`, `null`; an empty array is not one), so an optional field passes while empty; add `required` to reject one. A cleared `NumberInput` is stored as `null`, so type a number field `number \| null`. |
 | Custom domain check | Descriptor `validate(value, context)` for an inferred field value and checked reads. |
 | Several custom rules or existing shared rule objects | `rules: [{ validator(rule, value, context) { ... } }]`; use `ModernValidationRule` for strict modern rule typing. |
 | Validation depends on another form value | `dependsOn: ['password']`, or nested tuples such as `dependsOn: [['account', 'password']]`. |
@@ -262,7 +262,7 @@ Native forms with `action`/`method` use browser submission and bypass the contro
 
 ## Implement a reusable custom control
 
-Use the same field integration as built-in inputs: `FieldBaseProps<Value>`, `useFieldProps`, then `wrapWithField`. Map the control's value/event API and forward the generated id, blur, disabled, read-only, and invalid state to the interactive element. Include `null | undefined` in the accepted model type when empty values are supported and normalize only for display. Do not spread controller props onto a DOM element.
+Use the same field integration as built-in inputs: `FieldBaseProps<Value>`, `useFieldProps`, then `wrapWithField`. Map the control's value/event API and forward the generated id, blur, disabled, read-only, and invalid state to the interactive element. Include `null | undefined` in the accepted model type when empty values are supported and normalize only for display. A `NaN` the control reports through `useFieldProps` reaches a modern form as `null`, the way a cleared `NumberInput` does. Do not spread controller props onto a DOM element.
 
 The [compiled CustomControl example](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) shows the complete pattern. The [component creation guide](https://cube-ui-kit.vercel.app/?path=/docs/getting-started-create-component--docs) explains the shared field wrapper. `Form.Item` / `Field` belongs to the legacy backend; it is not a second way to connect a modern custom input.
 
