@@ -192,4 +192,17 @@ describe('tab actions run on a touch screen', () => {
       expect(screen.getByTestId('Tab-a')).toHaveAttribute('data-active');
     },
   );
+
+  it('deletes a tab on a tap on its close button, without selecting it', async () => {
+    const onDelete = vi.fn();
+
+    renderTabs({ onDelete });
+
+    await tapAt(centerOf(closeButtonOf('Tab-b')));
+
+    await waitFor(() => expect(onDelete).toHaveBeenCalledWith('b'), {
+      timeout: 2000,
+    });
+    expect(screen.getByTestId('Tab-a')).toHaveAttribute('data-active');
+  });
 });

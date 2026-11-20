@@ -53,9 +53,9 @@ import type { DraggableCollectionState } from 'react-stately';
 // Event handlers that keep a press on an action from reaching the tab container
 // =============================================================================
 
-// The container's drag handlers start on a press and a click. A release must
-// reach the document: React Aria ends a touch press there, and without it a
-// tap on an action (the menu trigger) ends as a miss.
+// The container's drag starts on a press (`pointerdown`). A release must reach
+// the document: React Aria ends a touch press there, and without it a tap on
+// an action (the menu trigger, the close button) ends as a miss.
 const ACTIONS_EVENT_HANDLERS = {
   onClick: (e: MouseEvent) => e.stopPropagation(),
   onPointerDown: (e: PointerEvent) => e.stopPropagation(),
