@@ -114,3 +114,57 @@ describe('CommandTextArea autoSize', () => {
     expect(container.scrollTop).toBe(before);
   });
 });
+
+describe('CommandTextArea mention popover', () => {
+  const caretAnchor = () =>
+    document.querySelector('[data-caret-anchor]')!.getBoundingClientRect();
+  const listbox = () => screen.getByRole('listbox').getBoundingClientRect();
+
+  /** Reads `measure` once it holds still across two frames. */
+  async function settled(measure: () => number) {
+    let previous = Number.NaN;
+
+    await waitFor(async () => {
+      previous = measure();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      expect(measure()).toBe(previous);
+    });
+
+    return previous;
+  }
+
+  // The popover anchors to a zero-width element at the caret. Each keystroke
+  // moves it without resizing it, and the popover must move along.
+  it('follows the caret as the user types', async () => {
+    renderWithRoot(
+      <CommandTextArea
+        aria-label="Message"
+        qa="prompt"
+        triggers={[{ char: '@', atLineStart: false }]}
+      >
+        <CommandTextArea.Item key="@john" textValue="@john">
+          John
+        </CommandTextArea.Item>
+        <CommandTextArea.Item key="@jane" textValue="@jane">
+          Jane
+        </CommandTextArea.Item>
+      </CommandTextArea>,
+    );
+
+    await userEvent.type(input(), 'hi @');
+    await screen.findByRole('listbox');
+
+    const offset = await settled(() => listbox().left - caretAnchor().left);
+    const caretLeft = caretAnchor().left;
+
+    await userEvent.type(input(), 'jo');
+
+    expect(caretAnchor().left).toBeGreaterThan(caretLeft + 5);
+    expect(
+      Math.abs(
+        (await settled(() => listbox().left - caretAnchor().left)) - offset,
+      ),
+    ).toBeLessThanOrEqual(1);
+  });
+});

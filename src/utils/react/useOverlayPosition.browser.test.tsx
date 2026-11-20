@@ -7,6 +7,7 @@ import { Menu } from '../../components/actions/Menu/Menu';
 import { MenuTrigger } from '../../components/actions/Menu/MenuTrigger';
 import { Content } from '../../components/content/Content';
 import { DateRangePicker } from '../../components/fields/DatePicker/DateRangePicker';
+import { Picker } from '../../components/fields/Picker/Picker';
 import { Select } from '../../components/fields/Select/Select';
 import { Dialog } from '../../components/overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../components/overlays/Dialog/DialogTrigger';
@@ -15,6 +16,7 @@ import { renderWithRoot, screen, userEvent, waitFor } from '../../test';
 import { useOverlayPosition } from './useOverlayPosition';
 
 import type { CSSProperties, ReactElement } from 'react';
+import type { Placement } from 'react-aria';
 import type { MockInstance } from 'vitest';
 
 /**
@@ -380,6 +382,338 @@ describe.each(overlayCases)(
     });
   },
 );
+
+/**
+ * An open overlay stays where it is, side to side, while its trigger changes
+ * width.
+ *
+ * A picker's trigger shows its value, so picking inside the overlay resizes
+ * the trigger, and React Aria re-places the overlay whenever the trigger
+ * resizes. The overlay then slid sideways under the pointer, a step per pick,
+ * and the next pick landed on whatever had slid under it.
+ */
+describe('an open overlay whose trigger changes width', () => {
+  const SHORT = 'Pick';
+  const LONG = 'Picked: Monday, Tuesday, Wednesday';
+
+  function ResizingHost({
+    isOpen = true,
+    label,
+    placement,
+    spot,
+    triggerHeight = 32,
+    triggerWidth,
+  }: {
+    isOpen?: boolean;
+    label: string;
+    placement: Placement;
+    spot: CSSProperties;
+    triggerHeight?: number;
+    triggerWidth?: number;
+  }) {
+    const targetRef = useRef<HTMLButtonElement>(null);
+    const overlayRef = useRef<HTMLDivElement>(null);
+    const { overlayProps } = useOverlayPosition({
+      targetRef,
+      overlayRef,
+      isOpen,
+      placement,
+      offset: 8,
+    });
+
+    return (
+      <>
+        <At spot={spot}>
+          <button
+            ref={targetRef}
+            data-qa="Trigger"
+            style={{
+              whiteSpace: 'nowrap',
+              height: triggerHeight,
+              width: triggerWidth,
+            }}
+          >
+            {label}
+          </button>
+        </At>
+        {isOpen ? (
+          <div
+            ref={overlayRef}
+            data-qa="Overlay"
+            style={{ ...overlayProps.style, width: 200, height: 40 }}
+          />
+        ) : null}
+      </>
+    );
+  }
+
+  const rectOf = (qa: string) => screen.getByTestId(qa).getBoundingClientRect();
+
+  // React Aria floors the overlay's vertical place, and the trigger's edges
+  // fall on fractions of a pixel.
+  const expectAt = (actual: number, expected: number) =>
+    expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
+
+  beforeEach(async () => {
+    await page.viewport(1000, 800);
+  });
+
+  it.each<[Placement, CSSProperties]>([
+    // Anchored on the trigger's start edge, which moves as a right-aligned
+    // trigger grows.
+    ['bottom start', { top: 100, right: 100 }],
+    // Anchored on the trigger's middle, which moves as a left-aligned trigger
+    // grows.
+    ['bottom', { top: 100, left: 300 }],
+    ['top end', { top: 400, left: 300 }],
+    // A centred trigger keeps only its middle still: both edges move.
+    [
+      'bottom start',
+      {
+        top: 100,
+        left: 0,
+        right: 0,
+        display: 'flex',
+        justifyContent: 'center',
+      },
+    ],
+  ])(
+    'keeps its horizontal place, placed %s, as the trigger grows and shrinks',
+    async (placement, spot) => {
+      const view = renderWithRoot(
+        <ResizingHost label={SHORT} placement={placement} spot={spot} />,
+      );
+
+      await nextFrames(2);
+      const opened = rectOf('Overlay');
+
+      view.rerender(
+        <ResizingHost label={LONG} placement={placement} spot={spot} />,
+      );
+      await nextFrames(4);
+      expectAt(rectOf('Overlay').left, opened.left);
+      expectAt(rectOf('Overlay').top, opened.top);
+
+      view.rerender(
+        <ResizingHost label={SHORT} placement={placement} spot={spot} />,
+      );
+      await nextFrames(4);
+      expectAt(rectOf('Overlay').left, opened.left);
+      expect(windowErrors).toEqual([]);
+    },
+  );
+
+  it('still follows the trigger down as it grows taller', async () => {
+    const spot = { top: 100, right: 100 };
+    const view = renderWithRoot(
+      <ResizingHost label={SHORT} placement="bottom start" spot={spot} />,
+    );
+
+    await nextFrames(2);
+    const opened = rectOf('Overlay');
+
+    view.rerender(
+      <ResizingHost
+        label={LONG}
+        placement="bottom start"
+        spot={spot}
+        triggerHeight={72}
+      />,
+    );
+    await nextFrames(4);
+    expectAt(rectOf('Overlay').left, opened.left);
+    expectAt(rectOf('Overlay').top, opened.top + 40);
+  });
+
+  it('still follows a trigger that moves without resizing', async () => {
+    const view = renderWithRoot(
+      <ResizingHost
+        label={SHORT}
+        placement="bottom start"
+        spot={{ top: 100, left: 300 }}
+      />,
+    );
+
+    await nextFrames(2);
+    const opened = rectOf('Overlay');
+
+    // A window resize can reflow the page and move the trigger; React Aria
+    // re-places its overlay on one.
+    view.rerender(
+      <ResizingHost
+        label={SHORT}
+        placement="bottom start"
+        spot={{ top: 160, left: 340 }}
+      />,
+    );
+    window.dispatchEvent(new Event('resize'));
+    await nextFrames(4);
+    expectAt(rectOf('Overlay').left, opened.left + 40);
+    expectAt(rectOf('Overlay').top, opened.top + 60);
+  });
+
+  it('carries the place it kept along as the trigger then moves without resizing', async () => {
+    const view = renderWithRoot(
+      <ResizingHost
+        label={SHORT}
+        placement="bottom start"
+        spot={{ top: 100, right: 400 }}
+      />,
+    );
+
+    // Clear of the screen edge, so the overlay is not held there instead.
+    await nextFrames(2);
+    const opened = rectOf('Overlay');
+
+    view.rerender(
+      <ResizingHost
+        label={LONG}
+        placement="bottom start"
+        spot={{ top: 100, right: 400 }}
+      />,
+    );
+    await nextFrames(4);
+    expectAt(rectOf('Overlay').left, opened.left);
+
+    // From where it stayed, not from the trigger's new start edge.
+    view.rerender(
+      <ResizingHost
+        label={LONG}
+        placement="bottom start"
+        spot={{ top: 100, right: 430 }}
+      />,
+    );
+    window.dispatchEvent(new Event('resize'));
+    await nextFrames(4);
+    expectAt(rectOf('Overlay').left, opened.left - 30);
+  });
+
+  it('follows a trigger that resizes and moves at once, as a reflow does', async () => {
+    const view = renderWithRoot(
+      <ResizingHost
+        label={SHORT}
+        placement="bottom start"
+        spot={{ top: 100, left: 500 }}
+      />,
+    );
+
+    await nextFrames(2);
+
+    // Neither edge nor the middle stays where it was.
+    view.rerender(
+      <ResizingHost
+        label={LONG}
+        placement="bottom start"
+        spot={{ top: 100, left: 300 }}
+      />,
+    );
+    await nextFrames(4);
+    expectAt(rectOf('Overlay').left, rectOf('Trigger').left);
+  });
+
+  it('follows a trigger that reflows in sub-pixel steps', async () => {
+    const at = (step: number) => (
+      <ResizingHost
+        label={SHORT}
+        placement="bottom start"
+        spot={{ top: 100, left: 300 - step / 2 }}
+        triggerWidth={100 + step * 0.75}
+      />
+    );
+    const view = renderWithRoot(at(0));
+
+    await nextFrames(2);
+
+    // Each step moves every edge by a pixel or less, as a slow window drag
+    // reflows a fluid field, but the steps add up to a 5px move.
+    for (let step = 1; step <= 10; step++) {
+      view.rerender(at(step));
+      await nextFrames(2);
+    }
+
+    expectAt(rectOf('Overlay').left, rectOf('Trigger').left);
+  });
+
+  it('anchors to the trigger as it is now on the next opening', async () => {
+    const spot = { top: 100, right: 100 };
+    const view = renderWithRoot(
+      <ResizingHost label={SHORT} placement="bottom start" spot={spot} />,
+    );
+
+    await nextFrames(2);
+    view.rerender(
+      <ResizingHost label={LONG} placement="bottom start" spot={spot} />,
+    );
+    await nextFrames(4);
+    view.rerender(
+      <ResizingHost
+        isOpen={false}
+        label={LONG}
+        placement="bottom start"
+        spot={spot}
+      />,
+    );
+    view.rerender(
+      <ResizingHost label={LONG} placement="bottom start" spot={spot} />,
+    );
+    await nextFrames(4);
+
+    expectAt(rectOf('Overlay').left, rectOf('Trigger').left);
+  });
+
+  it('still moves an overlay placed beside its trigger out of the way as the trigger grows', async () => {
+    const spot = { top: 100, left: 100 };
+    const view = renderWithRoot(
+      <ResizingHost label={SHORT} placement="end" spot={spot} />,
+    );
+
+    await nextFrames(2);
+    view.rerender(<ResizingHost label={LONG} placement="end" spot={spot} />);
+    await nextFrames(4);
+
+    expectAt(rectOf('Overlay').left, rectOf('Trigger').right + 8);
+  });
+
+  it('keeps a multiple-selection Picker in place as picking widens its trigger', async () => {
+    const user = userEvent.setup();
+
+    renderWithRoot(
+      <At spot={{ top: 100, right: 100 }}>
+        <Picker
+          aria-label="Days"
+          qa="DaysPicker"
+          selectionMode="multiple"
+          placeholder="Days"
+        >
+          <Picker.Item key="mon">Monday</Picker.Item>
+          <Picker.Item key="tue">Tuesday</Picker.Item>
+          <Picker.Item key="wed">Wednesday</Picker.Item>
+        </Picker>
+      </At>,
+    );
+
+    const trigger = screen.getByRole('button');
+
+    await user.click(trigger);
+    const dialog = await screen.findByRole('dialog');
+
+    // Past the opening animation, which scales the dialog.
+    await waitFor(() =>
+      expect(getComputedStyle(dialog).transform).toBe('none'),
+    );
+    const opened = dialog.getBoundingClientRect();
+    const triggerWidth = trigger.getBoundingClientRect().width;
+
+    for (const day of ['Monday', 'Tuesday', 'Wednesday']) {
+      await user.click(screen.getByRole('option', { name: day }));
+      await nextFrames(4);
+    }
+
+    expect(trigger.getBoundingClientRect().width).toBeGreaterThan(triggerWidth);
+    expectAt(dialog.getBoundingClientRect().left, opened.left);
+    expect(windowErrors).toEqual([]);
+  });
+});
 
 /** Presses `Escape` until no overlay is left open (a submenu takes two). */
 async function closeAll(user: User) {
