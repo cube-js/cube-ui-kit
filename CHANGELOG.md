@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.216.3
+
+### Patch Changes
+
+- [#1694](https://github.com/cube-js/cube-ui-kit/pull/1694) [`0a5c8e0f2`](https://github.com/cube-js/cube-ui-kit/commit/0a5c8e0f253498302bb619eb3f10cfe15fdb3c99) Thanks [@tenphi](https://github.com/tenphi)! - **Tabs:** a tab's actions (the menu trigger, the close button and custom actions) respond to a tap on a touch screen. Before, only a mouse click worked.
+
 ## 0.216.2
 
 ### Patch Changes
