@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.216.2
+
+### Patch Changes
+
+- [#1692](https://github.com/cube-js/cube-ui-kit/pull/1692) [`90b9299ec`](https://github.com/cube-js/cube-ui-kit/commit/90b9299ec9169b9610ec533eb4f6a18004355bdc) Thanks [@tenphi](https://github.com/tenphi)! - `npx -y @tenphi/harnesspm help uikit:colors` now shows the arguments and options of UI Kit's color lookup tool: `[<part of a token name>...] [--on <surface>] [--format hex|okhsl|okhst|rgb|hsl|oklch] [--json]`. This needs harnesspm 0.8.0 or later; older versions ignore it.
+
 ## 0.216.1
 
 ### Patch Changes
