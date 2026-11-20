@@ -16,8 +16,10 @@ import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
+import { getPasswordManagerIgnoreProps } from '../TextInput/password-manager-ignore';
 import {
   CubeBufferedValueProps,
+  CubePasswordManagerIgnoreProps,
   CubeTextInputBaseProps,
   TextInputBase,
 } from '../TextInput/TextInputBase';
@@ -28,6 +30,7 @@ export interface CubePasswordInputProps
   extends
     WithNullableValue<Omit<CubeTextInputBaseProps, 'validate'>>,
     CubeBufferedValueProps,
+    CubePasswordManagerIgnoreProps,
     TextFieldKeyboardProps {
   validate?: AriaTextFieldProps['validate'];
 }
@@ -58,6 +61,7 @@ function PasswordInput(
     // The form instance, not the DOM `form` id `useTextField` forwards.
     form,
     isBuffered,
+    ignorePasswordManagers,
     ...rest
   } = props;
   let localInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
@@ -131,6 +135,7 @@ function PasswordInput(
       inputProps={mergeProps(
         inputProps,
         { 'data-input-type': 'passwordinput' },
+        getPasswordManagerIgnoreProps(ignorePasswordManagers),
         userInputProps,
       )}
       inputRef={inputRef}

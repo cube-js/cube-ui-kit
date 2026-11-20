@@ -391,6 +391,21 @@ export interface CubeIdentifierInputProps {
 }
 
 /**
+ * Mixed into `TextInput`, `PasswordInput` and `TextArea` only, the fields that hold a credential the
+ * user does not sign in with: an API key and its ID, an OAuth client ID and its secret, a private key.
+ */
+export interface CubePasswordManagerIgnoreProps {
+  /**
+   * Whether password manager extensions should leave the field alone. Sets the opt-out attributes
+   * they read, since they ignore `autocomplete="off"` on a field that looks like part of a login.
+   * Bitwarden's release builds and browsers' built-in password managers are not covered. For a
+   * secret that is not the user's own login, and the text field paired with it. The attributes and
+   * the managers that read them: PasswordInput docs, "A Secret That Is Not a Login".
+   */
+  ignorePasswordManagers?: boolean;
+}
+
+/**
  * The presentational base for text-like inputs. It renders the input chrome and the field wrapper, but
  * never wires form state — that is the job of the component rendering it (`TextInput`, `TextArea`,
  * `PasswordInput`, `NumberInput`, `SearchInput`, `CommandTextArea`).

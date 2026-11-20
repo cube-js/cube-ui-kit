@@ -12,9 +12,11 @@ import { useBufferedValue } from '../../../utils/react/useBufferedValue';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import { getIdentifierTextServices } from '../TextInput/identifier-text-services';
+import { getPasswordManagerIgnoreProps } from '../TextInput/password-manager-ignore';
 import {
   CubeBufferedValueProps,
   CubeIdentifierInputProps,
+  CubePasswordManagerIgnoreProps,
   CubeTextInputBaseProps,
   TextInputBase,
 } from '../TextInput/TextInputBase';
@@ -29,7 +31,8 @@ export interface CubeTextAreaProps
       'validate' | 'inputRef' | 'onFocus' | 'onBlur'
     >,
     CubeBufferedValueProps,
-    CubeIdentifierInputProps {
+    CubeIdentifierInputProps,
+    CubePasswordManagerIgnoreProps {
   field?: FieldBaseProps<string | null | undefined>['field'];
   inputRef?: RefObject<HTMLTextAreaElement | null>;
   validate?: AriaTextFieldProps<HTMLTextAreaElement>['validate'];
@@ -73,6 +76,7 @@ function TextArea(
     form,
     isBuffered,
     isIdentifier,
+    ignorePasswordManagers,
     ...otherProps
   } = props;
 
@@ -129,6 +133,7 @@ function TextArea(
       inputProps={mergeProps(
         inputProps,
         { 'data-input-type': 'textarea' },
+        getPasswordManagerIgnoreProps(ignorePasswordManagers),
         userInputProps,
       )}
       isDisabled={isDisabled}

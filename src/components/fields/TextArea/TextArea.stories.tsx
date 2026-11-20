@@ -143,6 +143,14 @@ export default {
         'Whether the field holds identifiers: no autocapitalization, autocorrect, spellcheck or autofill',
       table: { defaultValue: { summary: false } },
     },
+    ignorePasswordManagers: {
+      control: { type: 'boolean' },
+      description:
+        "Whether password manager extensions should leave the field alone: for a secret that is not the user's own login, such as a private key",
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
 
     /* Events */
     onChange: {

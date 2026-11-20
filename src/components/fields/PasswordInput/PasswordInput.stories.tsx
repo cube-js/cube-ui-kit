@@ -128,6 +128,14 @@ export default {
       description:
         'HTML `autocomplete` token telling the browser what to autofill (`current-password`, `new-password`, `off`, …)',
     },
+    ignorePasswordManagers: {
+      control: { type: 'boolean' },
+      description:
+        "Whether password manager extensions should leave the field alone: for a secret that is not the user's own login, such as an API key or an OAuth client secret",
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     spellCheck: {
       control: { type: 'text' },
       description:
