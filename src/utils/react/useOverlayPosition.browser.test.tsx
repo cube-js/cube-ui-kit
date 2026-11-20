@@ -402,12 +402,14 @@ describe('an open overlay whose trigger changes width', () => {
     placement,
     spot,
     triggerHeight = 32,
+    triggerWidth,
   }: {
     isOpen?: boolean;
     label: string;
     placement: Placement;
     spot: CSSProperties;
     triggerHeight?: number;
+    triggerWidth?: number;
   }) {
     const targetRef = useRef<HTMLButtonElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
@@ -425,7 +427,11 @@ describe('an open overlay whose trigger changes width', () => {
           <button
             ref={targetRef}
             data-qa="Trigger"
-            style={{ whiteSpace: 'nowrap', height: triggerHeight }}
+            style={{
+              whiteSpace: 'nowrap',
+              height: triggerHeight,
+              width: triggerWidth,
+            }}
           >
             {label}
           </button>
@@ -443,7 +449,8 @@ describe('an open overlay whose trigger changes width', () => {
 
   const rectOf = (qa: string) => screen.getByTestId(qa).getBoundingClientRect();
 
-  // React Aria places overlays on whole pixels, the trigger's edges are not.
+  // React Aria floors the overlay's vertical place, and the trigger's edges
+  // fall on fractions of a pixel.
   const expectAt = (actual: number, expected: number) =>
     expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
 
@@ -455,9 +462,21 @@ describe('an open overlay whose trigger changes width', () => {
     // Anchored on the trigger's start edge, which moves as a right-aligned
     // trigger grows.
     ['bottom start', { top: 100, right: 100 }],
-    // Anchored on the trigger's middle, which moves however it is aligned.
+    // Anchored on the trigger's middle, which moves as a left-aligned trigger
+    // grows.
     ['bottom', { top: 100, left: 300 }],
     ['top end', { top: 400, left: 300 }],
+    // A centred trigger keeps only its middle still: both edges move.
+    [
+      'bottom start',
+      {
+        top: 100,
+        left: 0,
+        right: 0,
+        display: 'flex',
+        justifyContent: 'center',
+      },
+    ],
   ])(
     'keeps its horizontal place, placed %s, as the trigger grows and shrinks',
     async (placement, spot) => {
@@ -589,6 +608,29 @@ describe('an open overlay whose trigger changes width', () => {
       />,
     );
     await nextFrames(4);
+    expectAt(rectOf('Overlay').left, rectOf('Trigger').left);
+  });
+
+  it('follows a trigger that reflows in sub-pixel steps', async () => {
+    const at = (step: number) => (
+      <ResizingHost
+        label={SHORT}
+        placement="bottom start"
+        spot={{ top: 100, left: 300 - step / 2 }}
+        triggerWidth={100 + step * 0.75}
+      />
+    );
+    const view = renderWithRoot(at(0));
+
+    await nextFrames(2);
+
+    // Each step moves every edge by a pixel or less, as a slow window drag
+    // reflows a fluid field, but the steps add up to a 5px move.
+    for (let step = 1; step <= 10; step++) {
+      view.rerender(at(step));
+      await nextFrames(2);
+    }
+
     expectAt(rectOf('Overlay').left, rectOf('Trigger').left);
   });
 

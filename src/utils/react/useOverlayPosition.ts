@@ -113,11 +113,13 @@ export function useOverlayPosition(props: AriaPositionProps): PositionAria {
  *
  * - **Moved without resizing** (a reflow, a scroll with `keepOpenOnScroll`,
  *   CommandTextArea's zero-width caret anchor on every keystroke): the place
- *   moves by the same distance.
- * - **Resized in place**, with its start edge, end edge or middle where it
- *   was, as content that grew or shrank leaves it: the place stays. A layout
- *   change that resizes a trigger in place (a fluid field on a window resize)
- *   keeps it too, until the next opening.
+ *   moves by the same distance. Within half a pixel counts as the same width:
+ *   a scaled ancestor gives a moved trigger's width float noise.
+ * - **Resized in place**, with its start edge, end edge or middle still lined
+ *   up with the place, as content that grew or shrank leaves it: the place
+ *   stays. A layout change that resizes a trigger in place (a fluid field on a
+ *   window resize) keeps it too, until the next opening: geometry alone cannot
+ *   tell the two apart.
  * - **Resized and moved at once** (a reflow of a fluid field): the place
  *   anchors to the trigger as it is now.
  */
@@ -131,10 +133,10 @@ function keepHorizontalPlace(
   let left = trigger.left;
   let width = trigger.width;
 
-  if (last && trigger.width === last.triggerWidth) {
+  if (last && Math.abs(trigger.width - last.triggerWidth) < 0.5) {
     left = last.left + trigger.left - last.triggerLeft;
     width = last.width;
-  } else if (last && isResizedInPlace(trigger, last)) {
+  } else if (last && linesUpWithPlace(trigger, last)) {
     left = last.left;
     width = last.width;
   }
@@ -149,17 +151,19 @@ function keepHorizontalPlace(
   return new DOMRect(left, trigger.top, width, trigger.height);
 }
 
-/** Whether the trigger's start edge, end edge or middle stayed within a pixel. */
-function isResizedInPlace(
+/**
+ * Whether the trigger's start edge, end edge or middle is within a pixel of
+ * the place's. Measured against the place, not the trigger's last rect, so a
+ * reflow in sub-pixel steps cannot creep away from it.
+ */
+function linesUpWithPlace(
   trigger: { left: number; width: number },
-  last: HorizontalAnchor,
+  place: HorizontalAnchor,
 ): boolean {
-  const shift = (ratio: number) =>
+  const gap = (ratio: number) =>
     Math.abs(
-      trigger.left +
-        trigger.width * ratio -
-        (last.triggerLeft + last.triggerWidth * ratio),
+      trigger.left + trigger.width * ratio - (place.left + place.width * ratio),
     );
 
-  return shift(0) <= 1 || shift(1) <= 1 || shift(0.5) <= 1;
+  return gap(0) <= 1 || gap(1) <= 1 || gap(0.5) <= 1;
 }
