@@ -205,4 +205,85 @@ describe('tab actions run on a touch screen', () => {
     });
     expect(screen.getByTestId('Tab-a')).toHaveAttribute('data-active');
   });
+
+  /**
+   * The menu renders in a portal but inside the run's React tree, so a tap on
+   * one of its items passed the same stop and ended as a miss too.
+   */
+  describe('the tab’s menu, by tap', () => {
+    function MenuTabs(props: {
+      onTitleChange?: (key: string, title: string) => void;
+      onAction?: (action: string, tabKey: string) => void;
+    }) {
+      return (
+        <Tabs
+          isEditable
+          isReorderable
+          aria-label="tabs"
+          type="file"
+          defaultActiveKey="a"
+          menu={
+            <>
+              <Menu.Item key="rename">Rename</Menu.Item>
+              <Menu.Item key="duplicate">Duplicate</Menu.Item>
+            </>
+          }
+          {...props}
+        >
+          <Tab key="a" title="One" menuTriggerProps={{ qa: 'TabMenu-a' }} />
+          <Tab key="b" title="Two" />
+        </Tabs>
+      );
+    }
+
+    async function tapMenuItem(name: string) {
+      await tapAt(centerOf(screen.getByTestId('TabMenu-a')));
+      await tapAt(
+        centerOf(
+          await screen.findByRole('menuitem', { name }, { timeout: 2000 }),
+        ),
+      );
+    }
+
+    it('renames the tab, keeping the caret in the input past the menu’s exit', async () => {
+      const onTitleChange = vi.fn();
+
+      renderWithRoot(<MenuTabs onTitleChange={onTitleChange} />);
+      await tapMenuItem('Rename');
+
+      const input = await screen.findByRole(
+        'textbox',
+        { name: 'Edit tab title' },
+        { timeout: 2000 },
+      );
+
+      await waitFor(() => expect(input).toHaveFocus(), { timeout: 2000 });
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+      });
+      expect(input).toHaveFocus();
+      expect(onTitleChange).not.toHaveBeenCalled();
+    });
+
+    it('runs an item’s action once, for its own tab', async () => {
+      const onAction = vi.fn();
+
+      renderWithRoot(<MenuTabs onAction={onAction} />);
+      await tapMenuItem('Duplicate');
+
+      await waitFor(() => expect(onAction).toHaveBeenCalled(), {
+        timeout: 2000,
+      });
+      // Past the click Aria synthesizes 80 ms after a lift with no click.
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      });
+      expect(onAction.mock.calls).toEqual([['duplicate', 'a']]);
+      // The menu closes, once its exit transition ends.
+      await waitFor(
+        () => expect(screen.queryByRole('menu')).not.toBeInTheDocument(),
+        { timeout: 2000 },
+      );
+    });
+  });
 });
