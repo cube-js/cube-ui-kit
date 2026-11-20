@@ -110,7 +110,8 @@
     "stepUp": "Öka {{label}}",
     "stepDown": "Minska {{label}}",
     "increase": "Öka",
-    "decrease": "Minska"
+    "decrease": "Minska",
+    "integer": "Ange ett heltal."
   },
   "textInputMapper": {
     "key": "Nyckel",

@@ -14,7 +14,10 @@ import { getFieldKey } from '../modern/values';
 
 import { useFieldBinding } from './use-field-binding';
 
-import type { ValidateTrigger } from '../../../../shared/index';
+import type {
+  FieldValidationRule,
+  ValidateTrigger,
+} from '../../../../shared/index';
 import type { ModernFormBrand } from '../backend';
 import type { FieldTypes } from '../types';
 import type { UseFieldProps } from './types';
@@ -36,6 +39,13 @@ export type UseFieldPropsParams = {
    * @default false
    */
   showsValidateErrors?: boolean;
+  /**
+   * Rules the control itself adds for a value it cannot take, such as a
+   * fraction in an integer `NumberInput`. A form validates them ahead of the
+   * caller's `rules`; a field outside a form ignores them, without the warning
+   * the caller's own `rules` get there.
+   */
+  controlRules?: FieldValidationRule[];
 };
 
 const defaultValuePropsMapper = ({ value, onChange }) => ({
@@ -93,6 +103,8 @@ export function useFieldProps<
       provided.field
         ? {
             ...provided,
+            // Its rules replace the prop's; `NumberInput`'s `findIntegerRule`
+            // reads them the same way.
             ...provided.field.options,
             form: provided.field.form,
             name:
@@ -126,7 +138,9 @@ export function useFieldProps<
   const isBound = hasName && !isInsideLegacyField && !isDisabled;
 
   const field = useFieldBinding<T, Props>(
-    props,
+    params.controlRules?.length
+      ? { ...props, rules: [...params.controlRules, ...(props.rules ?? [])] }
+      : props,
     {
       defaultValidationTrigger: params.defaultValidationTrigger,
       unbound: !isBound,

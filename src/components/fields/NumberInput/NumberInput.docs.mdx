@@ -34,6 +34,7 @@ A number input component that allows users to enter numeric values and increment
 - **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of `suffix` relative to the stepper buttons. `before` keeps a unit next to the number (`40 px ⌃⌄`); `after` places the suffix after the steppers. The validation/loading icon always comes before both
 - **`actions`** `ReactNode` — Controls placed last, after the steppers and `suffix` whatever `suffixPosition` is
 - **`hideStepper`** `boolean` (default: `false`) — Whether to hide the stepper buttons
+- **`isInteger`** `boolean` (default: `false`) — Accepts whole numbers only: a phone shows its digit keyboard, and a typed fraction stays as typed and marks the field invalid with the translated "Enter a whole number.", or with the message of your own `{ type: 'integer' }` rule. Use it instead of `formatOptions={{ maximumFractionDigits: 0 }}`; see [Whole Numbers](/docs/forms-numberinput--docs#whole-numbers)
 - **`minValue`** `number` — Minimum allowed value
 - **`maxValue`** `number` — Maximum allowed value
 - **`step`** `number` — Amount to increment or decrement the value
@@ -158,10 +159,39 @@ A unit sits between the number and the steppers. Pass `suffixPosition="after"` t
 <NumberInput label="Width" defaultValue={40} suffix={<Text>px</Text>} />
 ```
 
-### With Min/Max/Step
+### With Min/Max
 
 ```jsx
-<NumberInput label="Age" minValue={0} maxValue={120} step={1} />
+<NumberInput label="Age" minValue={0} maxValue={120} />
+```
+
+### Whole Numbers
+
+`isInteger` keeps a typed or pasted fraction visible and refuses it. `formatOptions={{ maximumFractionDigits: 0 }}` drops a typed decimal separator instead, so `1000.50` becomes `100050`. The separator follows the locale: in `de-DE`, `1.000` is one thousand, and `1000,5` is refused. Every typed fraction digit is kept, whatever `formatOptions.maximumFractionDigits` says, and a currency shows no cents.
+
+A phone shows its digit keyboard; an iPhone only with a `minValue` of 0 or more, because its digit pad has no minus key. Leave `step` unset: the steppers already add 1, and a `step` snaps a typed value to it, so `step={1}` rounds a fraction instead of refusing it. An empty field is left to `isRequired`.
+
+The field does not round a fraction, because a rounded value is a changed value nobody confirmed: a pasted `1000.50` would be saved as `1001`, and a screen reader user would not hear about it. The error shows what was typed, says what to fix, and stops a Form from submitting until it is fixed. Outside a Form, `onChange` still reports the fraction, so check `Number.isInteger(value)` before you save it.
+
+A value outside `minValue` or `maxValue` is first moved to the nearest bound, so `28.5` with `maxValue={28}` becomes `28` with no error. `isInteger` checks the value, not what the field shows: with `formatOptions={{ style: 'percent' }}`, `50%` is `0.5` and is refused.
+
+<Canvas of={NumberInputStories.Integer} />
+
+```jsx
+<NumberInput label="Budget amount" name="amount" isInteger minValue={0} />
+```
+
+To say it in your own words, add a `{ type: 'integer', message }` rule: its message replaces "Enter a whole number." under the field and in the Form, and shows once. A rule without a text message, or a legacy function rule, keeps the kit's. In a legacy Form, an optional field can't replace the kit's message, because a `type` rule there also refuses an empty field.
+
+```jsx
+<NumberInput
+  isInteger
+  isRequired
+  label="Budget amount"
+  name="amount"
+  minValue={0}
+  rules={[{ type: 'integer', message: 'Enter a whole dollar amount, without cents.' }]}
+/>
 ```
 
 ### With Validation
@@ -224,7 +254,7 @@ A unit sits between the number and the steppers. Pass `suffixPosition="after"` t
 
 This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form.
 
-When the browser submits the form itself, as a plain `<form>` or a Form with `action` does,, `name` submits the number through a hidden input: `1234.5`, not the formatted `1,234.5` the input shows. An empty field submits an empty string, and a disabled NumberInput submits nothing.
+When the browser submits the form itself, as a plain `<form>` or a Form with `action` does, `name` submits the number through a hidden input: `1234.5`, not the formatted `1,234.5` the input shows. An empty field submits an empty string, and a disabled NumberInput submits nothing. Only a Form without `action` stops an `isInteger` field from submitting a fraction: a plain `<form>`, or a Form with `action`, submits `10.5`, so check `Number.isInteger` before it submits.
 
 ## Suggested Improvements
 

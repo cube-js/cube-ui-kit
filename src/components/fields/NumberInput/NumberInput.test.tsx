@@ -1,3 +1,5 @@
+import { I18nProvider as AriaI18nProvider } from 'react-aria';
+
 import { createUIKitI18n } from '../../../i18n';
 import {
   act,
@@ -10,11 +12,15 @@ import {
 } from '../../../test';
 import { Button } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
+import { Form } from '../../form/Form/index';
+import { createFormController } from '../../form/Form/modern/controller';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { Root } from '../../Root';
 
 import { NumberInput } from './NumberInput';
+
+import type { FieldValidationRule } from '../../../shared/form';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
@@ -621,6 +627,345 @@ describe('<NumberInput />', () => {
         container.querySelector('[data-element="Suffix"]'),
       ).not.toBeInTheDocument();
     });
+  });
+
+  describe('isInteger', () => {
+    const renderInteger = (props = {}, locale = 'en-US') => {
+      const onChange = vi.fn();
+      const utils = render(
+        <AriaI18nProvider locale={locale}>
+          <NumberInput
+            isInteger
+            label="Amount"
+            minValue={0}
+            onChange={onChange}
+            {...props}
+          />
+        </AriaI18nProvider>,
+      );
+
+      return { ...utils, input: utils.getByRole('textbox'), onChange };
+    };
+
+    it('keeps a typed fraction and refuses it, instead of dropping its separator', async () => {
+      const { input, onChange, getByText } = renderInteger();
+
+      await userEvent.type(input, '1000.50');
+      await userEvent.tab();
+
+      // `maximumFractionDigits: 0` drops the "." here, and commits 100050.
+      expect(input).toHaveValue('1,000.5');
+      expect(onChange).toHaveBeenLastCalledWith(1000.5);
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(getByText('Enter a whole number.')).toBeInTheDocument();
+    });
+
+    it('keeps a pasted fraction instead of rounding it', async () => {
+      const { input, onChange, getByText } = renderInteger();
+
+      await userEvent.click(input);
+      await userEvent.paste('1000.50');
+      await userEvent.tab();
+
+      expect(input).toHaveValue('1,000.5');
+      expect(onChange).toHaveBeenLastCalledWith(1000.5);
+      expect(getByText('Enter a whole number.')).toBeInTheDocument();
+    });
+
+    it.each([
+      ['1000.9999', '1,000.9999', 1000.9999, {}],
+      ['1000.0001', '1,000.0001', 1000.0001, {}],
+      [
+        '1000.50',
+        '1,000.5',
+        1000.5,
+        { formatOptions: { maximumFractionDigits: 0 } },
+      ],
+    ])(
+      'keeps every fraction digit of %s, %s, beyond the formatter default',
+      async (typed, shown, committed, props) => {
+        const { input, onChange, getByText } = renderInteger(props);
+
+        await userEvent.type(input, typed);
+        await userEvent.tab();
+
+        // React Aria rounds to 3 fraction digits by default, to 1001 and 1000.
+        expect(input).toHaveValue(shown);
+        expect(onChange).toHaveBeenLastCalledWith(committed);
+        expect(input).toHaveAttribute('aria-invalid', 'true');
+        expect(getByText('Enter a whole number.')).toBeInTheDocument();
+      },
+    );
+
+    it('takes a whole number with a group separator', async () => {
+      const { input, onChange, queryByText } = renderInteger();
+
+      await userEvent.type(input, '1,000');
+      await userEvent.tab();
+
+      expect(onChange).toHaveBeenLastCalledWith(1000);
+      expect(input).not.toHaveAttribute('aria-invalid');
+      expect(queryByText('Enter a whole number.')).not.toBeInTheDocument();
+    });
+
+    it('reads "." as the group separator in de-DE', async () => {
+      const { input, onChange } = renderInteger({}, 'de-DE');
+
+      await userEvent.type(input, '1.000');
+      await userEvent.tab();
+
+      expect(input).toHaveValue('1.000');
+      expect(onChange).toHaveBeenLastCalledWith(1000);
+      expect(input).not.toHaveAttribute('aria-invalid');
+    });
+
+    it('refuses a fraction typed with "," in de-DE', async () => {
+      const { input, onChange } = renderInteger({}, 'de-DE');
+
+      await userEvent.type(input, '1000,5');
+      await userEvent.tab();
+
+      expect(input).toHaveValue('1.000,5');
+      expect(onChange).toHaveBeenLastCalledWith(1000.5);
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('translates its message', async () => {
+      render(
+        <Root i18n={createUIKitI18n('de-DE')}>
+          <NumberInput isInteger label="Betrag" minValue={0} />
+        </Root>,
+      );
+      const input = screen.getByRole('textbox');
+
+      await userEvent.type(input, '1000,5');
+      await userEvent.tab();
+
+      expect(
+        screen.getByText('Geben Sie eine ganze Zahl ein.'),
+      ).toBeInTheDocument();
+    });
+
+    // A currency shows 2 fraction digits by default.
+    it('shows a whole currency amount without cents', () => {
+      const { input } = renderInteger({
+        defaultValue: 1000,
+        formatOptions: { style: 'currency', currency: 'USD' },
+      });
+
+      expect(input).toHaveValue('$1,000');
+    });
+
+    it('leaves an emptied field to isRequired', async () => {
+      const { input, queryByText } = renderInteger({ defaultValue: 5 });
+
+      await userEvent.clear(input);
+      await userEvent.tab();
+
+      expect(input).not.toHaveAttribute('aria-invalid');
+      expect(queryByText('Enter a whole number.')).not.toBeInTheDocument();
+    });
+
+    it('runs the caller’s validate for a whole number', async () => {
+      const { input, getByText } = renderInteger({
+        validate: (value: number) => (value > 10 ? 'Too many' : null),
+      });
+
+      await userEvent.type(input, '20');
+      await userEvent.tab();
+
+      expect(getByText('Too many')).toBeInTheDocument();
+    });
+
+    it('shows its message without a label', async () => {
+      const { input, getByText } = renderInteger({
+        label: undefined,
+        'aria-label': 'Amount',
+      });
+
+      await userEvent.type(input, '1.5');
+      await userEvent.tab();
+
+      expect(getByText('Enter a whole number.')).toBeInTheDocument();
+    });
+
+    describe('on an iPhone', () => {
+      beforeEach(() => {
+        vi.spyOn(navigator, 'platform', 'get').mockReturnValue('iPhone');
+      });
+
+      afterEach(() => {
+        vi.restoreAllMocks();
+      });
+
+      it('asks for the digit keyboard', () => {
+        const { input } = renderInteger();
+
+        expect(input).toHaveAttribute('inputmode', 'numeric');
+      });
+
+      it('keeps the decimal keyboard without isInteger', () => {
+        const { input } = renderInteger({ isInteger: false });
+
+        expect(input).toHaveAttribute('inputmode', 'decimal');
+      });
+
+      it('keeps the full keyboard when the field takes negatives', () => {
+        const { input } = renderInteger({ minValue: undefined });
+
+        // The iPhone digit pad has no minus key.
+        expect(input).toHaveAttribute('inputmode', 'text');
+      });
+    });
+
+    // A descriptor's own options replace the input's `rules`, so the
+    // control's rule has to reach the binding past them.
+    describe.each(['legacy', 'name', 'descriptor'] as const)(
+      'in a form bound by %s',
+      (binding) => {
+        const renderInForm = (rules?: FieldValidationRule[]) => {
+          const onSubmit = vi.fn();
+          const modern = createFormController<{ amount?: number }>();
+          const input = (
+            <>
+              <NumberInput
+                isInteger
+                label="Amount"
+                minValue={0}
+                {...(binding === 'descriptor'
+                  ? {
+                      field: modern.field('amount', {
+                        rules,
+                        validate: (value) =>
+                          value === 13 ? 'Unlucky' : undefined,
+                      }),
+                    }
+                  : { name: 'amount', rules })}
+              />
+              <Form.Submit>Save</Form.Submit>
+            </>
+          );
+
+          function Legacy() {
+            const [form] = Form.useForm();
+
+            return (
+              <Form form={form} onSubmit={onSubmit}>
+                {input}
+              </Form>
+            );
+          }
+
+          renderWithRoot(
+            binding === 'legacy' ? (
+              <Legacy />
+            ) : (
+              <Form form={modern} onSubmit={onSubmit}>
+                {input}
+              </Form>
+            ),
+          );
+
+          return { onSubmit, input: screen.getByRole('textbox') };
+        };
+        const save = () =>
+          userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+        it('does not submit a fraction', async () => {
+          const { onSubmit, input } = renderInForm();
+
+          await userEvent.type(input, '1000.50');
+          await save();
+
+          await waitFor(() => {
+            expect(input).toHaveAttribute('aria-invalid', 'true');
+          });
+          expect(screen.getByText('Enter a whole number.')).toBeInTheDocument();
+          expect(onSubmit).not.toHaveBeenCalled();
+        });
+
+        it('shows the caller’s own integer message instead, once', async () => {
+          const message = 'Enter a whole dollar amount, without cents.';
+          const { onSubmit, input } = renderInForm([
+            { type: 'integer', message },
+          ]);
+
+          await userEvent.type(input, '1000.50');
+          await userEvent.tab();
+
+          // Not even before the form's own check settles.
+          expect(screen.queryByText('Enter a whole number.')).toBeNull();
+
+          await save();
+
+          await waitFor(() => {
+            expect(input).toHaveAttribute('aria-invalid', 'true');
+          });
+          expect(screen.getAllByText(message)).toHaveLength(1);
+          expect(screen.queryByText('Enter a whole number.')).toBeNull();
+          expect(onSubmit).not.toHaveBeenCalled();
+        });
+
+        it('keeps its own message for a caller rule without a text one', async () => {
+          const { onSubmit, input } = renderInForm([{ type: 'integer' }]);
+
+          await userEvent.type(input, '1000.50');
+          await save();
+
+          await waitFor(() => {
+            expect(input).toHaveAttribute('aria-invalid', 'true');
+          });
+          expect(screen.getAllByText('Enter a whole number.')).toHaveLength(1);
+          expect(onSubmit).not.toHaveBeenCalled();
+        });
+
+        it('refuses a fraction a caller rule lets through', async () => {
+          const { onSubmit, input } = renderInForm([
+            { type: 'integer', message: 'Own', transform: Math.round },
+          ]);
+
+          await userEvent.type(input, '1000.50');
+          await save();
+
+          await waitFor(() => {
+            expect(screen.getAllByText('Own')).toHaveLength(1);
+          });
+          expect(onSubmit).not.toHaveBeenCalled();
+        });
+
+        it('submits a whole number', async () => {
+          const { onSubmit, input } = renderInForm();
+
+          await userEvent.type(input, '1000');
+          await save();
+
+          await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+          expect(onSubmit.mock.calls[0][0]).toEqual({ amount: 1000 });
+        });
+
+        it('submits while empty', async () => {
+          const { onSubmit } = renderInForm();
+
+          await save();
+
+          await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+        });
+
+        if (binding === 'descriptor') {
+          it('keeps the descriptor’s own validate', async () => {
+            const { onSubmit, input } = renderInForm();
+
+            await userEvent.type(input, '13');
+            await save();
+
+            await waitFor(() => {
+              expect(screen.getByText('Unlucky')).toBeInTheDocument();
+            });
+            expect(onSubmit).not.toHaveBeenCalled();
+          });
+        }
+      },
+    );
   });
 
   describe('in a native form', () => {
