@@ -212,4 +212,34 @@ describe('isIdentifier', () => {
     expect(key).toHaveAttribute('autocomplete', 'off');
     expect(value).not.toHaveAttribute('autocapitalize');
   });
+
+  it('turns them off on a TextInputMapper textarea input', () => {
+    const { container } = renderWithRoot(
+      <TextInputMapper
+        aria-label="Attributes"
+        value={{ email: 'mail' }}
+        keyProps={{ isIdentifier: true, inputType: 'textarea' }}
+      />,
+    );
+
+    const key = container.querySelector('textarea');
+
+    expect(key).toHaveAttribute('autocapitalize', 'none');
+    expect(key).toHaveAttribute('autocomplete', 'off');
+  });
+
+  it('leaves a TextInputMapper password input to its own defaults', () => {
+    const { container } = renderWithRoot(
+      <TextInputMapper
+        aria-label="Secrets"
+        value={{ token: 'secret' }}
+        valueProps={{ isIdentifier: true, inputType: 'password' }}
+      />,
+    );
+
+    const value = container.querySelector('input[type="password"]');
+
+    expect(value).not.toHaveAttribute('autocomplete', 'off');
+    expect(value).not.toHaveAttribute('isidentifier');
+  });
 });

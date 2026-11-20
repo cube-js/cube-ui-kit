@@ -240,6 +240,14 @@ const EMAIL = /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/;
 
 Pasted text is split on delimiters and line breaks. Accepted entries become chips, rejected ones stay in the input with the message from `validateTag`, and duplicates of existing chips are dropped with a message of their own.
 
+### Identifiers and Email Addresses
+
+`isIdentifier` keeps a phone keyboard from capitalizing or autocorrecting each typed value. For email addresses, pass `autoComplete="email"` with it so the browser can still suggest saved addresses.
+
+```jsx
+<TagInput label="Recipients" isIdentifier inputMode="email" autoComplete="email" />
+```
+
 ### Picking from Suggestions
 
 <Story of={TagInputStories.WithSuggestions} />
