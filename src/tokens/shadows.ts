@@ -22,3 +22,43 @@ export const SHADOW_TOKENS: Styles = {
   /** Elevated dialog shadow */
   '$dialog-shadow': '0 1x 4x #shadow-lg',
 };
+
+/**
+ * Glass edge tokens. A glass button draws its edge as a 1bw ring in its own
+ * fill color: lighter along the top and bottom, darker along the sides (see
+ * `glassEdge` in `Button.tsx`). These set how far, as OKLCH lightness, so one
+ * decoration reads the same on a white chip, a dark one and any brand fill.
+ * High contrast moves both further.
+ *
+ * Kept apart from {@link SHADOW_TOKENS}, which a themed region re-declares as
+ * flat values (`renderColorTokens`). These are state maps on the ambient
+ * `@hc` / `@dark` schemes.
+ */
+export const GLASS_TOKENS: Styles = {
+  /** How much lighter the top and bottom of a glass edge are than the fill */
+  '$glass-edge-lift': {
+    '': '.04',
+    '@hc': '.08',
+  },
+  /** How much darker its sides are than the fill */
+  '$glass-edge-shade': {
+    '': '.08',
+    '@hc': '.16',
+  },
+  /**
+   * How much the fill itself darkens toward the top and bottom, under the
+   * edge's light parts, so they stand out
+   */
+  '$glass-fill-shade': '.02',
+
+  /** Outer shadow of a neutral glass surface */
+  '$glass-halo': {
+    '': '0 6px 13px -.5px rgb(0 0 0 / .02), 0 0 .5px rgb(0 0 0 / .035)',
+    '@dark': '0 2px 4px -3.5px rgb(0 0 0 / .12), 0 0 .75px rgb(0 0 0 / .02)',
+  },
+  /** Outer shadow of a brand (accent) fill */
+  '$glass-accent-halo': {
+    '': '0 6px 13px -.5px rgb(0 0 0 / .04), 0 0 .5px rgb(0 0 0 / .06)',
+    '@dark': '0 0 .75x rgb(0 0 0 / .5), 0 0 0 #clear',
+  },
+};

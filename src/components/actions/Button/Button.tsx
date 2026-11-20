@@ -304,11 +304,10 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
   margin: {
     '': 0,
-    // Outline halves overlap so their borders merge into one line. Primary halves
-    // have no visible border, so a real gap divides them instead and shows
-    // whatever is behind the split.
-    '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2)':
-      '-1bw left',
+    // Outline halves sit side by side with no overlap: each draws its own glass
+    // edge ring, and two rings stacked on one pixel read as a heavier seam than
+    // two next to each other. Primary halves are divided by a real gap that
+    // shows whatever is behind the split.
     '@parent(button-split, >) & !:first-child & type=primary': '1bw left',
   },
   // oxlint-disable-next-line tasty/require-default-state -- outside a ButtonSplit the button sets no z-index, so the consumer's stacking applies
@@ -415,55 +414,131 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
 } as const;
 
+// The fill's own color, lighter or darker by a token's worth of OKLCH lightness.
+const EDGE_LIGHT = 'oklch(from #glass-fill calc(l + $glass-edge-lift) c h)';
+const EDGE_DARK = 'oklch(from #glass-fill calc(l - $glass-edge-shade) c h)';
+const FILL_DARK = 'oklch(from #glass-fill calc(l - $glass-fill-shade) c h)';
+// The fill itself, fully transparent: a fade to it keeps the hue.
+const FILL_CLEAR = 'oklch(from #glass-fill l c h / 0)';
+
+/**
+ * Glass edge (prototype): outline and primary buttons draw their edge as a
+ * 1bw ring in their own fill color, lighter along the top and bottom and
+ * darker along the sides, instead of a solid border.
+ *
+ * - One ring for every variant, state and scheme. Its colors are the fill
+ *   moved up or down in OKLCH lightness (`$glass-edge-lift`,
+ *   `$glass-edge-shade`), so the same decoration reads on a white chip, a dark
+ *   one and any brand fill. A blend mode can't do that: `overlay` and
+ *   `soft-light` act mostly on mid-tones, so they vanish on a near-white fill
+ *   and overpower a saturated one.
+ * - The fill itself darkens a little toward the top and bottom
+ *   (`$glass-fill-shade`), right where the ring is light, so the ring's light
+ *   edges stand out against it.
+ * - The fill goes through `#glass-fill`, which carries the variant's own fill
+ *   map, states included, so the ring and the shading derive from it.
+ * - The border stays as a transparent 1bw: every size here assumes it
+ *   (`$size - 2bw`, the inline padding), so the layout doesn't change.
+ *   `::before` (Edge) draws the ring right over it and inherits the radius,
+ *   ButtonSplit's corners included. Inside a ButtonSplit, outline halves no
+ *   longer overlap by 1bw, so each seam shows both rings side by side; primary
+ *   halves keep their 1bw gap.
+ * - A validation border keeps its color: the ring steps aside.
+ * - Brand fills also bleed a little of their own color past the edge, and both
+ *   kinds sit on an outer shadow that collapses while pressed.
+ */
+function glassEdge(styles: Styles, kind: 'glass' | 'glass-accent'): Styles {
+  return {
+    '#glass-fill': styles.fill,
+    fill: '#glass-fill',
+    // Over the fill color, under the label and the ring.
+    image: `linear-gradient(${FILL_DARK}, ${FILL_CLEAR} 35%, ${FILL_CLEAR} 65%, ${FILL_DARK})`,
+    border: {
+      '': '#clear',
+      invalid: '#danger-accent-text',
+      valid: '#success-accent-text',
+    },
+    shadow: {
+      '':
+        kind === 'glass-accent'
+          ? '$glass-accent-halo, 0 0 1.5px #glass-fill'
+          : '$glass-halo, 0 0 0 #clear',
+      // Same layer count everywhere, so the shadow animates instead of
+      // snapping.
+      'pressed | disabled': '0 0 0 #clear, 0 0 0 #clear, 0 0 0 #clear',
+    },
+    Edge: {
+      $: '&::before',
+      content: '""',
+      position: 'absolute',
+      inset: '-1bw',
+      padding: '1bw',
+      radius: 'inherit',
+      pointerEvents: 'none',
+      image: {
+        '': `linear-gradient(${EDGE_LIGHT}, ${EDGE_DARK} 35%, ${EDGE_DARK} 65%, ${EDGE_LIGHT})`,
+        'invalid | valid': 'none',
+      },
+      mask: 'linear-gradient(white, white) content-box exclude, linear-gradient(white, white)',
+    },
+  };
+}
+
+const withGlass = (styles: Styles) =>
+  mergeStyles(styles, glassEdge(styles, 'glass'));
+const withAccentGlass = (styles: Styles) =>
+  mergeStyles(styles, glassEdge(styles, 'glass-accent'));
+
 const ButtonElement = tasty({
   qa: 'Button',
   styles: DEFAULT_BUTTON_STYLES,
   variants: {
     // Current theme — colors mixed from the inherited `currentcolor`
-    'current.primary': CURRENT_PRIMARY_STYLES,
-    'current.outline': CURRENT_OUTLINE_STYLES,
-    'current.outline-2': CURRENT_OUTLINE_2_STYLES,
+    'current.primary': withAccentGlass(CURRENT_PRIMARY_STYLES),
+    'current.outline': withGlass(CURRENT_OUTLINE_STYLES),
+    'current.outline-2': withGlass(CURRENT_OUTLINE_2_STYLES),
     'current.clear': CURRENT_CLEAR_STYLES,
     'current.link': CURRENT_LINK_STYLES,
 
     // Default theme
-    'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.outline': DEFAULT_OUTLINE_STYLES,
-    'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
+    'default.primary': withAccentGlass(DEFAULT_PRIMARY_STYLES),
+    'default.outline': withGlass(DEFAULT_OUTLINE_STYLES),
+    'default.outline-2': withGlass(DEFAULT_OUTLINE_2_STYLES),
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
 
     // Danger theme
-    'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.outline': DANGER_OUTLINE_STYLES,
-    'danger.outline-2': DANGER_OUTLINE_2_STYLES,
+    'danger.primary': withAccentGlass(DANGER_PRIMARY_STYLES),
+    'danger.outline': withGlass(DANGER_OUTLINE_STYLES),
+    'danger.outline-2': withGlass(DANGER_OUTLINE_2_STYLES),
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
 
     // Success theme
-    'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.outline': SUCCESS_OUTLINE_STYLES,
-    'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
+    'success.primary': withAccentGlass(SUCCESS_PRIMARY_STYLES),
+    'success.outline': withGlass(SUCCESS_OUTLINE_STYLES),
+    'success.outline-2': withGlass(SUCCESS_OUTLINE_2_STYLES),
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
 
     // Warning theme
-    'warning.primary': WARNING_PRIMARY_STYLES,
-    'warning.outline': WARNING_OUTLINE_STYLES,
-    'warning.outline-2': WARNING_OUTLINE_2_STYLES,
+    'warning.primary': withAccentGlass(WARNING_PRIMARY_STYLES),
+    'warning.outline': withGlass(WARNING_OUTLINE_STYLES),
+    'warning.outline-2': withGlass(WARNING_OUTLINE_2_STYLES),
     'warning.clear': WARNING_CLEAR_STYLES,
     'warning.link': WARNING_LINK_STYLES,
 
     // Note theme
-    'note.primary': NOTE_PRIMARY_STYLES,
-    'note.outline': NOTE_OUTLINE_STYLES,
-    'note.outline-2': NOTE_OUTLINE_2_STYLES,
+    'note.primary': withAccentGlass(NOTE_PRIMARY_STYLES),
+    'note.outline': withGlass(NOTE_OUTLINE_STYLES),
+    'note.outline-2': withGlass(NOTE_OUTLINE_2_STYLES),
     'note.clear': NOTE_CLEAR_STYLES,
     'note.link': NOTE_LINK_STYLES,
 
-    // Special theme
-    'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.outline': SPECIAL_OUTLINE_STYLES,
+    // Special theme — its outline sits on the fixed `#special-surface`, which
+    // doesn't follow the page scheme either, so it takes the accent glass too.
+    'special.primary': withAccentGlass(SPECIAL_PRIMARY_STYLES),
+    'special.outline': withAccentGlass(SPECIAL_OUTLINE_STYLES),
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
   },
