@@ -1,4 +1,7 @@
-import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { cdp } from 'vitest/browser';
+
+import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { Menu } from '../../actions/Menu/Menu';
 
 import { Tab, Tabs } from './Tabs';
 
@@ -114,5 +117,173 @@ describe('tab actions run', () => {
 
     expect(wrapper.style.getPropertyValue('--actions-width')).not.toBe('0px');
     expect(runOf('Tab-b').childElementCount).toBeGreaterThan(0);
+  });
+});
+
+/** Chromium's coordinates for a point in the test iframe, which Vitest can scale. */
+function nativePosition(x: number, y: number) {
+  const frame = window.frameElement as HTMLElement | null;
+  const bounds = frame?.getBoundingClientRect();
+  const scaleX = bounds && frame ? bounds.width / frame.offsetWidth : 1;
+  const scaleY = bounds && frame ? bounds.height / frame.offsetHeight : 1;
+
+  return {
+    x: (bounds?.left ?? 0) + (x + (frame?.clientLeft ?? 0)) * scaleX,
+    y: (bounds?.top ?? 0) + (y + (frame?.clientTop ?? 0)) * scaleY,
+  };
+}
+
+/** A trusted touch tap, which Chromium turns into pointer events and a click. */
+async function tapAt({ x, y }: { x: number; y: number }) {
+  await act(async () => {
+    await cdp().send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [nativePosition(x, y)],
+    });
+    await cdp().send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+  });
+}
+
+describe('tab actions run on a touch screen', () => {
+  beforeEach(async () => {
+    await cdp().send('Emulation.setTouchEmulationEnabled', { enabled: true });
+  });
+
+  afterEach(async () => {
+    await cdp().send('Emulation.setTouchEmulationEnabled', { enabled: false });
+  });
+
+  /**
+   * React Aria ends a touch press from a `pointerup` listener on the document,
+   * which also marks the finger as off the button before the `pointerleave`
+   * that follows the lift. The run stopped `pointerup` on its way there, so
+   * that leave ended the press as a miss and the menu never opened.
+   */
+  it.each([false, true])(
+    'opens a tab’s menu on a tap, without selecting the tab (reorderable: %s)',
+    async (isReorderable) => {
+      const onChange = vi.fn();
+
+      renderWithRoot(
+        <Tabs
+          aria-label="tabs"
+          type="file"
+          defaultActiveKey="a"
+          isReorderable={isReorderable}
+          menu={<Menu.Item key="rename">Rename</Menu.Item>}
+          onChange={onChange}
+        >
+          <Tab key="a" title="One" />
+          <Tab key="b" title="Two" menuTriggerProps={{ qa: 'TabMenu-b' }} />
+        </Tabs>,
+      );
+
+      await tapAt(centerOf(screen.getByTestId('TabMenu-b')));
+
+      // Bounded below the test timeout, so a menu that never opens reports
+      // the missing menu rather than a timeout.
+      expect(
+        await screen.findByRole('menu', {}, { timeout: 2000 }),
+      ).toBeInTheDocument();
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByTestId('Tab-a')).toHaveAttribute('data-active');
+    },
+  );
+
+  it('deletes a tab on a tap on its close button, without selecting it', async () => {
+    const onDelete = vi.fn();
+
+    renderTabs({ onDelete });
+
+    await tapAt(centerOf(closeButtonOf('Tab-b')));
+
+    await waitFor(() => expect(onDelete).toHaveBeenCalledWith('b'), {
+      timeout: 2000,
+    });
+    expect(screen.getByTestId('Tab-a')).toHaveAttribute('data-active');
+  });
+
+  /**
+   * The menu renders in a portal but inside the run's React tree, so a tap on
+   * one of its items passed the same stop and ended as a miss too.
+   */
+  describe('the tab’s menu, by tap', () => {
+    function MenuTabs(props: {
+      onTitleChange?: (key: string, title: string) => void;
+      onAction?: (action: string, tabKey: string) => void;
+    }) {
+      return (
+        <Tabs
+          isEditable
+          isReorderable
+          aria-label="tabs"
+          type="file"
+          defaultActiveKey="a"
+          menu={
+            <>
+              <Menu.Item key="rename">Rename</Menu.Item>
+              <Menu.Item key="duplicate">Duplicate</Menu.Item>
+            </>
+          }
+          {...props}
+        >
+          <Tab key="a" title="One" menuTriggerProps={{ qa: 'TabMenu-a' }} />
+          <Tab key="b" title="Two" />
+        </Tabs>
+      );
+    }
+
+    async function tapMenuItem(name: string) {
+      await tapAt(centerOf(screen.getByTestId('TabMenu-a')));
+      await tapAt(
+        centerOf(
+          await screen.findByRole('menuitem', { name }, { timeout: 2000 }),
+        ),
+      );
+    }
+
+    it('renames the tab, keeping the caret in the input past the menu’s exit', async () => {
+      const onTitleChange = vi.fn();
+
+      renderWithRoot(<MenuTabs onTitleChange={onTitleChange} />);
+      await tapMenuItem('Rename');
+
+      const input = await screen.findByRole(
+        'textbox',
+        { name: 'Edit tab title' },
+        { timeout: 2000 },
+      );
+
+      await waitFor(() => expect(input).toHaveFocus(), { timeout: 2000 });
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+      });
+      expect(input).toHaveFocus();
+      expect(onTitleChange).not.toHaveBeenCalled();
+    });
+
+    it('runs an item’s action once, for its own tab', async () => {
+      const onAction = vi.fn();
+
+      renderWithRoot(<MenuTabs onAction={onAction} />);
+      await tapMenuItem('Duplicate');
+
+      await waitFor(() => expect(onAction).toHaveBeenCalled(), {
+        timeout: 2000,
+      });
+      // Past the click Aria synthesizes 80 ms after a lift with no click.
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      });
+      expect(onAction.mock.calls).toEqual([['duplicate', 'a']]);
+      // The menu closes, once its exit transition ends.
+      await waitFor(
+        () => expect(screen.queryByRole('menu')).not.toBeInTheDocument(),
+        { timeout: 2000 },
+      );
+    });
   });
 });
