@@ -40,7 +40,7 @@ The [Modern Form guide](modern-form-guide.md) is the reference for implementing 
 | Area | Migration decision |
 | --- | --- |
 | Field bindings and paths | Use `name={path}` for ordinary binding or `field={form.field(path, options)}` for model-aware type checking. Strings are literal keys; convert legacy dot notation to tuple names for nested data. Do not configure the same binding through `field`, `name`, and `form`. |
-| Empty API values | Include `null` in the model where the API returns it. Built-in typed bindings display an empty state without rewriting the stored null. |
+| Empty API values | Include `null` in the model where the API returns it. Built-in typed bindings display an empty state without rewriting the stored null. A cleared `NumberInput` holds `NaN` in a legacy form and `null` in a modern one, so replace a `Number.isNaN` check on submitted values with a `null` check. |
 | Render-time reads | Use `useValue`, `useFieldState`, or selectors. Imperative getters and the controller creator do not subscribe React. |
 | Late defaults | Defaults initialize once. Choose adoption to preserve edits, reset for a new editing session, or baseline-only updates deliberately. |
 | Programmatic writes | `setValue` / `setValues` do not touch or invoke `onValuesChange` by default. Review `source`, `touch`, `notify`, and `validate` options. |
