@@ -31,6 +31,10 @@ describe('prepare-docs', () => {
     expect(files.has('docs/components/form/modern-form-migration.md')).toBe(
       true,
     );
+    // A Cloud benchmark for contributors, not a guide for consumers.
+    expect(files.has('docs/components/form/modern-form-typecheck.md')).toBe(
+      false,
+    );
     expect(linked.sort()).toEqual(
       [...files.keys()].filter((file) => file !== 'docs/llms.txt').sort(),
     );
@@ -170,9 +174,15 @@ import { Button } from '@cube-dev/ui-kit';
     it('report a dead link, and leave anchors, URLs and inline code alone', () => {
       expect(
         rewrite(
-          '[x](/docs/nothing--docs) [y](/components/Modal) [z](./gone.md)',
+          '[x](/docs/nothing--docs) [y](/components/Modal) [z](./gone.md) [s](/story/nothing--basic)',
         ).errors,
-      ).toHaveLength(3);
+      ).toHaveLength(4);
+      // A story route needs only its stories title to exist.
+      expect(rewrite('[s](/story/content-avatar--basic)')).toEqual({
+        result:
+          '[s](https://cube-ui-kit.vercel.app/?path=/story/content-avatar--basic)',
+        errors: [],
+      });
       expect(
         rewrite(
           '[a](#props) [b](https://example.com) `[c](/docs/nothing--docs)`',
@@ -191,6 +201,11 @@ import { Button } from '@cube-dev/ui-kit';
         '# Toast\n\n## Examples\n\n### Basic\n\n### Progress\n\n## Props\n\n- `title`\n\n## Component\n\n---\n\n## Notes\n',
       ),
     ).toBe('# Toast\n\n## Props\n\n- `title`\n\n---\n');
+    // The documented structure: `---` separates a section from its subsections.
+    const dialog =
+      '# Dialog\n\n## When to Use\n\n- a\n\n## Component\n\n---\n\n### Properties\n\n- x\n';
+
+    expect(pruneEmptySections(dialog)).toBe(dialog);
   });
 
   it('indexes guides, then components by category, with one sentence each', () => {

@@ -92,7 +92,7 @@
     "check:react-package": "node scripts/compiler/check-package.mjs",
     "check:component-tokens": "node scripts/check-component-tokens.mjs",
     "check:typography-presets": "node scripts/check-typography-presets.mjs",
-    "check:harness": "harnesspm check",
+    "check:harness": "node scripts/prepare-docs.mjs --check && harnesspm check",
     "check:consumer-declarations": "node scripts/check-consumer-declarations.mjs"
   },
   "keywords": [

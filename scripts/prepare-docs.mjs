@@ -3,12 +3,14 @@
  * plain Markdown in `docs/`, and `docs/llms.txt` indexes them. The harness
  * names `docs/` as UI Kit's docs (`harness/plugin.json`), so harnesspm gives
  * consumers' agents that index as `uikit:docs`. `--clean`, at `postpack`,
- * removes what the build wrote.
+ * removes what the build wrote. `--check` builds in memory, writes nothing and
+ * fails on a problem: `pnpm check:harness` runs it in CI's lint job, which every
+ * PR runs, because a page can link to any file in the repository.
  *
  *   src/stories/{Name}.docs.mdx                        -> docs/{Name}.md
  *   src/components/{Name}.docs.mdx                     -> docs/components/{Name}.md
  *   src/components/{category}/[{Dir}/]{Name}.docs.mdx  -> docs/components/{category}/{Name}.md
- *   src/components/form/Form/modern-form-*.md          -> docs/components/form/modern-form-*.md
+ *   src/components/form/Form/modern-form-migration.md  -> docs/components/form/modern-form-migration.md
  *
  * A page loses its imports and Storybook blocks (`<Meta>`, `<Story>`,
  * `<Canvas>`, …). A guide that a page renders with `<Markdown>` is inlined
@@ -22,9 +24,10 @@
  * - A relative link, or a GitHub link into this repository, leads to the page
  *   made from that file. A file that exists but doesn't ship gets a GitHub link.
  *
- * A link that leads nowhere fails the build, so dead links never ship.
+ * A link that leads nowhere fails the build, so dead links never ship, and so
+ * does a page without a `#` title, which the index needs.
  *
- * Usage: node scripts/prepare-docs.mjs [--clean]
+ * Usage: node scripts/prepare-docs.mjs [--clean | --check]
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -36,8 +39,11 @@ const DOCS = 'docs';
 const MANIFEST = '.docs-generated';
 const STORYBOOK = 'https://cube-ui-kit.vercel.app/';
 const GITHUB = 'https://github.com/cube-js/cube-ui-kit/';
-/** Guides that ship as pages of their own, next to their component's page. */
-const GUIDE = /^src\/components\/form\/Form\/modern-form-[a-z-]+\.md$/;
+/**
+ * Guides that ship as pages of their own, next to their component's page. A
+ * guide a page renders with `<Markdown>` ships as that page instead.
+ */
+const GUIDES = ['src/components/form/Form/modern-form-migration.md'];
 const STORIES = /\.stories\.[jt]sx?$/;
 
 const posix = path.posix;
@@ -136,8 +142,10 @@ function mapProse(text, fn) {
 
 /**
  * Drops the headings left with nothing under them, such as a section that
- * held only a story: the next content is a heading of the same or a higher
- * level, a `---` or the end. Repeats, so a section left empty goes too.
+ * held only a story: the next content, past blank lines and `---`, is a
+ * heading of the same or a higher level, or the end. Repeats, so a section
+ * left empty goes too. A `---` is no content: in the documented page structure
+ * it separates `## Component` from its `### Properties`.
  */
 export function pruneEmptySections(markdown) {
   let lines = markdown.split('\n');
@@ -153,13 +161,15 @@ export function pruneEmptySections(markdown) {
 
       let next = i + 1;
 
-      while (next < lines.length && lines[next].trim() === '') next++;
+      while (
+        next < lines.length &&
+        (lines[next].trim() === '' ||
+          (!code[next] && lines[next].trim() === '---'))
+      ) {
+        next++;
+      }
 
-      return (
-        next === lines.length ||
-        level(next) <= own ||
-        (!code[next] && lines[next].trim() === '---')
-      );
+      return next === lines.length || level(next) <= own;
     });
 
     if (!empty.includes(true)) break;
@@ -258,7 +268,9 @@ export function rewriteLinks(line, { file, out, site, errors }) {
       const page = kind === 'docs' && site.pageById.get(id);
 
       if (page) return relative(out, page) + hash;
-      if (kind === 'story' || site.ids.has(id)) {
+      // A story id is `<title>--<story>`: its title must be a stories file's.
+      // The story's own name goes unchecked.
+      if (site.ids.has(id.replace(/--.*$/, '--docs'))) {
         return `${STORYBOOK}?path=/${kind}/${id}${hash}`;
       }
 
@@ -401,7 +413,7 @@ function sources() {
 
 /**
  * Builds every page in memory. Returns `{ files, warnings }`, where `files`
- * maps an output path to its content; throws with every dead link.
+ * maps an output path to its content; throws with every problem.
  */
 export function buildDocs() {
   const all = sources();
@@ -439,10 +451,15 @@ export function buildDocs() {
     }
   }
 
-  const guides = all.filter((file) => GUIDE.test(file) && !inlined.has(file));
+  const errors = [];
+  const guides = GUIDES.filter((file) => {
+    if (!exists(file))
+      errors.push(`${file}: a guide in GUIDES that is missing`);
+
+    return exists(file) && !inlined.has(file);
+  });
   const pages = [...docs, ...guides];
   const files = new Map();
-  const errors = [];
 
   for (const file of pages) site.outputs.set(file, outputOf(file));
   for (const [file, out] of inlined) site.outputs.set(file, out);
@@ -463,21 +480,25 @@ export function buildDocs() {
 
   for (const file of pages) {
     const out = outputOf(file);
+    const markdown = pruneEmptySections(convert(file, out));
 
-    files.set(out, pruneEmptySections(convert(file, out)));
+    if (!summarize(markdown).title) {
+      errors.push(`${file}: no # title, which its line in llms.txt needs`);
+    }
+
+    files.set(out, markdown);
   }
 
   if (errors.length > 0) {
     throw new Error(
-      `The docs have ${errors.length} dead link(s):\n${errors.map((e) => `  ${e}`).join('\n')}`,
+      `The docs have ${errors.length} problem(s):\n${errors.map((e) => `  ${e}`).join('\n')}`,
     );
   }
 
-  const index = [...files].map(([out, markdown]) => {
-    const { title, description } = summarize(markdown);
-
-    return { out, title: title ?? posix.basename(out, '.md'), description };
-  });
+  const index = [...files].map(([out, markdown]) => ({
+    out,
+    ...summarize(markdown),
+  }));
 
   files.set(`${DOCS}/llms.txt`, llmsIndex(index));
 
@@ -510,6 +531,14 @@ function main() {
 
   const { files, warnings } = buildDocs();
 
+  for (const warning of warnings) console.warn(`[prepare-docs] ${warning}`);
+
+  if (process.argv.includes('--check')) {
+    console.log(`[prepare-docs] ${files.size} files build with no problem`);
+
+    return;
+  }
+
   cleanDocs();
 
   for (const [file, content] of files) {
@@ -522,7 +551,6 @@ function main() {
     `${[...files.keys()].join('\n')}\n`,
   );
 
-  for (const warning of warnings) console.warn(`[prepare-docs] ${warning}`);
   console.log(`[prepare-docs] Wrote ${files.size} files to ${DOCS}/`);
 }
 
