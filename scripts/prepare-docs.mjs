@@ -267,9 +267,10 @@ export function rewriteLinks(line, { file, out, site, errors }) {
       return url + hash;
     }
 
-    const github = new RegExp(
-      `^${GITHUB.replace(/[.]/g, '\\.')}(?:blob|tree)/main/(.+)$`,
-    ).exec(url);
+    const github =
+      /^https:\/\/github\.com\/cube-js\/cube-ui-kit\/(?:blob|tree)\/main\/(.+)$/.exec(
+        url,
+      );
     let repoPath;
 
     if (github) repoPath = github[1];
