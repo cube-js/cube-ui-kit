@@ -222,13 +222,14 @@ useProgressToast({
 
 For component-based usage, use `<Toast.Progress>`:
 
-````jsx
+```jsx
 <Toast.Progress
   {...(isLoading
     ? { isLoading: true, title: 'Saving...' }
     : { isLoading: false, title: 'Saved!', theme: 'success' }
   )}
 />
+```
 
 ### Interactive Progress State Toggle
 
@@ -249,22 +250,26 @@ Maximum 3 toasts are visible at once. When the limit is exceeded, the oldest toa
 ## Toast Behavior
 
 ### Positioning
+
 - Fixed at top center of the viewport
 - 16px from the top edge, plus `$overlay-inset-top` when the app sets it (see [Notification → Positioning](/docs/overlays-notification--docs#positioning))
 - Toasts stack vertically (newest at bottom)
 
 ### Collapse on Hover
+
 - Moving the pointer over toasts collapses them to reveal content behind them
 - A toast appearing under a resting pointer stays expanded until the pointer moves over it
 - Only 10px of the newest toast remains visible
 - Moving the mouse away restores the full toast display
 
 ### Auto-dismiss
+
 - Default duration: 5 seconds
 - Progress toasts remain visible while `isLoading` is true
 - Set `duration: null` for persistent toasts
 
 ### Limits
+
 - Maximum 3 visible toasts
 - Progress toasts count toward the limit
 - At least 1 temporal toast is always allowed, even with 3 progress toasts
@@ -292,7 +297,7 @@ Maximum 3 toasts are visible at once. When the limit is exceeded, the oldest toa
 
    ```jsx
    toast.success('Changes saved');
-````
+   ```
 
 2. **Don't**: Use overly long or technical messages
 
@@ -306,5 +311,5 @@ Maximum 3 toasts are visible at once. When the limit is exceeded, the oldest toa
 
 ## Related Components
 
-- [Item](/components/Item) - Base component used for toast rendering
-- [Alert](/components/Alert) - For persistent, inline feedback
+- [Item](/docs/content-item--docs) - Base component used for toast rendering
+- [Alert](/docs/content-alert--docs) - For persistent, inline feedback

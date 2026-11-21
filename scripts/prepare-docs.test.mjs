@@ -1,0 +1,219 @@
+// @vitest-environment node
+import {
+  buildDocs,
+  llmsIndex,
+  metaTitle,
+  outputOf,
+  pruneEmptySections,
+  rewriteLinks,
+  storyId,
+  stripMdx,
+  summarize,
+} from './prepare-docs.mjs';
+
+describe('prepare-docs', () => {
+  it('builds every page with no dead link, and indexes each one', () => {
+    const { files, warnings } = buildDocs();
+    const index = files.get('docs/llms.txt');
+    const linked = [...index.matchAll(/^- \[.*?\]\(([^)]+)\)/gm)].map(
+      ([, link]) => `docs/${link}`,
+    );
+
+    expect(warnings).toEqual([]);
+    expect(files.get('docs/components/actions/Button.md')).toMatch(
+      /^# Button\n/,
+    );
+    // The guide ModernForm.docs.mdx renders is that page, not a page of its own.
+    expect(files.get('docs/components/form/ModernForm.md')).toMatch(
+      /^# Modern Form/,
+    );
+    expect(files.has('docs/components/form/modern-form-guide.md')).toBe(false);
+    expect(files.has('docs/components/form/modern-form-migration.md')).toBe(
+      true,
+    );
+    expect(linked.sort()).toEqual(
+      [...files.keys()].filter((file) => file !== 'docs/llms.txt').sort(),
+    );
+  });
+
+  it('maps sources to short paths in docs/', () => {
+    expect(outputOf('src/stories/Usage.docs.mdx')).toBe('docs/Usage.md');
+    expect(outputOf('src/components/Block.docs.mdx')).toBe(
+      'docs/components/Block.md',
+    );
+    expect(outputOf('src/components/actions/Button/Button.docs.mdx')).toBe(
+      'docs/components/actions/Button.md',
+    );
+    expect(outputOf('src/components/actions/use-context-menu.docs.mdx')).toBe(
+      'docs/components/actions/use-context-menu.md',
+    );
+    expect(outputOf('src/components/form/Form/modern-form-migration.md')).toBe(
+      'docs/components/form/modern-form-migration.md',
+    );
+  });
+
+  it("reads the meta title, not a story's data, and makes Storybook's id", () => {
+    const stories = `
+const data = [{ key: 'a', title: 'Name' }];
+const meta = {
+  title: 'Actions/Button.Split',
+  component: ButtonSplit,
+} satisfies Meta;
+export default meta;`;
+
+    expect(metaTitle(stories)).toBe('Actions/Button.Split');
+    expect(storyId('Actions/Button.Split')).toBe('actions-button-split');
+    expect(storyId('Getting Started/Base Properties')).toBe(
+      'getting-started-base-properties',
+    );
+  });
+
+  it('drops imports and Storybook blocks, and keeps code as it is', () => {
+    const mdx = [
+      "import { Meta, Story } from '@storybook/addon-docs/blocks';",
+      'import {',
+      '  Button,',
+      "} from './Button';",
+      "import guide from './guide.md?raw';",
+      '',
+      '<Meta of={ButtonStories} />',
+      '',
+      '# Button',
+      '',
+      '<Canvas>',
+      '  <Story of={ButtonStories.Default} />',
+      '</Canvas>',
+      '',
+      '<Root',
+      '  palette={palette}',
+      '/>',
+      '',
+      '<Badge>NEW</Badge> marks a new item.',
+      '',
+      'Next paragraph.',
+      '',
+      '````jsx',
+      "import { Button } from '@cube-dev/ui-kit';",
+      '```',
+      '<Story of={X} />',
+      '````',
+      '',
+      '<Markdown>{guide}</Markdown>',
+    ].join('\n');
+
+    expect(stripMdx(mdx, 'src/components/actions/Button/Button.docs.mdx'))
+      .toBe(`# Button
+
+<Badge>NEW</Badge> marks a new item.
+
+Next paragraph.
+
+\`\`\`\`jsx
+import { Button } from '@cube-dev/ui-kit';
+\`\`\`
+<Story of={X} />
+\`\`\`\`
+
+{{include src/components/actions/Button/guide.md}}
+`);
+  });
+
+  describe('links', () => {
+    const site = {
+      outputs: new Map([
+        [
+          'src/components/form/Form/modern-form-migration.md',
+          'docs/components/form/modern-form-migration.md',
+        ],
+      ]),
+      pageById: new Map([
+        ['getting-started-base-properties--docs', 'docs/BaseProperties.md'],
+      ]),
+      ids: new Set(['content-avatar--docs']),
+    };
+    const rewrite = (line) => {
+      const errors = [];
+      const result = rewriteLinks(line, {
+        file: 'src/components/form/Form/Form.docs.mdx',
+        out: 'docs/components/form/Form.md',
+        site,
+        errors,
+      });
+
+      return { result, errors };
+    };
+
+    it('lead a Storybook route to its page, or to Storybook for an autodocs page', () => {
+      expect(
+        rewrite(
+          '[Base](/docs/getting-started-base-properties--docs#styles), [Base](?path=/docs/getting-started-base-properties--docs)',
+        ).result,
+      ).toBe(
+        '[Base](../../BaseProperties.md#styles), [Base](../../BaseProperties.md)',
+      );
+      expect(rewrite('[Avatar](/docs/content-avatar--docs)').result).toBe(
+        '[Avatar](https://cube-ui-kit.vercel.app/?path=/docs/content-avatar--docs)',
+      );
+    });
+
+    it('lead a shipped file to its page, and any other file to GitHub', () => {
+      expect(
+        rewrite(
+          '[guide](https://github.com/cube-js/cube-ui-kit/blob/main/src/components/form/Form/modern-form-migration.md#steps)',
+        ).result,
+      ).toBe('[guide](./modern-form-migration.md#steps)');
+      expect(rewrite('[form](./Form.tsx)').result).toBe(
+        '[form](https://github.com/cube-js/cube-ui-kit/blob/main/src/components/form/Form/Form.tsx)',
+      );
+    });
+
+    it('report a dead link, and leave anchors, URLs and inline code alone', () => {
+      expect(
+        rewrite(
+          '[x](/docs/nothing--docs) [y](/components/Modal) [z](./gone.md)',
+        ).errors,
+      ).toHaveLength(3);
+      expect(
+        rewrite(
+          '[a](#props) [b](https://example.com) `[c](/docs/nothing--docs)`',
+        ),
+      ).toEqual({
+        result:
+          '[a](#props) [b](https://example.com) `[c](/docs/nothing--docs)`',
+        errors: [],
+      });
+    });
+  });
+
+  it('drops sections left empty, and keeps one with content below', () => {
+    expect(
+      pruneEmptySections(
+        '# Toast\n\n## Examples\n\n### Basic\n\n### Progress\n\n## Props\n\n- `title`\n\n## Component\n\n---\n\n## Notes\n',
+      ),
+    ).toBe('# Toast\n\n## Props\n\n- `title`\n\n---\n');
+  });
+
+  it('indexes guides, then components by category, with one sentence each', () => {
+    const { title, description } = summarize(
+      '# Button\n\n## When to Use\n\nA versatile [action](../Action.md) component. It does **more**.\n',
+    );
+
+    expect({ title, description }).toEqual({
+      title: 'Button',
+      description: 'A versatile action component.',
+    });
+    expect(
+      llmsIndex([
+        {
+          out: 'docs/components/actions/Button.md',
+          title: 'Button',
+          description,
+        },
+        { out: 'docs/components/Block.md', title: 'Block' },
+        { out: 'docs/Usage.md', title: 'Usage Guide' },
+      ]),
+    ).toContain(
+      '## Guides\n\n- [Usage Guide](Usage.md)\n\n## Components\n\n- [Block](components/Block.md)\n\n## Actions\n\n- [Button](components/actions/Button.md): A versatile action component.\n',
+    );
+  });
+});

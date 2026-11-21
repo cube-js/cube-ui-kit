@@ -221,7 +221,6 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 ## @cube-dev/ui-kit (this project)
 
 - Always-on rule: UI Kit — Components, Styling, Typography. Read it with `help @cube-dev/ui-kit` (uikit:rules/usage)
-- Docs: node_modules/.harnesspm/docs/uikit/llms.txt (uikit:docs)
 - Tool: `uikit:colors` — Look up UI Kit color tokens by name: values in light, dark and high contrast, and contrast against their base, or with --on against another surface (uikit:scripts/colors)
 
 <!-- END:harnesspm -->

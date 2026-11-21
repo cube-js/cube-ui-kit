@@ -55,8 +55,8 @@ export const KINDS = [
     reads: [],
     test: /^((\.changeset|\.husky|\.claude|\.cursor|\.agents|docs\/rules|harnesspm)\/|harnesspm(\.lock)?\.json$)/,
   },
-  // Shipped in the package, and `ModernForm.docs.mdx` imports one. Before the
-  // catch-all `notes`, which takes every other `.md`.
+  // Built into the package's `docs/` like the pages, and `ModernForm.docs.mdx`
+  // imports one. Before the catch-all `notes`, which takes every other `.md`.
   {
     kind: 'docs-guide',
     reads: ['chromatic', 'canary'],
@@ -91,7 +91,8 @@ export const KINDS = [
     reads: ['tests', 'browser'],
     test: /^src\/.*\.fixture\.tsx?$/,
   },
-  // Shipped as is: harnesspm indexes the package's pages for agents.
+  // Built into the package's `docs/` at pack time (`scripts/prepare-docs.mjs`),
+  // which the canary runs.
   {
     kind: 'docs-page',
     reads: ['chromatic', 'canary'],

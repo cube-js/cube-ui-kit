@@ -17,6 +17,11 @@ size-limit-report/stats.json
 *.plan.md
 *.spec.md
 scratch
+# The docs the package ships, built at pack time by `scripts/prepare-docs.mjs`.
+# Only `docs/rules` (rules for working on UI Kit) is tracked.
+.docs-generated
+docs/*
+!docs/rules
 
 
 # Browser-test failure artifacts

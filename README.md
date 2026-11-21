@@ -80,6 +80,8 @@ setPaletteConfig((config) => ({ ...config, hue: 235 }));
 
 Browse all components with live examples in the [Storybook](https://cube-ui-kit.vercel.app/).
 
+The package ships the same docs as plain Markdown, for people and coding agents: `node_modules/@cube-dev/ui-kit/docs/llms.txt` lists every page, such as `docs/components/actions/Button.md`. In a project that uses [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm), agents get that index, UI Kit's rule and tools, and the harnesses of Tasty and Glaze.
+
 ## Styling with Tasty
 
 Cube UI Kit uses [Tasty](https://github.com/tenphi/tasty) — a styling engine that generates conflict-free CSS using mutually exclusive selectors.
