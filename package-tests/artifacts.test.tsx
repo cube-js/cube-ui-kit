@@ -92,8 +92,8 @@ it('ships the docs as plain Markdown in docs/, which llms.txt indexes for the ha
 });
 
 it('passes harnesspm check as packed: every docs link leads to a shipped file', () => {
-  // On the extracted package, no .gitignore hides the built docs from the
-  // check, as it does in the repository.
+  // `prepack` runs the same check in the repository. This one reads exactly
+  // what ships.
   const output = execFileSync(
     resolve('node_modules/.bin/harnesspm'),
     ['check', packageRoot],
