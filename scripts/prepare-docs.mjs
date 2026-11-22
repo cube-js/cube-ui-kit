@@ -310,14 +310,14 @@ export function rewriteLinks(line, { file, out, site, errors }) {
   };
 
   // Inline code keeps its text: only the parts outside backticks are links. A
-  // link may have a title: `[text](url "title")`.
+  // link may have a title, `[text](url 'title')`, single-quoted after Prettier.
   return line
     .split(/(`[^`]*`)/)
     .map((part, index) =>
       index % 2
         ? part
         : part.replace(
-            /\]\(([^)\s#]*)(#[^)\s]*)?(\s+"[^"]*")?\)/g,
+            /\]\(([^)\s#]*)(#[^)\s]*)?(\s+(?:"[^"]*"|'[^']*'))?\)/g,
             (match, url, hash = '', title = '') =>
               url === '' ? match : `](${target(url, hash)}${title})`,
           ),

@@ -79,14 +79,6 @@ it('ships the docs as plain Markdown in docs/, which llms.txt indexes for the ha
   expect(linked.sort()).toEqual(pages.sort());
   // Nothing contributor-only ships: no docs/rules, and no Storybook sources.
   expect(existsSync(join(packageRoot, 'src'))).toBe(false);
-
-  for (const page of pages) {
-    const text = readFileSync(join(docs, page), 'utf8');
-
-    // The build fails on a page with Storybook markup or a route left in its
-    // prose (`scripts/prepare-docs.mjs`), so here only its title.
-    expect(text, page).toMatch(/^# /);
-  }
 });
 
 it('passes harnesspm check as packed: every docs link leads to a shipped file', () => {

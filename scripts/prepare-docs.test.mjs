@@ -132,9 +132,9 @@ import { Button } from '@cube-dev/ui-kit';
       );
       expect(
         rewrite(
-          '[Base](/docs/getting-started-base-properties--docs "Base properties")',
+          "[Base](/docs/getting-started-base-properties--docs 'Base properties')",
         ).result,
-      ).toBe('[Base](../../BaseProperties.md "Base properties")');
+      ).toBe("[Base](../../BaseProperties.md 'Base properties')");
       expect(rewrite('[Avatar](/docs/content-avatar--docs)').result).toBe(
         '[Avatar](https://cube-ui-kit.vercel.app/?path=/docs/content-avatar--docs)',
       );
