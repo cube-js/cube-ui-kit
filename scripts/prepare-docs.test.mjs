@@ -8,6 +8,7 @@ import {
   outputOf,
   pruneEmptySections,
   rewriteLinks,
+  storybookLeft,
   storyId,
   stripMdx,
   summarize,
@@ -129,6 +130,11 @@ import { Button } from '@cube-dev/ui-kit';
       ).toBe(
         '[Base](../../BaseProperties.md#styles), [Base](../../BaseProperties.md)',
       );
+      expect(
+        rewrite(
+          '[Base](/docs/getting-started-base-properties--docs "Base properties")',
+        ).result,
+      ).toBe('[Base](../../BaseProperties.md "Base properties")');
       expect(rewrite('[Avatar](/docs/content-avatar--docs)').result).toBe(
         '[Avatar](https://cube-ui-kit.vercel.app/?path=/docs/content-avatar--docs)',
       );
@@ -171,6 +177,18 @@ import { Button } from '@cube-dev/ui-kit';
         errors: [],
       });
     });
+  });
+
+  it('finds Storybook markup or a route left in prose, not in code', () => {
+    expect(storybookLeft('# A\n\n<Story of={X} /> shows it.\n')).toBe('<Story');
+    expect(storybookLeft('# A\n\n[ref]: /docs/content-avatar--docs\n')).toBe(
+      '[ref]: /docs/content-avatar--docs',
+    );
+    expect(
+      storybookLeft(
+        "# A\n\n`[c](/docs/x--docs)` in code.\n\n```ts\nimport type { Meta } from '@storybook/react-vite';\n<Story of={X} />\n```\n",
+      ),
+    ).toBe(undefined);
   });
 
   it('drops sections left empty, and keeps one with content below', () => {

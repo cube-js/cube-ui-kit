@@ -21,11 +21,15 @@
  *   Storybook URL) leads to the page made from that docs file. A component
  *   with stories but no docs file has an autodocs page only, so its route
  *   becomes the Storybook URL.
+ * - A story route (`/story/<title>--<story>`) becomes the Storybook URL when a
+ *   stories file has that title.
  * - A relative link, or a GitHub link into this repository, leads to the page
  *   made from that file. A file that exists but doesn't ship gets a GitHub link.
  *
- * A link that leads nowhere fails the build, so dead links never ship, and so
- * does a page without a `#` title, which the index needs.
+ * The build fails, so none of these ship: a link that leads nowhere; a page
+ * without a Storybook title from its `<Meta>`; a page that doesn't start with
+ * the `#` title the index needs; Storybook markup or a route left in a page;
+ * two sources that become one page; a missing guide in `GUIDES`.
  *
  * Usage: node scripts/prepare-docs.mjs [--clean | --check]
  */
@@ -305,19 +309,41 @@ export function rewriteLinks(line, { file, out, site, errors }) {
     return github ? url + hash : `${GITHUB}blob/main/${repoPath}${hash}`;
   };
 
-  // Inline code keeps its text: only the parts outside backticks are links.
+  // Inline code keeps its text: only the parts outside backticks are links. A
+  // link may have a title: `[text](url "title")`.
   return line
     .split(/(`[^`]*`)/)
     .map((part, index) =>
       index % 2
         ? part
         : part.replace(
-            /\]\(([^)\s#]*)(#[^)\s]*)?\)/g,
-            (match, url, hash = '') =>
-              url === '' ? match : `](${target(url, hash)})`,
+            /\]\(([^)\s#]*)(#[^)\s]*)?(\s+"[^"]*")?\)/g,
+            (match, url, hash = '', title = '') =>
+              url === '' ? match : `](${target(url, hash)}${title})`,
           ),
     )
     .join('');
+}
+
+/** Storybook markup or a route that a built page's prose still holds, if any. */
+export function storybookLeft(markdown) {
+  let found;
+
+  mapProse(markdown, (line) => {
+    const prose = line.split(/`[^`]*`/).join('');
+
+    found ??=
+      /^\s*(<(Meta|Story|Canvas|ArgTypes|Controls|Source|Markdown)\b|import .* from ['"]@storybook)/.exec(
+        prose,
+      )?.[0] ??
+      /(\]\(|^\s*\[[^\]]+\]:\s*)(\?path=)?\/(docs|story)\/[^)\s]*/.exec(
+        prose,
+      )?.[0];
+
+    return [line];
+  });
+
+  return found;
 }
 
 /**
@@ -438,7 +464,8 @@ export function buildDocs() {
     const out = outputOf(file);
     const title = pageTitle(file, text);
 
-    // docs/rules/documentation.md: a page starts with `<Meta of={Stories} />`.
+    // docs/rules/documentation.md: a page starts with `<Meta of={Stories} />`;
+    // a page with no stories names its title with `<Meta title="…" />`.
     if (title) site.pageById.set(`${storyId(title)}--docs`, out);
     else errors.push(`${file}: no Storybook title from its <Meta>`);
 
@@ -482,6 +509,10 @@ export function buildDocs() {
     if (!summarize(markdown).title) {
       errors.push(`${file}: doesn't start with the # title llms.txt needs`);
     }
+
+    const left = storybookLeft(markdown);
+
+    if (left) errors.push(`${file}: Storybook markup or a route left: ${left}`);
 
     files.set(out, markdown);
   }

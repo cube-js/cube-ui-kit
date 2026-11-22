@@ -83,11 +83,9 @@ it('ships the docs as plain Markdown in docs/, which llms.txt indexes for the ha
   for (const page of pages) {
     const text = readFileSync(join(docs, page), 'utf8');
 
+    // The build fails on a page with Storybook markup or a route left in its
+    // prose (`scripts/prepare-docs.mjs`), so here only its title.
     expect(text, page).toMatch(/^# /);
-    expect(text, page).not.toMatch(
-      /^(<(Meta|Story|Canvas|ArgTypes|Markdown)\b|import .* from ['"]@storybook)/m,
-    );
-    expect(text, page).not.toMatch(/\]\((\?path=)?\/(docs|story)\//);
   }
 });
 
