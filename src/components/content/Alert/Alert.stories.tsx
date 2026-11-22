@@ -22,6 +22,7 @@ const THEMES = [
   'warning',
   'special',
   'disabled',
+  'neutral',
 ] as const;
 
 export const Default = Template.bind({});
@@ -44,6 +45,17 @@ Themes.parameters = {
     },
   },
 };
+
+export const Sizes: StoryFn<CubeAlertProps> = (args) => (
+  <Space gap="1.5x" flow="column">
+    <Alert {...args} size="medium">
+      medium — `t3` text and `1.5x` padding (default)
+    </Alert>
+    <Alert {...args} size="small">
+      small — `t4` text and `1x` padding
+    </Alert>
+  </Space>
+);
 
 export const Shapes: StoryFn<CubeAlertProps> = (args) => (
   <Space gap="1.5x" flow="column">

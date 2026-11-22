@@ -31,7 +31,7 @@ An empty state or result display with icon, title, and optional content. Support
 - **`subTitle`** `ReactNode` — Deprecated: use `subtitle` instead
 - **`icon`** `ReactNode` — Custom icon that replaces the status icon
 - **`size`** `'medium' | 'large'` (default: `'medium'`) — Visual scale: the icon size and the title and subtitle presets. Does not change the layout. Ignored when `isCompact` is set
-- **`layout`** `'default' | 'stacked'` (default: `'default'`) — Arrangement of the block. `stacked` fills the container and stacks the actions to the full width, as in a confirmation or result dialog. Ignored when `isCompact` is set
+- **`layout`** `'default' | 'stacked' | 'tight'` (default: `'default'`) — Arrangement of the block. `stacked` fills the container and stacks the actions to the full width, as in a confirmation or result dialog. `tight` spaces the blocks by `gap` alone, with no padding and no room around the icon, for a result in a box that clips, such as a dashboard tile. Ignored when `isCompact` is set
 - **`isCompact`** `boolean` (default: `false`) — Compact horizontal layout. Overrides `size` and `layout`
 - **`isQueryContainer`** `boolean` (default: `false`) — Makes the result the `result` query container (`container: result / inline-size`), so its content can respond to its width: `@(result, w < 400px)`, or `collapseState` on a `Button`. Set it only on a result whose width comes from outside, such as the `stacked` layout: a query container ignores its content's width, and a result centered by its auto margins in a flex parent is sized by its content, so it would shrink to its padding
 - **`actions`** `ReactNode` — Action buttons as `Result.Action` elements: a centered row by default, a full-width column in the `stacked` layout
@@ -55,9 +55,9 @@ Customizes the root element of the component.
 
 **Sub-elements:**
 
-- `Icon` - The status icon wrapper. Colored by the `status` modifier, padded on every side by `3x`, or a quarter of `--icon-size` when that is larger (an icon above `12x`), so the room never drops below the spacing between the other blocks, and that room is the whole distance to the title (no padding when `isCompact`). Wraps a custom `icon` too, with the same room and without a status color. Not rendered for a status without an icon (`404`, `403`, `500`)
+- `Icon` - The status icon wrapper. Colored by the `status` modifier, padded on every side by `3x`, or a quarter of `--icon-size` when that is larger (an icon above `12x`), so the room never drops below the spacing between the other blocks, and that room is the whole distance to the title (no padding when `isCompact` or `layout="tight"`). Wraps a custom `icon` too, with the same room and without a status color. Not rendered for a status without an icon (`404`, `403`, `500`)
 - `Title` - The text block holding the title and the subtitle
-- `Content` - The free `children` block
+- `Content` - The free `children` block, never wider than the Result
 - `Actions` - The `actions` block
 
 ### Style Defaults
@@ -66,11 +66,11 @@ Customizes the root element of the component.
 - `flow` — `column`
 - `placeContent` — `center` (switches to `start` when `isCompact`)
 - `placeItems` — `center` (switches to `start` when `isCompact`)
-- `gap` — `0`; `Content` and `Actions` keep `3x` from the block above with a top margin (`2x 1x` and no margins when `isCompact`)
-- `padding` — `6x 4x` (`0` when `isCompact`; `1.5x` when `layout="stacked"`, and `0` for a stacked Result inside a `Dialog`, whose `Content` already pads it. The `@in-dialog` state is the Result's own, so `styles={{ padding: { 'layout=stacked & @in-dialog': '1x' } }}` sets it and keeps the rest of the default padding)
+- `gap` — `0`; `Content` and `Actions` keep `3x` from the block above with a top margin (`2x 1x` and no margins when `isCompact`; `1x` and no margins when `layout="tight"`, so the `gap` prop alone spaces the blocks)
+- `padding` — `6x 4x` (`0` when `isCompact` or `layout="tight"`; `1.5x` when `layout="stacked"`, and `0` for a stacked Result inside a `Dialog`, whose `Content` already pads it. The `@in-dialog` state is the Result's own, so `styles={{ padding: { 'layout=stacked & @in-dialog': '1x' } }}` sets it and keeps the rest of the default padding)
 - `textAlign` — `center` (switches to `left` when `isCompact`)
 - `boxSizing` — `border-box`
-- `width` — `max 80ch` (caps the readable line length; override via the `width` prop). `100%` up to `80ch` when `layout="stacked"`, so the stacked actions share one width wherever the card sits
+- `width` — `max min(80ch, 100%)` (caps the readable line length, and never exceeds the container, so content that can't wrap doesn't push the Result out of a narrow one; override via the `width` prop). `100%` up to `80ch` when `layout="stacked"`, so the stacked actions share one width wherever the card sits
 - `margin` — `0 auto` (centers Result horizontally within its parent; switches to `0` when `isCompact`)
 - `--icon-size` — `6x` (`10x` when `size="large"`)
 
@@ -93,7 +93,7 @@ The root element exposes these modifiers as `data-*` attributes:
 | --- | --- | --- |
 | `compact` | `boolean` | Set by `isCompact`: horizontal icon + title layout |
 | `size` | `'medium' \| 'large'` | Set by `size`; `medium` when `isCompact` |
-| `layout` | `'default' \| 'stacked'` | Set by `layout`; `default` when `isCompact` |
+| `layout` | `'default' \| 'stacked' \| 'tight'` | Set by `layout`; `default` when `isCompact` |
 | `status` | `CubeResultStatus` | Set by `status`, `info` by default; drives the icon color. Not set when a custom `icon` is passed |
 | `query-container` | `boolean` | Set by `isQueryContainer`: the root is the `result` query container |
 
@@ -112,6 +112,7 @@ The layout arranges the block and never changes the scale. `isCompact` has its o
 
 - `default` - A centered column capped at `80ch`, actions in a centered row that wraps
 - `stacked` - Fills the container up to `80ch` with a `1.5x` padding of its own (none inside a `Dialog`), actions stacked to the full width, free `children` stretched. Combine with `size="large"` for the vertical card of a confirmation or result dialog
+- `tight` - The `default` column with every space but the `gap` taken out: no padding, no room around the icon, no margin above the content and actions. The blocks sit `1x` apart unless `gap` says otherwise, so a result in a box that clips, such as a dashboard tile, can't push its actions out of the box. The box pads, or `padding` does
 
 ## Examples
 
@@ -243,9 +244,25 @@ Inside a `Dialog` the stacked large Result is the whole body: no `Header` and no
 
 <Story of={ResultStories.InDialog} />
 
+### Tight
+
+The `tight` layout is for a result in a box that clips, such as a dashboard tile: only `gap` spaces the blocks, so the actions stay inside the box.
+
+<Canvas of={ResultStories.Tight} />
+
+```jsx
+<Result
+  layout="tight"
+  status="error"
+  title="Query failed"
+  subtitle="The data source didn't answer"
+  actions={<Result.Action>Retry</Result.Action>}
+/>
+```
+
 ### Width Limit
 
-The default `width: max 80ch` keeps long copy in a comfortable reading column even inside a much wider parent. Override the cap by passing your own `width`.
+The default `width: max min(80ch, 100%)` keeps long copy in a comfortable reading column even inside a much wider parent, and keeps the Result inside a narrower one. Override the cap by passing your own `width`.
 
 <Canvas of={ResultStories.WidthLimit} />
 

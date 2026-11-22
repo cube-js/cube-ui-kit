@@ -61,6 +61,8 @@ export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   /**
    * Arrangement of the block. `stacked` fills the container and stacks the actions to the full width,
    * as in a confirmation or result dialog. Combine with `size="large"` for the dialog card.
+   * `tight` spaces the icon, title, content and actions by `gap` alone (`1x` unless set), with no padding
+   * and no room around the icon, for a result in a box that clips, such as a dashboard tile.
    * Ignored when `isCompact` is set
    * @default 'default'
    */
@@ -79,7 +81,7 @@ export interface CubeResultProps extends BaseProps, ContainerStyleProps {
 
 export type CubeResultSize = 'medium' | 'large';
 
-export type CubeResultLayout = 'default' | 'stacked';
+export type CubeResultLayout = 'default' | 'stacked' | 'tight';
 
 export type CubeResultStatus =
   'success' | 'error' | 'info' | 'warning' | 404 | 403 | 500;
@@ -113,11 +115,15 @@ const Container = tasty({
     gap: {
       '': '0',
       compact: '2x 1x',
+      // Only the gap spaces the blocks, so a result in a box that clips, such
+      // as a dashboard tile, never pushes its actions out of the box
+      'layout=tight': '1x',
     },
     padding: {
       '': '6x 4x',
-      // The host pads: a dialog `Content` or the page section the card fills
-      compact: '0',
+      // The host pads: a dialog `Content`, the page section the card fills or
+      // the tile a tight result sits in
+      'compact | layout=tight': '0',
       'layout=stacked': '1.5x',
       // The dialog's `Content` already pads it
       'layout=stacked & @in-dialog': '0',
@@ -128,7 +134,9 @@ const Container = tasty({
     },
     boxSizing: 'border-box',
     width: {
-      '': 'max 80ch',
+      // Never wider than its container, so content that can't wrap, such as a
+      // long path, doesn't push the result out of a narrow one
+      '': 'max min(80ch, 100%)',
       // Fill the container so stacked actions share one width wherever the card sits
       'layout=stacked': '0 100% 80ch',
     },
@@ -152,7 +160,7 @@ const Container = tasty({
       // quarter of its size, so a big one is not crowded
       padding: {
         '': 'max($icon-size / 4, 3x)',
-        compact: '0',
+        'compact | layout=tight': '0',
       },
       // A custom icon keeps its own color
       color: {
@@ -179,9 +187,10 @@ const Container = tasty({
       $: '>',
       gridArea: 'content',
       display: 'block',
+      width: 'max 100%',
       margin: {
         '': 'top 3x',
-        compact: '0',
+        'compact | layout=tight': '0',
       },
       placeSelf: {
         '': 'auto',
@@ -195,7 +204,7 @@ const Container = tasty({
       display: 'flex',
       margin: {
         '': 'top 3x',
-        compact: '0',
+        'compact | layout=tight': '0',
       },
       flow: {
         '': 'row wrap',

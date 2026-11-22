@@ -52,6 +52,11 @@ const DEFAULT_ICONS: Record<BannerTheme, ReactNode> = {
 const BannerElement = tasty(Item, {
   styles: {
     width: '100%',
+    // extend: a sharp banner is a strip across the page, so like a sharp
+    // `Alert` it drops the border along with the radius
+    border: {
+      'shape=sharp': '0',
+    },
 
     Description: {
       textOverflow: 'ellipsis / 2',

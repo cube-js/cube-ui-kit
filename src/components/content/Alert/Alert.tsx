@@ -17,8 +17,14 @@ const AlertElement = tasty({
       '': '1cr',
       'shape=sharp': '0',
     },
-    padding: '1.5x',
-    preset: 't3',
+    padding: {
+      '': '1.5x',
+      'size=small': '1x',
+    },
+    preset: {
+      '': 't3',
+      'size=small': 't4',
+    },
     // Only on request, as on `Card`: an alert sized by its content would
     // shrink to its padding.
     container: { '': false, 'query-container': 'alert / inline-size' },
@@ -28,6 +34,9 @@ const AlertElement = tasty({
       // two read it as a label.
       'type=special': THEMES.special.color,
       'type=disabled': THEMES.disabled.color,
+      // `disabled`'s gray card with the regular text, for a note that is
+      // neither a status nor switched off
+      'type=neutral': '#surface-text',
     },
     fill: {
       '': '#clear',
@@ -37,6 +46,7 @@ const AlertElement = tasty({
 
         return map;
       }, {}),
+      'type=neutral': THEMES.disabled.fill,
     },
     border: {
       '': '#clear',
@@ -46,6 +56,7 @@ const AlertElement = tasty({
 
         return map;
       }, {}),
+      'type=neutral': THEMES.disabled.border,
       'shape=sharp': '0',
     },
   },

@@ -105,4 +105,35 @@ describe('<Alert /> component', () => {
       'background-color: var(--danger-alert-surface-color)',
     );
   });
+
+  it("gives the neutral theme disabled's gray card with the regular text", () => {
+    const { container } = render(<Alert theme="neutral">Text</Alert>);
+    const css = getCSSTextForNode(container);
+
+    expect(ruleFor(css, 'neutral')).toMatch(
+      /(^|[;{\s])color: var\(--surface-text-color\)/,
+    );
+    // Shares the rule with `disabled`, whose fill it reuses
+    expect(css).toMatch(
+      /\[data-type="neutral"\][^{]*\{\s*background-color: var\(--surface-2-color\)/,
+    );
+  });
+
+  it('defaults to the medium size', () => {
+    const { result } = renderHook(() => useAlert({}));
+
+    expect(result.current.mods.size).toBe('medium');
+  });
+
+  it('sets t4 text and 1x padding for the small size', () => {
+    const { container } = render(<Alert size="small">Text</Alert>);
+    const css = getCSSTextForNode(container);
+    const small =
+      css.match(/\[data-size="small"\]\)\s*\{([^}]*)\}/g)?.join('') ?? '';
+
+    expect(container.firstElementChild).toHaveAttribute('data-size', 'small');
+    expect(small).toContain('var(--t4-font-size');
+    // `1x`, which the test config resolves to pixels
+    expect(small).toContain('padding: 8px');
+  });
 });

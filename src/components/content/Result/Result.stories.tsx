@@ -1,4 +1,5 @@
 import { IconBulb, IconLock } from '@tabler/icons-react';
+import { tasty } from '@tenphi/tasty';
 import { useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
@@ -72,9 +73,9 @@ export default {
     },
     layout: {
       control: 'radio',
-      options: ['default', 'stacked'],
+      options: ['default', 'stacked', 'tight'],
       description:
-        'Arrangement of the block. `stacked` fills the container and stacks the actions to the full width, as in a confirmation or result dialog',
+        'Arrangement of the block. `stacked` fills the container and stacks the actions to the full width, as in a confirmation or result dialog. `tight` spaces the blocks by `gap` alone, for a result in a box that clips, such as a dashboard tile',
       table: {
         defaultValue: { summary: 'default' },
       },
@@ -321,6 +322,48 @@ InDialog.parameters = {
   },
 };
 
+// A dashboard-sized tile that clips what doesn't fit
+const TileElement = tasty({
+  styles: {
+    display: 'grid',
+    placeContent: 'center',
+    width: '36x',
+    height: '24x',
+    padding: '1x',
+    overflow: 'hidden',
+    border: true,
+    radius: true,
+  },
+});
+
+const TilesElement = tasty({
+  styles: { display: 'flex', gap: '2x' },
+});
+
+export const Tight: StoryFn<CubeResultProps> = () => (
+  <TilesElement>
+    {(['default', 'tight'] as const).map((layout) => (
+      <TileElement key={layout}>
+        <Result
+          layout={layout}
+          status="error"
+          title="Query failed"
+          subtitle={layout}
+          actions={<Result.Action>Retry</Result.Action>}
+        />
+      </TileElement>
+    ))}
+  </TilesElement>
+);
+Tight.parameters = {
+  docs: {
+    description: {
+      story:
+        'The same result in two tiles of the same size. The `default` layout keeps its padding, the room around the icon and the margins above the actions, so the box clips the button; `tight` keeps only the `1x` gap and fits.',
+    },
+  },
+};
+
 export const WidthLimit: StoryFn<CubeResultProps> = (args) => (
   <Result {...args} />
 );
@@ -334,7 +377,7 @@ WidthLimit.parameters = {
   docs: {
     description: {
       story:
-        'The default `width: max 80ch` on `Result` constrains long titles and subtitles to a comfortable reading width even inside a much wider parent.',
+        'The default `width: max min(80ch, 100%)` on `Result` constrains long titles and subtitles to a comfortable reading width even inside a much wider parent, and keeps the Result inside a narrower one.',
     },
   },
 };

@@ -12,11 +12,18 @@ export interface CubeAlertProps
    */
   type?: keyof typeof THEMES;
   /**
-   * Changes the appearance of the Alert component
+   * Changes the appearance of the Alert component. `neutral` is a gray card
+   * with the regular text color, for a note that carries no status
    *
    * @default note
    */
-  theme?: keyof typeof THEMES;
+  theme?: keyof typeof THEMES | 'neutral';
+  /**
+   * `small` sets `t4` text and `1x` padding, for an alert in a dense panel
+   *
+   * @default medium
+   */
+  size?: 'small' | 'medium';
   /**
    * Shape of the alert's border radius and border.
    * - `card` - Card shape with border radius (`1cr`) and border
