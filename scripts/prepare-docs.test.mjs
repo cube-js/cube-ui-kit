@@ -1,6 +1,8 @@
 // @vitest-environment node
+// The build of the real pages runs in `pnpm check:harness` (`--check`), which
+// CI's lint job runs on every PR. These cases use fixed inputs, so a docs edit
+// can't fail them.
 import {
-  buildDocs,
   llmsIndex,
   metaTitle,
   outputOf,
@@ -12,34 +14,6 @@ import {
 } from './prepare-docs.mjs';
 
 describe('prepare-docs', () => {
-  it('builds every page with no dead link, and indexes each one', () => {
-    const { files, warnings } = buildDocs();
-    const index = files.get('docs/llms.txt');
-    const linked = [...index.matchAll(/^- \[.*?\]\(([^)]+)\)/gm)].map(
-      ([, link]) => `docs/${link}`,
-    );
-
-    expect(warnings).toEqual([]);
-    expect(files.get('docs/components/actions/Button.md')).toMatch(
-      /^# Button\n/,
-    );
-    // The guide ModernForm.docs.mdx renders is that page, not a page of its own.
-    expect(files.get('docs/components/form/ModernForm.md')).toMatch(
-      /^# Modern Form/,
-    );
-    expect(files.has('docs/components/form/modern-form-guide.md')).toBe(false);
-    expect(files.has('docs/components/form/modern-form-migration.md')).toBe(
-      true,
-    );
-    // A Cloud benchmark for contributors, not a guide for consumers.
-    expect(files.has('docs/components/form/modern-form-typecheck.md')).toBe(
-      false,
-    );
-    expect(linked.sort()).toEqual(
-      [...files.keys()].filter((file) => file !== 'docs/llms.txt').sort(),
-    );
-  });
-
   it('maps sources to short paths in docs/', () => {
     expect(outputOf('src/stories/Usage.docs.mdx')).toBe('docs/Usage.md');
     expect(outputOf('src/components/Block.docs.mdx')).toBe(
@@ -177,6 +151,10 @@ import { Button } from '@cube-dev/ui-kit';
           '[x](/docs/nothing--docs) [y](/components/Modal) [z](./gone.md) [s](/story/nothing--basic)',
         ).errors,
       ).toHaveLength(4);
+      // A docs route needs a page or a stories file's autodocs id.
+      expect(rewrite('[d](/docs/content-avatar--basic)').errors).toHaveLength(
+        1,
+      );
       // A story route needs only its stories title to exist.
       expect(rewrite('[s](/story/content-avatar--basic)')).toEqual({
         result:
@@ -217,6 +195,10 @@ import { Button } from '@cube-dev/ui-kit';
       title: 'Button',
       description: 'A versatile action component.',
     });
+    // Only the heading a page starts with is its title, not a comment in code.
+    expect(summarize('Intro.\n\n```bash\n# install\nnpm i\n```\n').title).toBe(
+      undefined,
+    );
     expect(
       llmsIndex([
         {

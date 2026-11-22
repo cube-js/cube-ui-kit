@@ -39,10 +39,7 @@ const DOCS = 'docs';
 const MANIFEST = '.docs-generated';
 const STORYBOOK = 'https://cube-ui-kit.vercel.app/';
 const GITHUB = 'https://github.com/cube-js/cube-ui-kit/';
-/**
- * Guides that ship as pages of their own, next to their component's page. A
- * guide a page renders with `<Markdown>` ships as that page instead.
- */
+/** Guides that ship as pages of their own, next to their component's page. */
 const GUIDES = ['src/components/form/Form/modern-form-migration.md'];
 const STORIES = /\.stories\.[jt]sx?$/;
 
@@ -268,9 +265,10 @@ export function rewriteLinks(line, { file, out, site, errors }) {
       const page = kind === 'docs' && site.pageById.get(id);
 
       if (page) return relative(out, page) + hash;
-      // A story id is `<title>--<story>`: its title must be a stories file's.
-      // The story's own name goes unchecked.
-      if (site.ids.has(id.replace(/--.*$/, '--docs'))) {
+      // `site.ids` holds a docs id per stories file. A docs route without a
+      // page leads to its autodocs page. A story id is `<title>--<story>`: its
+      // title must be a stories file's, and the story's own name goes unchecked.
+      if (site.ids.has(kind === 'story' ? id.replace(/--.*$/, '--docs') : id)) {
         return `${STORYBOOK}?path=/${kind}/${id}${hash}`;
       }
 
@@ -322,9 +320,12 @@ export function rewriteLinks(line, { file, out, site, errors }) {
     .join('');
 }
 
-/** A page's title (its first `#` heading) and the first sentence of its first paragraph. */
+/**
+ * A page's title (the `#` heading it starts with) and the first sentence of
+ * its first paragraph. A `#` line further down may be a comment in code.
+ */
 export function summarize(markdown) {
-  const heading = /^# (.+)$/m.exec(markdown);
+  const heading = /^# (.+)(?:\n|$)/.exec(markdown);
   const title = heading?.[1].trim();
   let description;
 
@@ -412,8 +413,8 @@ function sources() {
 }
 
 /**
- * Builds every page in memory. Returns `{ files, warnings }`, where `files`
- * maps an output path to its content; throws with every problem.
+ * Builds every page in memory. Returns a map from each output path to its
+ * content; throws with every problem.
  */
 export function buildDocs() {
   const all = sources();
@@ -430,19 +431,16 @@ export function buildDocs() {
     if (title) site.ids.add(`${storyId(title)}--docs`);
   }
 
-  const warnings = [];
+  const errors = [];
 
   for (const file of docs) {
     const text = read(file);
     const out = outputOf(file);
     const title = pageTitle(file, text);
 
-    if (title) {
-      site.pageById.set(`${storyId(title)}--docs`, out);
-      site.ids.add(`${storyId(title)}--docs`);
-    } else {
-      warnings.push(`${file}: no Storybook title, so no link can lead here`);
-    }
+    // docs/rules/documentation.md: a page starts with `<Meta of={Stories} />`.
+    if (title) site.pageById.set(`${storyId(title)}--docs`, out);
+    else errors.push(`${file}: no Storybook title from its <Meta>`);
 
     for (const [, from] of text.matchAll(
       /^import \w+ from ['"]([^'"]+)\?raw['"];?$/gm,
@@ -451,12 +449,11 @@ export function buildDocs() {
     }
   }
 
-  const errors = [];
   const guides = GUIDES.filter((file) => {
     if (!exists(file))
       errors.push(`${file}: a guide in GUIDES that is missing`);
 
-    return exists(file) && !inlined.has(file);
+    return exists(file);
   });
   const pages = [...docs, ...guides];
   const files = new Map();
@@ -483,7 +480,7 @@ export function buildDocs() {
     const markdown = pruneEmptySections(convert(file, out));
 
     if (!summarize(markdown).title) {
-      errors.push(`${file}: no # title, which its line in llms.txt needs`);
+      errors.push(`${file}: doesn't start with the # title llms.txt needs`);
     }
 
     files.set(out, markdown);
@@ -502,7 +499,7 @@ export function buildDocs() {
 
   files.set(`${DOCS}/llms.txt`, llmsIndex(index));
 
-  return { files, warnings };
+  return files;
 }
 
 /** Removes what the last build wrote: the files its manifest lists, and `docs/components`. */
@@ -529,9 +526,7 @@ function main() {
     return;
   }
 
-  const { files, warnings } = buildDocs();
-
-  for (const warning of warnings) console.warn(`[prepare-docs] ${warning}`);
+  const files = buildDocs();
 
   if (process.argv.includes('--check')) {
     console.log(`[prepare-docs] ${files.size} files build with no problem`);
