@@ -1115,7 +1115,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   // attribute would make the browser drop the hover that opens it, so when a
   // tooltip is present the item is marked `aria-disabled` and kept inert
   // instead.
-  const { isNativelyDisabled, isInert, inertProps } = getDisabledElementProps({
+  const { isNativelyDisabled, inertProps } = getDisabledElementProps({
     isDisabled: finalIsDisabled,
     keepEvents: isTooltipActive,
     as: (rest as { as?: string }).as,
@@ -1183,7 +1183,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         type={htmlType as any}
         {...mergeProps(
           mergeTooltipFocusProps(
-            isInert ? omitActivationEventProps(rest) : rest,
+            // Natively disabled too: the attribute does not stop the React Aria
+            // press a caller such as `Select` attaches (`omitActivationEventProps`).
+            finalIsDisabled ? omitActivationEventProps(rest) : rest,
             elementTooltipProps,
           ),
           inertProps,

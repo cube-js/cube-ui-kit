@@ -11,6 +11,7 @@ import {
 } from '../../providers/navigation-url';
 import { useTracking } from '../../providers/TrackingProvider';
 import { useNavigation } from '../../providers/use-navigation';
+import { omitActivationEventProps } from '../../utils/react/disabledProps';
 import { useFocus } from '../../utils/react/interactions';
 import { mergeProps } from '../../utils/react/mergeProps';
 
@@ -375,6 +376,13 @@ export const useAction = function useAction(
   let { hoverProps, isHovered } = useHover({ isDisabled });
   let { focusProps, isFocused } = useFocus(true);
 
+  // A disabled action takes no press handlers, as `omitActivationEventProps`
+  // explains: a press on a natively disabled `<button>` would otherwise make the
+  // first press after it is enabled do nothing.
+  const pressProps = isDisabled
+    ? omitActivationEventProps(buttonProps)
+    : buttonProps;
+
   const customProps =
     cleanTo !== undefined
       ? {
@@ -397,7 +405,7 @@ export const useAction = function useAction(
         ...mods,
       },
       ...(mergeProps(
-        buttonProps,
+        pressProps,
         hoverProps,
         focusProps,
         customProps,
