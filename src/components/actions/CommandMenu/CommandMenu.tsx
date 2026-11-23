@@ -18,6 +18,10 @@ import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
+import {
+  CubeSearchInputAttributes,
+  SEARCH_TEXT_SERVICES,
+} from '../../fields/search-text-services';
 import { useMenuContext } from '../Menu/context';
 import { CubeMenuProps } from '../Menu/Menu';
 import {
@@ -107,6 +111,13 @@ export interface CubeCommandMenuProps<T>
   filter?: (textValue: string, inputValue: string) => boolean;
   emptyLabel?: ReactNode;
   searchInputStyles?: Styles;
+  /**
+   * Attributes for the search input, such as `enterKeyHint`, `autoCorrect` or `inputMode`. They
+   * win over the search defaults: `enterKeyHint="search"`, `autoCapitalize="none"`,
+   * `autoCorrect="off"` and `spellCheck={false}`. What the component sets from its own props, such
+   * as `searchPlaceholder`, comes from those props.
+   */
+  searchInputProps?: CubeSearchInputAttributes;
   headerStyles?: Styles;
   footerStyles?: Styles;
 
@@ -144,6 +155,7 @@ function CommandMenu<T extends object>(
     filter: customFilter,
     emptyLabel = t('commandMenu.empty', 'No commands found'),
     searchInputStyles,
+    searchInputProps,
     headerStyles,
     footerStyles,
     isLoading = false,
@@ -611,6 +623,7 @@ function CommandMenu<T extends object>(
 
       {/* Search Input */}
       <StyledSearchInput
+        {...mergeProps(SEARCH_TEXT_SERVICES, searchInputProps)}
         ref={searchInputRef}
         type="search"
         placeholder={searchPlaceholder}

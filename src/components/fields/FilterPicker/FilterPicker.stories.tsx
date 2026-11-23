@@ -424,6 +424,14 @@ const meta: Meta<typeof FilterPicker> = {
         type: { summary: 'Styles' },
       },
     },
+    searchInputProps: {
+      control: { type: null },
+      description:
+        'Attributes for the search input, such as enterKeyHint or autoCorrect. They win over the search defaults',
+      table: {
+        type: { summary: 'InputHTMLAttributes<HTMLInputElement>' },
+      },
+    },
     listStyles: {
       control: { type: null },
       table: {

@@ -36,6 +36,7 @@ Choose a different component when the interaction has another outcome:
 - **`filter`** `(textValue: string, inputValue: string) => boolean` — Custom filter function for search
 - **`emptyLabel`** `ReactNode` (default: `'No commands found'`) — Label to show when no results are found
 - **`searchInputStyles`** `Styles` — Custom styles for the search input
+- **`searchInputProps`** `InputHTMLAttributes<HTMLInputElement>` — Attributes for the search input, such as `enterKeyHint`, `autoCorrect` or `inputMode`. By default it sets `enterKeyHint="search"`, `autoCapitalize="none"`, `autoCorrect="off"` and `spellCheck={false}`, so a phone keyboard shows a Search key and neither capitalizes nor corrects a query; a value set here wins. Event handlers, ARIA attributes, `value`, `type` and `role` are left out: they stay the component's, and what it sets from its own props, such as `searchPlaceholder`, comes from those props
 - **`isLoading`** `boolean` (default: `false`) — Whether the command menu is loading
 - **`shouldFilter`** `boolean` (default: `true`) — Whether to filter items based on search
 - **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'none'`) — Selection mode for the command menu
