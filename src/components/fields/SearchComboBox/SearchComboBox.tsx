@@ -188,12 +188,11 @@ export interface CubeSearchComboBoxProps<T>
   triggerRef?: FocusableRef<HTMLButtonElement>;
 
   /**
-   * Attributes for the input, such as `enterKeyHint`, `autoCorrect` or `inputMode`. They win over
-   * the search defaults: `enterKeyHint="search"`, `autoCapitalize="none"`, `autoCorrect="off"` and
-   * `spellCheck={false}`. What the component sets from its own props, such as `placeholder` or
-   * `autoComplete`, comes from those props.
+   * Attributes for the input, such as `enterKeyHint`, `autoCorrect`, `inputMode` or `name`.
+   * They win over the search defaults: `enterKeyHint="search"`, `autoCapitalize="none"`,
+   * `autoCorrect="off"` and `spellCheck={false}`.
    */
-  inputProps?: CubeSearchInputAttributes;
+  inputProps?: Omit<CubeSearchInputAttributes, 'autoComplete'>;
   /** Custom styles for the input */
   inputStyles?: Styles;
   /** Custom styles for the trigger button */
@@ -283,7 +282,7 @@ interface SearchComboBoxInputProps {
   autoComplete?: string;
   size: string;
   mods: Record<string, any>;
-  inputProps?: CubeSearchInputAttributes;
+  inputProps?: Omit<CubeSearchInputAttributes, 'autoComplete'>;
   inputStyles?: Styles;
   keyboardProps: any;
   focusProps: any;

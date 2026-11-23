@@ -107,7 +107,7 @@ export default {
       description:
         'Attributes for the search input, such as enterKeyHint or autoCorrect. They win over the search defaults',
       table: {
-        type: { summary: 'InputHTMLAttributes<HTMLInputElement>' },
+        type: { summary: 'CubeSearchInputAttributes' },
       },
     },
 

@@ -61,7 +61,7 @@ Choose a different component when the interaction has another outcome:
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the dropdown flips to fit in the viewport
 - **`overlayOffset`** `number` (default: `8`) — Distance between input and dropdown in pixels
 - **`containerPadding`** `number` (default: `8`) — Minimum padding between the popover and viewport edges
-- **`inputProps`** `InputHTMLAttributes<HTMLInputElement>` — Attributes for the input, such as `enterKeyHint`, `autoCorrect` or `inputMode`. By default it sets `enterKeyHint="search"`, `autoCapitalize="none"`, `autoCorrect="off"` and `spellCheck={false}`, so a phone keyboard shows a Search key and neither capitalizes nor corrects a query; a value set here wins. Event handlers, ARIA attributes, `value`, `type` and `role` are left out: they stay the component's, and what it sets from its own props, such as `placeholder` or `autoComplete`, comes from those props
+- **`inputProps`** `CubeSearchInputAttributes` — Attributes for the input, such as `enterKeyHint`, `autoCorrect`, `inputMode` or `name`. By default it sets `enterKeyHint="search"`, `autoCapitalize="none"`, `autoCorrect="off"` and `spellCheck={false}`, so a phone keyboard shows a Search key and neither capitalizes nor corrects a query; a value set here wins. It takes no event handlers, ARIA attributes, `value`, `type`, `role`, `id`, `placeholder`, `autoFocus`, `disabled`, `readOnly`, `className`, `style` or `autoComplete`: the component owns those, or takes them as props of its own
 
 #### Notable Properties
 

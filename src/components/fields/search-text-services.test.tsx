@@ -127,3 +127,24 @@ it('lets a SearchInput prop win over the search default', async () => {
   expect(input).toHaveAttribute('enterkeyhint', 'done');
   expect(input).toHaveAttribute('autocapitalize', 'none');
 });
+
+// Every key the type takes must reach the input, so it leaves out what any of
+// the components owns or takes as a prop of its own.
+it('takes no attribute a search component owns', () => {
+  expectTypeOf<CubeSearchInputAttributes>().not.toHaveProperty('value');
+  expectTypeOf<CubeSearchInputAttributes>().not.toHaveProperty('id');
+  expectTypeOf<CubeSearchInputAttributes>().not.toHaveProperty('placeholder');
+  expectTypeOf<CubeSearchInputAttributes>().not.toHaveProperty('autoFocus');
+  expectTypeOf<CubeSearchInputAttributes>().not.toHaveProperty('disabled');
+  expectTypeOf<CubeSearchInputAttributes>().not.toHaveProperty('className');
+  expectTypeOf<CubeSearchInputAttributes>().not.toHaveProperty('onKeyDown');
+  expectTypeOf<CubeSearchInputAttributes>().toHaveProperty('enterKeyHint');
+});
+
+it('passes a data attribute through, as the fields’ inputProps do', async () => {
+  const input = await renderSearchInput(SEARCH_INPUTS[1], {
+    'data-custom': 'yes',
+  });
+
+  expect(input).toHaveAttribute('data-custom', 'yes');
+});

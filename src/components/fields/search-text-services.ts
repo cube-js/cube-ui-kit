@@ -14,8 +14,9 @@ export const SEARCH_TEXT_SERVICES = {
 } as const;
 
 /**
- * Attributes a caller may set on a component's own search input. Its value, type, role, ARIA
- * wiring and event handlers belong to the component, so they are left out.
+ * Attributes a caller may set on a component's own search input, such as `enterKeyHint`,
+ * `autoCorrect`, `inputMode` or `name`. What the component owns, or takes as a prop of its own, is
+ * left out, so every key here reaches the input in every component that takes it.
  */
 export type CubeSearchInputAttributes = Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -25,4 +26,13 @@ export type CubeSearchInputAttributes = Omit<
   | 'defaultValue'
   | 'type'
   | 'role'
->;
+  | 'id'
+  | 'placeholder'
+  | 'autoFocus'
+  | 'disabled'
+  | 'readOnly'
+  | 'className'
+  | 'style'
+> & {
+  [key: `data-${string}`]: string | undefined;
+};

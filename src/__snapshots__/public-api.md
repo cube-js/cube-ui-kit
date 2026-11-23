@@ -271,6 +271,7 @@ type       CubeResultSize
 type       CubeResultStatus
 type       CubeRootProps
 type       CubeSearchComboBoxProps
+type       CubeSearchInputAttributes
 type       CubeSearchInputProps
 type       CubeSelectBaseProps
 type       CubeSelectProps
