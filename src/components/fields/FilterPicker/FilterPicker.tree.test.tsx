@@ -865,6 +865,51 @@ describe('<FilterPicker treeData selectionMode="single" />', () => {
     expect(search()).not.toHaveFocus();
   });
 
+  it('hands focus back to the search after a mouse press that started elsewhere', async () => {
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        header={<span>Header text</span>}
+      />,
+    );
+
+    await open(getByRole);
+    // A click on the popover's own text takes focus from the search first.
+    await user.click(document.querySelector('[data-qa="FilterTreeWrapper"]')!);
+    await user.click(within(row('design')!).getByText('Design'));
+
+    await waitFor(() => expect(search()).toHaveFocus());
+  });
+
+  it('sets the Item props of each row from treeItemProps', async () => {
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        defaultExpandedKeys={['design']}
+        treeItemProps={(node, { isLeaf }) => ({
+          suffix: (
+            <span data-qa={`Mark-${node.key}`}>
+              {isLeaf ? 'leaf' : 'folder'}
+            </span>
+          ),
+        })}
+      />,
+    );
+
+    await open(getByRole);
+
+    expect(within(row('design')!).getByTestId('Mark-design')).toHaveTextContent(
+      'folder',
+    );
+    expect(
+      within(row('design:susan')!).getByTestId('Mark-design:susan'),
+    ).toHaveTextContent('leaf');
+  });
+
   it('picks a match of a search', async () => {
     const onSelectionChange = vi.fn();
     const { getByRole } = renderWithRoot(

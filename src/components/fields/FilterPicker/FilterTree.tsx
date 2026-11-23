@@ -34,7 +34,7 @@ import {
 
 import type { Styles } from '@tenphi/tasty';
 import type { ReactNode, RefObject } from 'react';
-import type { CubeTreeNodeData } from '../../content/Tree/types';
+import type { CubeTreeNodeData, CubeTreeProps } from '../../content/Tree/types';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
@@ -56,6 +56,8 @@ export interface FilterTreeProps {
   /** The user's expansion. FilterPicker holds it, so it outlives the popover. */
   expandedKeys: string[];
   onExpand: (keys: string[]) => void;
+  /** Each row's `Item` props, passed to `Tree`. */
+  itemProps?: CubeTreeProps['itemProps'];
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
@@ -169,6 +171,7 @@ export function FilterTree(props: FilterTreeProps) {
     onSelect,
     expandedKeys,
     onExpand,
+    itemProps,
     searchValue: controlledSearchValue,
     onSearchChange,
     searchInputStyles,
@@ -487,12 +490,15 @@ export function FilterTree(props: FilterTreeProps) {
       <FilterTreeListElement
         // Only the tree's own focus goes back: an empty label may hold a
         // control, such as Retry, that the keyboard has to reach. And only
-        // focus taken from the search: a tap on a phone that never focused
-        // it would otherwise open the on-screen keyboard.
+        // where the search drives the tree: it opened focused (a mouse or
+        // keyboard), or the focus came from it. A tap on a phone that never
+        // focused it would otherwise open the on-screen keyboard.
         onFocus={
           filtered.nodes.length
             ? (e) => {
-                if (e.relatedTarget === inputRef.current) refocusSearch();
+                if (autoFocus || e.relatedTarget === inputRef.current) {
+                  refocusSearch();
+                }
               }
             : undefined
         }
@@ -517,6 +523,7 @@ export function FilterTree(props: FilterTreeProps) {
             // The tree has no selection of its own (with one, a press would
             // go to it instead of the row action); the value is shown here.
             _selectedKey={isSingle ? selectedKey : undefined}
+            itemProps={itemProps}
             onExpand={(keys) => setExpanded(keys.map(String))}
             onCheck={isSingle ? undefined : (_, info) => toggle(info.node.key)}
             _onRowAction={isSingle ? pick : toggleActive}

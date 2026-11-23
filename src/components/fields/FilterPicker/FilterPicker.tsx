@@ -66,7 +66,7 @@ import type {
   KeyboardEvent as RAKeyboardEvent,
 } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
-import type { CubeTreeNodeData } from '../../content/Tree/types';
+import type { CubeTreeNodeData, CubeTreeProps } from '../../content/Tree/types';
 
 interface ItemWithKey {
   key?: string | number;
@@ -257,6 +257,12 @@ export interface CubeFilterPickerProps<T>
   defaultExpandedKeys?: string[];
   /** Called when the user expands or collapses a node in tree mode, outside a search. */
   onExpand?: (expandedKeys: string[]) => void;
+  /**
+   * Tree mode only: `Item` props for each row, as `Tree`'s `itemProps`
+   * takes them, such as a `prefix` icon or `suffix` marks. A function gets
+   * the node and its state.
+   */
+  treeItemProps?: CubeTreeProps['itemProps'];
 }
 
 /**
@@ -433,6 +439,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     expandedKeys,
     defaultExpandedKeys,
     onExpand,
+    treeItemProps,
     ...otherProps
   } = props;
 
@@ -1150,6 +1157,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   isDisabled={isDisabled}
                   isLoadingItems={isLoadingItems}
                   shouldFocusWrap={shouldFocusWrap}
+                  itemProps={treeItemProps}
                   onExpand={handleExpand}
                   onSearchChange={onSearchChange}
                   onCheckedKeysChange={handleSelectionChange}

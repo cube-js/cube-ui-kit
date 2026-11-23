@@ -1,9 +1,12 @@
+import { IconFile } from '@tabler/icons-react';
 import { useCallback, useRef, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { DatabaseIcon } from '../../../icons/DatabaseIcon';
 import { FilterIcon } from '../../../icons/FilterIcon';
+import { FolderIcon } from '../../../icons/FolderIcon';
+import { FolderOpenIcon } from '../../../icons/FolderOpenIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
 import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { RightIcon } from '../../../icons/RightIcon';
@@ -389,6 +392,14 @@ const meta: Meta<typeof FilterPicker> = {
         'Tree-shaped options. The popover shows a `Tree` in place of the list, and `items` and `children` are not used. Tree mode is multiple selection with checkboxes, and the value is every fully checked key, parents included. With `selectionMode="single"`, the tree has no checkboxes and the value is one leaf',
       table: {
         type: { summary: 'CubeTreeNodeData[]' },
+      },
+    },
+    treeItemProps: {
+      control: { type: null },
+      description:
+        "Tree mode only: `Item` props for each row, as `Tree`'s `itemProps` takes them, such as a `prefix` icon or `suffix` marks. A function gets the node and its state",
+      table: {
+        type: { summary: 'TreeItemProps | (node, state) => TreeItemProps' },
       },
     },
     expandedKeys: {
@@ -1562,13 +1573,22 @@ export const TreeSingleSelection: Story = {
       treeData={projectFiles}
       selectionMode="single"
       defaultSelectedKey="model/cubes/users.yml"
+      treeItemProps={(_, { isLeaf, isExpanded }) => ({
+        prefix: isLeaf ? (
+          <IconFile />
+        ) : isExpanded ? (
+          <FolderOpenIcon />
+        ) : (
+          <FolderIcon />
+        ),
+      })}
     />
   ),
   parameters: {
     docs: {
       description: {
         story:
-          'With `selectionMode="single"`, the tree has no checkboxes and the value is one leaf. A press or Enter on a leaf picks it and closes the popover; on a folder it opens or closes the folder. The popover opens on the picked leaf, with its folders open.',
+          'With `selectionMode="single"`, the tree has no checkboxes and the value is one leaf. A press or Enter on a leaf picks it and closes the popover; on a folder it opens or closes the folder. The popover opens on the picked leaf, with its folders open. `treeItemProps` gives each row its icon.',
       },
     },
   },
