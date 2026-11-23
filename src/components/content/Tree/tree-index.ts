@@ -27,6 +27,29 @@ export function getTreeNodeText(node: CubeTreeNodeData): string {
   return typeof node.title === 'string' ? node.title : node.key;
 }
 
+/**
+ * Whether a node is a leaf: `isLeaf` says so, or it has no `children` array
+ * and `isLeaf` isn't `false` (a branch whose children load later). An empty
+ * `children` array is a branch, as React Stately counts it. The rule
+ * `TreeNode` applies inline, from the node's `hasChildNodes`.
+ */
+export function isTreeLeaf(node: CubeTreeNodeData): boolean {
+  return node.isLeaf === true || (node.isLeaf !== false && !node.children);
+}
+
+/** The keys of a node's ancestors, nearest first. */
+export function getTreeAncestorKeys(index: TreeIndex, key: string): string[] {
+  const keys: string[] = [];
+  let parent = index.parentOf.get(key);
+
+  while (parent != null) {
+    keys.push(parent);
+    parent = index.parentOf.get(parent);
+  }
+
+  return keys;
+}
+
 export function buildTreeIndex(treeData: CubeTreeNodeData[]): TreeIndex {
   const byKey = new Map<string, CubeTreeNodeData>();
   const parentOf = new Map<string, string | null>();

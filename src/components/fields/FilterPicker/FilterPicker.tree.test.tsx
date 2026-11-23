@@ -679,3 +679,182 @@ describe('<FilterPicker treeData />', () => {
     ]);
   });
 });
+
+describe('<FilterPicker treeData selectionMode="single" />', () => {
+  const user = userEvent.setup({ delay: null });
+
+  const trigger = (getByRole: (role: string, options?: any) => any) =>
+    getByRole('button', { name: /Person/ });
+
+  const open = async (getByRole: (role: string, options?: any) => any) => {
+    await user.click(trigger(getByRole));
+    await waitFor(() => expect(search()).toHaveFocus());
+  };
+
+  it('opens a parent on a press, and picks a leaf on a press and closes', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await open(getByRole);
+    expect(document.querySelector('[role="checkbox"]')).toBeNull();
+
+    await user.click(within(row('design')!).getByText('Design'));
+    expect(row('design:susan')).toBeInTheDocument();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+
+    await user.click(within(row('design:susan')!).getByText('Susan Kare'));
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith('design:susan');
+    await waitFor(() => expect(search()).toBeNull());
+    expect(trigger(getByRole)).toHaveTextContent('Susan Kare');
+  });
+
+  it('opens on the picked leaf, marked selected and active', async () => {
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        defaultSelectedKey="support:linus"
+      />,
+    );
+
+    expect(trigger(getByRole)).toHaveTextContent('Linus Torvalds');
+
+    await open(getByRole);
+
+    expect(row('support:linus')).toHaveAttribute('aria-selected', 'true');
+    expect(row('support:ada')).toHaveAttribute('aria-selected', 'false');
+    expect(row('engineering')).not.toBeNull();
+    expect(row('engineering:ada')).toBeNull();
+    expect(search().getAttribute('aria-activedescendant')).toBe(
+      row('support:linus')!.id,
+    );
+  });
+
+  it('reports the ancestors it opens to a controlled expansion', async () => {
+    const onExpand = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        selectedKey="design:dieter"
+        expandedKeys={['engineering']}
+        onExpand={onExpand}
+      />,
+    );
+
+    await open(getByRole);
+
+    expect(onExpand).toHaveBeenLastCalledWith(['engineering', 'design']);
+  });
+
+  it('opens a parent with Enter and picks a leaf with Enter', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await open(getByRole);
+    // The first row, Engineering, is active.
+    await user.keyboard('{Enter}');
+    expect(row('engineering:ada')).toBeInTheDocument();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+
+    await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith('engineering:alan');
+    await waitFor(() => expect(search()).toBeNull());
+  });
+
+  it('picks a match of a search', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await open(getByRole);
+    await user.keyboard('grace');
+    await user.click(
+      within(row('engineering:grace')!).getByText('Grace Hopper'),
+    );
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith('engineering:grace');
+  });
+
+  it('clears the pick on a second press, as the list does', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        defaultSelectedKey="contractors"
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await open(getByRole);
+    await user.click(within(row('contractors')!).getByText('Contractors'));
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith(null);
+  });
+
+  it('keeps the pick on a second press with disallowEmptySelection, and closes', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        disallowEmptySelection
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        defaultSelectedKey="contractors"
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await open(getByRole);
+    await user.click(within(row('contractors')!).getByText('Contractors'));
+
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    await waitFor(() => expect(search()).toBeNull());
+    expect(trigger(getByRole)).toHaveTextContent('Contractors');
+  });
+
+  it('holds one key as a form field', async () => {
+    const { getByRole, formInstance } = renderWithForm(
+      <FilterPicker
+        name="person"
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+      />,
+      { formProps: { defaultValues: { person: 'design:dieter' } } },
+    );
+
+    expect(trigger(getByRole)).toHaveTextContent('Dieter Rams');
+
+    await open(getByRole);
+    await user.click(within(row('contractors')!).getByText('Contractors'));
+
+    expect(formInstance.getFieldValue('person')).toBe('contractors');
+  });
+});

@@ -36,7 +36,11 @@ import {
   deriveCheckedSets,
   toOrderedKeys,
 } from '../../content/Tree/checked-keys';
-import { buildTreeIndex, getTreeNodeText } from '../../content/Tree/tree-index';
+import {
+  buildTreeIndex,
+  getTreeAncestorKeys,
+  getTreeNodeText,
+} from '../../content/Tree/tree-index';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -225,19 +229,26 @@ export interface CubeFilterPickerProps<T>
   onOpenChange?: (isOpen: boolean) => void;
 
   /**
-   * Tree-shaped options. When set, the popover shows a checkable `Tree` in
-   * place of the list, and `items` and `children` are not used.
+   * Tree-shaped options. When set, the popover shows a `Tree` in place of
+   * the list, and `items` and `children` are not used.
    *
-   * Tree mode is always multiple selection. The value (`selectedKeys`) is
-   * every fully checked key, parents included: checking a parent checks its
+   * Tree mode is multiple selection with checkboxes unless
+   * `selectionMode="single"` is passed. The value (`selectedKeys`) is every
+   * fully checked key, parents included: checking a parent checks its
    * children, and a parent with only some children checked is half-checked.
    * The cascade runs over the whole tree, so a search never unchecks the
-   * nodes it hides. A press on a row toggles its checkbox. Disable a node
-   * with its own `isDisabled`, not `disabledKeys`.
+   * nodes it hides. A press on a row toggles its checkbox. The default
+   * summary lists the topmost checked nodes.
    *
-   * The search keeps a node that matches with its whole subtree, and the
-   * ancestors of deeper matches with only their matching branches, opened.
-   * The default summary lists the topmost checked nodes.
+   * With `selectionMode="single"` the tree has no checkboxes, and the value
+   * (`selectedKey`) is one leaf. A press or Enter on a leaf picks it and
+   * closes the popover; on a parent it opens or closes the parent. Opening
+   * the popover opens the picked leaf's ancestors. The default summary is
+   * the leaf's text.
+   *
+   * Disable a node with its own `isDisabled`, not `disabledKeys`. The search
+   * keeps a node that matches with its whole subtree, and the ancestors of
+   * deeper matches with only their matching branches, opened.
    */
   treeData?: CubeTreeNodeData[];
   /** Expanded nodes in tree mode (controlled). A search expands on its own and restores these when cleared. */
@@ -294,7 +305,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     valuePropsMapper: ({ value, onChange }) => {
       const fieldProps: Record<string, unknown> = {};
       const isMultiple =
-        inputProps.selectionMode === 'multiple' || !!inputProps.treeData;
+        inputProps.selectionMode === 'multiple' ||
+        (!!inputProps.treeData && inputProps.selectionMode !== 'single');
 
       if (isMultiple) {
         fieldProps.selectedKeys = value || [];
@@ -424,8 +436,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     ...otherProps
   } = props;
 
-  // Tree mode is multiple selection, whatever `selectionMode` says.
-  if (treeData) selectionMode = 'multiple';
+  // Tree mode is multiple selection unless `selectionMode="single"` is passed:
+  // the prop's default, single, would change every existing tree picker.
+  if (treeData && inputProps.selectionMode !== 'single') {
+    selectionMode = 'multiple';
+  }
 
   const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
   const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
@@ -556,15 +571,16 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Every key the value checks, conducted over the whole tree, in tree
   // order: what the tree shows and what `renderSummary` receives.
+  // Checkable tree mode only.
   const treeSelectedKeys = useMemo(
     () =>
-      treeData && treeIndex
+      treeData && treeIndex && selectionMode === 'multiple'
         ? toOrderedKeys(
             treeIndex,
             deriveCheckedSets(treeData, treeIndex, treeCheckedKeys).checked,
           )
         : null,
-    [treeData, treeIndex, treeCheckedKeys],
+    [treeData, treeIndex, treeCheckedKeys, selectionMode],
   );
 
   // The user's expansion, held here rather than in the popover, so it
@@ -581,6 +597,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const selectedLabels = useMemo(() => {
     if (treeIndex && treeSelectedKeys) {
       return getTreeSummaryLabels(treeIndex, new Set(treeSelectedKeys));
+    }
+
+    // Single tree mode: the picked leaf's text, or its key when the tree
+    // lacks it.
+    if (treeIndex && selectionMode === 'single') {
+      if (effectiveSelectedKey == null) return [];
+      const node = treeIndex.byKey.get(String(effectiveSelectedKey));
+      return [node ? getTreeNodeText(node) : String(effectiveSelectedKey)];
     }
 
     if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
@@ -661,6 +685,22 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       triggerWidthRef.current =
         triggerRef?.current?.UNSAFE_getDOMNode()?.offsetWidth;
     }
+
+    // Single tree mode opens on the picked leaf: its closed ancestors open.
+    if (
+      isOpen &&
+      treeIndex &&
+      selectionMode === 'single' &&
+      effectiveSelectedKey != null
+    ) {
+      const expanded = expandedKeys ?? internalExpandedKeys;
+      const closed = getTreeAncestorKeys(
+        treeIndex,
+        String(effectiveSelectedKey),
+      ).filter((key) => !expanded.includes(key));
+      if (closed.length) handleExpand([...expanded, ...closed]);
+    }
+
     setIsPopoverOpen(isOpen);
     if (!isOpen) {
       setOpenPointerType(null);
@@ -1024,6 +1064,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     }
   });
 
+  // Single tree mode: a press on the picked leaf clears it, as the list's
+  // single mode does, unless `disallowEmptySelection` keeps it.
+  const handleTreeSelect = (key: string) => {
+    const isPicked =
+      effectiveSelectedKey != null && String(effectiveSelectedKey) === key;
+    handleSelectionChange(isPicked && !disallowEmptySelection ? null : key);
+  };
+
   // Stable callbacks for popover content (avoid inline closures that change every render)
   const handleEscape = useEvent(() => {
     handleOpenChange(false);
@@ -1077,7 +1125,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 <FilterTree
                   autoFocus={shouldFocusSearch}
                   treeData={treeData}
+                  selectionMode={selectionMode}
                   checkedKeys={treeCheckedKeys}
+                  selectedKey={
+                    effectiveSelectedKey == null
+                      ? null
+                      : String(effectiveSelectedKey)
+                  }
+                  onSelect={handleTreeSelect}
                   expandedKeys={expandedKeys ?? internalExpandedKeys}
                   aria-label={pickerAriaLabel}
                   searchPlaceholder={searchPlaceholder}
