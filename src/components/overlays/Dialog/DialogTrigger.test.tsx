@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
 import {
+  act,
   fireEvent,
   renderWithRoot,
   screen,
@@ -1028,6 +1029,39 @@ describe('<DialogTrigger /> during the exit', () => {
       expect(dialog.isConnected).toBe(true);
     },
   );
+
+  // Reopened before it has handed focus back, with focus still inside: what
+  // was focused then goes with the contents the reopen replaces, so the
+  // popover keeps where focus returns to from the opening before.
+  it('a popover closed and reopened in one task still returns focus to its trigger', async () => {
+    function App({ isOpen }: { isOpen: boolean }) {
+      return (
+        <DialogTrigger type="popover" isOpen={isOpen}>
+          <Button qa="Trigger">Open</Button>
+          <Dialog aria-label="Popover">
+            <button type="button">Inside</button>
+          </Dialog>
+        </DialogTrigger>
+      );
+    }
+
+    const { rerender } = renderWithRoot(<App isOpen={false} />);
+    const trigger = screen.getByTestId('Trigger');
+
+    act(() => trigger.focus());
+    rerender(<App isOpen />);
+    const inside = await screen.findByRole('button', { name: 'Inside' });
+
+    act(() => inside.focus());
+    act(() => rerender(<App isOpen={false} />));
+    act(() => rerender(<App isOpen />));
+
+    // Past the reopen's own opening focus, then closed for good.
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    rerender(<App isOpen={false} />);
+
+    await waitFor(() => expect(trigger).toHaveFocus(), { timeout: 1500 });
+  });
 
   // As a menu item hands focus to what it opens (CUB-3962): a surface that
   // focuses itself as it mounts keeps focus.

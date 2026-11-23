@@ -519,17 +519,29 @@ function PopoverTrigger(allProps) {
   // it, and only while focus has nowhere to stay. After a timeout, as in
   // `MenuTrigger`, so an action that moved focus to a surface it opened has
   // done so first. Reopened before it runs, the cleanup cancels it.
+  //
+  // Reopened during its exit, it keeps the opener it had, as that scope kept
+  // its own before the dialog mounted afresh on every opening: focus can
+  // still be in the closing contents, which the reopen replaces.
   const [opening, setOpening] = useState<{
     isOpen: boolean;
     opener: Opener | null;
-  }>({ isOpen: false, opener: null });
+    isExiting: boolean;
+  }>({ isOpen: false, opener: null, isExiting: false });
 
   if (opening.isOpen !== state.isOpen) {
     setOpening({
       isOpen: state.isOpen,
-      opener: state.isOpen ? readOpener() : opening.opener,
+      opener:
+        state.isOpen && !opening.isExiting ? readOpener() : opening.opener,
+      isExiting: !state.isOpen,
     });
   }
+
+  const onExited = () =>
+    setOpening((current) =>
+      current.isExiting ? { ...current, isExiting: false } : current,
+    );
 
   const { opener } = opening;
   const wasOpenRef = useRef(false);
@@ -577,6 +589,7 @@ function PopoverTrigger(allProps) {
       hideArrow={hideArrow}
       shouldCloseOnInteractOutside={resolveShouldCloseOnInteractOutside}
       onClose={onClose}
+      onExited={onExited}
     >
       {content}
     </Popover>
@@ -638,9 +651,10 @@ function DialogTriggerBase(props: any) {
     isOpen: state.isOpen,
     requestDismiss,
     registerUnsavedChanges,
-    // Reaches `Dialog`'s `FocusScope`, which owns the restore for
-    // popover-type dialogs (`Dialog` itself, for a retained one). `useDialog`
-    // filters it out of the DOM props.
+    // Reaches `Dialog`'s `FocusScope`, which restores at the end of the exit
+    // whatever `PopoverTrigger`'s return at close leaves for a popover-type
+    // dialog (`Dialog` itself, for a retained one). `useDialog` filters it out
+    // of the DOM props.
     shouldRestoreFocus,
     ...dialogProps,
   };

@@ -839,12 +839,12 @@ export function ListBoxPopup({
   // the active one, so an outer contained Dialog FocusScope (e.g. a popover
   // Dialog wrapping the Select) recognises focus moving into the Select
   // popover and doesn't yank it back to the trigger.
-  const isShown = state.isOpen && !isDisabled;
-  const openKey = useOpenKey(isShown);
+  const isListShown = state.isOpen && !isDisabled;
+  const openKey = useOpenKey(isListShown);
 
   return (
     <Portal>
-      <DisplayTransition isShown={isShown}>
+      <DisplayTransition isShown={isListShown}>
         {({ phase, isShown, isExiting, ref: transitionRef }) => (
           <SelectOverlayWrapper
             {...overlayProps}
