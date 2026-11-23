@@ -25,6 +25,10 @@ import { useSlotProps } from '../../../utils/react/Slots';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu } from '../../actions/Menu/Menu';
 import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
+import {
+  bindTouchContextMenu,
+  TOUCH_CONTEXT_MENU_ATTRIBUTE,
+} from '../../actions/touch-context-menu';
 import { useContextMenu } from '../../actions/use-context-menu';
 import {
   Placeholder,
@@ -1496,6 +1500,8 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         ? (event: ReactMouseEvent) =>
             columnMenu.openColumnContextMenu(column, sortState, event)
         : undefined,
+      // ...and to a touch long press, through `bindTouchContextMenu`.
+      [TOUCH_CONTEXT_MENU_ATTRIBUTE]: hasMenu ? '' : undefined,
       onKeyDown:
         isSortable || hasMenu
           ? (event: ReactKeyboardEvent) => {
@@ -1844,6 +1850,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           ? (event: ReactMouseEvent) =>
               openContextMenuFor(row, rowIndex, rowKey, event)
           : undefined,
+      // A touch long press opens it too, through `bindTouchContextMenu`. Only
+      // where a menu opens: a row whose resolver gives none keeps its own long
+      // press (text selection, link callout).
+      [TOUCH_CONTEXT_MENU_ATTRIBUTE]:
+        !isDisabled && hasRowMenu(row, rowIndex, rowKey) ? '' : undefined,
       ...Object.fromEntries(
         Object.entries(extra?.mods ?? {})
           .filter(([, active]) => active)
@@ -2151,7 +2162,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         isReorderable ||
         onRowAction != null ||
         (hasRowLinkColumn && rowLink?.(row, index) !== undefined) ||
-        (isMenuEnabled && !isMenuEmpty(resolveRowMenu(row, index, key)))
+        hasRowMenu(row, index, key)
       )
         return { key, index };
     }
@@ -2385,6 +2396,15 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     Omit<CubeMenuTriggerProps, 'children'>
   >(Menu, { placement: 'bottom start' });
 
+  // iOS fires no `contextmenu` on a touch long press. This fires one on the
+  // rows and header cells marked as having a menu, so the handlers below open
+  // it at the touch point; rows without a menu keep their own long press.
+  useEffect(() => {
+    if (!scrollerEl) return;
+
+    return bindTouchContextMenu(scrollerEl);
+  }, [scrollerEl]);
+
   function rememberRowMenuOrigin(
     key: Key,
     index: number,
@@ -2461,6 +2481,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       isFocused: false,
       isDropTarget: false,
     });
+  }
+
+  /** Whether a right-click or a touch long press on the row opens a menu. */
+  function hasRowMenu(row: T, rowIndex: number, rowKey: Key) {
+    return isMenuEnabled && !isMenuEmpty(resolveRowMenu(row, rowIndex, rowKey));
   }
 
   // The context-menu hook retains its runtime action handler while open.

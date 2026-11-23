@@ -84,7 +84,7 @@ Use `DataTable` instead when a _cell_ is the unit of interest — query results,
 - **`rowLink`** `(row: T, index: number) => NavigateArg | undefined` — Turns the row-header cell into a stretched link covering the whole row. Return `undefined` for a row that should not navigate.
 - **`onRowAction`** `(row: T, key: Key) => void` — Non-navigational activation: Enter, or a click that did not land on a control inside a cell.
 - **`rowMenu`** `ReactNode | ((row, ctx) => ReactNode | null)` — `Menu.Item` children. Inert until `rowContextMenu` exposes it.
-- **`rowContextMenu`** `boolean | 'context-only'` (default: `false`) — `true` gives a `⋮` trigger column **and** right-click / Shift+F10; `'context-only'` gives the keyboard and pointer paths without the column.
+- **`rowContextMenu`** `boolean | 'context-only'` (default: `false`) — `true` gives a `⋮` trigger column **and** right-click / touch long press / Shift+F10; `'context-only'` gives the keyboard and pointer paths without the column.
 - **`onRowMenuAction`** `(action: string, row: T, key: Key) => void` — The action key as written on `Menu.Item`.
 - **`rowMenuTriggerProps`** `Partial<CubeItemActionProps>` — Forwarded to every `⋮` trigger.
 - **`bulkActions`** `CubeTableBulkAction<T>[]` — Actions offered while rows are selected. Supplying any implies `selectionMode="multiple"`.
@@ -120,7 +120,7 @@ Use `DataTable` instead when a _cell_ is the unit of interest — query results,
 - **`columnWidths`** `Record<string, number>` — Controlled widths by column key.
 - **`defaultColumnWidths`** `Record<string, number>` — Initial widths.
 - **`onColumnResize`** `(columnKey, width, all) => void` — Fires once the gesture ends, not on every pixel.
-- **`columnContextMenu`** `boolean | 'context-only'` (default: `true`) — Where a column's `header.menu` is exposed: a `⋮` trigger plus right-click and Shift+F10, right-click only, or nowhere.
+- **`columnContextMenu`** `boolean | 'context-only'` (default: `true`) — Where a column's `header.menu` is exposed: a `⋮` trigger plus right-click, touch long press and Shift+F10, those without the trigger, or nowhere.
 - **`onColumnMenuAction`** `(action, columnKey) => void` — The pressed `Menu.Item` key, as written. Fires for the reserved sort keys too, after the table has applied them.
 - **`columnMenuTriggerProps`** `Record<string, any>` — Props for the `⋮` trigger.
 - **`columnMenuProps`** `Record<string, any>` — Props for the `Menu`.
@@ -696,13 +696,15 @@ Keyboard focus emphasizes the row background, including selected rows, matching 
 />
 ```
 
-| `rowContextMenu`  | `⋮` column | Right-click / Shift+F10 |
-| ----------------- | ---------- | ----------------------- |
-| `false` (default) | no         | no                      |
-| `true`            | yes        | yes                     |
-| `'context-only'`  | no         | yes                     |
+| `rowContextMenu`  | `⋮` column | Right-click / long press / Shift+F10 |
+| ----------------- | ---------- | ------------------------------------ |
+| `false` (default) | no         | no                                   |
+| `true`            | yes        | yes                                  |
+| `'context-only'`  | no         | yes                                  |
 
 A row whose resolver returns `null` gets no trigger, and right-clicking it falls through to the browser's own context menu — more useful than an empty popover.
+
+On a touch screen, holding a finger still on a row for 500 ms opens its menu at the touch point (iOS included, which fires no `contextmenu` of its own), and lifting the finger does not also run `onRowAction`. A header cell with a `header.menu` does the same without sorting. Rows and headers without a menu keep their own long press: text selection and link callouts.
 
 From a focused flat row, Tab reaches its visible `⋮` trigger; Shift+F10 opens its context menu, including in `'context-only'` mode. Closing restores the opening row or control, or a surviving neighbor if the row was removed. A menu action that focuses another control keeps that focus.
 

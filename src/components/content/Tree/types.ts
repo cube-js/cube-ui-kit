@@ -15,8 +15,9 @@ export type TreeSelectionMode = 'none' | 'single' | 'multiple';
  *
  * - `false` (default) — no menu at all.
  * - `true` — render the overflow `⋮` trigger inside `actions` AND open
- *   the same menu on right-click / Shift+F10.
- * - `'context-only'` — right-click / Shift+F10 only; no `⋮` trigger.
+ *   the same menu on right-click / touch long press / Shift+F10.
+ * - `'context-only'` — right-click / touch long press / Shift+F10 only; no
+ *   `⋮` trigger.
  *
  * Mirrors `TabContextMenu` from `Tabs` so consumers see the same API
  * across components.
@@ -270,8 +271,9 @@ export interface CubeTreeProps extends ComponentBaseProps, OuterStyleProps {
    * Where the menu is exposed. Same semantics as `Tabs#contextMenu`:
    * - `false` (default) — no menu at all.
    * - `true` — render an overflow `⋮` trigger inside `actions` AND
-   *   open the same menu on right-click / Shift+F10.
-   * - `'context-only'` — right-click / Shift+F10 only; no `⋮` trigger.
+   *   open the same menu on right-click / touch long press / Shift+F10.
+   * - `'context-only'` — right-click / touch long press / Shift+F10 only; no
+   *   `⋮` trigger.
    *
    * Per-node `data.contextMenu` wins when provided.
    * @default false

@@ -373,7 +373,7 @@ The arrow keeps its slot throughout, so none of this shifts the label. A non-sor
 
 ### Column Menu
 
-A column exposes a menu through `header.menu`, opened from a `⋮` trigger in the header, by right-click, or with `Shift`+`F10`. The contents are opaque — the grid mounts the node and reports the pressed key back through `onColumnMenuAction`, which is what keeps Cube vocabulary out of the kit.
+A column exposes a menu through `header.menu`, opened from a `⋮` trigger in the header, by right-click or a touch long press, or with `Shift`+`F10`. The contents are opaque — the grid mounts the node and reports the pressed key back through `onColumnMenuAction`, which is what keeps Cube vocabulary out of the kit.
 
 Sorting is the exception, because it is the one thing the table itself can do. `columnSortMenu()` returns `sort-asc` / `sort-desc` / `clear-sort` items that the table labels from the current locale, disables when they would do nothing, and applies before telling the consumer. Everything else is yours:
 
