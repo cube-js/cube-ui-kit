@@ -382,6 +382,51 @@ WidthLimit.parameters = {
   },
 };
 
+// A host narrower than 80ch that centers its child, as `Layout.Center` does
+const NarrowFrameElement = tasty({
+  styles: {
+    display: 'flex',
+    placeContent: 'center',
+    width: '40x',
+    border: true,
+    radius: true,
+  },
+});
+
+// A path that can't wrap, so it truncates instead
+const PathElement = tasty({
+  as: 'code',
+  styles: {
+    display: 'block',
+    preset: 's3',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+});
+
+export const NarrowContainer: StoryFn<CubeResultProps> = () => (
+  <NarrowFrameElement>
+    <Result
+      status="warning"
+      title="File not found"
+      subtitle="Check the path and try again"
+    >
+      <PathElement>
+        model/cubes/orders/line_items/archived/2024/order_line_items.yml
+      </PathElement>
+    </Result>
+  </NarrowFrameElement>
+);
+NarrowContainer.parameters = {
+  docs: {
+    description: {
+      story:
+        'In a container narrower than `80ch` the Result is never wider than the container, and its `Content` is never wider than the Result, so a path that cannot wrap truncates instead of pushing the Result out of the frame.',
+    },
+  },
+};
+
 export const CustomWidth = Template.bind({});
 CustomWidth.args = {
   status: 'info',
