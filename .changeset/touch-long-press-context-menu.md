@@ -1,5 +1,0 @@
----
-"@cube-dev/ui-kit": minor
----
-
-Context menus open on a touch long press. Every menu that opens on right-click — `useContextMenu` targets, `Tree` and `Tabs` context menus, `ItemTable` row and column menus and `DataTable` column menus — now also opens at the touch point when a finger is held still for 500 ms, on iOS too, which fires no `contextmenu` event. The menu takes over the gesture: lifting the finger doesn't also press the row, another long-press handler inside the element (such as React Aria's `useLongPress`) no longer fires, a text selection doesn't start, and iOS's link and image callout is off on those elements. A tap, a scroll, a finger that moves, a long press in a text field or on a drag handle such as a column resizer, and a mouse long press behave as before.
