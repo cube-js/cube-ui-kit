@@ -86,6 +86,15 @@ const STATIC_CSS = `
     -webkit-appearance: none;
   }
 
+  /*
+   * A touch long press here opens a context menu (\`bindTouchContextMenu\` in
+   * actions/touch-context-menu.ts), so iOS must not show its own link or
+   * image callout over it.
+   */
+  [data-context-menu] {
+    -webkit-touch-callout: none;
+  }
+
   code {
     font-family: var(--font-mono);
   }

@@ -43,7 +43,7 @@ An accessible tabbed interface for organizing content into multiple panels, show
 - **`menu`** `ReactNode` — Menu items for all tabs (use `Menu.Item` children)
 - **`menuTriggerProps`** `Partial<CubeItemActionProps>` — Props for the menu trigger button
 - **`menuProps`** `Partial<CubeMenuProps>` — Props for the Menu component
-- **`contextMenu`** `boolean | 'context-only'` (default: `false`) — `false`: overflow trigger only; `true`: overflow + right-click; `'context-only'`: right-click only (inline close still shown when `onDelete` is set)
+- **`contextMenu`** `boolean | 'context-only'` (default: `false`) — `false`: overflow trigger only; `true`: overflow + right-click (or a touch long press); `'context-only'`: right-click or long press only (inline close still shown when `onDelete` is set)
 - **`onAction`** `(action: string, tabKey: string) => void` — Callback when a menu action is triggered
 - **`renderPanel`** `(key: string) => ReactNode` — Render function for lazy panel content
 - **`panelCacheKeys`** `Record<string, any>` — Cache keys for `renderPanel` content
@@ -540,7 +540,7 @@ Combine editable tabs with a menu for rename, duplicate, and delete actions. The
 
 ### Context Menu
 
-Enable right-click context menus with the `contextMenu` prop. Uses the same menu items as `menu`. With `contextMenu={true}`, the ⋮ overflow trigger stays visible. With `contextMenu="context-only"`, only right-click (and Shift+F10) opens the menu; the actions row behaves like tabs without an overflow menu (e.g. inline close when `onDelete` is set).
+Enable right-click context menus with the `contextMenu` prop; on a touch screen, a long press opens the same menu at the touch point. Uses the same menu items as `menu`. With `contextMenu={true}`, the ⋮ overflow trigger stays visible. With `contextMenu="context-only"`, only right-click (and Shift+F10) opens the menu; the actions row behaves like tabs without an overflow menu (e.g. inline close when `onDelete` is set).
 
 <Story of={TabsStories.WithContextMenu} />
 

@@ -47,8 +47,8 @@ The component's data shape (`treeData`) and the public callback shape are design
 - **`contextMenu`** `boolean | 'context-only'` (default: `false`) — How the row menu is exposed.
 
   - `false` — no menu at all.
-  - `true` — render an overflow `⋮` trigger inside `actions` AND open the same menu on right-click / Shift+F10.
-  - `'context-only'` — right-click / Shift+F10 only; no `⋮` trigger.
+  - `true` — render an overflow `⋮` trigger inside `actions` AND open the same menu on right-click / touch long press / Shift+F10.
+  - `'context-only'` — right-click / touch long press / Shift+F10 only; no `⋮` trigger.
 
   Per-node `data.contextMenu` wins when provided.
 
@@ -248,7 +248,7 @@ const data = [
 
 ### Per-row Menu (Overflow + Right-Click)
 
-Pass `menu` (a `ReactNode` of `Menu.Item`s, or a callback) plus `contextMenu={true}` to render a built-in `⋮` overflow trigger AND open the same menu on right-click / `Shift+F10`. Use `onAction(action, key)` at the tree level to handle actions, or `data.onAction` for per-node behavior.
+Pass `menu` (a `ReactNode` of `Menu.Item`s, or a callback) plus `contextMenu={true}` to render a built-in `⋮` overflow trigger AND open the same menu on right-click, a touch long press or `Shift+F10`. Use `onAction(action, key)` at the tree level to handle actions, or `data.onAction` for per-node behavior.
 
 ```jsx
 <Tree
@@ -269,7 +269,7 @@ Pass `menu` (a `ReactNode` of `Menu.Item`s, or a callback) plus `contextMenu={tr
 
 ### Right-Click Only
 
-`contextMenu="context-only"` keeps the right-click / `Shift+F10` behavior but hides the `⋮` trigger — handy for clean file-tree UIs.
+`contextMenu="context-only"` keeps the right-click, long press and `Shift+F10` behavior but hides the `⋮` trigger — handy for clean file-tree UIs.
 
 <Story of={TreeStories.WithContextMenuOnly} />
 

@@ -23,6 +23,10 @@ import { mergeProps } from '../../utils/react/mergeProps';
 import { usePopoverSync } from '../../utils/react/usePopoverSync';
 
 import { MenuTrigger } from './Menu/MenuTrigger';
+import {
+  bindTouchContextMenu,
+  TOUCH_CONTEXT_MENU_ATTRIBUTE,
+} from './touch-context-menu';
 
 // A zero-size `fixed` host, so the anchor's coordinates are viewport ones.
 const ContextMenuHostElement = tasty({
@@ -59,7 +63,10 @@ export interface UseContextMenuReturn<
   P extends object = {},
   T = ComponentProps<typeof MenuTrigger>,
 > {
-  /** Container element that receives context menu events. Attach this ref to your target element. */
+  /**
+   * Container element that receives context menu events: a right-click, `Shift+F10`
+   * or a touch long press. Attach this ref to your target element.
+   */
   targetRef: RefObject<E | null>;
 
   /**
@@ -292,15 +299,21 @@ export function useContextMenu<
     },
   );
 
-  // Bind the onContextMenu event to targetRef
+  // Bind the onContextMenu event to targetRef. A touch long press fires it
+  // too, on iOS as well, so the menu opens at the touch point.
   useEffect(() => {
     const element = targetRef.current;
     if (!element) return;
 
     element.addEventListener('contextmenu', onContextMenu as any);
+    element.setAttribute(TOUCH_CONTEXT_MENU_ATTRIBUTE, '');
+
+    const unbindTouch = bindTouchContextMenu(element);
 
     return () => {
       element.removeEventListener('contextmenu', onContextMenu as any);
+      element.removeAttribute(TOUCH_CONTEXT_MENU_ATTRIBUTE);
+      unbindTouch();
     };
   }, [onContextMenu]);
 
