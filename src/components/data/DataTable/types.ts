@@ -218,8 +218,10 @@ export interface CubeDataTableProps<T = any>
   /**
    * Where a column's `header.menu` is exposed.
    *
-   * - `true` — a `⋮` trigger in the header, plus right-click and Shift+F10.
-   * - `'context-only'` — right-click and Shift+F10 only, no trigger.
+   * - `true` — a `⋮` trigger in the header, plus right-click, touch long
+   *   press and Shift+F10.
+   * - `'context-only'` — right-click, touch long press and Shift+F10 only, no
+   *   trigger.
    * - `false` — suppressed entirely.
    *
    * @default true

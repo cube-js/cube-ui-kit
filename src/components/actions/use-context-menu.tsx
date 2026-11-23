@@ -64,8 +64,8 @@ export interface UseContextMenuReturn<
   T = ComponentProps<typeof MenuTrigger>,
 > {
   /**
-   * Container element that receives context menu events: a right-click, `Shift+F10`
-   * or a touch long press. Attach this ref to your target element.
+   * Container element that receives `contextmenu` events: a right-click or a
+   * touch long press. Attach this ref to your target element.
    */
   targetRef: RefObject<E | null>;
 

@@ -215,7 +215,7 @@ const meta = {
       control: 'inline-radio',
       options: [false, true, 'context-only'],
       description:
-        "How the row menu is exposed: `false` no menu, `true` ⋮ trigger + right-click, `'context-only'` right-click only.",
+        "How the row menu is exposed: `false` no menu, `true` ⋮ trigger + right-click or long press, `'context-only'` right-click or long press only.",
       table: {
         defaultValue: { summary: 'false' },
         type: { summary: "boolean | 'context-only'" },

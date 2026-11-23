@@ -261,8 +261,10 @@ export interface CubeItemTableProps<T = any>
   /**
    * Where the menu is exposed, matching `Tree#contextMenu`:
    * - `false` — no menu, even when `rowMenu` is set.
-   * - `true` — a `⋮` trigger column **and** right-click / Shift+F10.
-   * - `'context-only'` — right-click / Shift+F10 only, no trigger column.
+   * - `true` — a `⋮` trigger column **and** right-click / touch long press /
+   *   Shift+F10.
+   * - `'context-only'` — right-click / touch long press / Shift+F10 only, no
+   *   trigger column.
    * @default false
    */
   rowContextMenu?: boolean | 'context-only';
@@ -353,8 +355,10 @@ export interface CubeItemTableProps<T = any>
   /**
    * Where a column's `header.menu` is exposed.
    *
-   * - `true` — a `⋮` trigger in the header, plus right-click and Shift+F10.
-   * - `'context-only'` — right-click and Shift+F10 only, no trigger.
+   * - `true` — a `⋮` trigger in the header, plus right-click, touch long
+   *   press and Shift+F10.
+   * - `'context-only'` — right-click, touch long press and Shift+F10 only, no
+   *   trigger.
    * - `false` — suppressed entirely.
    *
    * @default true
