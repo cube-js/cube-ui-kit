@@ -85,3 +85,15 @@ export async function touchMove(point: Point) {
     touchPoints: [nativePosition(point.x, point.y)],
   });
 }
+
+/** The centre of `element`, in the test iframe's coordinates. */
+export function centerOf(element: Element): Point {
+  const rect = element.getBoundingClientRect();
+
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+}
+
+/** A tap at `point`: a touch that lifts at once, and the click Chromium sends after. */
+export function tapAt(point: Point) {
+  return touchHold(point, 0);
+}

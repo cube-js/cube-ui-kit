@@ -1,6 +1,5 @@
-import { cdp } from 'vitest/browser';
-
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { centerOf, tapAt, useTouchEmulation } from '../../../test/touch';
 import { Menu } from '../../actions/Menu/Menu';
 
 import { Tab, Tabs } from './Tabs';
@@ -13,12 +12,6 @@ import { Tab, Tabs } from './Tabs';
  * press landing on whichever element the test handed it rather than whichever
  * one the browser paints there.
  */
-
-function centerOf(element: Element) {
-  const rect = element.getBoundingClientRect();
-
-  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-}
 
 /**
  * The sibling run for a tab.
@@ -120,41 +113,8 @@ describe('tab actions run', () => {
   });
 });
 
-/** Chromium's coordinates for a point in the test iframe, which Vitest can scale. */
-function nativePosition(x: number, y: number) {
-  const frame = window.frameElement as HTMLElement | null;
-  const bounds = frame?.getBoundingClientRect();
-  const scaleX = bounds && frame ? bounds.width / frame.offsetWidth : 1;
-  const scaleY = bounds && frame ? bounds.height / frame.offsetHeight : 1;
-
-  return {
-    x: (bounds?.left ?? 0) + (x + (frame?.clientLeft ?? 0)) * scaleX,
-    y: (bounds?.top ?? 0) + (y + (frame?.clientTop ?? 0)) * scaleY,
-  };
-}
-
-/** A trusted touch tap, which Chromium turns into pointer events and a click. */
-async function tapAt({ x, y }: { x: number; y: number }) {
-  await act(async () => {
-    await cdp().send('Input.dispatchTouchEvent', {
-      type: 'touchStart',
-      touchPoints: [nativePosition(x, y)],
-    });
-    await cdp().send('Input.dispatchTouchEvent', {
-      type: 'touchEnd',
-      touchPoints: [],
-    });
-  });
-}
-
 describe('tab actions run on a touch screen', () => {
-  beforeEach(async () => {
-    await cdp().send('Emulation.setTouchEmulationEnabled', { enabled: true });
-  });
-
-  afterEach(async () => {
-    await cdp().send('Emulation.setTouchEmulationEnabled', { enabled: false });
-  });
+  useTouchEmulation();
 
   /**
    * React Aria ends a touch press from a `pointerup` listener on the document,
