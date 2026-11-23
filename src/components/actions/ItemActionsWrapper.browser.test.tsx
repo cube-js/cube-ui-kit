@@ -394,9 +394,12 @@ describe('ItemButton with auto-hidden actions', () => {
 
     await parkPointer(wrapper);
 
-    // `$inline-padding`, which the label also keeps at its start.
+    // `$inline-padding`, which the label also keeps at its start. Awaited: a
+    // row that started under the pointer animates its padding back.
+    await waitFor(() =>
+      expect(endPadding()).toBe(getComputedStyle(label).paddingLeft),
+    );
     expect(parseFloat(endPadding())).toBeGreaterThan(0);
-    expect(endPadding()).toBe(getComputedStyle(label).paddingLeft);
 
     // Shown, the run carries its own side padding.
     await browserUserEvent.hover(row);
