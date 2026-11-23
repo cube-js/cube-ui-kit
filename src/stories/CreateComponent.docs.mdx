@@ -286,6 +286,8 @@ function MyButton(props) {
 }
 ```
 
+Chrome still sends pointer events to a natively disabled `<button>`, and a press React Aria starts there makes the first click after it is enabled do nothing. So while disabled, drop the press handlers with `omitActivationEventProps` (`src/utils/react/disabledProps.ts`), or build on `useAction` or `Item`, which already do.
+
 ## Examples
 
 ### Example 1: Block Component (Basic)

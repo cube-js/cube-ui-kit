@@ -34,10 +34,7 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import {
-  getDisabledElementProps,
-  omitActivationEventProps,
-} from '../../../utils/react/disabledProps';
+import { getDisabledElementProps } from '../../../utils/react/disabledProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import { mergeTooltipFocusProps } from '../../overlays/Tooltip/split-trigger-props';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
@@ -297,17 +294,13 @@ export const ItemAction = forwardRef(function ItemAction(
   // press doesn't lose its place. So does an action that disables itself while
   // showing a tooltip, often its only label, which keyboard users reach and read
   // as on `Button`. One whose host is disabled too stays native.
-  const { isNativelyDisabled, isInert, inertProps } = getDisabledElementProps({
+  // `useAction` already gives a disabled action no activation handlers, a
+  // `MenuTrigger`'s `onKeyDown` included.
+  const { isNativelyDisabled, inertProps } = getDisabledElementProps({
     isDisabled,
     keepEvents: isLoading || (hasTooltip && !isDisabledInherited),
     as: typeof actionProps.as === 'string' ? actionProps.as : undefined,
   });
-
-  // Without the native attribute, handlers a parent passed in (a `MenuTrigger`'s
-  // `onKeyDown`) would still activate the action.
-  const elementProps = isInert
-    ? omitActivationEventProps(actionProps)
-    : actionProps;
 
   const finalType = type;
 
@@ -319,7 +312,7 @@ export const ItemAction = forwardRef(function ItemAction(
     // Merge tooltip ref with actionProps if provided
     const mergedProps = tooltipRef
       ? mergeProps(
-          mergeTooltipFocusProps(elementProps, tooltipTriggerProps),
+          mergeTooltipFocusProps(actionProps, tooltipTriggerProps),
           inertProps,
           {
             ref: (element: HTMLElement | null) => {
@@ -340,7 +333,7 @@ export const ItemAction = forwardRef(function ItemAction(
           },
         )
       : mergeProps(
-          mergeTooltipFocusProps(elementProps, tooltipTriggerProps),
+          mergeTooltipFocusProps(actionProps, tooltipTriggerProps),
           inertProps,
         );
 

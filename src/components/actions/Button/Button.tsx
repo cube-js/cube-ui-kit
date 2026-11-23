@@ -60,10 +60,7 @@ import {
   WARNING_PRIMARY_STYLES,
 } from '../../../data/item-themes';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import {
-  getDisabledElementProps,
-  omitActivationEventProps,
-} from '../../../utils/react/disabledProps';
+import { getDisabledElementProps } from '../../../utils/react/disabledProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import { DynamicIcon, resolveIcon } from '../../../utils/react/resolveIcon';
 import { useDismissParentPopover } from '../../../utils/react/usePopoverSync';
@@ -734,17 +731,13 @@ export const Button = forwardRef(function Button(
   //
   // The attribute is skipped for links too, where it is not valid markup and
   // `aria-disabled` is the only thing announcing the state.
-  const { isNativelyDisabled, isInert, inertProps } = getDisabledElementProps({
+  // `useAction` already gives a disabled button no activation handlers, a
+  // `MenuTrigger`'s `onKeyDown` included.
+  const { isNativelyDisabled, inertProps } = getDisabledElementProps({
     isDisabled: isDisabledElement,
     keepEvents: hasOwnTooltip || isOnlyLoading,
     as: typeof actionProps.as === 'string' ? actionProps.as : undefined,
   });
-
-  // Without the native attribute, handlers a parent passed in (a `MenuTrigger`'s
-  // `onKeyDown`) would still activate the button.
-  const elementProps = isInert
-    ? omitActivationEventProps(actionProps)
-    : actionProps;
 
   // Render function that creates the button element
   const renderButtonElement = (
@@ -808,7 +801,7 @@ export const Button = forwardRef(function Button(
         // The tooltip joins the button's own description rather than
         // replacing it while open.
         {...mergeProps(
-          mergeTooltipFocusProps(elementProps, tooltipTriggerProps),
+          mergeTooltipFocusProps(actionProps, tooltipTriggerProps),
           inertProps,
         )}
         {...(isOnlyLoading && !hasOwnTooltip ? { tabIndex: -1 } : null)}
