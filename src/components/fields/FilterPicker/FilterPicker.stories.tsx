@@ -12,6 +12,7 @@ import { SettingsIcon } from '../../../icons/SettingsIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { waitForOverlay } from '../../../stories/interactions';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
 import { Paragraph } from '../../content/Paragraph';
@@ -60,6 +61,14 @@ const meta: Meta<typeof FilterPicker> = {
       control: { type: 'object' },
       description:
         'The default selected keys in uncontrolled multiple mode. Use "all" to select all items or an array of keys.',
+    },
+    defaultFocusedKey: {
+      control: { type: 'text' },
+      description:
+        'The option highlighted each time the popover opens, instead of the first selected option, such as an action row so that Enter runs it. Falls back to the first selected option, else the first, while it is hidden, disabled or missing. List mode only.',
+      table: {
+        type: { summary: 'Key' },
+      },
     },
     selectionMode: {
       control: 'radio',
@@ -989,6 +998,80 @@ export const DynamicSections: Story = {
       description: {
         story:
           'Sections and items can be defined dynamically using the `items` prop with a render function. Pass hierarchical data where each section contains a `children` array.',
+      },
+    },
+  },
+};
+
+const CREATE_CHART_KEY = 'create';
+
+export const WithActionRow: Story = {
+  args: {
+    label: 'Charts',
+    placeholder: 'Choose charts...',
+    selectionMode: 'multiple',
+    defaultFocusedKey: CREATE_CHART_KEY,
+    searchPlaceholder: 'Search charts...',
+    fieldStyles: { width: '0 30x 100%' },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button'));
+
+    const dialog = await waitForOverlay('dialog');
+    const searchInput = within(dialog).getByRole('combobox');
+
+    // The action row, not the selected chart below it, is what Enter runs.
+    await waitFor(() =>
+      expect(
+        document.getElementById(
+          searchInput.getAttribute('aria-activedescendant') ?? '',
+        ),
+      ).toHaveAttribute('data-key', CREATE_CHART_KEY),
+    );
+  },
+  render: function WithActionRowRender(args) {
+    const [charts, setCharts] = useState(['Orders', 'Revenue', 'Active users']);
+    const [selectedKeys, setSelectedKeys] = useState<Key[]>(['Revenue']);
+
+    return (
+      <FilterPicker
+        {...args}
+        selectedKeys={selectedKeys}
+        onSelectionChange={(keys) => {
+          const next = keys as Key[];
+
+          // The row is an action: run it, and never keep it selected.
+          if (next.includes(CREATE_CHART_KEY)) {
+            const name = `Chart ${charts.length + 1}`;
+
+            setCharts([...charts, name]);
+            setSelectedKeys([...selectedKeys, name]);
+
+            return;
+          }
+
+          setSelectedKeys(next);
+        }}
+      >
+        <FilterPicker.Section key="actions" aria-label="Actions">
+          <FilterPicker.Item key={CREATE_CHART_KEY} icon={<PlusIcon />}>
+            Create chart
+          </FilterPicker.Item>
+        </FilterPicker.Section>
+        <FilterPicker.Section key="charts" aria-label="Charts">
+          {charts.map((chart) => (
+            <FilterPicker.Item key={chart}>{chart}</FilterPicker.Item>
+          ))}
+        </FilterPicker.Section>
+      </FilterPicker>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An action row at the top of the list, named by `defaultFocusedKey`, is highlighted each time the popover opens, though a chart below it is selected. Enter right after opening runs the action instead of unchecking that chart. The app runs the action in `onSelectionChange` and never keeps the row selected.',
       },
     },
   },

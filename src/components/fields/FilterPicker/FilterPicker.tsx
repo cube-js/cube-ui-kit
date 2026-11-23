@@ -111,6 +111,16 @@ export interface CubeFilterPickerProps<T>
    * raises the on-screen keyboard. `true` always focuses it, `false` never.
    */
   autoFocus?: boolean;
+  /**
+   * The option highlighted each time the popover opens, instead of the first
+   * selected option: for example an action row at the top of the list, so
+   * that Enter runs it rather than unchecking a selected option. The list also
+   * returns to it when a search hides the highlighted option. While it is
+   * hidden, disabled or missing, the list highlights the first selected
+   * option, else the first option. Highlighting never selects or runs it.
+   * List mode only: it has no effect with `treeData`.
+   */
+  defaultFocusedKey?: Key;
   /** Size of the picker component */
   size?: 'small' | 'medium' | 'large';
   /** Custom styles for the list box popover */
@@ -376,6 +386,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     newCustomValueProps,
     searchPlaceholder,
     autoFocus,
+    defaultFocusedKey,
     filter,
     emptyLabel,
     searchInputStyles,
@@ -1093,6 +1104,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 <FilterListBox
                   isBare
                   autoFocus={shouldFocusSearch}
+                  defaultFocusedKey={defaultFocusedKey}
                   items={items ? (finalItems as typeof props.items) : undefined}
                   aria-label={pickerAriaLabel}
                   _internalCollection={localCollectionState.collection}
