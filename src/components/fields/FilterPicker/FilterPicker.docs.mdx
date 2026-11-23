@@ -93,7 +93,7 @@ Choose a different component when the interaction has another shape:
 - **`actions`** `ReactNode` — Custom actions rendered inside the trigger, to the left of the built-in clear button and dropdown caret
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback called when the popover open state changes
 - **`treeData`** `CubeTreeNodeData[]` — Tree-shaped options. The popover shows a `Tree` in place of the list, and `items` and `children` are not used. Tree mode is multiple selection with checkboxes, and the value is every fully checked key, parents included. With `selectionMode="single"`, the tree has no checkboxes and the value is one leaf
-- **`treeItemProps`** `TreeItemProps | (node, state) => TreeItemProps`, without the `actions` keys — Tree mode only: `Item` props for each row, as `Tree`'s `itemProps` takes them, such as a `prefix` icon or `suffix` marks. A function gets the node and its state. Rows hold nothing focusable, since the search keeps focus; a screen reader names the active row by its title, so marks are visual
+- **`treeItemProps`** `CubeFilterPickerTreeItemProps | (node, state) => CubeFilterPickerTreeItemProps`, which is `TreeItemProps` without `actions`, `autoHideActions` and `preserveActionsSpace` — Tree mode only: `Item` props for each row, as `Tree`'s `itemProps` takes them, such as a `prefix` icon or `suffix` marks. A function gets the node and its state. Rows hold nothing focusable, since the search keeps focus; a screen reader names the active row by its title, so marks are visual
 - **`expandedKeys`** `string[]` — Expanded nodes in tree mode (controlled). A search expands nodes on its own and restores these when it clears
 - **`defaultExpandedKeys`** `string[]` — Initially expanded nodes in tree mode (uncontrolled), read once when the picker mounts
 - **`onExpand`** `(expandedKeys: string[]) => void` — Called when the user expands or collapses a node in tree mode, outside a search
@@ -611,7 +611,7 @@ When the popover opens, the list highlights the first selected option, or the fi
 
 <Story of={FilterPickerStories.TreeOptions} />
 
-Pass `treeData` to pick from a tree. The popover shows a checkable [Tree](/docs/content-tree--docs) under the same header, search and footer, and `items` and `children` are not used.
+Pass `treeData` to pick from a tree. The popover shows a [Tree](/docs/content-tree--docs) under the same header, search and footer, checkable unless `selectionMode="single"` is passed, and `items` and `children` are not used.
 
 - **Value.** Tree mode is multiple selection unless `selectionMode="single"` is passed ([Single Selection in a Tree](#single-selection-in-a-tree)). `selectedKeys` is every fully checked key, parents included, in tree order. A parent key passed without its children checks its whole subtree.
 - **Cascade.** Checking a parent checks its children, and a parent with only some of them checked is half-checked. The cascade runs over the whole tree, so unchecking a node during a search keeps the nodes the search hides as they were.

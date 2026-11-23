@@ -186,6 +186,7 @@ type       CubeFieldWrapperProps
 type       CubeFileInputProps
 type       CubeFilterListBoxProps
 type       CubeFilterPickerProps
+type       CubeFilterPickerTreeItemProps
 type       CubeFlexProps
 type       CubeFlowProps
 type       CubeFooterProps

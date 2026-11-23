@@ -72,11 +72,20 @@ import type {
   TreeNodeState,
 } from '../../content/Tree/types';
 
-/** A tree row's `Item` props in FilterPicker: no actions, as nothing in a row can take focus. */
-type FilterPickerTreeItemProps = Omit<
+/**
+ * A tree row's `Item` props in FilterPicker (`treeItemProps`): `Tree`'s
+ * `TreeItemProps` with no actions, since nothing in a row can take focus. The
+ * keys are `never`, so a returned object, or a helper typed as
+ * `TreeItemProps`, can't carry them either.
+ */
+export type CubeFilterPickerTreeItemProps = Omit<
   TreeItemProps,
   'actions' | 'autoHideActions' | 'preserveActionsSpace'
->;
+> & {
+  actions?: never;
+  autoHideActions?: never;
+  preserveActionsSpace?: never;
+};
 
 interface ItemWithKey {
   key?: string | number;
@@ -123,7 +132,8 @@ export interface CubeFilterPickerProps<T>
    * Whether the search input takes focus when the popover opens. By default it
    * does, except when a touch or pen opened the popover: on a phone, a focused input
    * raises the on-screen keyboard. `true` always focuses it, `false` never.
-   * In tree mode, a press on a row leaves an unfocused search so too.
+   * In tree mode the same holds for a press on a row: it moves focus to the
+   * search only when the search opened focused or had focus.
    */
   autoFocus?: boolean;
   /**
@@ -272,15 +282,16 @@ export interface CubeFilterPickerProps<T>
    * Tree mode only: `Item` props for each row, as `Tree`'s `itemProps`
    * takes them, such as a `prefix` icon or `suffix` marks. A function gets
    * the node and its state. Rows hold nothing focusable, since the search
-   * keeps focus, so the `actions` keys are left out. A screen reader names
-   * the active row by its title: marks are visual.
+   * keeps focus, so `actions`, `autoHideActions` and `preserveActionsSpace`
+   * are ruled out. A screen reader names the active row by its title: marks
+   * are visual.
    */
   treeItemProps?:
-    | FilterPickerTreeItemProps
+    | CubeFilterPickerTreeItemProps
     | ((
         node: CubeTreeNodeData,
         state: TreeNodeState,
-      ) => FilterPickerTreeItemProps);
+      ) => CubeFilterPickerTreeItemProps);
 }
 
 /**
