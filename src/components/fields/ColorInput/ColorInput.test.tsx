@@ -45,6 +45,18 @@ describe('<ColorInput />', () => {
     },
   );
 
+  // A phone keyboard treats a field as prose unless told otherwise: it would
+  // capitalize `#1a2b3c` and offer to correct it.
+  it('turns off the text services a color value has no use for', () => {
+    const { getByRole } = renderWithRoot(<ColorInput aria-label="Color" />);
+    const input = getByRole('textbox');
+
+    expect(input).toHaveAttribute('autocapitalize', 'none');
+    expect(input).toHaveAttribute('autocorrect', 'off');
+    expect(input).toHaveAttribute('spellcheck', 'false');
+    expect(input).toHaveAttribute('autocomplete', 'off');
+  });
+
   it('marks the swatch empty without a color', () => {
     const { getByTestId } = renderWithRoot(<ColorInput aria-label="Color" />);
 
