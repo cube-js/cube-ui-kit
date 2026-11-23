@@ -732,6 +732,8 @@ describe('<FilterPicker treeData selectionMode="single" />', () => {
 
     expect(row('support:linus')).toHaveAttribute('aria-selected', 'true');
     expect(row('support:ada')).toHaveAttribute('aria-selected', 'false');
+    // A parent can't be picked, so it doesn't say it isn't.
+    expect(row('support')).not.toHaveAttribute('aria-selected');
     expect(row('engineering')).not.toBeNull();
     expect(row('engineering:ada')).toBeNull();
     expect(search().getAttribute('aria-activedescendant')).toBe(
@@ -778,6 +780,89 @@ describe('<FilterPicker treeData selectionMode="single" />', () => {
 
     expect(onSelectionChange).toHaveBeenLastCalledWith('engineering:alan');
     await waitFor(() => expect(search()).toBeNull());
+  });
+
+  it('opens an empty folder on a press rather than picking it', async () => {
+    const onSelectionChange = vi.fn();
+    const onExpand = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={[
+          { key: 'alumni', title: 'Alumni', children: [] },
+          { key: 'interns', title: 'Interns', isLeaf: false },
+        ]}
+        selectionMode="single"
+        onSelectionChange={onSelectionChange}
+        onExpand={onExpand}
+      />,
+    );
+
+    await open(getByRole);
+    await user.click(within(row('alumni')!).getByText('Alumni'));
+    await user.click(within(row('interns')!).getByText('Interns'));
+
+    expect(onExpand).toHaveBeenLastCalledWith(['alumni', 'interns']);
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(search()).toBeInTheDocument();
+  });
+
+  it('picks the active leaf with Space while the search is empty', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await open(getByRole);
+    await user.keyboard('{End} ');
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith('contractors');
+  });
+
+  it('gives renderSummary the picked leaf', () => {
+    const renderSummary = vi.fn(() => 'Summary');
+    renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        defaultSelectedKey="design:susan"
+        renderSummary={renderSummary}
+      />,
+    );
+
+    expect(renderSummary).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        selectedLabel: 'Susan Kare',
+        selectedKey: 'design:susan',
+        selectionMode: 'single',
+      }),
+    );
+  });
+
+  it('leaves the search unfocused when a touch opens a folder', async () => {
+    const { getByRole } = renderWithRoot(
+      <FilterPicker label="Person" treeData={GROUPS} selectionMode="single" />,
+    );
+
+    await user.pointer([{ keys: '[TouchA]', target: trigger(getByRole) }]);
+    await waitFor(() => expect(search()).toBeInTheDocument());
+    await user.pointer([
+      {
+        keys: '[TouchA]',
+        target: within(row('design')!).getByText('Design'),
+      },
+    ]);
+    // The refocus would land in a timer.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(row('design:susan')).toBeInTheDocument();
+    expect(search()).not.toHaveFocus();
   });
 
   it('picks a match of a search', async () => {

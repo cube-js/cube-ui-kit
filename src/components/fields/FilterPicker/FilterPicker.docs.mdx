@@ -660,7 +660,7 @@ Keys must be unique across the whole tree. When one person belongs to several gr
 
 Pass `selectionMode="single"` with `treeData` to pick one leaf, such as a file in its folders. The tree has no checkboxes, and the rest of tree mode stays as above: the search, the expansion props, `header` and `footer`.
 
-- **Press and Enter.** On a leaf, they pick it and close the popover. On a parent, they open or close it and pick nothing. A node is a leaf when `isLeaf` is `true`, or when it has no `children` array and `isLeaf` isn't `false`: give an empty folder `children: []` or `isLeaf: false`, so a press opens it rather than picks it.
+- **Press, Enter and Space.** On a leaf, they pick it and close the popover. On a parent, they open or close it and pick nothing. Space does this with an empty search, as in the list. A node is a leaf when `isLeaf` is `true`, or when it has no `children` array and `isLeaf` isn't `false`: give an empty folder `children: []` or `isLeaf: false`, so a press opens it rather than picks it.
 - **Value.** `selectedKey` or `defaultSelectedKey` is the picked leaf, and `onSelectionChange` receives its key, as in the list's single mode. The picked row shows as selected, and screen readers hear it as selected. A press on the picked leaf clears it, unless `disallowEmptySelection` is set.
 - **Opening.** The popover opens on the picked leaf: its closed ancestors open, through `onExpand` when `expandedKeys` is controlled, and it is the row the keyboard starts from.
 - **Summary.** The default trigger summary is the picked leaf's text. `renderSummary` receives `selectedLabel` and `selectedKey`, as in the list's single mode.

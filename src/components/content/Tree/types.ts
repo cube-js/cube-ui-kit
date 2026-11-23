@@ -309,9 +309,9 @@ export interface CubeTreeProps extends ComponentBaseProps, OuterStyleProps {
   _activeKey?: string | null;
 
   /**
-   * Row a control outside the tree holds as its value, with `selectionMode`
+   * Leaf a control outside the tree holds as its value, with `selectionMode`
    * `"none"` (FilterPicker's single tree mode). It shows as selected and
-   * every row carries `aria-selected`; `null` selects none.
+   * every leaf carries `aria-selected`; `null` selects none.
    * @internal
    */
   _selectedKey?: string | null;

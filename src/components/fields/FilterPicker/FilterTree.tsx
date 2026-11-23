@@ -41,18 +41,18 @@ type FilterFn = (textValue: string, inputValue: string) => boolean;
 export interface FilterTreeProps {
   treeData: CubeTreeNodeData[];
   /**
-   * `'multiple'` (default): checkboxes, and a press toggles one. `'single'`:
+   * `'multiple'`: checkboxes, and a press toggles one. `'single'`:
    * no checkboxes; a press on a leaf picks it, on a parent opens or closes it.
    */
-  selectionMode?: 'single' | 'multiple';
+  selectionMode: 'single' | 'multiple';
   /** Multiple: checked keys over the whole tree. A parent key checks its subtree. */
-  checkedKeys?: readonly string[];
+  checkedKeys: readonly string[];
   /** Multiple: every fully checked key, parents included, in tree order. */
-  onCheckedKeysChange?: (keys: string[]) => void;
+  onCheckedKeysChange: (keys: string[]) => void;
   /** Single: the picked leaf. */
-  selectedKey?: string | null;
-  /** Single: a leaf was picked, by a press or Enter. */
-  onSelect?: (key: string) => void;
+  selectedKey: string | null;
+  /** Single: a leaf was picked, by a press, Enter or Space. */
+  onSelect: (key: string) => void;
   /** The user's expansion. FilterPicker holds it, so it outlives the popover. */
   expandedKeys: string[];
   onExpand: (keys: string[]) => void;
@@ -79,8 +79,6 @@ export interface FilterTreeProps {
   /** Multiple: Enter toggled the active row. FilterPicker closes the popover, as it does for a checkable list. */
   onCommit?: () => void;
 }
-
-const NO_KEYS: readonly string[] = [];
 
 const FilterTreeListElement = tasty({
   qa: 'FilterTreeList',
@@ -164,10 +162,10 @@ function getNavigableRows(
 export function FilterTree(props: FilterTreeProps) {
   const {
     treeData,
-    selectionMode = 'multiple',
-    checkedKeys = NO_KEYS,
+    selectionMode,
+    checkedKeys,
     onCheckedKeysChange,
-    selectedKey = null,
+    selectedKey,
     onSelect,
     expandedKeys,
     onExpand,
@@ -268,7 +266,7 @@ export function FilterTree(props: FilterTreeProps) {
   const toggle = (key: string): boolean => {
     const next = toggleCheckedKey(index, checked, key);
     if (!next) return false;
-    onCheckedKeysChange?.(
+    onCheckedKeysChange(
       toOrderedKeys(index, deriveCheckedSets(treeData, index, next).checked),
     );
     return true;
@@ -280,7 +278,7 @@ export function FilterTree(props: FilterTreeProps) {
     if (!node) return;
     setActiveKey(key);
     if (isTreeLeaf(node)) {
-      onSelect?.(key);
+      onSelect(key);
     } else {
       setExpanded(
         expandedSet.has(key)
@@ -336,7 +334,8 @@ export function FilterTree(props: FilterTreeProps) {
       (direction === 'open' ? caret === input.value.length : caret === 0);
     if (!atEdge) return false;
 
-    const hasChildren = !!row.children?.length;
+    // The same rule a press follows in single mode: an empty folder opens too.
+    const hasChildren = !isTreeLeaf(row);
     const isExpanded = expandedSet.has(row.key);
 
     if (direction === 'open') {
@@ -487,8 +486,16 @@ export function FilterTree(props: FilterTreeProps) {
       </SearchWrapperElement>
       <FilterTreeListElement
         // Only the tree's own focus goes back: an empty label may hold a
-        // control, such as Retry, that the keyboard has to reach.
-        onFocus={filtered.nodes.length ? refocusSearch : undefined}
+        // control, such as Retry, that the keyboard has to reach. And only
+        // focus taken from the search: a tap on a phone that never focused
+        // it would otherwise open the on-screen keyboard.
+        onFocus={
+          filtered.nodes.length
+            ? (e) => {
+                if (e.relatedTarget === inputRef.current) refocusSearch();
+              }
+            : undefined
+        }
       >
         {filtered.nodes.length ? (
           <Tree

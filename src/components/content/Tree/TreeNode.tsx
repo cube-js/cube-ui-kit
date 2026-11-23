@@ -67,7 +67,8 @@ export interface TreeNodeProps {
   isActive?: boolean;
   /**
    * Whether this row is the value an outside control holds (`_selectedKey`).
-   * When set, it replaces the tree's own selection and adds `aria-selected`.
+   * When set, it replaces the tree's own selection and adds `aria-selected`
+   * to a leaf.
    */
   isOutsideSelected?: boolean;
 
@@ -348,8 +349,9 @@ function TreeNodeInner(props: TreeNodeProps) {
     // even one a click focused.
     ...(isActive === undefined ? null : { tabIndex: -1 }),
     // A value held outside the tree, which runs with no selection of its own
-    // and so sets no `aria-selected`: every row says whether it is the one.
-    ...(isOutsideSelected === undefined
+    // and so sets no `aria-selected`: every leaf says whether it is the one.
+    // A parent can't be picked, and `false` would say it could.
+    ...(isOutsideSelected === undefined || !isLeaf
       ? null
       : { 'aria-selected': isOutsideSelected }),
   };
