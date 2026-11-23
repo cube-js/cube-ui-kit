@@ -1107,13 +1107,20 @@ describe('<DialogTrigger /> during the exit', () => {
 
     renderWithRoot(<App />);
 
-    await user.click(screen.getByTestId('Trigger'));
+    const trigger = screen.getByTestId('Trigger');
+    const onTriggerFocus = vi.fn();
+
+    await user.click(trigger);
+    trigger.addEventListener('focus', onTriggerFocus);
     await user.click(await screen.findByRole('button', { name: 'Open panel' }));
 
     // Past the popover's own return and its exit.
     await new Promise((resolve) => setTimeout(resolve, 600));
 
     expect(screen.getByTestId('Panel')).toHaveFocus();
+    // The return waits for the hand-off rather than passing through the
+    // trigger on the way, which would run its focus and blur handlers.
+    expect(onTriggerFocus).not.toHaveBeenCalled();
   });
 
   it.each(['popover', 'modal'] as const)(
