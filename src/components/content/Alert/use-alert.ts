@@ -13,6 +13,7 @@ export function useAlert(props: CubeAlertProps) {
     isDisabled = false,
     theme,
     shape = 'card',
+    size = 'medium',
     isQueryContainer,
     mods,
   } = props;
@@ -32,6 +33,7 @@ export function useAlert(props: CubeAlertProps) {
   // `data-theme`, so it comes out before filtering.
   const {
     theme: _statusTheme,
+    size: _size,
     isQueryContainer: _isQueryContainer,
     ...domProps
   } = props;
@@ -40,6 +42,7 @@ export function useAlert(props: CubeAlertProps) {
     styles,
     mods: {
       shape,
+      size,
       type: _theme,
       'query-container': !!isQueryContainer,
       ...mods,
