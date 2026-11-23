@@ -4,6 +4,7 @@ import { useFilter, useId, useKeyboard } from 'react-aria';
 
 import { useI18n } from '../../../i18n/useI18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { StyledFooter } from '../../actions/Menu/styled';
 import { Item } from '../../content/Item/Item';
@@ -22,6 +23,10 @@ import {
   StyledHeaderWithoutBorder,
 } from '../FilterListBox/styled';
 import { EMPTY_ROW_STYLES } from '../ListBox/empty-row';
+import {
+  CubeSearchInputAttributes,
+  SEARCH_TEXT_SERVICES,
+} from '../search-text-services';
 
 import type { Styles } from '@tenphi/tasty';
 import type { ReactNode, RefObject } from 'react';
@@ -42,6 +47,7 @@ export interface FilterTreeProps {
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   searchInputStyles?: Styles;
+  searchInputProps?: CubeSearchInputAttributes;
   searchInputRef?: RefObject<HTMLInputElement | null>;
   filter?: FilterFn | false;
   emptyLabel?: ReactNode;
@@ -149,6 +155,7 @@ export function FilterTree(props: FilterTreeProps) {
     searchValue: controlledSearchValue,
     onSearchChange,
     searchInputStyles,
+    searchInputProps,
     searchInputRef,
     filter,
     header,
@@ -403,6 +410,7 @@ export function FilterTree(props: FilterTreeProps) {
       )}
       <SearchWrapperElement mods={searchMods} data-size={size}>
         <SearchInputElement
+          {...mergeProps(SEARCH_TEXT_SERVICES, searchInputProps)}
           ref={mergeRefs(inputRef, searchInputRef)}
           qa="FilterTreeSearch"
           type="search"

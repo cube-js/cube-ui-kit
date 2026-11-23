@@ -67,6 +67,7 @@ const ItemButton = forwardRef(function ItemButton(
     size = 'medium',
     wrapperStyles,
     autoHideActions = false,
+    preserveActionsSpace = false,
     disableActionsFocus = false,
     isDisabled,
     isLoading = false,
@@ -168,6 +169,7 @@ const ItemButton = forwardRef(function ItemButton(
       insideWrapper={withWrapper}
       showActions={showActions}
       skipActionsWidthTransition={skipActionsWidthTransition}
+      preserveActionsSpace={preserveActionsSpace}
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
       aria-pressed={ariaPressed}
@@ -193,6 +195,7 @@ const ItemButton = forwardRef(function ItemButton(
         actions={actions}
         actionsProps={actionsProps}
         autoHideActions={autoHideActions}
+        preserveActionsSpace={preserveActionsSpace}
         disableActionsFocus={disableActionsFocus}
         isDisabled={finalIsDisabled}
       >

@@ -14,6 +14,7 @@ export * from './ColorSwatchGroup';
 export * from './DatePicker';
 export * from './RadioGroup';
 export * from './SearchInput';
+export type { CubeSearchInputAttributes } from './search-text-services';
 export * from './Slider';
 export * from './Switch/Switch';
 export * from './ToggleGroup';

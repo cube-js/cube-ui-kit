@@ -1,4 +1,5 @@
 import { Activity, Profiler, useState } from 'react';
+import { userEvent as browserUserEvent } from 'vitest/browser';
 
 import { renderWithRoot, screen, userEvent, waitFor } from '../../test';
 import { Select } from '../fields/Select/Select';
@@ -339,5 +340,93 @@ describe('ItemActionsWrapper in a hidden container', () => {
     expect(parts.run.offsetWidth).toBeGreaterThan(width);
     expect(frame.published).toBe(`${parts.run.offsetWidth}px`);
     expect(frame.column).toBe(parts.run.offsetWidth);
+  });
+});
+
+/**
+ * An `ItemButton` whose actions show only on hover. At rest the run is hidden,
+ * so the row must lay out as if it had none, unless it was asked to keep the
+ * run's space.
+ */
+describe('ItemButton with auto-hidden actions', () => {
+  function renderRow(props: { preserveActionsSpace?: boolean } = {}) {
+    renderWithRoot(
+      <div>
+        <div data-qa="Away">away</div>
+        <ItemButton
+          qa="Row"
+          suffix={<span>2h</span>}
+          actions={<ItemButton.Action aria-label="More" />}
+          autoHideActions
+          {...props}
+        >
+          Title
+        </ItemButton>
+      </div>,
+    );
+
+    const row = screen.getByTestId('Row');
+
+    return {
+      row,
+      wrapper: row.parentElement!,
+      label: row.querySelector<HTMLElement>('[data-element="Label"]')!,
+      suffix: row.querySelector<HTMLElement>('[data-element="Suffix"]')!,
+    };
+  }
+
+  /**
+   * The browser's real pointer stays wherever the last spec in this page left
+   * it, and a row rendered under it starts hovered, with its actions shown.
+   * Parking it beside the row is what puts the row at rest.
+   */
+  async function parkPointer(wrapper: HTMLElement) {
+    await browserUserEvent.hover(screen.getByTestId('Away'));
+    await waitFor(
+      () => expect(wrapper).not.toHaveAttribute('data-actions-shown'),
+      { timeout: 2000 },
+    );
+  }
+
+  it('keeps the suffix’s end padding while the actions are hidden', async () => {
+    const { row, wrapper, label, suffix } = renderRow();
+    const endPadding = () => getComputedStyle(suffix).paddingRight;
+
+    await parkPointer(wrapper);
+
+    // `$inline-padding`, which the label also keeps at its start. Awaited: a
+    // row that started under the pointer animates its padding back.
+    await waitFor(() =>
+      expect(endPadding()).toBe(getComputedStyle(label).paddingLeft),
+    );
+    expect(parseFloat(endPadding())).toBeGreaterThan(0);
+
+    // Shown, the run carries its own side padding.
+    await browserUserEvent.hover(row);
+    await waitFor(() => expect(endPadding()).toBe('0px'));
+  });
+
+  it('keeps the actions’ space with `preserveActionsSpace`, so the suffix stays put', async () => {
+    const { row, wrapper, suffix } = renderRow({ preserveActionsSpace: true });
+
+    await parkPointer(wrapper);
+    await waitFor(
+      () => expect(parseFloat(publishedWidth(wrapper))).toBeGreaterThan(0),
+      { timeout: 2000 },
+    );
+    await settle();
+
+    const end = suffix.getBoundingClientRect().right;
+
+    expect(row.getBoundingClientRect().right - end).toBeGreaterThanOrEqual(
+      parseFloat(publishedWidth(wrapper)),
+    );
+
+    await browserUserEvent.hover(row);
+    await waitFor(() => expect(wrapper).toHaveAttribute('data-actions-shown'));
+    // Past the run's fade, so a shift that comes with it has happened.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(suffix.getBoundingClientRect().right).toBe(end);
   });
 });

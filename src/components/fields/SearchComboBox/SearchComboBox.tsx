@@ -31,6 +31,7 @@ import { useProviderProps } from '../../../provider';
 import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared/form';
 import { generateRandomId } from '../../../utils/random';
 import { useFocus } from '../../../utils/react/interactions';
+import { mergeProps } from '../../../utils/react/mergeProps';
 import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
 import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
@@ -56,6 +57,10 @@ import {
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
 import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
+import {
+  CubeSearchInputAttributes,
+  SEARCH_TEXT_SERVICES,
+} from '../search-text-services';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
@@ -182,6 +187,12 @@ export interface CubeSearchComboBoxProps<T>
   /** Ref for accessing the trigger button element */
   triggerRef?: FocusableRef<HTMLButtonElement>;
 
+  /**
+   * Attributes for the input, such as `enterKeyHint`, `autoCorrect` or `inputMode`.
+   * They win over the search defaults: `enterKeyHint="search"`, `autoCapitalize="none"`,
+   * `autoCorrect="off"` and `spellCheck={false}`.
+   */
+  inputProps?: Omit<CubeSearchInputAttributes, 'autoComplete'>;
   /** Custom styles for the input */
   inputStyles?: Styles;
   /** Custom styles for the trigger button */
@@ -271,6 +282,7 @@ interface SearchComboBoxInputProps {
   autoComplete?: string;
   size: string;
   mods: Record<string, any>;
+  inputProps?: Omit<CubeSearchInputAttributes, 'autoComplete'>;
   inputStyles?: Styles;
   keyboardProps: any;
   focusProps: any;
@@ -299,6 +311,7 @@ const SearchComboBoxInput = forwardRef<
     autoComplete,
     size,
     mods,
+    inputProps,
     inputStyles,
     keyboardProps,
     focusProps,
@@ -315,6 +328,7 @@ const SearchComboBoxInput = forwardRef<
   return (
     <InputElement
       {...customizationProps}
+      {...mergeProps(SEARCH_TEXT_SERVICES, inputProps)}
       ref={combinedRef}
       qa={qa}
       id={id}
@@ -387,6 +401,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     listBoxRef,
     isLoading,
     loadingDelay = 1000,
+    inputProps,
     inputStyles,
     optionStyles,
     triggerStyles,
@@ -962,6 +977,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
         autoComplete={autoComplete}
         size={size}
         mods={mods}
+        inputProps={inputProps}
         inputStyles={inputStyles}
         keyboardProps={keyboardProps}
         focusProps={focusProps}

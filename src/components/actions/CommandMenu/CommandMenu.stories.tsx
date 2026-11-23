@@ -102,6 +102,14 @@ export default {
     searchInputStyles: {
       description: 'Custom styles for the search input',
     },
+    searchInputProps: {
+      control: { type: null },
+      description:
+        'Attributes for the search input, such as enterKeyHint or autoCorrect. They win over the search defaults',
+      table: {
+        type: { summary: 'CubeSearchInputAttributes' },
+      },
+    },
 
     /* Advanced Features */
     isLoading: {

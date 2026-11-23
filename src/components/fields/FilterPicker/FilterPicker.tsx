@@ -379,6 +379,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     filter,
     emptyLabel,
     searchInputStyles,
+    searchInputProps,
     searchInputRef,
     listStyles,
     optionStyles,
@@ -1070,6 +1071,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   searchPlaceholder={searchPlaceholder}
                   searchValue={searchValue}
                   searchInputStyles={searchInputStyles}
+                  searchInputProps={searchInputProps}
                   searchInputRef={searchInputRef}
                   filter={filter}
                   emptyLabel={emptyLabel}
@@ -1117,6 +1119,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   }
                   emptyLabel={emptyLabel}
                   searchInputStyles={searchInputStyles}
+                  searchInputProps={searchInputProps}
                   searchInputRef={searchInputRef}
                   disabledKeys={disabledKeys}
                   focusOnHover={focusOnHover}

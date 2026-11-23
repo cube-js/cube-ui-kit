@@ -40,6 +40,10 @@ import {
   getNextVisibleKey,
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
+import {
+  CubeSearchInputAttributes,
+  SEARCH_TEXT_SERVICES,
+} from '../search-text-services';
 
 import {
   FilterListBoxWrapperElement,
@@ -73,6 +77,12 @@ export interface CubeFilterListBoxProps<T>
   emptyLabel?: ReactNode;
   /** Custom styles for the search input */
   searchInputStyles?: Styles;
+  /**
+   * Attributes for the search input, such as `enterKeyHint`, `autoCorrect` or `inputMode`.
+   * They win over the search defaults: `enterKeyHint="search"`, `autoCapitalize="none"`,
+   * `autoCorrect="off"` and `spellCheck={false}`.
+   */
+  searchInputProps?: CubeSearchInputAttributes;
   /** Whether the FilterListBox is in loading state (shows loading icon in search input) */
   isLoading?: boolean;
   /** Whether items are currently loading. Shows a loading icon in the search input suffix. */
@@ -186,6 +196,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     mods: externalMods,
     emptyLabel,
     searchInputStyles,
+    searchInputProps,
     listStyles,
     optionStyles,
     sectionStyles,
@@ -975,6 +986,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       )}
       <SearchInputElement
         {...pickBaseCustomizationProps(props)}
+        {...mergeProps(SEARCH_TEXT_SERVICES, searchInputProps)}
         ref={searchInputRef}
         qa={qa || 'FilterListBox'}
         id={id}

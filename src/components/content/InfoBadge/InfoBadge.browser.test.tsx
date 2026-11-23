@@ -1,53 +1,10 @@
-import { cdp } from 'vitest/browser';
-
-import { act, renderWithRoot, screen, waitFor } from '../../../test';
+import { renderWithRoot, screen, waitFor } from '../../../test';
+import { centerOf, tapAt, useTouchEmulation } from '../../../test/touch';
 import { Button } from '../../actions/Button/Button';
 import { TextInput } from '../../fields/TextInput/TextInput';
 
-/** Chromium's coordinates for a point in the test iframe, which Vitest can scale. */
-function nativePosition(x: number, y: number) {
-  const frame = window.frameElement as HTMLElement | null;
-  const bounds = frame?.getBoundingClientRect();
-  const scaleX = bounds && frame ? bounds.width / frame.offsetWidth : 1;
-  const scaleY = bounds && frame ? bounds.height / frame.offsetHeight : 1;
-
-  return {
-    x: (bounds?.left ?? 0) + (x + (frame?.clientLeft ?? 0)) * scaleX,
-    y: (bounds?.top ?? 0) + (y + (frame?.clientTop ?? 0)) * scaleY,
-  };
-}
-
-function centreOf(element: Element) {
-  const bounds = element.getBoundingClientRect();
-
-  return {
-    x: bounds.left + bounds.width / 2,
-    y: bounds.top + bounds.height / 2,
-  };
-}
-
-/** A trusted touch tap, which Chromium turns into pointer events and a click. */
-async function tapAt({ x, y }: { x: number; y: number }) {
-  await act(async () => {
-    await cdp().send('Input.dispatchTouchEvent', {
-      type: 'touchStart',
-      touchPoints: [nativePosition(x, y)],
-    });
-    await cdp().send('Input.dispatchTouchEvent', {
-      type: 'touchEnd',
-      touchPoints: [],
-    });
-  });
-}
-
 describe('<InfoBadge /> on a touch screen', () => {
-  beforeEach(async () => {
-    await cdp().send('Emulation.setTouchEmulationEnabled', { enabled: true });
-  });
-
-  afterEach(async () => {
-    await cdp().send('Emulation.setTouchEmulationEnabled', { enabled: false });
-  });
+  useTouchEmulation();
 
   /**
    * A tooltip a tap opened stays open until it is dismissed, and the natural
@@ -67,7 +24,7 @@ describe('<InfoBadge /> on a touch screen', () => {
       </div>,
     );
 
-    await tapAt(centreOf(screen.getByTestId('InfoBadge')));
+    await tapAt(centerOf(screen.getByTestId('InfoBadge')));
 
     const tooltip = await screen.findByRole('tooltip');
 
@@ -75,7 +32,7 @@ describe('<InfoBadge /> on a touch screen', () => {
       expect(tooltip).toHaveAttribute('data-phase', 'entered'),
     );
 
-    const point = centreOf(tooltip);
+    const point = centerOf(tooltip);
     const button = screen.getByRole('button').getBoundingClientRect();
 
     // The tooltip covers the button, so a tap that passed through would press it.

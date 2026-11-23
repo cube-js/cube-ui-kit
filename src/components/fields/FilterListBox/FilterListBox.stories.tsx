@@ -265,6 +265,14 @@ const meta: any = {
         type: { summary: 'Styles' },
       },
     },
+    searchInputProps: {
+      control: { type: null },
+      description:
+        'Attributes for the search input, such as enterKeyHint or autoCorrect. They win over the search defaults',
+      table: {
+        type: { summary: 'CubeSearchInputAttributes' },
+      },
+    },
     listStyles: {
       control: { type: null },
       table: {

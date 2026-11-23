@@ -364,6 +364,10 @@ export const ColorInput = forwardRef(function ColorInput(
       inputRef={inputRef}
       inputProps={{
         ...inputProps,
+        // A color value is not prose: a phone keyboard must neither capitalize
+        // it nor correct it. The letters keyboard stays, for a–f and `rgb(`.
+        autoCapitalize: 'none',
+        autoCorrect: 'off',
         spellCheck: false,
         onMouseDown: handleMouseDown,
       }}

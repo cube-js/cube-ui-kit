@@ -18,6 +18,7 @@ import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { asksForFieldChrome, withFieldChrome } from '../../form/field-chrome';
 import { useValidationProps } from '../../form/validation/use-validation-props';
+import { SEARCH_TEXT_SERVICES } from '../search-text-services';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
@@ -118,6 +119,8 @@ export const SearchInput = forwardRef(function SearchInput(
       ref={ref}
       labelProps={mergedLabelProps}
       inputProps={mergeProps(
+        // First, so the caller's own value wins, as a prop or in `inputProps`.
+        SEARCH_TEXT_SERVICES,
         inputProps,
         { 'data-input-type': 'searchinput' },
         userInputProps,
