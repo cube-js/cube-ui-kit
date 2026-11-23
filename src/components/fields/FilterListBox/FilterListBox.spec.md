@@ -51,7 +51,7 @@ FilterListBox (forwardRef)
 ### 4. Focus Management
 - **Virtual Focus**: Uses `shouldUseVirtualFocus={true}` to keep DOM focus in search input
 - **Focus Preservation**: Maintains keyboard navigation through filtered items
-- **Auto-focus Management**: Automatically focuses first available item when collection changes
+- **Auto-focus Management**: When nothing is focused, or the focused item leaves the filtered collection, focus moves to, in order: the new custom value when no real item matches, the visible enabled `defaultFocusedKey`, the first visible selected item, the first visible item. A focused item still in view keeps focus
 
 ### 5. Form Integration
 - **Value Mapping**: Supports both single and multiple selection modes
@@ -65,6 +65,7 @@ FilterListBox (forwardRef)
 interface SearchProps {
   searchPlaceholder?: string;     // Search input placeholder
   autoFocus?: boolean;           // Auto-focus search input
+  defaultFocusedKey?: Key;       // Item focused on open, before the first selected
   filter?: FilterFn;             // Custom filter function
   emptyLabel?: ReactNode;        // Custom "no results" message
   searchInputStyles?: Styles;    // Search input styling

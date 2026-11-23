@@ -56,6 +56,7 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`isLoadingItems`** `boolean` (default: `false`) — Whether items are currently loading. Shows a loading icon in the search input suffix
 - **`autoFocus`** `boolean` — Whether the search input should have autofocus
 - **`searchInputProps`** `CubeSearchInputAttributes` — Attributes for the search input, such as `enterKeyHint`, `autoCorrect` or `inputMode`. By default it sets `enterKeyHint="search"`, `autoCapitalize="none"`, `autoCorrect="off"` and `spellCheck={false}`, so a phone keyboard shows a Search key and neither capitalizes nor corrects a query; a value set here wins. It takes no event handlers, ARIA attributes, `value`, `type`, `role`, `id`, `placeholder`, `autoFocus`, `disabled`, `readOnly`, `className` or `style`: the component owns those, or takes them as props of its own
+- **`defaultFocusedKey`** `Key` — The option highlighted when the list opens, instead of the first selected option, such as an action row so that Enter runs it. The list also returns to it when a search hides the highlighted option. While it is hidden, disabled or missing, the list highlights the first selected option, else the first. See [Action Row](#action-row)
 - **`customValueProps`** `Partial<CubeItemProps>` — Props to apply to existing custom values (already selected but not in predefined options)
 - **`newCustomValueProps`** `Partial<CubeItemProps>` — Props to apply to new custom values appearing in search results (merged with `customValueProps`)
 - **`onLoadMore`** `() => void` — Called when the end of the list comes within `loadMoreMargin` of view, or the options are too few to fill the list, while `hasMore` is true and `isLoadingMore` is false. Append the next page to `items`
@@ -499,7 +500,7 @@ Pass the pages loaded so far as `items` and load the next one in `onLoadMore`, a
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to the search input
+- `Tab` - Moves focus to the search input. The first selected option is highlighted, or the first option when none is selected, unless `defaultFocusedKey` names another
 - `Arrow Down/Up` - Navigate through filtered options
 - `Enter` - Select the focused option
 - `Space` - In multiple selection mode, toggle selection (when search is empty)
@@ -763,6 +764,43 @@ Use the `onEscape` prop to handle custom behavior when Escape is pressed with em
 - If search has text: Escape clears the search
 - If search is empty: Escape calls `onEscape` callback
 - Useful for closing parent modals or dialogs
+
+### Action Row
+
+The list highlights the first selected option when it opens, or the first option when none is selected, as listboxes do. A list that leads with an action names that row with `defaultFocusedKey`, so that Enter runs the action instead of unchecking a selected option:
+
+```jsx
+<FilterListBox
+  label="Charts"
+  selectionMode="multiple"
+  selectedKeys={selectedKeys}
+  defaultFocusedKey="create"
+  onSelectionChange={(keys) => {
+    // The row is an action: run it, and never keep it selected.
+    if (keys.includes('create')) {
+      createChart();
+      return;
+    }
+
+    setSelectedKeys(keys);
+  }}
+>
+  <FilterListBox.Section key="actions" aria-label="Actions">
+    <FilterListBox.Item key="create">Create chart</FilterListBox.Item>
+  </FilterListBox.Section>
+  <FilterListBox.Section key="charts" aria-label="Charts">
+    <FilterListBox.Item key="orders">Orders</FilterListBox.Item>
+    <FilterListBox.Item key="revenue">Revenue</FilterListBox.Item>
+  </FilterListBox.Section>
+</FilterListBox>
+```
+
+**Key behaviors:**
+
+- The list returns to the named option when a search hides the highlighted one; a highlight the search leaves in view stays where it is
+- While the named option is hidden, disabled or missing, the list highlights the first selected option, else the first
+- Highlighting moves `aria-activedescendant` and never selects or runs the option
+- Leave it out in a plain list: keyboard and screen reader users expect to land on their selection
 
 ### Controlled Search
 
