@@ -25,6 +25,7 @@ import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
 import { SlotProvider } from '../../../utils/react/Slots';
+import { useOpenKey } from '../../../utils/react/useOpenKey';
 import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Popover } from '../../overlays/Modal/Popover';
@@ -182,6 +183,9 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
 
       // Use setTimeout to ensure focus restoration happens after any animations
       setTimeout(() => {
+        // Opened again before this ran: focus belongs to that opening.
+        if (wasOpenRef.current) return;
+
         // An action that opened a panel, a dialog or an inline editor has
         // already focused it by now — taking focus back to the trigger would
         // undo the hand-off, which consumers previously had to out-race by
@@ -225,8 +229,12 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
   // scope's own unmount restore too. Scope registration (and therefore the
   // guarantee above) is unaffected — `FocusScope` joins the tree and tracks
   // the active scope regardless of `restoreFocus`.
+  //
+  // Keyed per opening, so a menu reopened while it still plays its exit mounts
+  // afresh and its `autoFocus` puts focus inside it again — see `useOpenKey`.
+  const openKey = useOpenKey(state.isOpen);
   const contents = (
-    <FocusScope restoreFocus={shouldRestoreFocus}>
+    <FocusScope key={openKey} restoreFocus={shouldRestoreFocus}>
       <DismissButton onDismiss={state.close} />
       {menu}
       <DismissButton onDismiss={state.close} />

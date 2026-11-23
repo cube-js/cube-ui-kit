@@ -2678,6 +2678,85 @@ describe('MenuTrigger focus hand-off (CUB-3962)', () => {
 });
 
 /**
+ * A closed menu stays mounted while it plays its exit. Reopened inside that
+ * window, it used to show the same `Menu` again, whose `autoFocus` only runs as
+ * it mounts: focus stayed on the trigger, and `Escape` closed nothing.
+ */
+describe('MenuTrigger reopened during its exit (CUB-8552)', () => {
+  it.each([
+    ['{Enter}', 'Alpha'],
+    ['{ArrowUp}', 'Beta'],
+  ])(
+    'reopened with %s, focuses %s and closes on Escape',
+    async (key, itemName) => {
+      const user = userEvent.setup({ delay: null });
+
+      renderWithRoot(
+        <MenuTrigger>
+          <Button>Menu</Button>
+          <Menu>
+            <Menu.Item key="alpha">Alpha</Menu.Item>
+            <Menu.Item key="beta">Beta</Menu.Item>
+          </Menu>
+        </MenuTrigger>,
+      );
+
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      const item = () => screen.getByRole('menuitem', { name: itemName });
+
+      act(() => trigger.focus());
+      await user.keyboard(key);
+      await waitFor(() => expect(item()).toHaveFocus());
+
+      await user.keyboard('{Escape}');
+
+      // Closed, but still mounted for its exit: the window under test.
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+
+      act(() => trigger.focus());
+      await user.keyboard(key);
+
+      await waitFor(() => expect(item()).toHaveFocus());
+
+      await user.keyboard('{Escape}');
+      await waitFor(() =>
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument(),
+      );
+    },
+  );
+
+  // The close schedules a restore to the trigger; reopened before it runs, the
+  // menu keeps focus.
+  it('keeps focus when closed and reopened in one task', async () => {
+    function App({ isOpen }) {
+      return (
+        <MenuTrigger isOpen={isOpen}>
+          <Button>Menu</Button>
+          <Menu>
+            <Menu.Item key="alpha">Alpha</Menu.Item>
+            <Menu.Item key="beta">Beta</Menu.Item>
+          </Menu>
+        </MenuTrigger>
+      );
+    }
+
+    const { rerender } = renderWithRoot(<App isOpen />);
+    const item = () => screen.getByRole('menuitem', { name: 'Alpha' });
+
+    await waitFor(() => expect(item()).toHaveFocus());
+
+    act(() => rerender(<App isOpen={false} />));
+    act(() => rerender(<App isOpen />));
+
+    // Past the restore's `setTimeout(0)`.
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(item()).toHaveFocus();
+  });
+});
+
+/**
  * A row's `actions` are a SIBLING of the row (see `ItemActionsWrapper`), so a
  * row that is itself a menu trigger owns controls that live outside its own
  * element: the run has to clear the press context it sits in, and say who it
