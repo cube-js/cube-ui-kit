@@ -130,9 +130,10 @@ describe('<DialogTrigger type="popover" />', () => {
 
 // Both types are covered because they restore focus through different paths:
 // modal/tray/fullscreen/panel use `DialogTriggerBase`'s own restore, while
-// popovers get theirs from `Dialog`'s `<FocusScope restoreFocus>` (the manual
-// one is a no-op there — see the comment on it). Only the first path had the
-// unconditional-restore bug, but both must honour a hand-off.
+// popovers use `PopoverTrigger`'s return as they close, with `Dialog`'s
+// `<FocusScope restoreFocus>` restoring at the end of the exit what that
+// leaves. Only the first path had the unconditional-restore bug, but both must
+// honour a hand-off.
 describe.each(['popover', 'modal'] as const)(
   'DialogTrigger focus hand-off (type=%s)',
   (type) => {
@@ -204,8 +205,8 @@ describe.each(['popover', 'modal'] as const)(
       await findByTestId('Dialog');
       await user.click(getByTestId('Act'));
 
-      // Past the trigger's restore and the Dialog FocusScope's unmount restore
-      // — for popovers the FocusScope is the only one that would have fired.
+      // Past the trigger's restore (a popover's return as it closes) and the
+      // Dialog FocusScope's unmount restore.
       await new Promise((resolve) => setTimeout(resolve, 600));
 
       expect(trigger).not.toHaveFocus();
@@ -236,8 +237,9 @@ describe.each(['popover', 'modal'] as const)(
   },
 );
 
-// A retained popover never unmounts its `FocusScope`, the popover's only
-// restore, so `Dialog` restores when it reaches the end of its exit.
+// A retained popover never unmounts its `FocusScope`, so besides the return
+// `PopoverTrigger` makes as it closes, `Dialog` restores when it reaches the
+// end of its exit.
 describe('DialogTrigger popover hideOnClose focus restore', () => {
   it('returns focus to the trigger on every Escape', async () => {
     const user = userEvent.setup();
@@ -1032,36 +1034,44 @@ describe('<DialogTrigger /> during the exit', () => {
 
   // Reopened before it has handed focus back, with focus still inside: what
   // was focused then goes with the contents the reopen replaces, so the
-  // popover keeps where focus returns to from the opening before.
-  it('a popover closed and reopened in one task still returns focus to its trigger', async () => {
-    function App({ isOpen }: { isOpen: boolean }) {
-      return (
-        <DialogTrigger type="popover" isOpen={isOpen}>
-          <Button qa="Trigger">Open</Button>
-          <Dialog aria-label="Popover">
-            <button type="button">Inside</button>
-          </Dialog>
-        </DialogTrigger>
-      );
-    }
+  // popover keeps where focus returns to from the opening before, however
+  // many times it is reopened so (as a "Refresh" button inside it would).
+  it.each([1, 2])(
+    'a popover closed and reopened in one task %i time(s) still returns focus to its trigger',
+    async (times) => {
+      function App({ isOpen }: { isOpen: boolean }) {
+        return (
+          <DialogTrigger type="popover" isOpen={isOpen}>
+            <Button qa="Trigger">Open</Button>
+            <Dialog aria-label="Popover">
+              <button type="button">Inside</button>
+            </Dialog>
+          </DialogTrigger>
+        );
+      }
 
-    const { rerender } = renderWithRoot(<App isOpen={false} />);
-    const trigger = screen.getByTestId('Trigger');
+      const { rerender } = renderWithRoot(<App isOpen={false} />);
+      const trigger = screen.getByTestId('Trigger');
 
-    act(() => trigger.focus());
-    rerender(<App isOpen />);
-    const inside = await screen.findByRole('button', { name: 'Inside' });
+      act(() => trigger.focus());
+      rerender(<App isOpen />);
 
-    act(() => inside.focus());
-    act(() => rerender(<App isOpen={false} />));
-    act(() => rerender(<App isOpen />));
+      for (let time = 0; time < times; time++) {
+        const inside = await screen.findByRole('button', { name: 'Inside' });
 
-    // Past the reopen's own opening focus, then closed for good.
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    rerender(<App isOpen={false} />);
+        act(() => inside.focus());
+        act(() => rerender(<App isOpen={false} />));
+        act(() => rerender(<App isOpen />));
 
-    await waitFor(() => expect(trigger).toHaveFocus(), { timeout: 1500 });
-  });
+        // Past the reopen's own opening focus.
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      rerender(<App isOpen={false} />);
+
+      await waitFor(() => expect(trigger).toHaveFocus(), { timeout: 1500 });
+    },
+  );
 
   // As any opening does: focus goes back to what opened it this time.
   it.each([false, true])(

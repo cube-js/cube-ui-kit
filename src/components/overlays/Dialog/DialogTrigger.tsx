@@ -520,53 +520,44 @@ function PopoverTrigger(allProps) {
   // `MenuTrigger`, so an action that moved focus to a surface it opened has
   // done so first. Reopened before it runs, the cleanup cancels it.
   //
-  // Reopened during its exit, it keeps the opener it had as a fallback, by
-  // `useRetainedDialogFocus`'s rule: when the new one is gone or inside the
-  // popover. Focus can still be in the closing contents, which the reopen
-  // replaces, or lost to `<body>`.
+  // Reopened during its exit, it also keeps the newest earlier opener that
+  // still resolves, as a fallback for when the new one is gone by the close or
+  // inside the popover: focus can still be in the closing contents, which the
+  // reopen replaces, or lost to `<body>`. An opener a reopen has replaced no
+  // longer resolves, so the fallback passes on through any number of them.
+  // Both clear once an exit ends, so an opening after that starts afresh.
   const [opening, setOpening] = useState<{
     isOpen: boolean;
     opener: Opener | null;
     fallback: Opener | null;
-    isExiting: boolean;
-  }>({ isOpen: false, opener: null, fallback: null, isExiting: false });
+  }>({ isOpen: false, opener: null, fallback: null });
 
   if (opening.isOpen !== state.isOpen) {
-    setOpening({
-      isOpen: state.isOpen,
-      opener: state.isOpen ? readOpener() : opening.opener,
-      fallback: state.isOpen
-        ? opening.isExiting
-          ? opening.opener
-          : null
-        : opening.fallback,
-      isExiting: !state.isOpen,
-    });
+    setOpening(
+      state.isOpen
+        ? {
+            isOpen: true,
+            opener: readOpener(),
+            fallback: resolveOpener(opening.opener)
+              ? opening.opener
+              : opening.fallback,
+          }
+        : { ...opening, isOpen: false },
+    );
   }
 
   // Its return ran long before, so a closed popover holds no removed opener.
   const onExited = () =>
     setOpening((current) =>
-      current.isExiting
-        ? { ...current, opener: null, fallback: null, isExiting: false }
-        : current,
+      current.isOpen
+        ? current
+        : { isOpen: false, opener: null, fallback: null },
     );
 
   const { opener, fallback } = opening;
-  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (state.isOpen) {
-      wasOpenRef.current = true;
-
-      return;
-    }
-
-    if (!wasOpenRef.current) return;
-
-    wasOpenRef.current = false;
-
-    if (!shouldRestoreFocus || (!opener && !fallback)) return;
+    if (state.isOpen || !shouldRestoreFocus || (!opener && !fallback)) return;
 
     const timer = setTimeout(() => {
       const popover = overlayRef.current;
