@@ -1,6 +1,6 @@
 import { CalendarDate, CalendarDateTime } from '@internationalized/date';
 
-import { renderWithRoot, userEvent, waitFor, within } from '../../../test';
+import { act, renderWithRoot, userEvent, waitFor, within } from '../../../test';
 import { Button } from '../../actions/Button';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 
@@ -252,5 +252,34 @@ describe('<DatePicker />', () => {
 
       await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(false));
     });
+  });
+
+  // Right after `Escape`, `Enter` used to land in the closing calendar rather
+  // than reopen it; and reopened while it still played its exit, the calendar
+  // focused its month button instead of the selected date, so the arrow keys
+  // did not move between dates (CUB-8552).
+  it('reopens on the selected date with Enter right after Escape', async () => {
+    const { baseElement } = renderWithRoot(
+      <DatePicker label="Date" defaultValue={new CalendarDate(2026, 10, 9)} />,
+    );
+    const trigger = baseElement.querySelector(
+      '[data-popover-trigger]',
+    ) as HTMLElement;
+    const selectedDate = () =>
+      within(
+        baseElement.querySelector('[data-qa="Dialog"]') as HTMLElement,
+      ).getByRole('button', { name: /October 9, 2026 selected/ });
+
+    await act(async () => trigger.focus());
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(selectedDate()).toHaveFocus());
+
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() =>
+      expect(trigger).toHaveAttribute('aria-expanded', 'true'),
+    );
+    await waitFor(() => expect(selectedDate()).toHaveFocus());
   });
 });

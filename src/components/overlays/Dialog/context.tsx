@@ -20,9 +20,10 @@ export interface DialogContextValue extends HTMLAttributes<HTMLElement> {
   isOpen?: boolean;
   /**
    * Whether closing the dialog restores focus to its trigger. Set by
-   * `DialogTrigger`'s `shouldRestoreFocus` prop; consumed by `Dialog`'s
-   * `FocusScope` (which owns the restore for popover-type dialogs) and by its
-   * restore for a retained (`hideOnClose`) dialog. Defaults
+   * `DialogTrigger`'s `shouldRestoreFocus` prop, which also governs the
+   * return `DialogTrigger` makes as a dialog closes; consumed by `Dialog`'s
+   * `FocusScope` (which restores at the end of the exit whatever that return
+   * leaves) and by its restore for a retained (`hideOnClose`) dialog. Defaults
    * to `true` when absent, so a `Dialog` rendered outside a trigger keeps
    * restoring focus.
    */

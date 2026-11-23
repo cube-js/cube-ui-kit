@@ -20,7 +20,7 @@ let isRedirectingUnmount = false;
 
 type FocusTarget = HTMLElement | SVGElement;
 
-interface Opener {
+export interface Opener {
   /** The element focused when the dialog opened. */
   element: Element;
   /** The control of the popup `element` sat in, such as a menu's trigger. */
@@ -53,7 +53,7 @@ function findPopup(element: Element) {
   return { popupTrigger: null, popup: null };
 }
 
-function readOpener(): Opener | null {
+export function readOpener(): Opener | null {
   if (typeof document === 'undefined') return null;
 
   const element = document.activeElement;
@@ -69,7 +69,7 @@ function readOpener(): Opener | null {
  * restore on the same way when a menu item's menu closes; a disclosure that
  * stays open around a removed control is not one. Only a connected element.
  */
-function resolveOpener(opener: Opener | null): FocusTarget | null {
+export function resolveOpener(opener: Opener | null): FocusTarget | null {
   if (!opener) return null;
 
   const { element, popupTrigger, popup } = opener;
@@ -92,7 +92,7 @@ function resolveOpener(opener: Opener | null): FocusTarget | null {
  * Restores focus the way `FocusScope` does, announcing it first: a retained
  * dialog closed around `node` takes the restore on to its own opener.
  */
-function restoreFocusTo(node: FocusTarget) {
+export function restoreFocusTo(node: FocusTarget) {
   const event = new CustomEvent(RESTORE_FOCUS_EVENT, {
     bubbles: true,
     cancelable: true,

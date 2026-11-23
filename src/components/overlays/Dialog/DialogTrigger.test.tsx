@@ -1,8 +1,9 @@
 import { ClearPressResponder } from '@react-aria/interactions';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
 import {
+  act,
   fireEvent,
   renderWithRoot,
   screen,
@@ -12,6 +13,8 @@ import {
 import { startScreenReader } from '../../../test/screen-reader';
 import { Button } from '../../actions/Button';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
+import { Menu } from '../../actions/Menu/Menu';
+import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
 import { Content } from '../../content/Content';
 import { Header } from '../../content/Header';
 import { Title } from '../../content/Title';
@@ -129,9 +132,10 @@ describe('<DialogTrigger type="popover" />', () => {
 
 // Both types are covered because they restore focus through different paths:
 // modal/tray/fullscreen/panel use `DialogTriggerBase`'s own restore, while
-// popovers get theirs from `Dialog`'s `<FocusScope restoreFocus>` (the manual
-// one is a no-op there — see the comment on it). Only the first path had the
-// unconditional-restore bug, but both must honour a hand-off.
+// popovers use `PopoverTrigger`'s return as they close, with `Dialog`'s
+// `<FocusScope restoreFocus>` restoring at the end of the exit what that
+// leaves. Only the first path had the unconditional-restore bug, but both must
+// honour a hand-off.
 describe.each(['popover', 'modal'] as const)(
   'DialogTrigger focus hand-off (type=%s)',
   (type) => {
@@ -203,8 +207,8 @@ describe.each(['popover', 'modal'] as const)(
       await findByTestId('Dialog');
       await user.click(getByTestId('Act'));
 
-      // Past the trigger's restore and the Dialog FocusScope's unmount restore
-      // — for popovers the FocusScope is the only one that would have fired.
+      // Past the trigger's restore (a popover's return as it closes) and the
+      // Dialog FocusScope's unmount restore.
       await new Promise((resolve) => setTimeout(resolve, 600));
 
       expect(trigger).not.toHaveFocus();
@@ -235,8 +239,9 @@ describe.each(['popover', 'modal'] as const)(
   },
 );
 
-// A retained popover never unmounts its `FocusScope`, the popover's only
-// restore, so `Dialog` restores when it reaches the end of its exit.
+// A retained popover never unmounts its `FocusScope`, so besides the return
+// `PopoverTrigger` makes as it closes, `Dialog` restores when it reaches the
+// end of its exit.
 describe('DialogTrigger popover hideOnClose focus restore', () => {
   it('returns focus to the trigger on every Escape', async () => {
     const user = userEvent.setup();
@@ -989,6 +994,308 @@ describe('<DialogTrigger type="popover" targetRef /> on scroll', () => {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
+  });
+});
+
+/**
+ * A closed dialog stays mounted while it plays its exit (CUB-8552). A popover
+ * used to hand focus back only once that exit ended, so a key pressed right
+ * after `Escape` landed in it; and a dialog reopened inside it kept its old
+ * contents, whose opening focus only runs as they mount.
+ */
+describe('<DialogTrigger /> during the exit', () => {
+  const user = userEvent.setup({ delay: null });
+
+  it.each([false, true])(
+    'a popover returns focus to its trigger as it closes (hideOnClose=%s)',
+    async (hideOnClose) => {
+      renderWithRoot(
+        <DialogTrigger type="popover" hideOnClose={hideOnClose}>
+          <Button qa="Trigger">Open</Button>
+          <Dialog aria-label="Popover">
+            <button type="button">Inside</button>
+          </Dialog>
+        </DialogTrigger>,
+      );
+
+      const trigger = screen.getByTestId('Trigger');
+
+      await user.click(trigger);
+      const dialog = await screen.findByRole('dialog');
+      await waitFor(() =>
+        expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      );
+
+      await user.keyboard('{Escape}');
+
+      // Well before the exit ends, while the popover is still there.
+      await waitFor(() => expect(trigger).toHaveFocus(), { timeout: 250 });
+      expect(dialog.isConnected).toBe(true);
+    },
+  );
+
+  // Reopened before it has handed focus back, with focus still inside: what
+  // was focused then goes with the contents the reopen replaces, so the
+  // popover keeps where focus returns to from the opening before, however
+  // many times it is reopened so (as a "Refresh" button inside it would).
+  it.each([1, 2])(
+    'a popover closed and reopened in one task %i time(s) still returns focus to its trigger',
+    async (times) => {
+      function App({ isOpen }: { isOpen: boolean }) {
+        return (
+          <DialogTrigger type="popover" isOpen={isOpen}>
+            <Button qa="Trigger">Open</Button>
+            <Dialog aria-label="Popover">
+              <button type="button">Inside</button>
+            </Dialog>
+          </DialogTrigger>
+        );
+      }
+
+      const { rerender } = renderWithRoot(<App isOpen={false} />);
+      const trigger = screen.getByTestId('Trigger');
+
+      act(() => trigger.focus());
+      rerender(<App isOpen />);
+
+      for (let time = 0; time < times; time++) {
+        const inside = await screen.findByRole('button', { name: 'Inside' });
+
+        act(() => inside.focus());
+        act(() => rerender(<App isOpen={false} />));
+        act(() => rerender(<App isOpen />));
+
+        // Past the reopen's own opening focus.
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      rerender(<App isOpen={false} />);
+
+      await waitFor(() => expect(trigger).toHaveFocus(), { timeout: 1500 });
+    },
+  );
+
+  // Focus left in another overlay closing in the same commit is that
+  // overlay's to return: a page menu whose item closed the popover returns it
+  // to its own trigger, wherever the two sit in the tree.
+  it.each([false, true])(
+    'a popover closed by a page menu item leaves focus to that menu (menu first: %s)',
+    async (menuFirst) => {
+      function App() {
+        const [isOpen, setOpen] = useState(false);
+        const popover = (
+          <DialogTrigger
+            key="popover"
+            type="popover"
+            isDismissable={false}
+            isOpen={isOpen}
+            onOpenChange={setOpen}
+          >
+            <Button qa="Trigger">Open</Button>
+            <Dialog aria-label="Popover">
+              <button type="button">Inside</button>
+            </Dialog>
+          </DialogTrigger>
+        );
+        const menu = (
+          <MenuTrigger key="menu">
+            <Button qa="Actions">Actions</Button>
+            <Menu aria-label="Actions" onAction={() => setOpen(false)}>
+              <Menu.Item key="close">Close popover</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        );
+
+        return <>{menuFirst ? [menu, popover] : [popover, menu]}</>;
+      }
+
+      renderWithRoot(<App />);
+
+      await user.click(screen.getByTestId('Trigger'));
+      await screen.findByRole('dialog', { name: 'Popover' });
+      await user.click(screen.getByTestId('Actions'));
+      const item = await screen.findByRole('menuitem', {
+        name: 'Close popover',
+      });
+      await waitFor(() => expect(item).toHaveFocus());
+
+      await user.keyboard('{Enter}');
+
+      // Past both returns and both exits.
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      expect(screen.getByTestId('Actions')).toHaveFocus();
+    },
+  );
+
+  // As any opening does: focus goes back to what opened it this time.
+  it.each([false, true])(
+    'a popover reopened during its exit from another control returns focus there (hideOnClose=%s)',
+    async (hideOnClose) => {
+      function App() {
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <>
+            <DialogTrigger
+              type="popover"
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onOpenChange={setOpen}
+            >
+              <Button qa="Trigger">Open</Button>
+              <Dialog aria-label="Popover">
+                <button type="button">Inside</button>
+              </Dialog>
+            </DialogTrigger>
+            <Button qa="Other" onPress={() => setOpen(true)}>
+              Other
+            </Button>
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+
+      await user.click(screen.getByTestId('Trigger'));
+      const dialog = await screen.findByRole('dialog');
+      await waitFor(() =>
+        expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      );
+      await user.keyboard('{Escape}');
+
+      // Still in the exit: reopened from the other control.
+      await user.click(screen.getByTestId('Other'));
+      await waitFor(() =>
+        expect(screen.getByRole('dialog')).toContainElement(
+          document.activeElement as HTMLElement,
+        ),
+      );
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => expect(screen.getByTestId('Other')).toHaveFocus(), {
+        timeout: 250,
+      });
+    },
+  );
+
+  // As a menu item hands focus to what it opens (CUB-3962): a surface that
+  // focuses itself as it mounts keeps focus.
+  it('a popover leaves focus on a surface an action opens as it closes', async () => {
+    function Panel() {
+      const ref = useRef<HTMLDivElement>(null);
+
+      useEffect(() => {
+        ref.current?.focus({ preventScroll: true });
+      }, []);
+
+      return (
+        <div ref={ref} tabIndex={-1} data-qa="Panel">
+          Panel content
+        </div>
+      );
+    }
+
+    function App() {
+      const [isOpen, setOpen] = useState(false);
+      const [isPanelOpen, setPanelOpen] = useState(false);
+
+      return (
+        <>
+          <DialogTrigger type="popover" isOpen={isOpen} onOpenChange={setOpen}>
+            <Button qa="Trigger">Open</Button>
+            <Dialog aria-label="Popover">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setPanelOpen(true);
+                }}
+              >
+                Open panel
+              </button>
+            </Dialog>
+          </DialogTrigger>
+          {isPanelOpen ? <Panel /> : null}
+        </>
+      );
+    }
+
+    renderWithRoot(<App />);
+
+    const trigger = screen.getByTestId('Trigger');
+    const onTriggerFocus = vi.fn();
+
+    await user.click(trigger);
+    trigger.addEventListener('focus', onTriggerFocus);
+    await user.click(await screen.findByRole('button', { name: 'Open panel' }));
+
+    // Past the popover's own return and its exit.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    expect(screen.getByTestId('Panel')).toHaveFocus();
+    // The return waits for the hand-off rather than passing through the
+    // trigger on the way, which would run its focus and blur handlers.
+    expect(onTriggerFocus).not.toHaveBeenCalled();
+  });
+
+  it.each(['popover', 'modal'] as const)(
+    'a %s reopened during its exit takes focus as when it first opened',
+    async (type) => {
+      renderWithRoot(
+        <DialogTrigger type={type}>
+          <Button qa="Trigger">Open</Button>
+          <Dialog aria-label="Dialog">
+            <Content>
+              <button type="button">Inside</button>
+            </Content>
+          </Dialog>
+        </DialogTrigger>,
+      );
+
+      const trigger = screen.getByTestId('Trigger');
+
+      await user.click(trigger);
+      const dialog = await screen.findByRole('dialog');
+
+      // An opening focuses the dialog itself, not the button in it.
+      await waitFor(() => expect(dialog).toHaveFocus());
+
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(trigger).toHaveFocus());
+
+      // Closed, but still mounted for its exit: the window under test.
+      expect(dialog.isConnected).toBe(true);
+
+      await user.keyboard('{Enter}');
+
+      await waitFor(() => expect(screen.getByRole('dialog')).toHaveFocus());
+    },
+  );
+
+  it('a kept dialog reopened during its exit keeps its contents', async () => {
+    renderWithRoot(
+      <DialogTrigger type="popover" hideOnClose>
+        <Button qa="Trigger">Open</Button>
+        <Dialog aria-label="Notes">
+          <input aria-label="Draft" />
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    const trigger = screen.getByTestId('Trigger');
+
+    await user.click(trigger);
+    const draft = await screen.findByRole('textbox', { name: 'Draft' });
+    await user.type(draft, 'kept');
+
+    await user.keyboard('{Escape}');
+    await user.click(trigger);
+
+    await waitFor(() =>
+      expect(screen.getByRole('textbox', { name: 'Draft' })).toBe(draft),
+    );
+    expect(draft).toHaveValue('kept');
   });
 });
 

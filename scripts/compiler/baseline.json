@@ -1688,6 +1688,11 @@
     },
     "optOuts": 0
   },
+  "src/utils/react/useOpenKey.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/utils/react/useOverlayEscapeGuard.ts": {
     "compiled": 1,
     "diagnostics": {},

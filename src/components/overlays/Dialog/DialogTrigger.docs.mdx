@@ -227,7 +227,7 @@ Triggers of every other type get neither `aria-expanded` nor `aria-controls`, an
    </DialogTrigger>
    ```
 
-3. **Focus Management**: Closing the dialog returns focus to the trigger, unless the action that closed it already moved focus somewhere else — an action that opens a panel or another dialog just focuses that surface, and the trigger leaves it alone. A single `focus()` from a mount effect is enough; no retry loop is needed. Reach for `shouldRestoreFocus={false}` only when the opened surface claims focus _later_ than the restore (after an async load or an entry animation), where the trigger would otherwise take focus first and flash.
+3. **Focus Management**: Closing the dialog returns focus to the trigger, unless the action that closed it already moved focus somewhere else — an action that opens a panel or another dialog just focuses that surface, and the trigger leaves it alone. A single `focus()` from a mount effect is enough; no retry loop is needed. Reach for `shouldRestoreFocus={false}` only when the opened surface claims focus _later_ than the restore (after an async load, an entry animation or a `requestAnimationFrame`), where the trigger would otherwise take focus first and flash. A popover returns focus as it closes, as a modal does, rather than at the end of its close animation.
 4. **Mobile Considerations**: Use appropriate mobile types for better UX
 5. **Dismissible**: Make modal dialogs dismissible unless absolutely necessary
 

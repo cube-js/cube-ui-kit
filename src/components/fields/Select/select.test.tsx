@@ -609,6 +609,39 @@ describe('<Select />', () => {
       );
     });
 
+    // A closed list stays mounted while it plays its exit, and reopened inside
+    // that window it used to keep focus on the trigger (CUB-8552).
+    it('opens on the first option when reopened during its exit, and closes on Escape', async () => {
+      renderWithRoot(<Select label="Letter">{letters}</Select>);
+
+      await focusTrigger();
+      await act(async () => await userEvent.keyboard('{ArrowDown}'));
+      await waitFor(() =>
+        expect(screen.getByRole('option', { name: 'Alpha' })).toHaveFocus(),
+      );
+
+      await act(async () => await userEvent.keyboard('{ArrowDown}'));
+      expect(screen.getByRole('option', { name: 'Bravo' })).toHaveFocus();
+
+      await act(async () => await userEvent.keyboard('{Escape}'));
+
+      // Closed, but still mounted for its exit: the window under test.
+      expect(getTrigger()).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+      await focusTrigger();
+      await act(async () => await userEvent.keyboard('{ArrowDown}'));
+
+      await waitFor(() =>
+        expect(screen.getByRole('option', { name: 'Alpha' })).toHaveFocus(),
+      );
+
+      await act(async () => await userEvent.keyboard('{Escape}'));
+      await waitFor(() =>
+        expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+      );
+    });
+
     it('skips disabled options at either end', async () => {
       renderWithRoot(
         <Select label="Item" disabledKeys={['item-1', 'item-50']}>

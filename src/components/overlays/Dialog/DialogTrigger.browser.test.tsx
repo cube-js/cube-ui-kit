@@ -32,7 +32,8 @@ import { DialogTrigger } from './DialogTrigger';
  *
  * Both types are covered because they restore through different paths:
  * modal/tray/fullscreen/panel use `DialogTriggerBase`'s own restore, while
- * popovers use `Dialog`'s `FocusScope` (the manual one is a no-op there).
+ * popovers use `PopoverTrigger`'s return as they close, and `Dialog`'s
+ * `FocusScope` at the end of the exit for what that leaves.
  */
 
 function Panel() {

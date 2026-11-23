@@ -49,6 +49,7 @@ import {
   mergeRefs,
   useCombinedRefs,
 } from '../../../utils/react/useCombinedRefs';
+import { useOpenKey } from '../../../utils/react/useOpenKey';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
@@ -832,13 +833,18 @@ export function ListBoxPopup({
   // to allow screen reader users to dismiss the popup easily.
   //
   // `SelectListBox` puts focus in the list as it mounts, which happens on
-  // every open. `autoFocus` on the scope then finds focus already inside and
-  // only registers the scope as the active one, so an outer contained Dialog
-  // FocusScope (e.g. a popover Dialog wrapping the Select) recognises focus
-  // moving into the Select popover and doesn't yank it back to the trigger.
+  // every open: the scope is keyed per opening, so a list reopened while it
+  // still plays its exit mounts afresh too — see `useOpenKey`. `autoFocus` on
+  // the scope then finds focus already inside and only registers the scope as
+  // the active one, so an outer contained Dialog FocusScope (e.g. a popover
+  // Dialog wrapping the Select) recognises focus moving into the Select
+  // popover and doesn't yank it back to the trigger.
+  const isListShown = state.isOpen && !isDisabled;
+  const openKey = useOpenKey(isListShown);
+
   return (
     <Portal>
-      <DisplayTransition isShown={state.isOpen && !isDisabled}>
+      <DisplayTransition isShown={isListShown}>
         {({ phase, isShown, isExiting, ref: transitionRef }) => (
           <SelectOverlayWrapper
             {...overlayProps}
@@ -867,7 +873,7 @@ export function ListBoxPopup({
                 '$overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
               }}
             >
-              <FocusScope autoFocus restoreFocus>
+              <FocusScope key={openKey} autoFocus restoreFocus>
                 <DismissButton onDismiss={() => state.close()} />
                 <SelectListBox
                   {...otherProps}
@@ -986,9 +992,9 @@ function focusOpeningOption(
 
 /**
  * The list inside the popup. It decides where focus lands when it mounts,
- * rather than inheriting the last opening. The popup unmounts it once it has
- * closed, so that is every opening except a reopen during the exit
- * transition, which keeps the list mounted.
+ * rather than inheriting the last opening. It mounts on every opening: the
+ * popup unmounts it once it has closed, and a reopen during the exit
+ * transition remounts it through the popup's per-opening key.
  */
 function SelectListBox({
   state,
