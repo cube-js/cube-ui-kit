@@ -65,6 +65,11 @@ export interface TreeNodeProps {
    * it replaces DOM focus as the source of the `focused` look.
    */
   isActive?: boolean;
+  /**
+   * Whether this row is the value an outside control holds (`_selectedKey`).
+   * When set, it replaces the tree's own selection and adds `aria-selected`.
+   */
+  isOutsideSelected?: boolean;
 
   /** Toggle this row's checkbox (cascades). */
   onToggleChecked: (key: string) => void;
@@ -113,6 +118,7 @@ function TreeNodeInner(props: TreeNodeProps) {
     isChecked,
     isLoading,
     isActive,
+    isOutsideSelected,
     onToggleChecked,
     size,
     itemProps,
@@ -144,7 +150,8 @@ function TreeNodeInner(props: TreeNodeProps) {
   );
 
   const isDisabled = state.disabledKeys.has(node.key);
-  const isSelected = state.selectionManager.isSelected(node.key);
+  const isSelected =
+    isOutsideSelected ?? state.selectionManager.isSelected(node.key);
 
   // `useTreeItem` doesn't track hover; we need it for the `hovered` mod.
   const { hoverProps, isHovered } = useHover({ isDisabled });
@@ -340,6 +347,11 @@ function TreeNodeInner(props: TreeNodeProps) {
     // Under an outside control (`isActive` set) no row is a tab stop, not
     // even one a click focused.
     ...(isActive === undefined ? null : { tabIndex: -1 }),
+    // A value held outside the tree, which runs with no selection of its own
+    // and so sets no `aria-selected`: every row says whether it is the one.
+    ...(isOutsideSelected === undefined
+      ? null
+      : { 'aria-selected': isOutsideSelected }),
   };
 
   // ---- Toggle (chevron) and checkbox slots --------------------------------
