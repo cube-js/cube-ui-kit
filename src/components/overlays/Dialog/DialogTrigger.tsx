@@ -39,7 +39,6 @@ import {
   useDismissConfirmation,
 } from './use-dismiss-confirmation';
 import {
-  isFocusLostIn,
   readOpener,
   resolveOpener,
   restoreFocusTo,
@@ -514,9 +513,11 @@ function PopoverTrigger(allProps) {
   // cleared the option a picker's list was on (CUB-8552). Modal types hand it
   // back as they close too, in `DialogTriggerBase`.
   //
-  // It goes where that scope would send it, by the scope's own rule: to the
-  // element focused when the popover opened, read in the render that opens
-  // it, and only while focus has nowhere to stay. After a timeout, as in
+  // It goes where that scope would send it: to the element focused when the
+  // popover opened, read in the render that opens it, and only while focus is
+  // still in the popover or lost to `<body>`. Focus left in another overlay
+  // that is closing is that overlay's to return, as a page menu whose item
+  // closed this popover returns it to its own trigger. After a timeout, as in
   // `MenuTrigger`, so an action that moved focus to a surface it opened has
   // done so first. Reopened before it runs, the cleanup cancels it.
   //
@@ -525,7 +526,11 @@ function PopoverTrigger(allProps) {
   // inside the popover: focus can still be in the closing contents, which the
   // reopen replaces, or lost to `<body>`. An opener a reopen has replaced no
   // longer resolves, so the fallback passes on through any number of them.
-  // Both clear once an exit ends, so an opening after that starts afresh.
+  // A kept dialog (`hideOnClose`) is not replaced, so an opener inside it
+  // still resolves and can displace the fallback: after two such reopens in
+  // one task, focus returns at the end of the exit instead, through
+  // `useRetainedDialogFocus`, as before. Both clear once an exit ends, so an
+  // opening after that starts afresh.
   const [opening, setOpening] = useState<{
     isOpen: boolean;
     opener: Opener | null;
@@ -561,8 +566,15 @@ function PopoverTrigger(allProps) {
 
     const timer = setTimeout(() => {
       const popover = overlayRef.current;
+      const activeElement = document.activeElement;
 
-      if (!isFocusLostIn(popover)) return;
+      if (
+        activeElement &&
+        activeElement !== document.body &&
+        !popover?.contains(activeElement)
+      ) {
+        return;
+      }
 
       const node = [opener, fallback]
         .map(resolveOpener)

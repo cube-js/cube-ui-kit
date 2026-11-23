@@ -13,6 +13,8 @@ import {
 import { startScreenReader } from '../../../test/screen-reader';
 import { Button } from '../../actions/Button';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
+import { Menu } from '../../actions/Menu/Menu';
+import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
 import { Content } from '../../content/Content';
 import { Header } from '../../content/Header';
 import { Title } from '../../content/Title';
@@ -1070,6 +1072,59 @@ describe('<DialogTrigger /> during the exit', () => {
       rerender(<App isOpen={false} />);
 
       await waitFor(() => expect(trigger).toHaveFocus(), { timeout: 1500 });
+    },
+  );
+
+  // Focus left in another overlay closing in the same commit is that
+  // overlay's to return: a page menu whose item closed the popover returns it
+  // to its own trigger, wherever the two sit in the tree.
+  it.each([false, true])(
+    'a popover closed by a page menu item leaves focus to that menu (menu first: %s)',
+    async (menuFirst) => {
+      function App() {
+        const [isOpen, setOpen] = useState(false);
+        const popover = (
+          <DialogTrigger
+            key="popover"
+            type="popover"
+            isDismissable={false}
+            isOpen={isOpen}
+            onOpenChange={setOpen}
+          >
+            <Button qa="Trigger">Open</Button>
+            <Dialog aria-label="Popover">
+              <button type="button">Inside</button>
+            </Dialog>
+          </DialogTrigger>
+        );
+        const menu = (
+          <MenuTrigger key="menu">
+            <Button qa="Actions">Actions</Button>
+            <Menu aria-label="Actions" onAction={() => setOpen(false)}>
+              <Menu.Item key="close">Close popover</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        );
+
+        return <>{menuFirst ? [menu, popover] : [popover, menu]}</>;
+      }
+
+      renderWithRoot(<App />);
+
+      await user.click(screen.getByTestId('Trigger'));
+      await screen.findByRole('dialog', { name: 'Popover' });
+      await user.click(screen.getByTestId('Actions'));
+      const item = await screen.findByRole('menuitem', {
+        name: 'Close popover',
+      });
+      await waitFor(() => expect(item).toHaveFocus());
+
+      await user.keyboard('{Enter}');
+
+      // Past both returns and both exits.
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      expect(screen.getByTestId('Actions')).toHaveFocus();
     },
   );
 
