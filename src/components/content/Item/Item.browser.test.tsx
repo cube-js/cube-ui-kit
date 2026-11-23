@@ -1,6 +1,9 @@
 import { userEvent } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
+import { centerOf, setTouchEmulation, tapAt } from '../../../test/touch';
+import { Menu } from '../../actions/Menu/Menu';
+import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
 import { Text } from '../Text';
 
 import { Item } from './Item';
@@ -193,5 +196,124 @@ describe('Item auto tooltip', () => {
     expect(style.display).toBe('block');
     expect(style.fontWeight).toBe('400');
     expect(style.opacity).toBe('0.75');
+  });
+});
+
+describe('Item actions', () => {
+  function MenuRow(props: {
+    onPress: () => void;
+    onAction: (key: unknown) => void;
+  }) {
+    return (
+      <Menu aria-label="Rows" onAction={props.onAction}>
+        <Menu.Item
+          key="row"
+          actions={
+            <Menu.Item.Action qa="RowAction" onPress={props.onPress}>
+              Settings
+            </Menu.Item.Action>
+          }
+        >
+          Row
+        </Menu.Item>
+      </Menu>
+    );
+  }
+
+  /** Past the click React Aria synthesizes 80 ms after a lift with no click. */
+  function settle() {
+    return act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+  }
+
+  describe('on a touch screen', () => {
+    beforeEach(() => setTouchEmulation(true));
+    afterEach(() => setTouchEmulation(false));
+
+    /**
+     * React Aria ends a touch press from a `pointerup` listener on the
+     * document, which also marks the finger as off the action before the
+     * `pointerleave` that follows the lift. The actions slot stopped
+     * `pointerup` on its way there, so that leave ended the press as a miss.
+     */
+    it('runs an action on a tap', async () => {
+      const onPress = vi.fn();
+
+      renderWithRoot(
+        <Item
+          actions={
+            <Item.Action qa="RowAction" onPress={onPress}>
+              Settings
+            </Item.Action>
+          }
+        >
+          Name
+        </Item>,
+      );
+
+      await tapAt(centerOf(screen.getByTestId('RowAction')));
+
+      await waitFor(() => expect(onPress).toHaveBeenCalledTimes(1), {
+        timeout: 2000,
+      });
+    });
+
+    it('opens an action’s menu on a tap', async () => {
+      renderWithRoot(
+        <Item
+          actions={
+            <MenuTrigger>
+              <Item.Action qa="RowAction">More</Item.Action>
+              <Menu>
+                <Menu.Item key="rename">Rename</Menu.Item>
+              </Menu>
+            </MenuTrigger>
+          }
+        >
+          Name
+        </Item>,
+      );
+
+      await tapAt(centerOf(screen.getByTestId('RowAction')));
+
+      // Bounded below the test timeout, so a menu that never opens reports
+      // the missing menu rather than a timeout.
+      expect(
+        await screen.findByRole('menu', {}, { timeout: 2000 }),
+      ).toBeInTheDocument();
+    });
+
+    it('runs a menu item’s action on a tap, not the item', async () => {
+      const onPress = vi.fn();
+      const onAction = vi.fn();
+
+      renderWithRoot(<MenuRow onPress={onPress} onAction={onAction} />);
+
+      await tapAt(centerOf(screen.getByTestId('RowAction')));
+
+      await waitFor(() => expect(onPress).toHaveBeenCalled(), {
+        timeout: 2000,
+      });
+      await settle();
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(onAction).not.toHaveBeenCalled();
+    });
+  });
+
+  /**
+   * A menu item runs on a mouse release it was not pressed on, so a press can
+   * start on its trigger and end on it. The slot keeps such a release from an
+   * action off the row.
+   */
+  it('runs a menu item’s action on a click, not the item', async () => {
+    const onPress = vi.fn();
+    const onAction = vi.fn();
+
+    renderWithRoot(<MenuRow onPress={onPress} onAction={onAction} />);
+
+    await userEvent.click(screen.getByTestId('RowAction'));
+    await settle();
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onAction).not.toHaveBeenCalled();
   });
 });

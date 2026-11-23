@@ -306,7 +306,13 @@ const DEFAULT_ICON_STYLES: Styles = {
 const ACTIONS_EVENT_HANDLERS = {
   onClick: (e: MouseEvent) => e.stopPropagation(),
   onPointerDown: (e: PointerEvent) => e.stopPropagation(),
-  onPointerUp: (e: PointerEvent) => e.stopPropagation(),
+  // A menu item runs on a mouse release it was not pressed on, so a press can
+  // start on its trigger and end on it: such a release from an action must not
+  // reach the row. Any other release must reach the document, where React Aria
+  // ends a touch press; without it a tap on an action ends as a miss.
+  onPointerUp: (e: PointerEvent) => {
+    if (e.pointerType === 'mouse') e.stopPropagation();
+  },
   onMouseDown: (e: MouseEvent) => e.stopPropagation(),
   onMouseUp: (e: MouseEvent) => e.stopPropagation(),
   onKeyDown: (e: KeyboardEvent) => {
