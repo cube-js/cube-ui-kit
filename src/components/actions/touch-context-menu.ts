@@ -7,6 +7,13 @@ const LONG_PRESS_DELAY = 500;
  */
 const LATE_CLICK_WINDOW = 100;
 
+/** How far a finger may drift and still count as held still (iOS allows 10 pt). */
+const MOVE_TOLERANCE = 10;
+
+/** A text field keeps its own long press: placing the caret, selecting, pasting. */
+const TEXT_FIELD =
+  'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
+
 /**
  * Marks an element whose touch long press opens its context menu. `GlobalStyles`
  * turns iOS's own long-press callout off on it.
@@ -36,9 +43,17 @@ interface Press {
  * swallowed, so lifting the finger does not also activate the row. A text
  * selection can't start during the press.
  *
+ * No long press starts in a text field, moves more than 10 px, or starts on a
+ * handle that took the press itself by preventing its `pointerdown`, such as
+ * React Aria's `useMove` on a column resizer or a slider.
+ *
  * Returns the cleanup.
  */
 export function bindTouchContextMenu(container: HTMLElement): () => void {
+  // Every supported browser has `PointerEvent`; older jsdom (Cloud runs 26)
+  // does not, while user-event still dispatches touch pointer events there.
+  if (typeof PointerEvent === 'undefined') return () => {};
+
   const doc = container.ownerDocument;
   let press: Press | null = null;
   let isSwallowingClick = false;
@@ -64,6 +79,22 @@ export function bindTouchContextMenu(container: HTMLElement): () => void {
     press = null;
     doc.removeEventListener('pointerup', release, true);
     doc.removeEventListener('pointercancel', release, true);
+    doc.removeEventListener('pointermove', onPointerMove, true);
+  }
+
+  // A finger that moves is not holding still. A scroll ends the touch with a
+  // `pointercancel`, but a drag inside `touch-action: none` sends none.
+  function onPointerMove(event: PointerEvent) {
+    if (!press || press.isClaimed) return;
+    if (event.pointerId !== press.down.pointerId) return;
+
+    const { clientX, clientY } = press.down;
+
+    if (
+      Math.hypot(event.clientX - clientX, event.clientY - clientY) >
+      MOVE_TOLERANCE
+    )
+      release();
   }
 
   function claim(current: Press) {
@@ -82,6 +113,7 @@ export function bindTouchContextMenu(container: HTMLElement): () => void {
         : null;
 
     if (!target || !container.contains(target)) return;
+    if ((event.target as Element).closest(TEXT_FIELD)) return;
 
     release();
     clearTimeout(clickTimer);
@@ -92,7 +124,16 @@ export function bindTouchContextMenu(container: HTMLElement): () => void {
     current.timer = setTimeout(() => {
       const origin = event.target;
 
-      if (!(origin instanceof Element) || !origin.isConnected) return;
+      // A handle that took the press, such as `useMove`'s, prevented it.
+      if (
+        event.defaultPrevented ||
+        !(origin instanceof Element) ||
+        !origin.isConnected
+      ) {
+        release();
+
+        return;
+      }
 
       const { clientX, clientY, screenX, screenY } = event;
       const isOpened = !origin.dispatchEvent(
@@ -111,6 +152,7 @@ export function bindTouchContextMenu(container: HTMLElement): () => void {
     press = current;
     doc.addEventListener('pointerup', release, true);
     doc.addEventListener('pointercancel', release, true);
+    doc.addEventListener('pointermove', onPointerMove, true);
   }
 
   function onContextMenu(event: MouseEvent) {

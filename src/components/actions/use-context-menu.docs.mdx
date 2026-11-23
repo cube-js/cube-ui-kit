@@ -89,7 +89,8 @@ The hook automatically binds `onContextMenu` events to the `targetRef` element:
 A touch held still on the target for 500 ms opens the menu at the touch point, on every platform. iOS fires no `contextmenu` event on a long press, so the hook fires one itself; Android fires its own a little earlier, and the menu opens once either way.
 
 - **The long press takes over the gesture.** Once the menu opens, lifting the finger does not also press the row or button under it (any React Aria `usePress` in or around the target is cancelled), and a text selection can't start.
-- **Moving the finger cancels it.** A touch that turns into a scroll, or a native drag (such as reordering tabs), opens nothing; a tap still reaches the row.
+- **Moving the finger cancels it.** A finger that drifts more than 10 px, a touch that turns into a scroll, or a native drag (such as reordering tabs) opens nothing; a tap still reaches the row.
+- **Some presses stay with their own control.** A long press in a text field keeps placing the caret and selecting text, and a handle that takes the press itself (a column resizer, a slider) keeps its drag.
 - **A mouse long press does nothing.** Right-click and `Shift+F10` are unchanged.
 - **iOS's own callout is off on the target.** A global rule from `Root` sets `-webkit-touch-callout: none` on it, so a link or image inside it does not show its own sheet over the menu.
 

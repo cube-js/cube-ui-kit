@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { cdp } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../test';
@@ -279,6 +279,53 @@ describe('useContextMenu on a touch screen', () => {
         ...position,
       });
     });
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  function Target({ children }: { children: ReactNode }) {
+    const { targetRef, rendered } = useContextMenu<HTMLDivElement>(ContextMenu);
+
+    return (
+      <div
+        ref={targetRef}
+        style={{ position: 'fixed', left: 20, top: 20, width: 300 }}
+      >
+        {rendered}
+        {children}
+      </div>
+    );
+  }
+
+  it('opens nothing when the finger drags where the page cannot scroll', async () => {
+    renderWithRoot(
+      <Target>
+        <div data-qa="Handle" style={{ height: 40, touchAction: 'none' }} />
+      </Target>,
+    );
+    const point = pointIn(screen.getByTestId('Handle'));
+
+    // `touch-action: none` sends no `pointercancel`; the movement itself ends
+    // the long press.
+    await touchHold(point, 100, async () => {
+      await touchMove({ x: point.x + 30, y: point.y });
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    });
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('leaves a long press in a text field to the field', async () => {
+    renderWithRoot(
+      <Target>
+        <input aria-label="Name" style={{ width: 200 }} />
+      </Target>,
+    );
+
+    await touchHold(
+      pointIn(screen.getByRole('textbox', { name: 'Name' })),
+      700,
+    );
 
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });

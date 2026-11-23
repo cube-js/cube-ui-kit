@@ -139,4 +139,27 @@ describe('ItemTable on a touch screen', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(isSelectionAllowed).toBe(true);
   });
+
+  it('leaves a column resizer to its own drag', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={ROWS}
+        columns={COLUMNS}
+        paginationMode="off"
+        isResizable
+      />,
+    );
+    const header = screen.getByRole('columnheader', { name: /Name/ });
+    const resizer = header.querySelector('[data-element="Resizer"]')!;
+    const rect = resizer.getBoundingClientRect();
+
+    // Held still: the resizer took the press (`useMove` prevents it), so no
+    // menu opens over a resize the user is about to drag.
+    await touchHold(
+      { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
+      700,
+    );
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
 });
