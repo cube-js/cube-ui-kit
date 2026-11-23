@@ -360,6 +360,8 @@ import {
   TextStyleProps,
 } from '@tenphi/tasty';
 
+import { omitActivationEventProps } from '../../../utils/react/disabledProps';
+
 export interface CubeActionProps<T extends TagName = 'button'>
   extends Omit<AllBaseProps<T>, 'htmlType' | 'ref'>,
     BaseStyleProps,
@@ -423,7 +425,8 @@ export function Action(
   return (
     <ActionElement
       data-theme={theme}
-      {...buttonProps}
+      // A disabled button takes no press handlers (see React Aria Integration).
+      {...(isDisabled ? omitActivationEventProps(buttonProps) : buttonProps)}
       {...hoverProps}
       mods={{
         hovered: isHovered && !isDisabled,

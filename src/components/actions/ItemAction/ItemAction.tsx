@@ -294,6 +294,7 @@ export const ItemAction = forwardRef(function ItemAction(
   // press doesn't lose its place. So does an action that disables itself while
   // showing a tooltip, often its only label, which keyboard users reach and read
   // as on `Button`. One whose host is disabled too stays native.
+  //
   // `useAction` already gives a disabled action no activation handlers, a
   // `MenuTrigger`'s `onKeyDown` included.
   const { isNativelyDisabled, inertProps } = getDisabledElementProps({

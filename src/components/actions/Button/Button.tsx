@@ -731,6 +731,7 @@ export const Button = forwardRef(function Button(
   //
   // The attribute is skipped for links too, where it is not valid markup and
   // `aria-disabled` is the only thing announcing the state.
+  //
   // `useAction` already gives a disabled button no activation handlers, a
   // `MenuTrigger`'s `onKeyDown` included.
   const { isNativelyDisabled, inertProps } = getDisabledElementProps({

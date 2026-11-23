@@ -11,7 +11,7 @@ import { DialogTrigger } from './overlays/Dialog/DialogTrigger';
 
 /**
  * A control pressed while natively disabled acts on the first press after it
- * is enabled. A browser sends a disabled `<button>` its pointer events but no
+ * is enabled. Chrome sends a disabled `<button>` its pointer events but no
  * click, and React Aria's `usePress` marks itself pressed on that
  * `pointerdown` with nothing to clear it, so the kit gives a disabled control
  * no press handlers at all.
@@ -25,8 +25,8 @@ type User = ReturnType<typeof userEvent.setup>;
 
 async function pressWhileDisabled(user: User, control: HTMLElement) {
   expect(control).toBeDisabled();
-  // Sends the pointer events a browser sends to a disabled control.
-  await user.click(control, { pointerEventsCheck: 0 });
+  // Sends the pointer events Chrome sends to a disabled control, and no click.
+  await user.click(control);
   // Past `usePress`'s 80ms fallback click, which would otherwise end the stale
   // press on a control already enabled and hide the bug.
   await wait(150);
