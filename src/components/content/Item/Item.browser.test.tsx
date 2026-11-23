@@ -1,7 +1,7 @@
 import { userEvent } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
-import { centerOf, setTouchEmulation, tapAt } from '../../../test/touch';
+import { centerOf, tapAt, useTouchEmulation } from '../../../test/touch';
 import { Menu } from '../../actions/Menu/Menu';
 import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
 import { Text } from '../Text';
@@ -226,8 +226,7 @@ describe('Item actions', () => {
   }
 
   describe('on a touch screen', () => {
-    beforeEach(() => setTouchEmulation(true));
-    afterEach(() => setTouchEmulation(false));
+    useTouchEmulation();
 
     /**
      * React Aria ends a touch press from a `pointerup` listener on the
