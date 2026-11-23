@@ -8,6 +8,7 @@ import { Button } from '../../actions/Button/Button';
 import { Menu, MenuTrigger } from '../../actions/Menu';
 import { Content } from '../../content/Content';
 import { Paragraph } from '../../content/Paragraph';
+import { Title } from '../../content/Title';
 import { TextInput } from '../../fields/TextInput';
 import { AlertDialog } from '../AlertDialog';
 
@@ -365,7 +366,14 @@ describe('Dialog with a long unbroken word', () => {
         <DialogContainer isOpen onDismiss={() => {}}>
           <AlertDialog
             title={`Delete ${NAME}?`}
-            content={<Paragraph qa="Body">{NAME} will be deleted.</Paragraph>}
+            content={
+              <>
+                <Paragraph qa="Body">{NAME} will be deleted.</Paragraph>
+                <Title qa="Nested" level={3}>
+                  Details
+                </Title>
+              </>
+            }
             actions={{ cancel: true }}
           />
         </DialogContainer>,
@@ -381,6 +389,12 @@ describe('Dialog with a long unbroken word', () => {
       expect(title.offsetWidth).toBeLessThanOrEqual(header.clientWidth);
       expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
       expect(body.scrollWidth).toBeLessThanOrEqual(body.clientWidth);
+
+      // Only the header breaks anywhere: elsewhere it would also shrink a
+      // title beside other text in a row, breaking an ordinary word.
+      expect(getComputedStyle(screen.getByTestId('Nested')).overflowWrap).toBe(
+        'break-word',
+      );
     },
   );
 });

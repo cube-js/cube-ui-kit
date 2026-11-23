@@ -458,10 +458,6 @@ const DialogContent = forwardRef(function DialogContent(
     title: {
       level: 2,
       preset: 'h4',
-      // A word longer than the line, such as a name a user typed, breaks
-      // instead of running out of the header. The title is a flex item, so it
-      // needs `anywhere`: `break-word` keeps its min-content at the whole word.
-      styles: { overflowWrap: 'anywhere' },
       ...titleProps,
     },
     content: {
@@ -494,6 +490,12 @@ const DialogContent = forwardRef(function DialogContent(
           isDismissable ? '($dialog-padding-h + 4x)' : '$dialog-padding-h'
         } $dialog-title-padding-v $dialog-padding-h`,
         border: 'bottom',
+        // A word longer than the line, such as a name a user typed, breaks
+        // instead of running out of the header. The title is a flex item of
+        // this row, so it needs `anywhere`: `break-word` keeps its min-content
+        // at the whole word. Here, not in the `title` slot, which reaches
+        // every `Title` in the dialog.
+        overflowWrap: 'anywhere',
       },
     },
     footer: {

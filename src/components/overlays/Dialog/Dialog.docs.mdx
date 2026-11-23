@@ -92,7 +92,7 @@ A `styles` override on a slot is merged into the slot's own styles rather than r
 
 ### Long Words
 
-A word longer than the line, such as a long name a user typed, breaks onto the next line instead of running out of the dialog. Ordinary text still wraps between words. `Title` uses `overflowWrap: 'anywhere'`, because it sits in the header's flex row. `Content` uses `'break-word'`, which everything in it inherits without changing the widths of a table or a flex row inside. Set `overflowWrap` in the slot's `styles` to change it.
+A word longer than the line, such as a long name a user typed, breaks onto the next line in the `Header` and in text that flows as a block in `Content`, such as a `Paragraph`, instead of running out of the dialog. Ordinary text still wraps between words. In a flex row or a table cell inside `Content`, a long word keeps its width and the content scrolls sideways. To change it, set `overflowWrap` in the `styles` of `Header` or `Content`.
 
 ### Modifiers
 
@@ -237,7 +237,7 @@ A dialog's width never comes from its content: it is the `dialog` query containe
        <Title>Save Changes</Title>
      </Header>
      <Content>
-       <Paragraph>Your changes will be saved to {document.name}.</Paragraph>
+       <Paragraph>Your changes will be saved to {file.name}.</Paragraph>
      </Content>
      <Footer>
        <Button type="primary" onPress={save}>Save</Button>
