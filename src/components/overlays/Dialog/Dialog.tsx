@@ -458,6 +458,10 @@ const DialogContent = forwardRef(function DialogContent(
     title: {
       level: 2,
       preset: 'h4',
+      // A word longer than the line, such as a name a user typed, breaks
+      // instead of running out of the header. The title is a flex item, so it
+      // needs `anywhere`: `break-word` keeps its min-content at the whole word.
+      styles: { overflowWrap: 'anywhere' },
       ...titleProps,
     },
     content: {
@@ -473,10 +477,13 @@ const DialogContent = forwardRef(function DialogContent(
           '': 'max (100% - (2 * $dialog-content-padding-v))',
           ':last-child': 'max (100% - $dialog-content-padding-v)',
         },
+        // Breaks a word longer than the line. Not `anywhere`: everything in
+        // the content inherits it, and `anywhere` also lowers the min-content
+        // width of tables and flex rows there.
+        overflowWrap: 'break-word',
       },
     },
     header: {
-      ellipsis: true,
       styles: {
         display: 'flex',
         flow: 'row',

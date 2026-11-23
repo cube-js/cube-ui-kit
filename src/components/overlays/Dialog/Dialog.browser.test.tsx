@@ -7,6 +7,7 @@ import { renderWithRoot, screen, wait, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
 import { Menu, MenuTrigger } from '../../actions/Menu';
 import { Content } from '../../content/Content';
+import { Paragraph } from '../../content/Paragraph';
 import { TextInput } from '../../fields/TextInput';
 import { AlertDialog } from '../AlertDialog';
 
@@ -338,6 +339,50 @@ describe('Dialog padding tokens', () => {
     expect(styles.flexGrow).toBe('1');
     expect(styles.overflowY).toBe('auto');
   });
+});
+
+/**
+ * A name a user typed can be one long word. The title is a flex item of the
+ * header row, so that word used to set its min-content width and run past the
+ * dialog, which clipped it, and the content clipped it the same way. Both now
+ * break a word that cannot fit on a line by itself.
+ *
+ * Layout sizes, so it needs a real browser.
+ */
+describe('Dialog with a long unbroken word', () => {
+  const NAME = 'A'.repeat(90);
+
+  afterEach(async () => {
+    await page.viewport(414, 896);
+  });
+
+  it.each([390, 1280])(
+    'wraps it in the title and the content at %ipx',
+    async (width) => {
+      await page.viewport(width, 844);
+
+      renderWithRoot(
+        <DialogContainer isOpen onDismiss={() => {}}>
+          <AlertDialog
+            title={`Delete ${NAME}?`}
+            content={<Paragraph qa="Body">{NAME} will be deleted.</Paragraph>}
+            actions={{ cancel: true }}
+          />
+        </DialogContainer>,
+      );
+
+      const header = await screen.findByTestId('Header');
+      const title = screen.getByTestId('Title');
+      const body = screen.getByTestId('Body');
+
+      await waitFor(() => expect(header.clientWidth).toBeGreaterThan(0));
+
+      // Layout sizes rather than client rects: the dialog scales in.
+      expect(title.offsetWidth).toBeLessThanOrEqual(header.clientWidth);
+      expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
+      expect(body.scrollWidth).toBeLessThanOrEqual(body.clientWidth);
+    },
+  );
 });
 
 /**
