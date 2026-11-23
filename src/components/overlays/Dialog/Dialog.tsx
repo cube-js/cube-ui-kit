@@ -458,6 +458,15 @@ const DialogContent = forwardRef(function DialogContent(
     title: {
       level: 2,
       preset: 'h4',
+      // A word longer than the line, such as a name a user typed, breaks
+      // instead of running out of the header. The title is a flex item of the
+      // header row, so it needs `anywhere`: `break-word` keeps its min-content
+      // at the whole word. Only a title alone in the header: this slot
+      // reaches every `Title` in the dialog, and beside other elements the
+      // lower min-content lets the row squeeze an ordinary word apart.
+      styles: {
+        overflowWrap: { '': false, ':is(header > :only-child)': 'anywhere' },
+      },
       ...titleProps,
     },
     content: {
@@ -473,10 +482,13 @@ const DialogContent = forwardRef(function DialogContent(
           '': 'max (100% - (2 * $dialog-content-padding-v))',
           ':last-child': 'max (100% - $dialog-content-padding-v)',
         },
+        // Breaks a word longer than the line. Not `anywhere`: everything in
+        // the content inherits it, and `anywhere` also lowers the min-content
+        // width of tables and flex rows there.
+        overflowWrap: 'break-word',
       },
     },
     header: {
-      ellipsis: true,
       styles: {
         display: 'flex',
         flow: 'row',
