@@ -400,28 +400,44 @@ describe('Dialog with a long unbroken word', () => {
     },
   );
 
-  it('keeps an ordinary word beside a wrapping title whole', async () => {
-    await page.viewport(390, 844);
+  it.each([
+    [
+      'the text beside a wrapping title',
+      'Configure the semantic layer connection',
+      'Unsaved',
+      'Beside',
+    ],
+    [
+      'a title beside wrapping text',
+      'Configuration',
+      'Unsaved changes to the semantic layer connection settings will be lost',
+      'Title',
+    ],
+  ])(
+    'keeps an ordinary word whole in %s',
+    async (_case, title, beside, whole) => {
+      await page.viewport(390, 844);
 
-    renderWithRoot(
-      <DialogContainer isOpen onDismiss={() => {}}>
-        <Dialog isDismissable>
-          <Header>
-            <Title>Configure the semantic layer connection</Title>
-            <Text qa="Beside">Unsaved</Text>
-          </Header>
-        </Dialog>
-      </DialogContainer>,
-    );
+      renderWithRoot(
+        <DialogContainer isOpen onDismiss={() => {}}>
+          <Dialog isDismissable>
+            <Header>
+              <Title>{title}</Title>
+              <Text qa="Beside">{beside}</Text>
+            </Header>
+          </Dialog>
+        </DialogContainer>,
+      );
 
-    const beside = await screen.findByTestId('Beside');
-    const lines = document.createRange();
+      const word = await screen.findByTestId(whole);
+      const lines = document.createRange();
 
-    lines.selectNodeContents(beside);
+      lines.selectNodeContents(word);
 
-    await waitFor(() => expect(beside.clientWidth).toBeGreaterThan(0));
-    expect(lines.getClientRects()).toHaveLength(1);
-  });
+      await waitFor(() => expect(word.clientWidth).toBeGreaterThan(0));
+      expect(lines.getClientRects()).toHaveLength(1);
+    },
+  );
 });
 
 /**
