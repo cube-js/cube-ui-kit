@@ -272,13 +272,17 @@ Use React Aria hooks for accessibility and behavior:
 import { useButton } from 'react-aria';
 import { useRef } from 'react';
 
+import { omitActivationEventProps } from '../../../utils/react/disabledProps';
+
 function MyButton(props) {
   const ref = useRef();
   const { buttonProps } = useButton(props, ref);
 
   return (
     <Element
-      {...buttonProps}
+      {...(props.isDisabled
+        ? omitActivationEventProps(buttonProps)
+        : buttonProps)}
       ref={ref}
       styles={extractStyles(props, CONTAINER_STYLES)}
     />
