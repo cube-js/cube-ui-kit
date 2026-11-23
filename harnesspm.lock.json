@@ -11,9 +11,9 @@
       "integrity": "sha512-nrzwucI0sxDr9Dc0+8XhNL1D2wCc7jVJE6UbQInwnM5pFCuqunWhhjCY0UbqmC6moJZgCyPIVVxM8cFOjXwWWg=="
     },
     "@tenphi/glaze": {
-      "version": "3.1.0",
+      "version": "3.2.0",
       "plugin": "glaze",
-      "integrity": "sha512-NOg3tsb6knAlNL1J9Y9Bkf0mDYf/1dHlTTcUHyYFoeOS5SGLXjBWMY4H85Zr342/p2UTpetSEVNCgCq2BN0Bfg=="
+      "integrity": "sha512-KcI9hpEeBQtf5Yy93KwQ+APrPPO3a8/HHXSVeRmuqCLhAo1SSjVBpZX5HGzDFPczAwqCbu9/fWYjxVVLY658dQ=="
     },
     "@tenphi/harnesspm": {
       "version": "0.9.1",
@@ -29,7 +29,7 @@
   "units": {
     "glaze:docs": {
       "kind": "docs",
-      "hash": "bb77afae7195f3cd"
+      "hash": "01faa2a9664b0f07"
     },
     "glaze:rules/colors": {
       "kind": "rules",
@@ -45,11 +45,11 @@
     },
     "glaze:scripts/inspect": {
       "kind": "scripts",
-      "hash": "ed4efa32714fb96c"
+      "hash": "b01aa78b18b19580"
     },
     "glaze:skills/glaze-theme": {
       "kind": "skills",
-      "hash": "cfe520518fec25c5"
+      "hash": "89dbcdc39af57d9c"
     },
     "harnesspm:docs": {
       "kind": "docs",

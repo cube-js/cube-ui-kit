@@ -136,7 +136,7 @@ The everyday commands. The others, from Chromatic and bundle size to the diagnos
 The docs of the installed Tasty and Glaze come through harnesspm, as they do for consumers. Their indexes are in the harnesspm block at the end of this file, and `pnpm install` rewrites them for the pinned versions.
 
 - **Tasty:** [`llms.txt`](node_modules/.harnesspm/pkgs/@tenphi/tasty/docs/llms.txt). Read "Tasty Style Rules for AI Agents" before you write or review styles, then the guides and references the task needs. UI Kit ships neither build-time extraction nor SSR.
-- **Glaze:** [`llms.txt`](node_modules/.harnesspm/docs/glaze/llms.txt). Read it when you work on color tokens, theme generation or contrast tuning: Glaze powers `src/tokens/palette.ts`. Start with "Designing a palette" and "Light, dark, and high contrast".
+- **Glaze:** [`llms.txt`](node_modules/.harnesspm/pkgs/@tenphi/glaze/harness/docs/llms.txt). Read it when you work on color tokens, theme generation or contrast tuning: Glaze powers `src/tokens/palette.ts`. Start with "Designing a palette" and "Light, dark, and high contrast".
 
 ## Stack
 
@@ -201,7 +201,7 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 ## @tenphi/glaze
 
 - Always-on rule: Glaze colors — Where colors come from, Checking a theme. Read it with `help @tenphi/glaze` (glaze:rules/colors)
-- Docs: node_modules/.harnesspm/docs/glaze/llms.txt (glaze:docs)
+- Docs: node_modules/.harnesspm/pkgs/@tenphi/glaze/harness/docs/llms.txt (glaze:docs)
 - Tool: `glaze:inspect` — Resolve a theme or palette in light, dark and high contrast, and check every contrast floor (filter with --color, --theme) (glaze:scripts/inspect)
 - Tool: `glaze:color` — Resolve one color without a theme: its values and tone in light, dark and high contrast, and its contrast on a --base (glaze:scripts/color)
 - Tool: `glaze:contrast` — Measure the WCAG and APCA contrast of a text color on a background (glaze:scripts/contrast)
