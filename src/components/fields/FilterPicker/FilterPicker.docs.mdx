@@ -54,6 +54,7 @@ Choose a different component when the interaction has another shape:
 - **`searchPlaceholder`** `string` — Placeholder text in the search input
 - **`autoFocus`** `boolean` (default: focuses, except when a touch or pen opened the popover) — Whether the search input takes focus when the popover opens. On a phone a focused input raises the on-screen keyboard, so after a touch or pen press the search waits for the user to tap it. `true` always focuses it, `false` never
 - **`searchInputProps`** `CubeSearchInputAttributes` — Attributes for the search input, in the list and in the `treeData` tree alike, such as `enterKeyHint`, `autoCorrect` or `inputMode`. By default it sets `enterKeyHint="search"`, `autoCapitalize="none"`, `autoCorrect="off"` and `spellCheck={false}`, so a phone keyboard shows a Search key and neither capitalizes nor corrects a query; a value set here wins. It takes no event handlers, ARIA attributes, `value`, `type`, `role`, `id`, `placeholder`, `autoFocus`, `disabled`, `readOnly`, `className` or `style`: the component owns those, or takes them as props of its own
+- **`defaultFocusedKey`** `Key` — The option highlighted each time the popover opens, instead of the first selected option, such as an action row so that Enter runs it. The list also returns to it whenever the highlighted option leaves the list (a search hides it, or it is removed or disabled). While it is hidden, disabled or missing, the list highlights the first selected option, else the first. See [Action Row](#action-row)
 - **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state. It wraps to the list's width, so a long message, or an action in it, stays in view.
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function for determining if an option should be included in search results
 - **`header`** `ReactNode` — Custom header content
@@ -563,6 +564,47 @@ const DEFAULT_KEY = 'apple';
 </FilterPicker>
 ```
 
+### Action Row
+
+<Story of={FilterPickerStories.WithActionRow} />
+
+When the popover opens, the list highlights the first selected option, or the first option when none is selected, as listboxes do. A list that leads with an action, such as "Create chart" above the charts, names that row with `defaultFocusedKey`, so that Enter right after opening runs the action instead of unchecking a selected chart.
+
+```jsx
+<FilterPicker
+  label="Charts"
+  selectionMode="multiple"
+  selectedKeys={selectedKeys}
+  defaultFocusedKey="create"
+  onSelectionChange={(keys) => {
+    // The row is an action: run it, and never keep it selected.
+    if (keys.includes('create')) {
+      createChart();
+      return;
+    }
+
+    setSelectedKeys(keys);
+  }}
+>
+  <FilterPicker.Section key="actions" aria-label="Actions">
+    <FilterPicker.Item key="create" icon={<PlusIcon />}>
+      Create chart
+    </FilterPicker.Item>
+  </FilterPicker.Section>
+  <FilterPicker.Section key="charts" aria-label="Charts">
+    {charts.map((chart) => (
+      <FilterPicker.Item key={chart.id}>{chart.name}</FilterPicker.Item>
+    ))}
+  </FilterPicker.Section>
+</FilterPicker>
+```
+
+- **Each open.** The row is highlighted every time the popover opens, and again whenever the highlighted option leaves the list (a search hides it, or it is removed or disabled). A highlight still in the list stays where it is.
+- **Fallback.** While the named option is hidden by the search, disabled or missing, the list highlights the first selected option, else the first.
+- **Highlight only.** Highlighting moves `aria-activedescendant` and never selects or runs the option: only Enter, Space on an empty search, or a press does.
+- **Use it for an action.** In a plain list, leave it out: keyboard and screen reader users expect to land on their selection, which is what the trigger's summary describes.
+- **List mode only.** It has no effect with `treeData`.
+
 ### Tree Options
 
 <Story of={FilterPickerStories.TreeOptions} />
@@ -575,7 +617,7 @@ Pass `treeData` to pick from a tree. The popover shows a checkable [Tree](/docs/
 - **Summary.** The default trigger summary lists the topmost checked nodes: "Design" rather than "Design, Dieter Rams, Susan Kare". `renderSummary` receives every checked key, conducted over the tree and in tree order, as `onSelectionChange` reports them.
 - **Disabling.** Disable a node with its own `isDisabled` or `isCheckboxDisabled`; `disabledKeys` does not apply. A disabled node's key in the value still checks its subtree, and Enter or Space on a row whose checkbox is disabled does nothing. The cascade passes through a disabled node: checking its parent checks the enabled nodes below it, and its own state follows them.
 - **Expansion.** Uncontrolled expansion starts from `defaultExpandedKeys`, read once when the picker mounts, and is kept across opening and closing the popover. For nodes that arrive later, pass `expandedKeys`.
-- **List-only props.** These apply to the flat list and have no effect with `treeData`: `items`, `children`, `disabledKeys`, `allowsCustomValue`, `showSelectAll`, `selectAllLabel`, `isCheckable`, `disallowEmptySelection`, `sortSelectedToTop`, `isReorderable`, `onReorder`, `onLoadMore`, `hasMore`, `isLoadingMore`, `loadMoreMargin`, `onOptionClick`, `focusOnHover`, `listGap`, `listStyles`, `optionStyles`, `sectionStyles` and `headingStyles`.
+- **List-only props.** These apply to the flat list and have no effect with `treeData`: `items`, `children`, `disabledKeys`, `allowsCustomValue`, `showSelectAll`, `selectAllLabel`, `isCheckable`, `disallowEmptySelection`, `sortSelectedToTop`, `isReorderable`, `onReorder`, `onLoadMore`, `hasMore`, `isLoadingMore`, `loadMoreMargin`, `onOptionClick`, `defaultFocusedKey`, `focusOnHover`, `listGap`, `listStyles`, `optionStyles`, `sectionStyles` and `headingStyles`.
 
 ```jsx
 const userGroups = [
@@ -724,8 +766,9 @@ const [keyOrder, setKeyOrder] = useState([
 
 - `Tab` - Moves focus to the trigger button
 - `Tab` (popover open, search not focused) - Moves focus to the search input. A touch or pen open, or `autoFocus={false}`, leaves focus on the popover, and the keys below work from the search
-- `Space/Enter` - Opens the dropdown popover
+- `Space/Enter` - Opens the dropdown popover. The first selected option is highlighted, or the first option when none is selected, unless `defaultFocusedKey` names another
 - `Arrow Up/Down` - Opens the popover (when closed) or navigates through options (when open)
+- `Enter` (popover open) - Selects the highlighted option, or toggles it in multiple selection mode. Closes the popover in single selection mode and with `isCheckable`
 - `Escape` - Closes the popover or clears search
 - `Home/End` - Navigate to first/last option
 - `Alt+ArrowUp` / `Alt+ArrowDown` - Reorder the focused item (when `isReorderable`)

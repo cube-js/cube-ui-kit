@@ -101,6 +101,14 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
+    defaultFocusedKey: {
+      control: { type: 'text' },
+      description:
+        'The option highlighted when the list opens, instead of the first selected option, such as an action row so that Enter runs it. Falls back to the first selected option, else the first, while it is hidden, disabled or missing.',
+      table: {
+        type: { summary: 'Key' },
+      },
+    },
     filter: {
       control: false,
       description:

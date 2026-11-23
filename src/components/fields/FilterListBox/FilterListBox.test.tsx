@@ -919,6 +919,126 @@ describe('<FilterListBox />', () => {
     });
   });
 
+  describe('defaultFocusedKey', () => {
+    const activeKey = (searchInput: HTMLElement) =>
+      getActiveDescendant(searchInput)?.getAttribute('data-key');
+
+    it.each([
+      [
+        'multiple',
+        { selectionMode: 'multiple' as const, selectedKeys: ['date'] },
+      ],
+      ['single', { selectionMode: 'single' as const, selectedKey: 'date' }],
+    ])(
+      'highlights the named option on open instead of the selected one (%s selection)',
+      (_, props) => {
+        const { getByRole } = render(
+          <FilterListBox label="Fruit" defaultFocusedKey="banana" {...props}>
+            {basicItems}
+          </FilterListBox>,
+        );
+
+        expect(activeKey(getByRole('combobox'))).toBe('banana');
+      },
+    );
+
+    it('acts on the named option with Enter and leaves the selected one selected', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = render(
+        <FilterListBox
+          label="Fruit"
+          selectionMode="multiple"
+          selectedKeys={['date']}
+          defaultFocusedKey="banana"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      await userEvent.click(getByRole('combobox'));
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect([...onSelectionChange.mock.calls[0][0]].sort()).toEqual([
+        'banana',
+        'date',
+      ]);
+    });
+
+    it.each([
+      ['is disabled', { disabledKeys: ['banana'] }],
+      ['is not in the list', { defaultFocusedKey: 'mango' }],
+    ])(
+      'falls back to the selected option when the named one %s',
+      (_, props) => {
+        const { getByRole } = render(
+          <FilterListBox
+            label="Fruit"
+            selectionMode="multiple"
+            selectedKeys={['date']}
+            defaultFocusedKey="banana"
+            {...props}
+          >
+            {basicItems}
+          </FilterListBox>,
+        );
+
+        expect(activeKey(getByRole('combobox'))).toBe('date');
+      },
+    );
+
+    it('returns to the named option when a search hides the highlighted one, and keeps one still in view', async () => {
+      const { getByRole } = render(
+        <FilterListBox
+          label="Fruit"
+          selectionMode="multiple"
+          selectedKeys={['cherry']}
+          defaultFocusedKey="apple"
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+      const searchInput = getByRole('combobox');
+
+      // Banana has no "e", so the search hides it.
+      await userEvent.click(searchInput);
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(() => expect(activeKey(searchInput)).toBe('banana'));
+
+      await userEvent.type(searchInput, 'e');
+
+      // Apple, not the selected Cherry the default rule would pick.
+      await waitFor(() => expect(activeKey(searchInput)).toBe('apple'));
+
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(() => expect(activeKey(searchInput)).toBe('cherry'));
+
+      // Cherry still matches, so the highlight stays on it.
+      await userEvent.type(searchInput, 'r');
+
+      await waitFor(() => expect(activeKey(searchInput)).toBe('cherry'));
+    });
+
+    it('falls back to the selected option while a search hides the named one', async () => {
+      const { getByRole } = render(
+        <FilterListBox
+          label="Fruit"
+          selectionMode="multiple"
+          selectedKeys={['date']}
+          defaultFocusedKey="banana"
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+      const searchInput = getByRole('combobox');
+
+      await userEvent.type(searchInput, 'e');
+
+      await waitFor(() => expect(activeKey(searchInput)).toBe('date'));
+    });
+  });
+
   describe('Form integration', () => {
     it('should integrate with form field wrapper', () => {
       const { getByPlaceholderText } = render(

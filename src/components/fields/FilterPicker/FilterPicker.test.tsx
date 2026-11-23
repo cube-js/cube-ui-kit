@@ -1,7 +1,13 @@
 import { createRef, useState } from 'react';
 
 import { Dialog, DialogTrigger, FilterPicker } from '../../../index';
-import { renderWithRoot, userEvent, waitFor, within } from '../../../test';
+import {
+  getActiveDescendant,
+  renderWithRoot,
+  userEvent,
+  waitFor,
+  within,
+} from '../../../test';
 import { Button, ItemButton } from '../../actions';
 
 vi.mock('../../../_internal/hooks/use-warn');
@@ -1635,6 +1641,63 @@ describe('<FilterPicker />', () => {
 
       await waitFor(() => expect(optionCount()).toBe(0));
       expect(onSelectionChange.mock.calls).toEqual([[null]]);
+    });
+  });
+
+  describe('defaultFocusedKey', () => {
+    // An action row in a leading section, above the options it acts beside.
+    const sectionedItems = [
+      <FilterPicker.Section key="actions">
+        <FilterPicker.Item key="create">Create in workbook</FilterPicker.Item>
+      </FilterPicker.Section>,
+      <FilterPicker.Section key="charts">
+        <FilterPicker.Item key="orders">Orders</FilterPicker.Item>
+        <FilterPicker.Item key="revenue">Revenue</FilterPicker.Item>
+      </FilterPicker.Section>,
+    ];
+    const SELECTED_CHARTS = ['revenue'];
+
+    it('highlights the named row each time the popover opens, and Enter runs it without unchecking the selection', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, queryByRole } = renderWithRoot(
+        <FilterPicker
+          aria-label="Charts"
+          selectionMode="multiple"
+          isCheckable
+          selectedKeys={SELECTED_CHARTS}
+          defaultFocusedKey="create"
+          onSelectionChange={onSelectionChange}
+        >
+          {sectionedItems}
+        </FilterPicker>,
+      );
+      const trigger = getByRole('button');
+      const activeKey = () =>
+        getActiveDescendant(getByRole('combobox'))?.getAttribute('data-key');
+
+      trigger.focus();
+      await user.keyboard('{Enter}');
+      await waitFor(() => expect(activeKey()).toBe('create'));
+
+      // Leave the row and close: the next open starts on it again.
+      await user.keyboard('{ArrowDown}{ArrowDown}');
+      await waitFor(() => expect(activeKey()).toBe('revenue'));
+      await user.keyboard('{Escape}');
+      await waitFor(() =>
+        expect(queryByRole('listbox')).not.toBeInTheDocument(),
+      );
+      await waitFor(() => expect(trigger).toHaveFocus());
+
+      await user.keyboard('{Enter}');
+      await waitFor(() => expect(activeKey()).toBe('create'));
+
+      await user.keyboard('{Enter}');
+
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect([...onSelectionChange.mock.calls[0][0]].sort()).toEqual([
+        'create',
+        'revenue',
+      ]);
     });
   });
 });

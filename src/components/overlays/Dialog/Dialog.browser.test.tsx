@@ -7,6 +7,10 @@ import { renderWithRoot, screen, wait, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
 import { Menu, MenuTrigger } from '../../actions/Menu';
 import { Content } from '../../content/Content';
+import { Header } from '../../content/Header';
+import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
 import { TextInput } from '../../fields/TextInput';
 import { AlertDialog } from '../AlertDialog';
 
@@ -338,6 +342,102 @@ describe('Dialog padding tokens', () => {
     expect(styles.flexGrow).toBe('1');
     expect(styles.overflowY).toBe('auto');
   });
+});
+
+/**
+ * A name a user typed can be one long word. The title is a flex item of the
+ * header row, so that word used to set its min-content width and run past the
+ * dialog, which clipped it, and the content clipped it the same way. Both now
+ * break a word that cannot fit on a line by itself.
+ *
+ * Layout sizes, so it needs a real browser.
+ */
+describe('Dialog with a long unbroken word', () => {
+  const NAME = 'A'.repeat(90);
+
+  afterEach(async () => {
+    await page.viewport(414, 896);
+  });
+
+  it.each([390, 1280])(
+    'wraps it in the title and the content at %ipx',
+    async (width) => {
+      await page.viewport(width, 844);
+
+      renderWithRoot(
+        <DialogContainer isOpen onDismiss={() => {}}>
+          <AlertDialog
+            title={`Delete ${NAME}?`}
+            content={
+              <>
+                <Paragraph qa="Body">{NAME} will be deleted.</Paragraph>
+                <Title qa="Nested" level={3}>
+                  Details
+                </Title>
+              </>
+            }
+            actions={{ cancel: true }}
+          />
+        </DialogContainer>,
+      );
+
+      const header = await screen.findByTestId('Header');
+      const title = screen.getByTestId('Title');
+      const body = screen.getByTestId('Body');
+
+      await waitFor(() => expect(header.clientWidth).toBeGreaterThan(0));
+
+      // Layout sizes rather than client rects: the dialog scales in.
+      expect(title.offsetWidth).toBeLessThanOrEqual(header.clientWidth);
+      expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
+      expect(body.scrollWidth).toBeLessThanOrEqual(body.clientWidth);
+
+      // Only the header's own title breaks anywhere: elsewhere it would also
+      // shrink a title beside other text in a row, breaking an ordinary word.
+      expect(getComputedStyle(screen.getByTestId('Nested')).overflowWrap).toBe(
+        'break-word',
+      );
+    },
+  );
+
+  it.each([
+    [
+      'the text beside a wrapping title',
+      'Configure the semantic layer connection',
+      'Unsaved',
+      'Beside',
+    ],
+    [
+      'a title beside wrapping text',
+      'Configuration',
+      'Unsaved changes to the semantic layer connection settings will be lost',
+      'Title',
+    ],
+  ])(
+    'keeps an ordinary word whole in %s',
+    async (_case, title, beside, whole) => {
+      await page.viewport(390, 844);
+
+      renderWithRoot(
+        <DialogContainer isOpen onDismiss={() => {}}>
+          <Dialog isDismissable>
+            <Header>
+              <Title>{title}</Title>
+              <Text qa="Beside">{beside}</Text>
+            </Header>
+          </Dialog>
+        </DialogContainer>,
+      );
+
+      const word = await screen.findByTestId(whole);
+      const lines = document.createRange();
+
+      lines.selectNodeContents(word);
+
+      await waitFor(() => expect(word.clientWidth).toBeGreaterThan(0));
+      expect(lines.getClientRects()).toHaveLength(1);
+    },
+  );
 });
 
 /**

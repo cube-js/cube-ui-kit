@@ -69,6 +69,16 @@ export interface CubeFilterListBoxProps<T>
   /** Whether the search input should have autofocus */
   autoFocus?: boolean;
   /**
+   * The option highlighted when the list opens, instead of the first selected
+   * option: for example an action row at the top of the list, so that Enter
+   * runs it rather than unchecking a selected option. The list also returns to
+   * it whenever the highlighted option leaves the list (a search hides it, or
+   * it is removed or disabled). While it is hidden, disabled or missing, the
+   * list highlights the first selected option, else the first option.
+   * Highlighting never selects or runs it.
+   */
+  defaultFocusedKey?: Key;
+  /**
    * Custom filter function for determining if an option should be included in search results.
    * Pass `false` to disable internal filtering completely (useful for external filtering).
    */
@@ -192,6 +202,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     isLoadingItems,
     searchPlaceholder = t('filterListBox.searchPlaceholder', 'Search...'),
     autoFocus,
+    defaultFocusedKey,
     filter,
     mods: externalMods,
     emptyLabel,
@@ -665,7 +676,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
   // If the currently focused item is no longer visible, move virtual focus to the first
   // available item so that arrow navigation and Enter behaviour continue to work.
   // If there are no available items, reset the selection so Enter won't select anything.
-  // Priority: focus on selected items first, then fall back to first visible item.
+  // Priority: the caller's `defaultFocusedKey`, then selected items, then the
+  // first visible item.
   useLayoutEffect(() => {
     const listState = listStateRef.current;
 
@@ -796,7 +808,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
       // item so the user can press Enter to add the value they just typed.
       keyToFocus = newCustomValueKey;
     } else {
-      keyToFocus = findFirstVisibleSelectedKey();
+      // The option the caller named, while it is in view and enabled. Keys are
+      // compared as strings, as for the selection, and the collection's own
+      // key is focused.
+      const namedKey =
+        defaultFocusedKey == null
+          ? undefined
+          : visibleKeys.find((k) => String(k) === String(defaultFocusedKey));
+
+      keyToFocus = namedKey ?? findFirstVisibleSelectedKey();
 
       // Fallback to first visible item if no selected item found. Prefer the
       // first real (non-custom-value) item so focus doesn't land on the
@@ -821,6 +841,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     selectedKey,
     selectedKeys,
     allowsCustomValue,
+    defaultFocusedKey,
     setVirtualFocus,
   ]);
 
