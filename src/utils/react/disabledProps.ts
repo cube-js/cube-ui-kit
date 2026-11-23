@@ -21,8 +21,7 @@ const FORM_CONTROL_TAGS = new Set([
 
 /**
  * Handlers that can activate an element. They are dropped while the element is
- * disabled through `aria-disabled` alone, so it stays as inert as a natively
- * disabled one.
+ * disabled (see `omitActivationEventProps`).
  */
 const ACTIVATION_EVENT_PROPS = [
   'onClick',
@@ -128,8 +127,13 @@ export function getDisabledElementProps({
 }
 
 /**
- * Removes the handlers that would activate an element which is disabled
- * without the native attribute.
+ * Removes the handlers that would activate a disabled element.
+ *
+ * Needed without the native attribute, and with it wherever React Aria's
+ * `usePress` is attached. Browsers still send pointer events to a disabled
+ * form control, though no click: `usePress` marks itself pressed on that
+ * `pointerdown` and nothing ever clears it, so the first press after the
+ * control is enabled only ends the stale one and does nothing.
  */
 export function omitActivationEventProps<T extends Props>(props: T): T {
   const result = { ...props };
