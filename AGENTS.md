@@ -216,7 +216,7 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 
 - Always-on rule: Tasty styles — Writing styles, Checking styles. Read it with `help @tenphi/tasty` (tasty:rules/usage)
 - Docs: node_modules/.harnesspm/pkgs/@tenphi/tasty/docs/llms.txt (tasty:docs)
-- Tool: `tasty:styles` — Print the CSS a Tasty styles object produces, with the app's configure() loaded through --setup, and flag values that stayed unresolved (tasty:scripts/styles)
+- Tool: `tasty:styles` — Print the CSS a Tasty styles object produces and report rendering warnings, including unknown token references when the --setup config defines tokens (tasty:scripts/styles)
 
 ## @cube-dev/ui-kit (this project)
 
