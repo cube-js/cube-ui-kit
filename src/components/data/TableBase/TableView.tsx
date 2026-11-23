@@ -1851,14 +1851,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
               openContextMenuFor(row, rowIndex, rowKey, event)
           : undefined,
       // A touch long press opens it too, through `bindTouchContextMenu`. Only
-      // where a menu opens, like the handler: a row whose resolver gives none
-      // keeps its own long press (text selection, link callout).
+      // where a menu opens: a row whose resolver gives none keeps its own long
+      // press (text selection, link callout).
       [TOUCH_CONTEXT_MENU_ATTRIBUTE]:
-        isMenuEnabled &&
-        !isDisabled &&
-        !isMenuEmpty(resolveRowMenu(row, rowIndex, rowKey))
-          ? ''
-          : undefined,
+        !isDisabled && hasRowMenu(row, rowIndex, rowKey) ? '' : undefined,
       ...Object.fromEntries(
         Object.entries(extra?.mods ?? {})
           .filter(([, active]) => active)
@@ -2166,7 +2162,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         isReorderable ||
         onRowAction != null ||
         (hasRowLinkColumn && rowLink?.(row, index) !== undefined) ||
-        (isMenuEnabled && !isMenuEmpty(resolveRowMenu(row, index, key)))
+        hasRowMenu(row, index, key)
       )
         return { key, index };
     }
@@ -2485,6 +2481,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       isFocused: false,
       isDropTarget: false,
     });
+  }
+
+  /** Whether a right-click or a touch long press on the row opens a menu. */
+  function hasRowMenu(row: T, rowIndex: number, rowKey: Key) {
+    return isMenuEnabled && !isMenuEmpty(resolveRowMenu(row, rowIndex, rowKey));
   }
 
   // The context-menu hook retains its runtime action handler while open.

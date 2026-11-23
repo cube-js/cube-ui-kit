@@ -115,25 +115,33 @@ describe('a touch long press', () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
+  /**
+   * Older jsdom (Cloud runs 26) has no `PointerEvent`, but user-event still
+   * dispatches touch pointer events there with a class of its own. A helper
+   * that reached for the global threw a `ReferenceError` from its listeners,
+   * which fails this spec as an uncaught error.
+   */
   it('is off where there is no PointerEvent, as in jsdom 26', async () => {
     const { PointerEvent } = globalThis;
+    const onPress = vi.fn();
 
     // @ts-expect-error -- simulating an environment without the global
     delete globalThis.PointerEvent;
 
     try {
-      const { unmount } = renderWithRoot(<Row onPress={() => {}} />);
+      const { unmount } = renderWithRoot(<Row onPress={onPress} />);
 
-      // user-event dispatches touch pointer events with its own class there.
       await userEvent.pointer([
         { keys: '[TouchA>]', target: screen.getByTestId('Row') },
         { keys: '[/TouchA]' },
       ]);
+
+      // The tap still reaches the row, and no menu opened in its place.
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
       unmount();
     } finally {
       globalThis.PointerEvent = PointerEvent;
     }
-
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });
