@@ -397,7 +397,7 @@ const meta: Meta<typeof FilterPicker> = {
     treeItemProps: {
       control: { type: null },
       description:
-        "Tree mode only: `Item` props for each row, as `Tree`'s `itemProps` takes them, such as a `prefix` icon or `suffix` marks. A function gets the node and its state",
+        "Tree mode only: `Item` props for each row, as `Tree`'s `itemProps` takes them without the `actions` keys, such as a `prefix` icon or `suffix` marks. A function gets the node and its state. Rows hold nothing focusable, since the search keeps focus",
       table: {
         type: { summary: 'TreeItemProps | (node, state) => TreeItemProps' },
       },

@@ -66,7 +66,17 @@ import type {
   KeyboardEvent as RAKeyboardEvent,
 } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
-import type { CubeTreeNodeData, CubeTreeProps } from '../../content/Tree/types';
+import type {
+  CubeTreeNodeData,
+  TreeItemProps,
+  TreeNodeState,
+} from '../../content/Tree/types';
+
+/** A tree row's `Item` props in FilterPicker: no actions, as nothing in a row can take focus. */
+type FilterPickerTreeItemProps = Omit<
+  TreeItemProps,
+  'actions' | 'autoHideActions' | 'preserveActionsSpace'
+>;
 
 interface ItemWithKey {
   key?: string | number;
@@ -113,6 +123,7 @@ export interface CubeFilterPickerProps<T>
    * Whether the search input takes focus when the popover opens. By default it
    * does, except when a touch or pen opened the popover: on a phone, a focused input
    * raises the on-screen keyboard. `true` always focuses it, `false` never.
+   * In tree mode, a press on a row leaves an unfocused search so too.
    */
   autoFocus?: boolean;
   /**
@@ -260,9 +271,16 @@ export interface CubeFilterPickerProps<T>
   /**
    * Tree mode only: `Item` props for each row, as `Tree`'s `itemProps`
    * takes them, such as a `prefix` icon or `suffix` marks. A function gets
-   * the node and its state.
+   * the node and its state. Rows hold nothing focusable, since the search
+   * keeps focus, so the `actions` keys are left out. A screen reader names
+   * the active row by its title: marks are visual.
    */
-  treeItemProps?: CubeTreeProps['itemProps'];
+  treeItemProps?:
+    | FilterPickerTreeItemProps
+    | ((
+        node: CubeTreeNodeData,
+        state: TreeNodeState,
+      ) => FilterPickerTreeItemProps);
 }
 
 /**

@@ -93,7 +93,7 @@ Choose a different component when the interaction has another shape:
 - **`actions`** `ReactNode` — Custom actions rendered inside the trigger, to the left of the built-in clear button and dropdown caret
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback called when the popover open state changes
 - **`treeData`** `CubeTreeNodeData[]` — Tree-shaped options. The popover shows a `Tree` in place of the list, and `items` and `children` are not used. Tree mode is multiple selection with checkboxes, and the value is every fully checked key, parents included. With `selectionMode="single"`, the tree has no checkboxes and the value is one leaf
-- **`treeItemProps`** `TreeItemProps | (node, state) => TreeItemProps` — Tree mode only: `Item` props for each row, as `Tree`'s `itemProps` takes them, such as a `prefix` icon or `suffix` marks. A function gets the node and its state
+- **`treeItemProps`** `TreeItemProps | (node, state) => TreeItemProps`, without the `actions` keys — Tree mode only: `Item` props for each row, as `Tree`'s `itemProps` takes them, such as a `prefix` icon or `suffix` marks. A function gets the node and its state. Rows hold nothing focusable, since the search keeps focus; a screen reader names the active row by its title, so marks are visual
 - **`expandedKeys`** `string[]` — Expanded nodes in tree mode (controlled). A search expands nodes on its own and restores these when it clears
 - **`defaultExpandedKeys`** `string[]` — Initially expanded nodes in tree mode (uncontrolled), read once when the picker mounts
 - **`onExpand`** `(expandedKeys: string[]) => void` — Called when the user expands or collapses a node in tree mode, outside a search
@@ -665,7 +665,7 @@ Pass `selectionMode="single"` with `treeData` to pick one leaf, such as a file i
 - **Value.** `selectedKey` or `defaultSelectedKey` is the picked leaf, and `onSelectionChange` receives its key, as in the list's single mode. The picked row shows as selected, and screen readers hear it as selected. A press on the picked leaf clears it, unless `disallowEmptySelection` is set.
 - **Opening.** The popover opens on the picked leaf: its closed ancestors open, through `onExpand` when `expandedKeys` is controlled, and it is the row the keyboard starts from.
 - **Summary.** The default trigger summary is the picked leaf's text. `renderSummary` receives `selectedLabel` and `selectedKey`, as in the list's single mode.
-- **Row content.** `treeItemProps` sets each row's `Item` props, in either tree mode, as `Tree`'s `itemProps` does: a `prefix` icon for the file type, `suffix` marks. The row's `icon` slot is the expand toggle, so an icon goes in `prefix`.
+- **Row content.** `treeItemProps` sets each row's `Item` props, in either tree mode, as `Tree`'s `itemProps` does: a `prefix` icon for the file type, `suffix` marks. The row's `icon` slot is the expand toggle, so an icon goes in `prefix`. Put nothing focusable in a row: the search keeps focus, so `treeItemProps` takes no `actions`, and a button in `prefix` or `suffix` couldn't be reached. A screen reader names the active row by its title, so a mark that matters, such as unsaved changes, belongs in the summary or the title too.
 
 ```jsx
 const files = [
@@ -820,7 +820,7 @@ const [keyOrder, setKeyOrder] = useState([
 - `Home/End` - Navigate to first/last option
 - `Alt+ArrowUp` / `Alt+ArrowDown` - Reorder the focused item (when `isReorderable`)
 
-With `treeData`, focus stays in the search input and the keys drive the active row. After a touch or pen open, which leaves the search unfocused, a tap on a row doesn't move focus to the search, so a phone's keyboard stays shut:
+With `treeData`, focus stays in the search input and the keys drive the active row. After a touch or pen open, or with `autoFocus={false}`, which leave the search unfocused, a press on a row doesn't move focus to the search, so a phone's keyboard stays shut:
 
 - `Arrow Up/Down` - Move the active row
 - `Home/End`, `Page Up/Page Down` - Move the active row to the first or last row
