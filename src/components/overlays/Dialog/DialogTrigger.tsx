@@ -520,20 +520,26 @@ function PopoverTrigger(allProps) {
   // `MenuTrigger`, so an action that moved focus to a surface it opened has
   // done so first. Reopened before it runs, the cleanup cancels it.
   //
-  // Reopened during its exit, it keeps the opener it had, as that scope kept
-  // its own before the dialog mounted afresh on every opening: focus can
-  // still be in the closing contents, which the reopen replaces.
+  // Reopened during its exit, it keeps the opener it had as a fallback, by
+  // `useRetainedDialogFocus`'s rule: when the new one is gone or inside the
+  // popover. Focus can still be in the closing contents, which the reopen
+  // replaces, or lost to `<body>`.
   const [opening, setOpening] = useState<{
     isOpen: boolean;
     opener: Opener | null;
+    fallback: Opener | null;
     isExiting: boolean;
-  }>({ isOpen: false, opener: null, isExiting: false });
+  }>({ isOpen: false, opener: null, fallback: null, isExiting: false });
 
   if (opening.isOpen !== state.isOpen) {
     setOpening({
       isOpen: state.isOpen,
-      opener:
-        state.isOpen && !opening.isExiting ? readOpener() : opening.opener,
+      opener: state.isOpen ? readOpener() : opening.opener,
+      fallback: state.isOpen
+        ? opening.isExiting
+          ? opening.opener
+          : null
+        : opening.fallback,
       isExiting: !state.isOpen,
     });
   }
@@ -542,11 +548,11 @@ function PopoverTrigger(allProps) {
   const onExited = () =>
     setOpening((current) =>
       current.isExiting
-        ? { ...current, opener: null, isExiting: false }
+        ? { ...current, opener: null, fallback: null, isExiting: false }
         : current,
     );
 
-  const { opener } = opening;
+  const { opener, fallback } = opening;
   const wasOpenRef = useRef(false);
 
   useEffect(() => {
@@ -560,20 +566,22 @@ function PopoverTrigger(allProps) {
 
     wasOpenRef.current = false;
 
-    if (!shouldRestoreFocus || !opener) return;
+    if (!shouldRestoreFocus || (!opener && !fallback)) return;
 
     const timer = setTimeout(() => {
       const popover = overlayRef.current;
 
       if (!isFocusLostIn(popover)) return;
 
-      const node = resolveOpener(opener);
+      const node = [opener, fallback]
+        .map(resolveOpener)
+        .find((candidate) => candidate && !popover?.contains(candidate));
 
-      if (node && !popover?.contains(node)) restoreFocusTo(node);
+      if (node) restoreFocusTo(node);
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [state.isOpen, opener, shouldRestoreFocus]);
+  }, [state.isOpen, opener, fallback, shouldRestoreFocus]);
 
   let overlay = (
     <Popover

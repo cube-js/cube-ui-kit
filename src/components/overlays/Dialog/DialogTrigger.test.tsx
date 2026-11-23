@@ -1063,6 +1063,57 @@ describe('<DialogTrigger /> during the exit', () => {
     await waitFor(() => expect(trigger).toHaveFocus(), { timeout: 1500 });
   });
 
+  // As any opening does: focus goes back to what opened it this time.
+  it.each([false, true])(
+    'a popover reopened during its exit from another control returns focus there (hideOnClose=%s)',
+    async (hideOnClose) => {
+      function App() {
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <>
+            <DialogTrigger
+              type="popover"
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onOpenChange={setOpen}
+            >
+              <Button qa="Trigger">Open</Button>
+              <Dialog aria-label="Popover">
+                <button type="button">Inside</button>
+              </Dialog>
+            </DialogTrigger>
+            <Button qa="Other" onPress={() => setOpen(true)}>
+              Other
+            </Button>
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+
+      await user.click(screen.getByTestId('Trigger'));
+      const dialog = await screen.findByRole('dialog');
+      await waitFor(() =>
+        expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      );
+      await user.keyboard('{Escape}');
+
+      // Still in the exit: reopened from the other control.
+      await user.click(screen.getByTestId('Other'));
+      await waitFor(() =>
+        expect(screen.getByRole('dialog')).toContainElement(
+          document.activeElement as HTMLElement,
+        ),
+      );
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => expect(screen.getByTestId('Other')).toHaveFocus(), {
+        timeout: 250,
+      });
+    },
+  );
+
   // As a menu item hands focus to what it opens (CUB-3962): a surface that
   // focuses itself as it mounts keeps focus.
   it('a popover leaves focus on a surface an action opens as it closes', async () => {
