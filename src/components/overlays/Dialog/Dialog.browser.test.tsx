@@ -7,7 +7,9 @@ import { renderWithRoot, screen, wait, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
 import { Menu, MenuTrigger } from '../../actions/Menu';
 import { Content } from '../../content/Content';
+import { Header } from '../../content/Header';
 import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { TextInput } from '../../fields/TextInput';
 import { AlertDialog } from '../AlertDialog';
@@ -390,13 +392,36 @@ describe('Dialog with a long unbroken word', () => {
       expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
       expect(body.scrollWidth).toBeLessThanOrEqual(body.clientWidth);
 
-      // Only the header breaks anywhere: elsewhere it would also shrink a
-      // title beside other text in a row, breaking an ordinary word.
+      // Only the header's own title breaks anywhere: elsewhere it would also
+      // shrink a title beside other text in a row, breaking an ordinary word.
       expect(getComputedStyle(screen.getByTestId('Nested')).overflowWrap).toBe(
         'break-word',
       );
     },
   );
+
+  it('keeps an ordinary word beside a wrapping title whole', async () => {
+    await page.viewport(390, 844);
+
+    renderWithRoot(
+      <DialogContainer isOpen onDismiss={() => {}}>
+        <Dialog isDismissable>
+          <Header>
+            <Title>Configure the semantic layer connection</Title>
+            <Text qa="Beside">Unsaved</Text>
+          </Header>
+        </Dialog>
+      </DialogContainer>,
+    );
+
+    const beside = await screen.findByTestId('Beside');
+    const lines = document.createRange();
+
+    lines.selectNodeContents(beside);
+
+    await waitFor(() => expect(beside.clientWidth).toBeGreaterThan(0));
+    expect(lines.getClientRects()).toHaveLength(1);
+  });
 });
 
 /**
