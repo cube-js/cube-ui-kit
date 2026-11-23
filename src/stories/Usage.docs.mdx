@@ -623,7 +623,7 @@ const form = Form.useController<{ email: string | null }>({
 
 Inputs subscribe to their own values and errors. For other reactive UI, use `Form.useValue(form, path)` for one value, `Form.useFieldState(form, path)` for field metadata, or a selector for derived state. `<Form.Subscribe>` keeps an inline region's subscription separate from its parent. Keep imperative getters in handlers and effects.
 
-[Modern Form](/docs/forms-modernform--docs) explains which API to choose for server data, nullable values, nested fields, conditional sections, cross-field and remote validation, errors, and external actions. Use that guide for implementation recipes and the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) when converting an existing form.
+[Modern Form](/docs/forms-modernform--docs) explains which API to choose for server data, nullable values, nested fields, conditional sections, cross-field and remote validation, errors, and external actions. Use that guide for implementation recipes and the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/src/components/form/Form/modern-form-migration.md) when converting an existing form.
 
 ### Legacy forms
 

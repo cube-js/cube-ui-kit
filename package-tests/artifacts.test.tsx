@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 import { checkReactPackage } from '../scripts/compiler/check-package.mjs';
@@ -47,7 +47,7 @@ it('ships the harness: uikit:colors runs from the tarball', () => {
   });
 });
 
-it('ships only doc pages in src/, which the harness indexes as its docs', () => {
+it('ships the docs as plain Markdown in docs/, which llms.txt indexes for the harness', () => {
   const manifest = JSON.parse(
     readFileSync(join(packageRoot, 'harness/plugin.json'), 'utf8'),
   );
@@ -58,19 +58,39 @@ it('ships only doc pages in src/, which the harness indexes as its docs', () => 
   );
   const pages = readdirSync(docs, { recursive: true, withFileTypes: true })
     .filter((entry) => entry.isFile())
-    .map((entry) => relative(docs, join(entry.parentPath, entry.name)));
+    .map((entry) => relative(docs, join(entry.parentPath, entry.name)))
+    .filter((page) => page !== 'llms.txt');
+  const index = readFileSync(join(docs, 'llms.txt'), 'utf8');
+  const linked = [...index.matchAll(/^- \[.*?\]\(([^)]+)\)/gm)].map(
+    ([, link]) => link,
+  );
 
-  expect(docs).toBe(join(packageRoot, 'src'));
+  expect(docs).toBe(join(packageRoot, 'docs'));
   expect(pages.length).toBeGreaterThan(100);
-  // harnesspm lists every page in this folder, so nothing contributor-only
-  // (AGENTS.md, specs, READMEs) and no code may ship here.
-  for (const page of pages) {
-    expect(page).toMatch(
-      /\.docs\.mdx$|^components\/form\/Form\/modern-form-[a-z-]+\.md$/,
-    );
-  }
-  expect(pages).toContain('stories/Usage.docs.mdx');
-  expect(pages).toContain('components/form/Form/modern-form-guide.md');
+  expect(pages).toEqual(
+    expect.arrayContaining([
+      'Usage.md',
+      'components/actions/Button.md',
+      'components/form/ModernForm.md',
+      'components/form/modern-form-migration.md',
+    ]),
+  );
+  // harnesspm uses llms.txt as the index: it lists every page, once.
+  expect(linked.sort()).toEqual(pages.sort());
+  // Nothing contributor-only ships: no docs/rules, and no Storybook sources.
+  expect(existsSync(join(packageRoot, 'src'))).toBe(false);
+});
+
+it('passes harnesspm check as packed: every docs link leads to a shipped file', () => {
+  // `prepack` runs the same check in the repository. This one reads exactly
+  // what ships.
+  const output = execFileSync(
+    resolve('node_modules/.bin/harnesspm'),
+    ['check', packageRoot],
+    { encoding: 'utf8' },
+  );
+
+  expect(output).toContain('harness is valid');
 });
 
 it("ships the setup the Tasty patch names: tasty:styles loads UI Kit's config from the tarball", () => {

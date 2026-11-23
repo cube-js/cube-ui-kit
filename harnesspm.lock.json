@@ -11,14 +11,14 @@
       "integrity": "sha512-nrzwucI0sxDr9Dc0+8XhNL1D2wCc7jVJE6UbQInwnM5pFCuqunWhhjCY0UbqmC6moJZgCyPIVVxM8cFOjXwWWg=="
     },
     "@tenphi/glaze": {
-      "version": "3.1.0",
+      "version": "3.2.0",
       "plugin": "glaze",
-      "integrity": "sha512-NOg3tsb6knAlNL1J9Y9Bkf0mDYf/1dHlTTcUHyYFoeOS5SGLXjBWMY4H85Zr342/p2UTpetSEVNCgCq2BN0Bfg=="
+      "integrity": "sha512-KcI9hpEeBQtf5Yy93KwQ+APrPPO3a8/HHXSVeRmuqCLhAo1SSjVBpZX5HGzDFPczAwqCbu9/fWYjxVVLY658dQ=="
     },
     "@tenphi/harnesspm": {
-      "version": "0.8.0",
+      "version": "0.10.0",
       "plugin": "harnesspm",
-      "integrity": "sha512-CDFNdXgu+boT/hazKiDurQ4aHVAJBnzc3XbTWmDUq+u2hTEJ2aKp+qweDMEAI0j1onLr475drfASJYEA5jXXlA=="
+      "integrity": "sha512-Ea38ohpGAV/qiCWlgOMnD7uFF0e4rW9Gnl/ZSDKWhG6oHssMKLBD3wmB16bLblyNrPQR6FrXV93F3nhtXhA7Bg=="
     },
     "@tenphi/tasty": {
       "version": "3.19.1",
@@ -29,7 +29,7 @@
   "units": {
     "glaze:docs": {
       "kind": "docs",
-      "hash": "bb77afae7195f3cd"
+      "hash": "01faa2a9664b0f07"
     },
     "glaze:rules/colors": {
       "kind": "rules",
@@ -45,15 +45,15 @@
     },
     "glaze:scripts/inspect": {
       "kind": "scripts",
-      "hash": "ed4efa32714fb96c"
+      "hash": "b01aa78b18b19580"
     },
     "glaze:skills/glaze-theme": {
       "kind": "skills",
-      "hash": "cfe520518fec25c5"
+      "hash": "89dbcdc39af57d9c"
     },
     "harnesspm:docs": {
       "kind": "docs",
-      "hash": "2a19bdf840b20b02"
+      "hash": "fbfb4e05c8d968bd"
     },
     "harnesspm:rules/generated-files": {
       "kind": "rules",
@@ -61,15 +61,15 @@
     },
     "harnesspm:rules/harnesspm-config": {
       "kind": "rules",
-      "hash": "4ab34118776febeb"
+      "hash": "d63e2afc5e1cff0c"
     },
     "harnesspm:skills/harnesspm-export": {
       "kind": "skills",
-      "hash": "fb92aa8cb29e1e26"
+      "hash": "57a522200fd69144"
     },
     "harnesspm:skills/harnesspm-import": {
       "kind": "skills",
-      "hash": "749fe5d4f3178085"
+      "hash": "c20dd78843f5a5e7"
     },
     "harnesspm:skills/harnesspm-improve": {
       "kind": "skills",
@@ -107,13 +107,9 @@
       "kind": "scripts",
       "hash": "bd020ff534f6ae40"
     },
-    "uikit:docs": {
-      "kind": "docs",
-      "hash": "529688c362baed97"
-    },
     "uikit:rules/usage": {
       "kind": "rules",
-      "hash": "967c367a0ee4e664"
+      "hash": "621b961cf9fc870e"
     },
     "uikit:scripts/colors": {
       "kind": "scripts",
@@ -145,7 +141,9 @@
     },
     "uikit:rules/usage": {
       "harnesspm/patches/uikit-usage.patch.md": {
-        "Styling": "2a5369d5a1285454"
+        "Components": "ee2f298011697e12",
+        "Styling": "2a5369d5a1285454",
+        "Typography": "9b445cd3d6416f81"
       }
     }
   }

@@ -12,7 +12,7 @@
         "@tenphi/tasty",
         "@tenphi/eslint-plugin-tasty"
       ],
-      "docs": "../src",
+      "docs": "../docs",
       "patch": {
         "glaze:rules/colors": "./dev.harnesspm/patches/glaze-colors.patch.md",
         "tasty:rules/usage": "./dev.harnesspm/patches/tasty-usage.patch.md"
