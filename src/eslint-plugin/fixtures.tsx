@@ -471,6 +471,17 @@ export const FIXTURES: Fixture[] = [
         <FilterPicker.Item key="2">Red</FilterPicker.Item>
       </FilterPicker>
     ),
+    conditions: [
+      // An omitted `selectionMode` is single for a list but multiple with
+      // `treeData`, where only an explicit "single" shows the picked leaf.
+      {
+        label: 'treeData with a picked leaf',
+        props: {
+          treeData: [{ key: 'blue', title: 'Blue' }],
+          defaultSelectedKey: 'blue',
+        },
+      },
+    ],
     ignoreProps: ['label', 'children'],
   },
   {
