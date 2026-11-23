@@ -538,9 +538,12 @@ function PopoverTrigger(allProps) {
     });
   }
 
+  // Its return ran long before, so a closed popover holds no removed opener.
   const onExited = () =>
     setOpening((current) =>
-      current.isExiting ? { ...current, isExiting: false } : current,
+      current.isExiting
+        ? { ...current, opener: null, isExiting: false }
+        : current,
     );
 
   const { opener } = opening;
