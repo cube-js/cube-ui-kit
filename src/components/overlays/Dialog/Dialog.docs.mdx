@@ -90,6 +90,10 @@ The case this exists for is a child that should span the full dialog width — a
 
 A `styles` override on a slot is merged into the slot's own styles rather than replacing them, so `Content` keeps its `flexGrow`, `overflow` and height rules while only the padding changes. In plain CSS the same values are readable as `var(--dialog-padding-h)` and `var(--dialog-content-padding-v)`.
 
+### Long Words
+
+A word longer than the line, such as a long name a user typed, breaks onto the next line instead of running out of the dialog. Ordinary text still wraps between words. `Title` uses `overflowWrap: 'anywhere'`, because it sits in the header's flex row. `Content` uses `'break-word'`, which everything in it inherits without changing the widths of a table or a flex row inside. Set `overflowWrap` in the slot's `styles` to change it.
+
 ### Modifiers
 
 The `mods` property accepts the following modifiers you can override:
@@ -225,7 +229,7 @@ A dialog's width never comes from its content: it is the `dialog` query containe
 
 ## Best Practices
 
-1. **Do**: Provide clear titles and actionable buttons
+1. **Do**: Provide a short title that names the action, and actionable buttons. A value a user typed, such as a name, goes in `Content`, not in the title: it can be any length, and a long one turns the title into a heading several lines tall
 
    ```jsx
    <Dialog>
@@ -233,7 +237,7 @@ A dialog's width never comes from its content: it is the `dialog` query containe
        <Title>Save Changes</Title>
      </Header>
      <Content>
-       <Paragraph>Your changes will be saved to the document.</Paragraph>
+       <Paragraph>Your changes will be saved to {document.name}.</Paragraph>
      </Content>
      <Footer>
        <Button type="primary" onPress={save}>Save</Button>

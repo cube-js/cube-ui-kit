@@ -16,7 +16,7 @@ A modal dialog for important messages that require user acknowledgment. Extends 
 
 ## Properties
 
-- **`title`** `string` — Dialog title
+- **`title`** `string` — Dialog title: a few words that name the action. A value a user typed goes in `content` ([Best Practices](#best-practices))
 - **`content`** `ReactNode` — Dialog body content
 - **`danger`** `boolean` — Marks the confirm action as destructive. It gets danger styling, and the dialog opens with focus on Cancel, or on the dialog itself when there is no Cancel, so a reflexive Enter does not run it. An explicit `autoFocus` on `actions.confirm` still puts focus there. Without `danger`, the confirm button takes focus
 - **`noActions`** `boolean` — Hide the action buttons entirely
@@ -78,6 +78,27 @@ These properties allow direct style application without using the `styles` prop:
 - The dialog has `role="alertdialog"`. Its title is its name, and its `content` is its description (`aria-describedby`), so a screen reader reads the message when the dialog opens
 - Focus starts on the confirm button, or on Cancel (the dialog itself without one) when `danger` is set and the confirm action does not set `autoFocus`
 - Focus stays inside the dialog until it closes, then returns to the element that opened it
+
+## Best Practices
+
+1. **Do**: Keep the title short and name the action. Put a value a user typed, such as a name, a path or an email, in `content`, where it has room
+
+   ```jsx
+   <AlertDialog
+     title="Delete the dashboard?"
+     content={`${dashboard.name} and its schedules will be deleted.`}
+     danger
+     actions={{ confirm: { children: 'Delete' }, cancel: true }}
+   />
+   ```
+
+2. **Don't**: Put a user-typed value in the title. It can be any length, and a long one turns the title into a heading several lines tall
+
+   ```jsx
+   <AlertDialog title={`Delete ${dashboard.name}?`} />
+   ```
+
+3. **Long text**: A title still wraps when it has to, such as in a longer translation or at a larger text size. A word longer than the line breaks onto the next line, in the title and in `content`, instead of running out of the dialog
 
 ## Imperative API
 
@@ -224,7 +245,8 @@ function RowActions({ row }) {
         onAction={(key) => {
           if (key === 'delete') {
             open({
-              title: `Delete ${row.name}?`,
+              title: 'Delete the row?',
+              content: `${row.name} will be deleted.`,
               danger: true,
               actions: { confirm: { children: 'Delete' }, cancel: true },
               onConfirm: () => deleteRow(row.id),
