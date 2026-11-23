@@ -15,6 +15,7 @@ A button-triggered field for keeping one or more selected values from a **search
 - A compact button trigger is preferable to an always-visible input
 - Multiple selection, checkboxes, select-all, grouped options, or a custom trigger summary are needed
 - The options form a tree, such as groups and their members, and parents should be checkable as a whole (`treeData`)
+- One leaf is picked from a tree, such as a file in its folders (`treeData` with `selectionMode="single"`)
 - The selection should participate in form state and validation
 
 Choose a different component when the interaction has another shape:
@@ -91,7 +92,7 @@ Choose a different component when the interaction has another shape:
 - **`onClear`** `() => void` — Callback called when the clear button is pressed
 - **`actions`** `ReactNode` — Custom actions rendered inside the trigger, to the left of the built-in clear button and dropdown caret
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback called when the popover open state changes
-- **`treeData`** `CubeTreeNodeData[]` — Tree-shaped options. The popover shows a checkable `Tree` in place of the list, and `items` and `children` are not used. Tree mode is always multiple selection, and the value is every fully checked key, parents included
+- **`treeData`** `CubeTreeNodeData[]` — Tree-shaped options. The popover shows a `Tree` in place of the list, and `items` and `children` are not used. Tree mode is multiple selection with checkboxes, and the value is every fully checked key, parents included. With `selectionMode="single"`, the tree has no checkboxes and the value is one leaf
 - **`expandedKeys`** `string[]` — Expanded nodes in tree mode (controlled). A search expands nodes on its own and restores these when it clears
 - **`defaultExpandedKeys`** `string[]` — Initially expanded nodes in tree mode (uncontrolled), read once when the picker mounts
 - **`onExpand`** `(expandedKeys: string[]) => void` — Called when the user expands or collapses a node in tree mode, outside a search
@@ -336,7 +337,7 @@ const categories = [
 - `single` - Allows selecting only one item at a time
 - `multiple` - Allows selecting multiple items
 
-With `treeData`, the picker is always `multiple`.
+With `treeData`, the picker is `multiple` unless `selectionMode="single"` is passed: tree mode's default stays `multiple`, so a tree picker changes only when it asks for single selection. See [Single Selection in a Tree](#single-selection-in-a-tree).
 
 ### Button Types
 
@@ -611,13 +612,13 @@ When the popover opens, the list highlights the first selected option, or the fi
 
 Pass `treeData` to pick from a tree. The popover shows a checkable [Tree](/docs/content-tree--docs) under the same header, search and footer, and `items` and `children` are not used.
 
-- **Value.** Tree mode is always multiple selection. `selectedKeys` is every fully checked key, parents included, in tree order. A parent key passed without its children checks its whole subtree.
+- **Value.** Tree mode is multiple selection unless `selectionMode="single"` is passed ([Single Selection in a Tree](#single-selection-in-a-tree)). `selectedKeys` is every fully checked key, parents included, in tree order. A parent key passed without its children checks its whole subtree.
 - **Cascade.** Checking a parent checks its children, and a parent with only some of them checked is half-checked. The cascade runs over the whole tree, so unchecking a node during a search keeps the nodes the search hides as they were.
 - **Search.** A node that matches keeps its whole subtree. The ancestors of deeper matches stay with only their matching branches, and every node with a match below it opens. This expansion belongs to the search: it starts over whenever the query changes, and clearing the search brings back the nodes the user had open. Nodes match on `textValue`, else on `title` when it is a string, else on `key`.
 - **Summary.** The default trigger summary lists the topmost checked nodes: "Design" rather than "Design, Dieter Rams, Susan Kare". `renderSummary` receives every checked key, conducted over the tree and in tree order, as `onSelectionChange` reports them.
 - **Disabling.** Disable a node with its own `isDisabled` or `isCheckboxDisabled`; `disabledKeys` does not apply. A disabled node's key in the value still checks its subtree, and Enter or Space on a row whose checkbox is disabled does nothing. The cascade passes through a disabled node: checking its parent checks the enabled nodes below it, and its own state follows them.
 - **Expansion.** Uncontrolled expansion starts from `defaultExpandedKeys`, read once when the picker mounts, and is kept across opening and closing the popover. For nodes that arrive later, pass `expandedKeys`.
-- **List-only props.** These apply to the flat list and have no effect with `treeData`: `items`, `children`, `disabledKeys`, `allowsCustomValue`, `showSelectAll`, `selectAllLabel`, `isCheckable`, `disallowEmptySelection`, `sortSelectedToTop`, `isReorderable`, `onReorder`, `onLoadMore`, `hasMore`, `isLoadingMore`, `loadMoreMargin`, `onOptionClick`, `defaultFocusedKey`, `focusOnHover`, `listGap`, `listStyles`, `optionStyles`, `sectionStyles` and `headingStyles`.
+- **List-only props.** These apply to the flat list and have no effect with `treeData`: `items`, `children`, `disabledKeys`, `allowsCustomValue`, `showSelectAll`, `selectAllLabel`, `isCheckable`, `disallowEmptySelection` (except in single selection), `sortSelectedToTop`, `isReorderable`, `onReorder`, `onLoadMore`, `hasMore`, `isLoadingMore`, `loadMoreMargin`, `onOptionClick`, `defaultFocusedKey`, `focusOnHover`, `listGap`, `listStyles`, `optionStyles`, `sectionStyles` and `headingStyles`.
 
 ```jsx
 const userGroups = [
@@ -652,6 +653,47 @@ const userGroups = [
 ```
 
 Keys must be unique across the whole tree. When one person belongs to several groups, give each occurrence its own key (`engineering:ada`, `support:ada`) and map the keys back to people in `onSelectionChange`.
+
+### Single Selection in a Tree
+
+<Story of={FilterPickerStories.TreeSingleSelection} />
+
+Pass `selectionMode="single"` with `treeData` to pick one leaf, such as a file in its folders. The tree has no checkboxes, and the rest of tree mode stays as above: the search, the expansion props, `header` and `footer`.
+
+- **Press and Enter.** On a leaf, they pick it and close the popover. On a parent, they open or close it and pick nothing. A node is a leaf when `isLeaf` is `true`, or when it has no `children` array and `isLeaf` isn't `false`: give an empty folder `children: []` or `isLeaf: false`, so a press opens it rather than picks it.
+- **Value.** `selectedKey` or `defaultSelectedKey` is the picked leaf, and `onSelectionChange` receives its key, as in the list's single mode. The picked row shows as selected, and screen readers hear it as selected. A press on the picked leaf clears it, unless `disallowEmptySelection` is set.
+- **Opening.** The popover opens on the picked leaf: its closed ancestors open, through `onExpand` when `expandedKeys` is controlled, and it is the row the keyboard starts from.
+- **Summary.** The default trigger summary is the picked leaf's text. `renderSummary` receives `selectedLabel` and `selectedKey`, as in the list's single mode.
+
+```jsx
+const files = [
+  {
+    key: 'model',
+    title: 'model',
+    children: [
+      {
+        key: 'model/cubes',
+        title: 'cubes',
+        children: [
+          { key: 'model/cubes/orders.yml', title: 'orders.yml' },
+          { key: 'model/cubes/users.yml', title: 'users.yml' },
+        ],
+      },
+      { key: 'model/views', title: 'views', children: [] },
+    ],
+  },
+  { key: 'cube.py', title: 'cube.py' },
+];
+
+<FilterPicker
+  label="File"
+  placeholder="Choose a file"
+  treeData={files}
+  selectionMode="single"
+  defaultSelectedKey="model/cubes/users.yml"
+  onSelectionChange={(key) => console.log(key)}
+/>
+```
 
 ### Loading Items
 

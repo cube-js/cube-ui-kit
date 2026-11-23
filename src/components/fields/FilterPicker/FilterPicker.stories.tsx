@@ -386,7 +386,7 @@ const meta: Meta<typeof FilterPicker> = {
     treeData: {
       control: { type: null },
       description:
-        'Tree-shaped options. The popover shows a checkable `Tree` in place of the list, and `items` and `children` are not used. Tree mode is always multiple selection, and the value is every fully checked key, parents included',
+        'Tree-shaped options. The popover shows a `Tree` in place of the list, and `items` and `children` are not used. Tree mode is multiple selection with checkboxes, and the value is every fully checked key, parents included. With `selectionMode="single"`, the tree has no checkboxes and the value is one leaf',
       table: {
         type: { summary: 'CubeTreeNodeData[]' },
       },
@@ -1514,6 +1514,61 @@ export const TreeOptions: Story = {
       description: {
         story:
           'Pass `treeData` to pick from a tree: the popover shows a checkable `Tree` under the same header and search. Checking a parent checks its children, and a parent with only some of them checked is half-checked. The value is every fully checked key, parents included. A search keeps each match with its subtree and opens the ancestors of deeper matches: type a name to see every group that person belongs to.',
+      },
+    },
+  },
+};
+
+// Folders and files. An empty folder keeps `children: []`, so a press opens it
+// rather than picks it.
+const projectFiles: CubeTreeNodeData[] = [
+  {
+    key: 'model',
+    title: 'model',
+    children: [
+      {
+        key: 'model/cubes',
+        title: 'cubes',
+        children: [
+          { key: 'model/cubes/orders.yml', title: 'orders.yml' },
+          { key: 'model/cubes/users.yml', title: 'users.yml' },
+        ],
+      },
+      { key: 'model/views', title: 'views', children: [] },
+    ],
+  },
+  { key: 'cube.py', title: 'cube.py' },
+  { key: 'requirements.txt', title: 'requirements.txt' },
+];
+
+export const TreeSingleSelection: Story = {
+  args: {
+    label: 'File',
+    placeholder: 'Choose a file',
+    searchPlaceholder: 'Search files...',
+    fieldStyles: { width: '0 30x 100%' },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: /File/ });
+    await userEvent.click(trigger);
+    await waitFor(() =>
+      expect(within(document.body).getByRole('treegrid')).toBeVisible(),
+    );
+  },
+  render: (args) => (
+    <FilterPicker
+      {...args}
+      treeData={projectFiles}
+      selectionMode="single"
+      defaultSelectedKey="model/cubes/users.yml"
+    />
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With `selectionMode="single"`, the tree has no checkboxes and the value is one leaf. A press or Enter on a leaf picks it and closes the popover; on a folder it opens or closes the folder. The popover opens on the picked leaf, with its folders open.',
       },
     },
   },
