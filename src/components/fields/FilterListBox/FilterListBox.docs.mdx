@@ -56,7 +56,7 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`isLoadingItems`** `boolean` (default: `false`) — Whether items are currently loading. Shows a loading icon in the search input suffix
 - **`autoFocus`** `boolean` — Whether the search input should have autofocus
 - **`searchInputProps`** `CubeSearchInputAttributes` — Attributes for the search input, such as `enterKeyHint`, `autoCorrect` or `inputMode`. By default it sets `enterKeyHint="search"`, `autoCapitalize="none"`, `autoCorrect="off"` and `spellCheck={false}`, so a phone keyboard shows a Search key and neither capitalizes nor corrects a query; a value set here wins. It takes no event handlers, ARIA attributes, `value`, `type`, `role`, `id`, `placeholder`, `autoFocus`, `disabled`, `readOnly`, `className` or `style`: the component owns those, or takes them as props of its own
-- **`defaultFocusedKey`** `Key` — The option highlighted when the list opens, instead of the first selected option, such as an action row so that Enter runs it. The list also returns to it when a search hides the highlighted option. While it is hidden, disabled or missing, the list highlights the first selected option, else the first. See [Action Row](#action-row)
+- **`defaultFocusedKey`** `Key` — The option highlighted when the list opens, instead of the first selected option, such as an action row so that Enter runs it. The list also returns to it whenever the highlighted option leaves the list (a search hides it, or it is removed or disabled). While it is hidden, disabled or missing, the list highlights the first selected option, else the first. See [Action Row](#action-row)
 - **`customValueProps`** `Partial<CubeItemProps>` — Props to apply to existing custom values (already selected but not in predefined options)
 - **`newCustomValueProps`** `Partial<CubeItemProps>` — Props to apply to new custom values appearing in search results (merged with `customValueProps`)
 - **`onLoadMore`** `() => void` — Called when the end of the list comes within `loadMoreMargin` of view, or the options are too few to fill the list, while `hasMore` is true and `isLoadingMore` is false. Append the next page to `items`
@@ -500,13 +500,15 @@ Pass the pages loaded so far as `items` and load the next one in `onLoadMore`, a
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to the search input. The first selected option is highlighted, or the first option when none is selected, unless `defaultFocusedKey` names another
+- `Tab` - Moves focus to the search input
 - `Arrow Down/Up` - Navigate through filtered options
-- `Enter` - Select the focused option
+- `Enter` - Select the focused option (toggle it in multiple selection mode)
 - `Space` - In multiple selection mode, toggle selection (when search is empty)
 - `Escape` - Clear search input or close (if empty)
 - `Home/End` - Move to first/last option
 - `PageUp/PageDown` - Jump to first/last option
+
+When the list mounts, it highlights the first selected option, or the first option when none is selected, unless `defaultFocusedKey` names another. It picks again only when the highlighted option leaves the list.
 
 ### Screen Reader Support
 
@@ -797,9 +799,9 @@ The list highlights the first selected option when it opens, or the first option
 
 **Key behaviors:**
 
-- The list returns to the named option when a search hides the highlighted one; a highlight the search leaves in view stays where it is
+- The list returns to the named option whenever the highlighted one leaves the list (a search hides it, or it is removed or disabled); a highlight still in the list stays where it is
 - While the named option is hidden, disabled or missing, the list highlights the first selected option, else the first
-- Highlighting moves `aria-activedescendant` and never selects or runs the option
+- Highlighting moves `aria-activedescendant` and never selects or runs the option: only Enter, Space on an empty search, or a press does
 - Leave it out in a plain list: keyboard and screen reader users expect to land on their selection
 
 ### Controlled Search

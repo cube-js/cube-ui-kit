@@ -54,7 +54,7 @@ Choose a different component when the interaction has another shape:
 - **`searchPlaceholder`** `string` — Placeholder text in the search input
 - **`autoFocus`** `boolean` (default: focuses, except when a touch or pen opened the popover) — Whether the search input takes focus when the popover opens. On a phone a focused input raises the on-screen keyboard, so after a touch or pen press the search waits for the user to tap it. `true` always focuses it, `false` never
 - **`searchInputProps`** `CubeSearchInputAttributes` — Attributes for the search input, in the list and in the `treeData` tree alike, such as `enterKeyHint`, `autoCorrect` or `inputMode`. By default it sets `enterKeyHint="search"`, `autoCapitalize="none"`, `autoCorrect="off"` and `spellCheck={false}`, so a phone keyboard shows a Search key and neither capitalizes nor corrects a query; a value set here wins. It takes no event handlers, ARIA attributes, `value`, `type`, `role`, `id`, `placeholder`, `autoFocus`, `disabled`, `readOnly`, `className` or `style`: the component owns those, or takes them as props of its own
-- **`defaultFocusedKey`** `Key` — The option highlighted each time the popover opens, instead of the first selected option, such as an action row so that Enter runs it. The list also returns to it when a search hides the highlighted option. While it is hidden, disabled or missing, the list highlights the first selected option, else the first. See [Action Row](#action-row)
+- **`defaultFocusedKey`** `Key` — The option highlighted each time the popover opens, instead of the first selected option, such as an action row so that Enter runs it. The list also returns to it whenever the highlighted option leaves the list (a search hides it, or it is removed or disabled). While it is hidden, disabled or missing, the list highlights the first selected option, else the first. See [Action Row](#action-row)
 - **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state. It wraps to the list's width, so a long message, or an action in it, stays in view.
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function for determining if an option should be included in search results
 - **`header`** `ReactNode` — Custom header content
@@ -599,9 +599,9 @@ When the popover opens, the list highlights the first selected option, or the fi
 </FilterPicker>
 ```
 
-- **Each open.** The row is highlighted every time the popover opens, and again when a search hides the highlighted option. A highlight the search leaves in view stays where it is.
+- **Each open.** The row is highlighted every time the popover opens, and again whenever the highlighted option leaves the list (a search hides it, or it is removed or disabled). A highlight still in the list stays where it is.
 - **Fallback.** While the named option is hidden by the search, disabled or missing, the list highlights the first selected option, else the first.
-- **Highlight only.** Highlighting moves `aria-activedescendant` and never selects or runs the option: only Enter or a press does.
+- **Highlight only.** Highlighting moves `aria-activedescendant` and never selects or runs the option: only Enter, Space on an empty search, or a press does.
 - **Use it for an action.** In a plain list, leave it out: keyboard and screen reader users expect to land on their selection, which is what the trigger's summary describes.
 - **List mode only.** It has no effect with `treeData`.
 
@@ -768,7 +768,7 @@ const [keyOrder, setKeyOrder] = useState([
 - `Tab` (popover open, search not focused) - Moves focus to the search input. A touch or pen open, or `autoFocus={false}`, leaves focus on the popover, and the keys below work from the search
 - `Space/Enter` - Opens the dropdown popover. The first selected option is highlighted, or the first option when none is selected, unless `defaultFocusedKey` names another
 - `Arrow Up/Down` - Opens the popover (when closed) or navigates through options (when open)
-- `Enter` (popover open) - Selects the highlighted option
+- `Enter` (popover open) - Selects the highlighted option, or toggles it in multiple selection mode. Closes the popover in single selection mode and with `isCheckable`
 - `Escape` - Closes the popover or clears search
 - `Home/End` - Navigate to first/last option
 - `Alt+ArrowUp` / `Alt+ArrowDown` - Reorder the focused item (when `isReorderable`)

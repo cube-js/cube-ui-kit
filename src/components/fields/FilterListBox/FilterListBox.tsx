@@ -72,9 +72,10 @@ export interface CubeFilterListBoxProps<T>
    * The option highlighted when the list opens, instead of the first selected
    * option: for example an action row at the top of the list, so that Enter
    * runs it rather than unchecking a selected option. The list also returns to
-   * it when a search hides the highlighted option. While it is hidden,
-   * disabled or missing, the list highlights the first selected option, else
-   * the first option. Highlighting never selects or runs it.
+   * it whenever the highlighted option leaves the list (a search hides it, or
+   * it is removed or disabled). While it is hidden, disabled or missing, the
+   * list highlights the first selected option, else the first option.
+   * Highlighting never selects or runs it.
    */
   defaultFocusedKey?: Key;
   /**

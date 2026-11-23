@@ -12,7 +12,10 @@ import { SettingsIcon } from '../../../icons/SettingsIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import { waitForOverlay } from '../../../stories/interactions';
+import {
+  waitForOverlay,
+  waitForTransitions,
+} from '../../../stories/interactions';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
 import { Paragraph } from '../../content/Paragraph';
@@ -1029,6 +1032,9 @@ export const WithActionRow: Story = {
         ),
       ).toHaveAttribute('data-key', CREATE_CHART_KEY),
     );
+
+    // The popover fades in; photograph it once it has settled.
+    await waitForTransitions();
   },
   render: function WithActionRowRender(args) {
     const [charts, setCharts] = useState(['Orders', 'Revenue', 'Active users']);
