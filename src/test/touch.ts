@@ -15,14 +15,18 @@ export interface Point {
   y: number;
 }
 
-export function centerOf(element: Element): Point {
+/**
+ * A point inside `element`, `inset` px from its leading edge and halfway down:
+ * on the label rather than on actions at the trailing end.
+ */
+export function pointIn(element: Element, inset = 40): Point {
   const rect = element.getBoundingClientRect();
 
-  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  return { x: rect.left + inset, y: rect.top + rect.height / 2 };
 }
 
 /** Chromium's coordinates for a point in the test iframe, which Vitest can scale. */
-export function nativePosition({ x, y }: Point): Point {
+export function nativePosition(x: number, y: number): Point {
   const frame = window.frameElement as HTMLElement | null;
   const bounds = frame?.getBoundingClientRect();
   const scaleX = bounds && frame ? bounds.width / frame.offsetWidth : 1;
@@ -61,7 +65,7 @@ export async function touchHold(
   await act(async () => {
     await cdp().send('Input.dispatchTouchEvent', {
       type: 'touchStart',
-      touchPoints: [nativePosition(point)],
+      touchPoints: [nativePosition(point.x, point.y)],
     });
     await wait(ms);
     await during?.();
@@ -78,6 +82,6 @@ export async function touchHold(
 export async function touchMove(point: Point) {
   await cdp().send('Input.dispatchTouchEvent', {
     type: 'touchMove',
-    touchPoints: [nativePosition(point)],
+    touchPoints: [nativePosition(point.x, point.y)],
   });
 }

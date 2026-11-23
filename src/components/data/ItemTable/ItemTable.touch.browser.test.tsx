@@ -1,5 +1,5 @@
 import { renderWithRoot, screen } from '../../../test';
-import { touchHold, useTouchEmulation } from '../../../test/touch';
+import { pointIn, touchHold, useTouchEmulation } from '../../../test/touch';
 import { Menu } from '../../actions/Menu/Menu';
 
 import { ItemTable } from './ItemTable';
@@ -37,12 +37,6 @@ const row = (key: string) =>
     .querySelector<HTMLTableRowElement>(
       `tbody tr[data-element="Row"][data-key="${key}"]`,
     )!;
-
-function pointIn(element: Element) {
-  const rect = element.getBoundingClientRect();
-
-  return { x: rect.left + 40, y: rect.top + rect.height / 2 };
-}
 
 async function expectMenuAt(point: { x: number; y: number }) {
   const menu = await screen.findByRole('menu', {}, { timeout: 2000 });
@@ -119,5 +113,30 @@ describe('ItemTable on a touch screen', () => {
     await vi.waitFor(() =>
       expect(onRowAction).toHaveBeenCalledExactlyOnceWith(ROWS[1], 'r1'),
     );
+  });
+
+  it('leaves a row whose menu resolver returns null to its own long press', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={ROWS}
+        columns={COLUMNS}
+        paginationMode="off"
+        rowMenu={(record) =>
+          record.id === 'r1' ? null : <Menu.Item key="open">Open</Menu.Item>
+        }
+        rowContextMenu="context-only"
+      />,
+    );
+    const label = row('r1').querySelector('[data-qa="TextItem"]')!;
+    let isSelectionAllowed = false;
+
+    await touchHold(pointIn(row('r1')), 700, () => {
+      isSelectionAllowed = label.dispatchEvent(
+        new Event('selectstart', { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(isSelectionAllowed).toBe(true);
   });
 });

@@ -4,6 +4,7 @@ import { cdp } from 'vitest/browser';
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../test';
 import {
   nativePosition,
+  pointIn,
   touchHold,
   touchMove,
   useTouchEmulation,
@@ -160,15 +161,9 @@ describe('useContextMenu on a touch screen', () => {
     );
   }
 
-  function pointIn(element: Element) {
-    const rect = element.getBoundingClientRect();
-
-    return { x: rect.left + 40, y: rect.top + rect.height / 2 };
-  }
-
   /** A trusted `contextmenu`, as Android fires on its own long press. */
   async function nativeContextMenu(point: { x: number; y: number }) {
-    const position = nativePosition(point);
+    const position = nativePosition(point.x, point.y);
 
     for (const type of ['mousePressed', 'mouseReleased'] as const) {
       await cdp().send('Input.dispatchMouseEvent', {
@@ -264,7 +259,8 @@ describe('useContextMenu on a touch screen', () => {
 
   it('ignores a mouse long press', async () => {
     renderWithRoot(<Row onPress={() => {}} />);
-    const position = nativePosition(pointIn(screen.getByTestId('Row')));
+    const { x, y } = pointIn(screen.getByTestId('Row'));
+    const position = nativePosition(x, y);
 
     await act(async () => {
       await cdp().send('Input.dispatchMouseEvent', {

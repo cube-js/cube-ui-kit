@@ -1850,9 +1850,15 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           ? (event: ReactMouseEvent) =>
               openContextMenuFor(row, rowIndex, rowKey, event)
           : undefined,
-      // A touch long press opens it too, through `bindTouchContextMenu`.
+      // A touch long press opens it too, through `bindTouchContextMenu`. Only
+      // where a menu opens, like the handler: a row whose resolver gives none
+      // keeps its own long press (text selection, link callout).
       [TOUCH_CONTEXT_MENU_ATTRIBUTE]:
-        isMenuEnabled && !isDisabled ? '' : undefined,
+        isMenuEnabled &&
+        !isDisabled &&
+        !isMenuEmpty(resolveRowMenu(row, rowIndex, rowKey))
+          ? ''
+          : undefined,
       ...Object.fromEntries(
         Object.entries(extra?.mods ?? {})
           .filter(([, active]) => active)
