@@ -253,8 +253,8 @@ export const Dialog = forwardRef(function Dialog(
   return (
     // This component traps the focus inside the dialog and restores it when
     // it unmounts (a retained dialog never does, so `DialogContent` moves
-    // focus for that one). The restore is the one that matters for popover-type dialogs
-    // — `DialogTrigger`'s own restore is a no-op there — so
+    // focus for that one). A popover-type dialog's trigger hands focus back
+    // already as it closes, and this restore covers what that leaves, so
     // `shouldRestoreFocus` has to reach it. Containment is unaffected either way.
     <FocusScope
       restoreFocus={context.shouldRestoreFocus ?? true}

@@ -1268,4 +1268,39 @@ describe('<Picker />', () => {
       expect(onSelectionChange.mock.calls).toEqual([[null]]);
     });
   });
+
+  // The popover used to keep focus until its exit ended, so a key pressed right
+  // after `Escape` landed in the closing list: `Enter` cleared the selection
+  // instead of reopening (CUB-8552).
+  describe('Closing and reopening from the keyboard', () => {
+    it('reopens on Enter right after Escape and keeps the selection', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Picker
+          label="Fruit"
+          defaultSelectedKey="banana"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </Picker>,
+      );
+
+      const trigger = getByRole('button', { name: 'Fruit' });
+
+      await act(async () => trigger.focus());
+      await userEvent.keyboard('{Enter}');
+      await waitFor(() =>
+        expect(getByRole('option', { name: 'Banana' })).toHaveFocus(),
+      );
+
+      await userEvent.keyboard('{Escape}');
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() =>
+        expect(getByRole('option', { name: 'Banana' })).toHaveFocus(),
+      );
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(trigger).toHaveAccessibleDescription('Banana');
+    });
+  });
 });

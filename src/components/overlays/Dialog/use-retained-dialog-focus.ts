@@ -20,7 +20,7 @@ let isRedirectingUnmount = false;
 
 type FocusTarget = HTMLElement | SVGElement;
 
-interface Opener {
+export interface Opener {
   /** The element focused when the dialog opened. */
   element: Element;
   /** The control of the popup `element` sat in, such as a menu's trigger. */
@@ -53,7 +53,7 @@ function findPopup(element: Element) {
   return { popupTrigger: null, popup: null };
 }
 
-function readOpener(): Opener | null {
+export function readOpener(): Opener | null {
   if (typeof document === 'undefined') return null;
 
   const element = document.activeElement;
@@ -69,7 +69,7 @@ function readOpener(): Opener | null {
  * restore on the same way when a menu item's menu closes; a disclosure that
  * stays open around a removed control is not one. Only a connected element.
  */
-function resolveOpener(opener: Opener | null): FocusTarget | null {
+export function resolveOpener(opener: Opener | null): FocusTarget | null {
   if (!opener) return null;
 
   const { element, popupTrigger, popup } = opener;
@@ -89,10 +89,29 @@ function resolveOpener(opener: Opener | null): FocusTarget | null {
 }
 
 /**
+ * Whether focus has nowhere to stay as `overlay` closes: it is still inside,
+ * lost to `<body>`, or left in another overlay that closes with this one (a
+ * nested dialog's own restore target is about to be hidden). `Overlay`,
+ * `Select` and `ListBoxPopover` mark a closing overlay `="true"`; the
+ * notifications layer and a material tooltip carry it empty. React Aria's
+ * toast region also carries `"true"`, but nothing in the kit renders one.
+ */
+export function isFocusLostIn(overlay: Element | null | undefined) {
+  const activeElement = document.activeElement;
+
+  return (
+    !activeElement ||
+    activeElement === document.body ||
+    !!overlay?.contains(activeElement) ||
+    !!activeElement.closest('[data-react-aria-top-layer="true"]')
+  );
+}
+
+/**
  * Restores focus the way `FocusScope` does, announcing it first: a retained
  * dialog closed around `node` takes the restore on to its own opener.
  */
-function restoreFocusTo(node: FocusTarget) {
+export function restoreFocusTo(node: FocusTarget) {
   const event = new CustomEvent(RESTORE_FOCUS_EVENT, {
     bubbles: true,
     cancelable: true,
@@ -200,19 +219,7 @@ export function useRetainedDialogFocus(
       return;
     }
 
-    // Also lost when left in another overlay that closes with this one: a
-    // nested dialog's own restore target is about to be hidden. `Overlay`,
-    // `Select` and `ListBoxPopover` mark a closing overlay `="true"`; the
-    // notifications layer and a material tooltip carry it empty. React
-    // Aria's toast region also carries `"true"`, but nothing in the kit
-    // renders one.
-    const isFocusLost =
-      !activeElement ||
-      activeElement === document.body ||
-      !!dialogRef.current?.contains(activeElement) ||
-      !!activeElement.closest('[data-react-aria-top-layer="true"]');
-
-    if (isFocusLost) {
+    if (isFocusLostIn(dialogRef.current)) {
       restoreFocusTo(node);
     } else {
       // Focus is in a dialog opened from this one, or somewhere the user

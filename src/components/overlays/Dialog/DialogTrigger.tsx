@@ -8,6 +8,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import {
   OverlayTriggerProps,
@@ -21,6 +22,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { useOpenKey } from '../../../utils/react/useOpenKey';
 import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { isOwnActionsPress } from '../../actions/actions-run';
@@ -36,6 +38,14 @@ import {
   DiscardChangesDialog,
   useDismissConfirmation,
 } from './use-dismiss-confirmation';
+import {
+  isFocusLostIn,
+  readOpener,
+  resolveOpener,
+  restoreFocusTo,
+} from './use-retained-dialog-focus';
+
+import type { Opener } from './use-retained-dialog-focus';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
@@ -167,6 +177,21 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
     trigger = trigger(state);
   }
 
+  // A dialog reopened while it still plays its exit mounts afresh, as one
+  // opened after it does, so its opening focus runs again — see `useOpenKey`.
+  // Its `FocusScope` then reads the trigger as where focus returns, as the
+  // trigger took focus back when the dialog closed (`DialogTriggerBase`,
+  // `PopoverTrigger`). `DialogContainer` has no trigger, so focus stays in a
+  // dialog it closes, and it keeps that dialog, and where focus returns, for a
+  // reopen during the exit. A kept dialog (`hideOnClose`) keeps its contents
+  // across openings.
+  const openKey = useOpenKey(state.isOpen);
+  const dialog = (
+    <Fragment key={hideOnClose ? undefined : openKey}>
+      {typeof content === 'function' ? content(state.close) : content}
+    </Fragment>
+  );
+
   let wasOpen = useRef(false);
   let isExiting = useRef(false);
   let onExiting = () => (isExiting.current = true);
@@ -262,7 +287,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
         styles={styles}
         targetRef={targetRef}
         trigger={trigger}
-        content={content}
+        content={dialog}
         isDismissable={isDismissable}
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         hideArrow={hideArrow}
@@ -296,7 +321,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
             onExiting={onExiting}
             onExited={onExited}
           >
-            {typeof content === 'function' ? content(state.close) : content}
+            {dialog}
           </Modal>
         );
       case 'tray':
@@ -309,7 +334,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
             styles={styles}
             onClose={onClose}
           >
-            {typeof content === 'function' ? content(state.close) : content}
+            {dialog}
           </Tray>
         );
     }
@@ -483,6 +508,58 @@ function PopoverTrigger(allProps) {
     },
   );
 
+  // Hand focus back as the popover closes, not when its dialog's `FocusScope`
+  // unmounts at the end of the exit: until then focus sits in a popover that
+  // is going away, and the key pressed next lands there, so `Enter` picked or
+  // cleared the option a picker's list was on (CUB-8552). Modal types hand it
+  // back as they close too, in `DialogTriggerBase`.
+  //
+  // It goes where that scope would send it, by the scope's own rule: to the
+  // element focused when the popover opened, read in the render that opens
+  // it, and only while focus has nowhere to stay. After a timeout, as in
+  // `MenuTrigger`, so an action that moved focus to a surface it opened has
+  // done so first. Reopened before it runs, the cleanup cancels it.
+  const [opening, setOpening] = useState<{
+    isOpen: boolean;
+    opener: Opener | null;
+  }>({ isOpen: false, opener: null });
+
+  if (opening.isOpen !== state.isOpen) {
+    setOpening({
+      isOpen: state.isOpen,
+      opener: state.isOpen ? readOpener() : opening.opener,
+    });
+  }
+
+  const { opener } = opening;
+  const wasOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (state.isOpen) {
+      wasOpenRef.current = true;
+
+      return;
+    }
+
+    if (!wasOpenRef.current) return;
+
+    wasOpenRef.current = false;
+
+    if (!shouldRestoreFocus || !opener) return;
+
+    const timer = setTimeout(() => {
+      const popover = overlayRef.current;
+
+      if (!isFocusLostIn(popover)) return;
+
+      const node = resolveOpener(opener);
+
+      if (node && !popover?.contains(node)) restoreFocusTo(node);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [state.isOpen, opener, shouldRestoreFocus]);
+
   let overlay = (
     <Popover
       ref={overlayRef}
@@ -501,7 +578,7 @@ function PopoverTrigger(allProps) {
       shouldCloseOnInteractOutside={resolveShouldCloseOnInteractOutside}
       onClose={onClose}
     >
-      {typeof content === 'function' ? content(state.close) : content}
+      {content}
     </Popover>
   );
 
@@ -595,9 +672,12 @@ function DialogTriggerBase(props: any) {
   // Live for modal/tray/fullscreen/panel types only: in the popover branch
   // `triggerProps` carries its own `ref`, which overrides the `ref={ref}` on
   // `PressResponder` below, so `ref.current` stays null and this is a no-op.
-  // Popovers get their restore from `Dialog`'s own `<FocusScope restoreFocus>`
-  // instead, or from `Dialog` at the end of the exit when `hideOnClose` keeps
-  // that scope mounted; both decline to restore when focus moved elsewhere.
+  // Popovers hand focus back from `PopoverTrigger` as they close instead, to
+  // the element focused when they opened (with `targetRef`, the trigger is
+  // not what they are anchored to). `Dialog`'s own `<FocusScope restoreFocus>`
+  // still restores at the end of the exit whatever that leaves, as `Dialog`
+  // does for a dialog `hideOnClose` keeps mounted; all of them decline to
+  // restore when focus moved elsewhere.
   useEffect(() => {
     if (!state.isOpen && wasOpenRef.current) {
       wasOpenRef.current = false;
