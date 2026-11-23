@@ -1,4 +1,4 @@
-import { act, renderWithRoot, screen, waitFor } from '../../../test';
+import { renderWithRoot, screen, waitFor } from '../../../test';
 import { centerOf, tapAt, useTouchEmulation } from '../../../test/touch';
 import { Button } from '../../actions/Button/Button';
 import { TextInput } from '../../fields/TextInput/TextInput';

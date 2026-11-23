@@ -188,7 +188,7 @@ export interface CubeSearchComboBoxProps<T>
   triggerRef?: FocusableRef<HTMLButtonElement>;
 
   /**
-   * Attributes for the input, such as `enterKeyHint`, `autoCorrect`, `inputMode` or `name`.
+   * Attributes for the input, such as `enterKeyHint`, `autoCorrect` or `inputMode`.
    * They win over the search defaults: `enterKeyHint="search"`, `autoCapitalize="none"`,
    * `autoCorrect="off"` and `spellCheck={false}`.
    */

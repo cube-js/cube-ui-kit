@@ -78,7 +78,7 @@ export interface CubeFilterListBoxProps<T>
   /** Custom styles for the search input */
   searchInputStyles?: Styles;
   /**
-   * Attributes for the search input, such as `enterKeyHint`, `autoCorrect`, `inputMode` or `name`.
+   * Attributes for the search input, such as `enterKeyHint`, `autoCorrect` or `inputMode`.
    * They win over the search defaults: `enterKeyHint="search"`, `autoCapitalize="none"`,
    * `autoCorrect="off"` and `spellCheck={false}`.
    */

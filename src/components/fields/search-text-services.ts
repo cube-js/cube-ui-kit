@@ -15,8 +15,9 @@ export const SEARCH_TEXT_SERVICES = {
 
 /**
  * Attributes a caller may set on a component's own search input, such as `enterKeyHint`,
- * `autoCorrect`, `inputMode` or `name`. What the component owns, or takes as a prop of its own, is
- * left out, so every key here reaches the input in every component that takes it.
+ * `autoCorrect` or `inputMode`. What the component owns, or takes as a prop of its own, is
+ * left out, so every key here reaches the input in every component that takes it. A data
+ * attribute the component sets itself, such as `data-size`, still wins.
  */
 export type CubeSearchInputAttributes = Omit<
   InputHTMLAttributes<HTMLInputElement>,
