@@ -341,3 +341,75 @@ describe('ItemActionsWrapper in a hidden container', () => {
     expect(frame.column).toBe(parts.run.offsetWidth);
   });
 });
+
+/**
+ * An `ItemButton` whose actions show only on hover. At rest the run is hidden,
+ * so the row must lay out as if it had none, unless it was asked to keep the
+ * run's space.
+ */
+describe('ItemButton with auto-hidden actions', () => {
+  function renderRow(props: { preserveActionsSpace?: boolean } = {}) {
+    renderWithRoot(
+      // Off the page's top-left corner, where the browser's pointer rests: a
+      // row there starts hovered.
+      <div style={{ padding: 40 }}>
+        <ItemButton
+          qa="Row"
+          suffix={<span>2h</span>}
+          actions={<ItemButton.Action aria-label="More" />}
+          autoHideActions
+          {...props}
+        >
+          Title
+        </ItemButton>
+      </div>,
+    );
+
+    const row = screen.getByTestId('Row');
+
+    return {
+      row,
+      label: row.querySelector<HTMLElement>('[data-element="Label"]')!,
+      suffix: row.querySelector<HTMLElement>('[data-element="Suffix"]')!,
+    };
+  }
+
+  it('keeps the suffix’s end padding while the actions are hidden', async () => {
+    const { row, label, suffix } = renderRow();
+    const endPadding = () => getComputedStyle(suffix).paddingRight;
+
+    expect(row.parentElement).not.toHaveAttribute('data-actions-shown');
+    // `$inline-padding`, which the label also keeps at its start.
+    expect(parseFloat(endPadding())).toBeGreaterThan(0);
+    expect(endPadding()).toBe(getComputedStyle(label).paddingLeft);
+
+    // Shown, the run carries its own side padding.
+    await userEvent.hover(row);
+    await waitFor(() => expect(endPadding()).toBe('0px'));
+  });
+
+  it('keeps the actions’ space with `preserveActionsSpace`, so the suffix stays put', async () => {
+    const { row, suffix } = renderRow({ preserveActionsSpace: true });
+    const wrapper = row.parentElement!;
+
+    await waitFor(
+      () => expect(parseFloat(publishedWidth(wrapper))).toBeGreaterThan(0),
+      { timeout: 2000 },
+    );
+    await settle();
+    expect(wrapper).not.toHaveAttribute('data-actions-shown');
+
+    const end = suffix.getBoundingClientRect().right;
+
+    expect(row.getBoundingClientRect().right - end).toBeGreaterThanOrEqual(
+      parseFloat(publishedWidth(wrapper)),
+    );
+
+    await userEvent.hover(row);
+    await waitFor(() => expect(wrapper).toHaveAttribute('data-actions-shown'));
+    // Past the run's fade, so a shift that comes with it has happened.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(suffix.getBoundingClientRect().right).toBe(end);
+  });
+});

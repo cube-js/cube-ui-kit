@@ -576,8 +576,14 @@ const ItemElement = tasty({
         // as the minimum width above: a sibling run already carries
         // `$side-padding` on both sides, so the suffix must not add the inline
         // padding on top of it, exactly as it does not next to a right icon.
-        'has-right-icon | (has-actions & inside-wrapper)': '$suffix-gap left',
+        // Only while the run is shown or keeps its space: a hidden run is 0px
+        // wide, so the suffix keeps its own end padding then, as the label
+        // does (`$label-padding-right`).
+        'has-right-icon | (has-actions & inside-wrapper & (actions-shown | preserve-actions-space))':
+          '$suffix-gap left',
       },
+      // The run's reserved width animates as it appears; so does this.
+      transition: 'padding',
     },
 
     Actions: {
