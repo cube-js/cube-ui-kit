@@ -97,7 +97,7 @@ interface ItemWithKey {
 
 export interface CubeFilterPickerProps<T>
   extends
-    Omit<CubeFilterListBoxProps<T>, 'size' | 'shape' | 'children'>,
+    Omit<CubeFilterListBoxProps<T>, 'size' | 'shape' | 'children' | 'filter'>,
     // `tooltip` is declared below, for the trigger; the label's info badge is
     // `labelTooltip`. Of the item's style props, only the field layout ones
     // apply, through `FieldLayoutStyleProps`.
@@ -272,6 +272,19 @@ export interface CubeFilterPickerProps<T>
    * deeper matches with only their matching branches, opened.
    */
   treeData?: CubeTreeNodeData[];
+  /**
+   * Whether an option, or a tree node, matches the search. `false` turns the
+   * search's own filtering off, for filtering outside. In tree mode the third
+   * argument is the node, so a match can read its `key` or other data, such
+   * as a file's path, and not only its text.
+   */
+  filter?:
+    | ((
+        textValue: string,
+        inputValue: string,
+        node?: CubeTreeNodeData,
+      ) => boolean)
+    | false;
   /** Expanded nodes in tree mode (controlled). A search expands on its own and restores these when cleared. */
   expandedKeys?: string[];
   /** Initially expanded nodes in tree mode (uncontrolled). */
