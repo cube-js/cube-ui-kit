@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.219.1
+
+### Patch Changes
+
+- [#1710](https://github.com/cube-js/cube-ui-kit/pull/1710) [`b92e51a90`](https://github.com/cube-js/cube-ui-kit/commit/b92e51a904c5ae97f0d646b201562f8b5903d1d3) Thanks [@tenphi](https://github.com/tenphi)! - **FilterPicker:** in a tree with `selectionMode="single"`, a search now starts on its first matching leaf, or on the picked leaf when it matches, so Enter, such as a phone keyboard's Search key, picks a match. It used to start on the first row, a folder, and Enter closed that folder.
+
 ## 0.219.0
 
 ### Minor Changes
