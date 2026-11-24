@@ -350,8 +350,8 @@ export interface CubeTextInputMapperInputProps {
   autoComplete?: string;
   /**
    * Whether the input holds an identifier, such as an attribute name, rather than prose: no
-   * autocapitalization, autocorrect, spellcheck or autofill. Applies to the `input` and
-   * `textarea` input types; `password` and `combobox` inputs ignore it. See `isIdentifier` on
+   * autocapitalization, autocorrect, spellcheck or autofill. Applies to the `input`, `textarea`
+   * and `combobox` input types; a `password` input ignores it. See `isIdentifier` on
    * `TextInput`.
    */
   isIdentifier?: boolean;
@@ -403,6 +403,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
         data-type={fieldType}
         width="auto"
         size={size}
+        isIdentifier={isIdentifier}
         {...mergeProps(rest, PROPS_GRID_HACK)}
         id={undefined}
         inputValue={value}

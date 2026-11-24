@@ -55,7 +55,9 @@ import {
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
 import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
+import { getIdentifierTextServices } from '../TextInput/identifier-text-services';
 import {
+  CubeIdentifierInputProps,
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
 } from '../TextInput/TextInputBase';
@@ -90,7 +92,8 @@ export interface CubeComboBoxProps<T>
   extends
     ComponentBasePropsWithoutChildren,
     FieldLayoutStyleProps,
-    FieldBaseProps<string | null | undefined> {
+    FieldBaseProps<string | null | undefined>,
+    CubeIdentifierInputProps {
   /** The selected key in controlled mode */
   selectedKey?: string | null;
   /** The default selected key in uncontrolled mode */
@@ -654,6 +657,7 @@ interface ComboBoxInputProps {
   isRequired?: boolean;
   autoFocus?: boolean;
   autoComplete?: string;
+  isIdentifier?: boolean;
   size: string;
   mods: Record<string, any>;
   inputStyles?: Styles;
@@ -690,6 +694,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       isRequired,
       autoFocus,
       autoComplete,
+      isIdentifier,
       size,
       mods,
       inputStyles,
@@ -721,6 +726,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         isDisabled={isDisabled}
         readOnly={isReadOnly}
         autoFocus={autoFocus}
+        {...getIdentifierTextServices(isIdentifier, { autoComplete })}
         autoComplete={autoComplete}
         {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
         onChange={onChange}
@@ -791,6 +797,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     isDisabled,
     autoFocus,
     autoComplete = 'off',
+    isIdentifier,
     wrapperRef,
     inputRef,
     triggerRef,
@@ -1382,6 +1389,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         isRequired={isRequired}
         autoFocus={autoFocus}
         autoComplete={autoComplete}
+        isIdentifier={isIdentifier}
         size={size}
         mods={mods}
         inputStyles={inputStyles}
