@@ -262,12 +262,17 @@ export function FilterTree(props: FilterTreeProps) {
     isSingle ? key === selectedKey : checked.has(key);
 
   // The row the search input points at. One that a search or a collapse
-  // hid falls back to the value's first row in view, then the first row.
+  // hid falls back to the value's first row in view, then the first row. In
+  // single mode a search falls back to its first leaf before the first row,
+  // so Enter picks a match rather than closing the folder above it.
   const [storedActiveKey, setActiveKey] = useState<string | null>(null);
   const activeKey =
     storedActiveKey != null && rowKeys.includes(storedActiveKey)
       ? storedActiveKey
-      : (rowKeys.find(isValue) ?? rowKeys[0] ?? null);
+      : (rowKeys.find(isValue) ??
+        (isSingle && isSearching ? rows.find(isTreeLeaf)?.key : undefined) ??
+        rowKeys[0] ??
+        null);
 
   // Whether the node could be toggled: one with its checkbox disabled or
   // opted out stays as it is.

@@ -940,6 +940,25 @@ describe('<FilterPicker treeData selectionMode="single" />', () => {
     ).toHaveTextContent('leaf');
   });
 
+  it('picks the first matching leaf with Enter, not the folder above it', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Person"
+        treeData={GROUPS}
+        selectionMode="single"
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await open(getByRole);
+    await user.keyboard('grace');
+    await waitFor(() => expect(row('engineering:grace')).toBeInTheDocument());
+    await user.keyboard('{Enter}');
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith('engineering:grace');
+  });
+
   it('picks a match of a search', async () => {
     const onSelectionChange = vi.fn();
     const { getByRole } = renderWithRoot(
