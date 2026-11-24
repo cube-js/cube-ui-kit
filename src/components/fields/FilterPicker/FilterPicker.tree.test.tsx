@@ -169,6 +169,36 @@ describe('<FilterPicker treeData />', () => {
     expect(row('design')).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('passes the node to a filter, which can match on its key', async () => {
+    // Matches a member by its group in the key, and no parent on its own.
+    const filter = vi.fn(
+      (_textValue: string, inputValue: string, node?: CubeTreeNodeData) =>
+        !!node && !node.children && node.key.startsWith(`${inputValue}:`),
+    );
+    const { getByRole } = renderWithRoot(
+      <FilterPicker label="Groups" treeData={GROUPS} filter={filter} />,
+    );
+
+    await open(getByRole);
+    await user.keyboard('design');
+
+    await waitFor(() => expect(row('design:dieter')).toBeInTheDocument());
+    expect(row('design:susan')).toBeInTheDocument();
+    expect(row('engineering')).toBeNull();
+    // Kept as the ancestor of its matches, so opened.
+    expect(row('design')).toHaveAttribute('aria-expanded', 'true');
+    expect(filter).toHaveBeenCalledWith(
+      'Dieter Rams',
+      'design',
+      expect.objectContaining({ key: 'design:dieter' }),
+    );
+
+    // The title alone no longer finds the row.
+    await user.clear(search());
+    await user.keyboard('Dieter');
+    await waitFor(() => expect(row('design:dieter')).toBeNull());
+  });
+
   it('keeps the nodes a search hides checked when a visible one is unchecked', async () => {
     const onSelectionChange = vi.fn();
     const { getByRole } = renderWithRoot(

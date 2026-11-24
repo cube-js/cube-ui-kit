@@ -36,7 +36,12 @@ import type { Styles } from '@tenphi/tasty';
 import type { ReactNode, RefObject } from 'react';
 import type { CubeTreeNodeData, CubeTreeProps } from '../../content/Tree/types';
 
-type FilterFn = (textValue: string, inputValue: string) => boolean;
+/** A search's match. It gets the node too, so it can match more than the node's text. */
+type FilterFn = (
+  textValue: string,
+  inputValue: string,
+  node: CubeTreeNodeData,
+) => boolean;
 
 export interface FilterTreeProps {
   treeData: CubeTreeNodeData[];
@@ -111,7 +116,7 @@ function filterTreeData(
   const kept: CubeTreeNodeData[] = [];
 
   for (const node of nodes) {
-    if (match(getTreeNodeText(node), query)) {
+    if (match(getTreeNodeText(node), query, node)) {
       kept.push(node);
       if (
         node.children &&
