@@ -141,11 +141,12 @@ describe('Radio.Group with a label too long for its container', () => {
   );
 
   // Wrapping must not cost the fit: a group with room stays as wide as its
-  // radios, so a click beside a label selects nothing.
+  // radios. A horizontal group's radios grow with it (`flexGrow`), so a
+  // stretched group would make a click beside a label select it.
   it('keeps a group with room as wide as its radios', () => {
     renderWithRoot(
       <div data-qa="Box" style={{ width: 600 }}>
-        <Radio.Group label="Event" defaultValue="a">
+        <Radio.Group label="Event" orientation="horizontal" defaultValue="a">
           <Radio value="a">Alpha</Radio>
           <Radio value="b">Beta</Radio>
         </Radio.Group>

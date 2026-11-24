@@ -91,11 +91,8 @@ const RadioGroupElement = tasty({
     // as its radios, never wider than the room it gets, and their labels wrap
     // within it. The maps have no `''` key, so they extend the joined row's.
     {
-      // oxlint-disable-next-line tasty/require-default-state -- extends the joined row's map (see above)
       whiteSpace: { '!button & !tabs': 'normal' },
-      // oxlint-disable-next-line tasty/require-default-state -- extends the joined row's map (see above)
       width: { '!button & !tabs & !fill-width': 'fit-content' },
-      // oxlint-disable-next-line tasty/require-default-state -- extends the joined row's map (see above)
       flexShrink: { '!button & !tabs': 1 },
     },
   ),

@@ -39,7 +39,8 @@ const BUTTON_BLOCK_COLUMNS =
 /**
  * The group: a row of buttons sized by their content, with the join on top.
  * The row layout is not keyed: RadioGroup uses it for its other layouts too,
- * and sets their `flow` itself.
+ * and sets their `flow` itself. Its classic layout also replaces the sizing
+ * (`width`, `whiteSpace`, `flexShrink`), so its labels wrap (`RadioGroup.tsx`).
  *
  * Joined, it has no gap, so the buttons can overlap by one border width (see
  * `JOINED_ITEM_STYLES`), and it isolates its stacking, so a raised button stays
