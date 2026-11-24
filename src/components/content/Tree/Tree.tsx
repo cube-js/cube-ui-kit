@@ -10,6 +10,11 @@ import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
+import {
+  getLongestRows,
+  rangeWithRows,
+  useHeldWidth,
+} from '../../shared/virtual-width';
 
 import { TreeElement, TreeScrollContainer, TreeSizer } from './styled';
 import { buildTreeIndex, getTreeNodeText } from './tree-index';
@@ -146,6 +151,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
 
   const treeRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sizerRef = useRef<HTMLDivElement>(null);
 
   const treeIndex = useMemo(() => buildTreeIndex(treeData), [treeData]);
   const nodesByKey = treeIndex.byKey;
@@ -354,6 +360,23 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   const visibleNodesRef = useRef(visibleNodes);
   visibleNodesRef.current = visibleNodes;
 
+  // The rows likeliest to be the widest, kept rendered so they size the tree
+  // wherever it is scrolled (see `shared/virtual-width.ts`). A level's indent,
+  // `1.5x`, is about two characters.
+  const longestRows = useMemo(
+    () =>
+      getLongestRows(visibleNodes.length, (index) => {
+        const node = visibleNodes[index];
+
+        return (node.textValue?.length ?? 0) + 2 * (node.level ?? 0);
+      }),
+    [visibleNodes],
+  );
+
+  // The tree never narrows while mounted: not as rows scroll in and out, nor
+  // when a filter leaves only short ones.
+  const heldWidth = useHeldWidth(sizerRef, true);
+
   // ----- Virtualization -----
   const rowVirtualizer = useVirtualizer({
     count: visibleNodes.length,
@@ -365,6 +388,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     estimateSize: () => SIZES[SIZE_NAME_TO_KEY[size]],
     gap: 1,
     overscan: 10,
+    rangeExtractor: (range) => rangeWithRows(range, longestRows),
     paddingStart: containerPadding,
     paddingEnd: containerPadding,
   });
@@ -495,8 +519,12 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     >
       <TreeScrollContainer ref={mergedScrollRef}>
         <TreeSizer
+          ref={sizerRef}
           role="presentation"
-          tokens={{ '$tree-content-height': `${totalSize}px` }}
+          tokens={{
+            '$tree-content-height': `${totalSize}px`,
+            '$tree-held-width': `${heldWidth}px`,
+          }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualItem) => {
             const node = visibleNodes[virtualItem.index];
