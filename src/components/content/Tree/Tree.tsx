@@ -137,6 +137,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     menuProps,
     id,
     _activeKey: activeKey,
+    _selectedKey: outsideSelectedKey,
     _onRowAction: onRowAction,
     ...otherProps
   } = props;
@@ -516,6 +517,11 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
                 isLoading={loadDataController.loadingKeys.has(keyStr)}
                 isActive={
                   activeKey === undefined ? undefined : activeKey === keyStr
+                }
+                isOutsideSelected={
+                  outsideSelectedKey === undefined
+                    ? undefined
+                    : outsideSelectedKey === keyStr
                 }
                 size={size}
                 itemProps={itemProps}

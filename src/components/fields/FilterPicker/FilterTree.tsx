@@ -15,7 +15,11 @@ import {
 } from '../../content/Tree/checked-keys';
 import { getTreeRowId } from '../../content/Tree/rowId';
 import { Tree } from '../../content/Tree/Tree';
-import { buildTreeIndex, getTreeNodeText } from '../../content/Tree/tree-index';
+import {
+  buildTreeIndex,
+  getTreeNodeText,
+  isTreeLeaf,
+} from '../../content/Tree/tree-index';
 import {
   FilterListBoxWrapperElement,
   SearchInputElement,
@@ -30,19 +34,30 @@ import {
 
 import type { Styles } from '@tenphi/tasty';
 import type { ReactNode, RefObject } from 'react';
-import type { CubeTreeNodeData } from '../../content/Tree/types';
+import type { CubeTreeNodeData, CubeTreeProps } from '../../content/Tree/types';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 export interface FilterTreeProps {
   treeData: CubeTreeNodeData[];
-  /** The value: checked keys over the whole tree. A parent key checks its subtree. */
+  /**
+   * `'multiple'`: checkboxes, and a press toggles one. `'single'`:
+   * no checkboxes; a press on a leaf picks it, on a parent opens or closes it.
+   */
+  selectionMode: 'single' | 'multiple';
+  /** Multiple: checked keys over the whole tree. A parent key checks its subtree. */
   checkedKeys: readonly string[];
-  /** Every fully checked key, parents included, in tree order. */
+  /** Multiple: every fully checked key, parents included, in tree order. */
   onCheckedKeysChange: (keys: string[]) => void;
+  /** Single: the picked leaf. */
+  selectedKey: string | null;
+  /** Single: a leaf was picked, by a press, Enter or Space. */
+  onSelect: (key: string) => void;
   /** The user's expansion. FilterPicker holds it, so it outlives the popover. */
   expandedKeys: string[];
   onExpand: (keys: string[]) => void;
+  /** Each row's `Item` props, passed to `Tree`. */
+  itemProps?: CubeTreeProps['itemProps'];
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
@@ -63,7 +78,7 @@ export interface FilterTreeProps {
   'aria-label'?: string;
   /** Escape on an empty search. */
   onEscape?: () => void;
-  /** Enter toggled the active row. FilterPicker closes the popover, as it does for a checkable list. */
+  /** Multiple: Enter toggled the active row. FilterPicker closes the popover, as it does for a checkable list. */
   onCommit?: () => void;
 }
 
@@ -138,7 +153,8 @@ function getNavigableRows(
 
 /**
  * FilterPicker's popover in tree mode: FilterListBox's header, search row
- * and footer around a checkable `Tree`.
+ * and footer around a `Tree`, checkable or, in single mode, one to pick a
+ * leaf from.
  *
  * The search input keeps focus and points at the active row with
  * `aria-activedescendant`, as FilterListBox does for its options. The
@@ -148,10 +164,14 @@ function getNavigableRows(
 export function FilterTree(props: FilterTreeProps) {
   const {
     treeData,
+    selectionMode,
     checkedKeys,
     onCheckedKeysChange,
+    selectedKey,
+    onSelect,
     expandedKeys,
     onExpand,
+    itemProps,
     searchValue: controlledSearchValue,
     onSearchChange,
     searchInputStyles,
@@ -202,6 +222,7 @@ export function FilterTree(props: FilterTreeProps) {
     onSearchChange?.(value);
   };
 
+  const isSingle = selectionMode === 'single';
   const index = buildTreeIndex(treeData);
   const { checked, halfChecked } = deriveCheckedSets(
     treeData,
@@ -232,14 +253,16 @@ export function FilterTree(props: FilterTreeProps) {
 
   const rows = getNavigableRows(filtered.nodes, expandedSet);
   const rowKeys = rows.map((row) => row.key);
+  const isValue = (key: string) =>
+    isSingle ? key === selectedKey : checked.has(key);
 
   // The row the search input points at. One that a search or a collapse
-  // hid falls back to the first checked row in view, then the first row.
+  // hid falls back to the value's first row in view, then the first row.
   const [storedActiveKey, setActiveKey] = useState<string | null>(null);
   const activeKey =
     storedActiveKey != null && rowKeys.includes(storedActiveKey)
       ? storedActiveKey
-      : (rowKeys.find((key) => checked.has(key)) ?? rowKeys[0] ?? null);
+      : (rowKeys.find(isValue) ?? rowKeys[0] ?? null);
 
   // Whether the node could be toggled: one with its checkbox disabled or
   // opted out stays as it is.
@@ -250,6 +273,22 @@ export function FilterTree(props: FilterTreeProps) {
       toOrderedKeys(index, deriveCheckedSets(treeData, index, next).checked),
     );
     return true;
+  };
+
+  // Single mode: a leaf becomes the value; a parent opens or closes instead.
+  const pick = (key: string) => {
+    const node = index.byKey.get(key);
+    if (!node) return;
+    setActiveKey(key);
+    if (isTreeLeaf(node)) {
+      onSelect(key);
+    } else {
+      setExpanded(
+        expandedSet.has(key)
+          ? expanded.filter((expandedKey) => expandedKey !== key)
+          : [...expanded, key],
+      );
+    }
   };
 
   // Toggle the active row and keep it active, though the fallback above
@@ -298,7 +337,8 @@ export function FilterTree(props: FilterTreeProps) {
       (direction === 'open' ? caret === input.value.length : caret === 0);
     if (!atEdge) return false;
 
-    const hasChildren = !!row.children?.length;
+    // The same rule a press follows in single mode: an empty folder opens too.
+    const hasChildren = !isTreeLeaf(row);
     const isExpanded = expandedSet.has(row.key);
 
     if (direction === 'open') {
@@ -359,12 +399,20 @@ export function FilterTree(props: FilterTreeProps) {
         case 'Enter':
           if (activeKey == null) break;
           e.preventDefault();
-          if (toggleActive(activeKey)) onCommit?.();
+          if (isSingle) {
+            pick(activeKey);
+          } else if (toggleActive(activeKey)) {
+            onCommit?.();
+          }
           break;
         case ' ':
           if (activeKey == null || searchValue) break;
           e.preventDefault();
-          toggleActive(activeKey);
+          if (isSingle) {
+            pick(activeKey);
+          } else {
+            toggleActive(activeKey);
+          }
           break;
         case 'Escape':
           if (searchValue) {
@@ -441,8 +489,19 @@ export function FilterTree(props: FilterTreeProps) {
       </SearchWrapperElement>
       <FilterTreeListElement
         // Only the tree's own focus goes back: an empty label may hold a
-        // control, such as Retry, that the keyboard has to reach.
-        onFocus={filtered.nodes.length ? refocusSearch : undefined}
+        // control, such as Retry, that the keyboard has to reach. And only
+        // where the search drives the tree: it opened focused (a mouse or
+        // keyboard), or the focus came from it. A tap on a phone that never
+        // focused it would otherwise open the on-screen keyboard.
+        onFocus={
+          filtered.nodes.length
+            ? (e) => {
+                if (autoFocus || e.relatedTarget === inputRef.current) {
+                  refocusSearch();
+                }
+              }
+            : undefined
+        }
       >
         {filtered.nodes.length ? (
           <Tree
@@ -451,18 +510,23 @@ export function FilterTree(props: FilterTreeProps) {
             ariaLabel={ariaLabel}
             treeData={filtered.nodes}
             size={size}
-            isCheckable
+            isCheckable={!isSingle}
             isDisabled={isDisabled}
             selectionMode="none"
-            checkedKeys={{
-              checked: [...checked],
-              halfChecked: [...halfChecked],
-            }}
+            checkedKeys={
+              isSingle
+                ? undefined
+                : { checked: [...checked], halfChecked: [...halfChecked] }
+            }
             expandedKeys={expanded}
             _activeKey={activeKey}
+            // The tree has no selection of its own (with one, a press would
+            // go to it instead of the row action); the value is shown here.
+            _selectedKey={isSingle ? selectedKey : undefined}
+            itemProps={itemProps}
             onExpand={(keys) => setExpanded(keys.map(String))}
-            onCheck={(_, info) => toggle(info.node.key)}
-            _onRowAction={toggleActive}
+            onCheck={isSingle ? undefined : (_, info) => toggle(info.node.key)}
+            _onRowAction={isSingle ? pick : toggleActive}
           />
         ) : (
           <Item

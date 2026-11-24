@@ -290,7 +290,11 @@ export const DEFAULTS: DefaultsRegistry = {
         isLoadingMore: { kind: 'default', value: false },
         isReorderable: { kind: 'default', value: false },
         selectAllLabel: { kind: 'default', value: 'All' },
-        selectionMode: { kind: 'default', value: 'single' },
+        selectionMode: {
+          kind: 'skip',
+          reason: 'conditional',
+          note: 'Redundant in a bare tree but load-bearing under "treeData with a picked leaf", so removing it would change behaviour there.',
+        },
         shouldFlip: { kind: 'default', value: true },
         shouldFocusWrap: { kind: 'default', value: false },
         showSelectAll: { kind: 'default', value: false },

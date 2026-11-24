@@ -309,8 +309,17 @@ export interface CubeTreeProps extends ComponentBaseProps, OuterStyleProps {
   _activeKey?: string | null;
 
   /**
+   * Leaf a control outside the tree holds as its value, with `selectionMode`
+   * `"none"` (FilterPicker's single tree mode). It shows as selected and
+   * every leaf carries `aria-selected`; `null` selects none.
+   * @internal
+   */
+  _selectedKey?: string | null;
+
+  /**
    * Called when a row is pressed or Enter is pressed on it, in place of
-   * row selection. Used by FilterPicker to toggle the row's checkbox.
+   * row selection. Used by FilterPicker to toggle the row's checkbox, or to
+   * pick or expand the row in its single tree mode.
    * @internal
    */
   _onRowAction?: (key: string) => void;
