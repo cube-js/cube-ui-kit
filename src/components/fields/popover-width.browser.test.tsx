@@ -55,10 +55,32 @@ async function openFilterPicker(props: object) {
   return screen.findByRole('dialog');
 }
 
+// The cap: the viewport less a margin on a phone, half of it on a wide screen.
 describe.each([
-  [390, 664],
-  [1280, 800],
-])('picker popover at %i px', (width, height) => {
+  [390, 664, 374],
+  [1280, 800, 640],
+])('picker popover at %i px', (width, height, cap) => {
+  it('stops at its cap, inside the viewport', async () => {
+    await page.viewport(width, height);
+
+    renderWithRoot(
+      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 16 }}>
+        <FilterPicker aria-label="Time zone" placeholder="Pick">
+          <FilterPicker.Item key="long">{LONG.repeat(4)}</FilterPicker.Item>
+        </FilterPicker>
+      </div>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /time zone/i }));
+    const popover = await screen.findByRole('dialog');
+
+    expect(getComputedStyle(popover).maxWidth).toBe(`${cap}px`);
+    await waitFor(() =>
+      expect(rect(popover).width).toBeGreaterThanOrEqual(cap),
+    );
+    expect(rect(popover).left).toBeGreaterThanOrEqual(0);
+    expect(rect(popover).right).toBeLessThanOrEqual(window.innerWidth);
+  });
+
   it('shows a long label and a block description in full, inside the viewport', async () => {
     await page.viewport(width, height);
 
@@ -132,6 +154,25 @@ describe('picker popover width', () => {
     expect(rect(popover).width).toBe(openWidth);
   });
 
+  it('holds the width of a reorderable list when a search starts', async () => {
+    const popover = await openFilterPicker({
+      isReorderable: true,
+      items: ITEMS,
+      children: (item: (typeof ITEMS)[number]) => (
+        <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+      ),
+    });
+
+    await waitFor(() => expect(isCut(labelOf(LONG))).toBe(false));
+    const openWidth = rect(popover).width;
+
+    // Searching, the list is no longer reorderable, and only short options
+    // match.
+    await userEvent.keyboard('Item 1');
+    await waitFor(() => expect(screen.queryByText(LONG)).toBeNull());
+    expect(rect(popover).width).toBe(openWidth);
+  });
+
   it('holds the width of a list with sections while filtering', async () => {
     const popover = await openFilterPicker({
       children: [
@@ -152,12 +193,23 @@ describe('picker popover width', () => {
     expect(rect(popover).width).toBe(openWidth);
   });
 
-  it('counts a long row far below the fold in tree mode', async () => {
-    await openFilterPicker({
+  it('counts a long row far below the fold in tree mode, and holds the width while searching', async () => {
+    const popover = await openFilterPicker({
       treeData: ITEMS.map((item) => ({ key: item.key, title: item.label })),
     });
 
     await waitFor(() => expect(isCut(labelOf(LONG))).toBe(false));
+    const openWidth = rect(popover).width;
+
+    // Nothing matches, so the empty label replaces the tree.
+    await userEvent.keyboard('zzz');
+    await waitFor(() => expect(screen.queryByRole('treegrid')).toBeNull());
+    expect(rect(popover).width).toBe(openWidth);
+
+    // Only short rows match.
+    await userEvent.keyboard('{Backspace}{Backspace}{Backspace}Item 1');
+    await waitFor(() => expect(screen.getByRole('treegrid')).toBeVisible());
+    expect(rect(popover).width).toBe(openWidth);
   });
 
   it('counts a long option far below the fold in Picker', async () => {

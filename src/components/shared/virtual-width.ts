@@ -15,7 +15,8 @@ import type { RefObject } from 'react';
  *   (`getLongestRows`, `rangeWithRows`), so its width is set when it opens;
  * - holds the widest width it has had (`useHeldWidth`), so a row the text
  *   length missed only widens it, and a filter that leaves only short rows
- *   doesn't narrow it.
+ *   doesn't narrow it. ListBox holds it itself; a Tree's is held by
+ *   FilterPicker's FilterTree, which filters it.
  */
 
 /** How many of a virtualized list's longest rows stay rendered. */
@@ -61,26 +62,23 @@ export function rangeWithRows(range: Range, rows: readonly number[]) {
 
 /**
  * The widest the element's content box has been since it mounted, in whole
- * pixels, while `isEnabled`. A list gives it as the preferred width of a
- * spacer in its grid cell (ListBox's height spacer; an empty one in Tree)
- * whose floor and cap are both `100%`. Sized to its content, the list counts
+ * pixels. The element gives it to an empty spacer of its own as a preferred
+ * width with a `100%` floor and cap: sized to its content, the element counts
  * a percentage floor and cap as none, so the spacer widens its `max-content`;
- * otherwise the spacer just fills the list. A popover unmounts its list when
- * it closes, so each opening starts from the rows it shows.
+ * otherwise the spacer just fills it. Observe an element that outlives the rows
+ * it holds the width of: ListBox's scroll element, which stays when a
+ * reorderable list swaps its `ul` as a search starts, and FilterTree's list,
+ * which stays when a search that matches nothing replaces the tree. A popover
+ * unmounts its list when it closes, so each opening starts afresh.
  */
-export function useHeldWidth(
-  ref: RefObject<HTMLElement | null>,
-  isEnabled: boolean,
-) {
+export function useHeldWidth(ref: RefObject<HTMLElement | null>) {
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
     const element = ref.current;
 
     // A consumer's jsdom may have no ResizeObserver.
-    if (!isEnabled || !element || typeof ResizeObserver === 'undefined') {
-      return;
-    }
+    if (!element || typeof ResizeObserver === 'undefined') return;
 
     const observer = new ResizeObserver(([entry]) => {
       // Rounded up: a fraction of a pixel less cuts the widest row's text.
@@ -92,7 +90,7 @@ export function useHeldWidth(
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, [ref, isEnabled]);
+  }, [ref]);
 
   return width;
 }

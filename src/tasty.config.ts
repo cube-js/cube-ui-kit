@@ -71,7 +71,6 @@ export default {
     '$tree-height',
     '$tree-padding',
     '$tree-content-height',
-    '$tree-held-width',
     '$tree-level',
     '$tree-row-offset',
     // TableView's sections.

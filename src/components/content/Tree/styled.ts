@@ -75,18 +75,6 @@ export const TreeSizer = tasty({
     position: 'relative',
     width: '100%',
     height: '$tree-content-height',
-
-    // Fills the sizer. Its preferred width, the widest the sizer has been
-    // (`useHeldWidth`), counts only when the tree is sized to its content,
-    // where a `100%` floor and cap count as none.
-    Spacer: {
-      $: '&::after',
-      content: '""',
-      display: 'block',
-      gridArea: '1 / 1',
-      width: '100% $tree-held-width 100%',
-      height: 0,
-    },
   },
 });
 

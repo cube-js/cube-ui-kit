@@ -167,13 +167,8 @@ const ListElement = tasty({
       '[data-shape="plain"] | empty': '0',
     },
     height: 'max-content',
-    // The spacer fills the list's width. Its preferred width, the widest the
-    // list has been (`useHeldWidth`), counts only when the list is sized to
-    // its content, where a `100%` floor and cap count as none, so the list
-    // never narrows while mounted. A zero-width spacer, as the held width is
-    // before the first measure, would add no height to the scroll element.
     // Virtualized, the options are moved by a transform, which takes no space,
-    // so the list takes its height from the spacer in their cell: every
+    // so the list takes its height from this spacer in their cell: every
     // option, measured or estimated. As content, it leaves a `listStyles`
     // height in charge, such as a `max` cap.
     position: {
@@ -184,12 +179,12 @@ const ListElement = tasty({
       $: '&::after',
       content: '""',
       display: 'block',
-      gridArea: '1 / 1',
-      width: '100% $list-held-width 100%',
-      height: {
-        '': 0,
-        virtualized: '$list-virtual-height',
+      hide: {
+        '': true,
+        virtualized: false,
       },
+      gridArea: '1 / 1',
+      height: '$list-virtual-height',
     },
   },
 });
@@ -203,6 +198,19 @@ const ListBoxScrollElement = tasty({
     gridRows: '1sf',
     overflow: 'auto',
     scrollbar: 'styled',
+
+    // An empty row after the list, as wide as the list has been
+    // (`useHeldWidth`). Its `100%` floor and cap count only when the list is
+    // sized to its content, so it keeps a popover from narrowing but never
+    // widens the list. Here, not in the list, as a reorderable list swaps its
+    // `ul` when a search starts.
+    HeldWidth: {
+      $: '&::after',
+      content: '""',
+      display: 'block',
+      width: '100% $list-held-width 100%',
+      height: 0,
+    },
   },
 });
 
@@ -1290,9 +1298,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   }, [shouldVirtualize, rowVirtualizer, listGap]);
 
   // The list never narrows while mounted: not as virtual rows scroll in and
-  // out, nor when a filter leaves only short options. A reorderable list holds
-  // nothing: its options are dragged, not filtered.
-  const heldWidth = useHeldWidth(listRef, !isReorderable);
+  // out, nor when a filter leaves only short options.
+  const heldWidth = useHeldWidth(scrollRef);
 
   // The focused key this effect last saw, to tell a move of focus from a
   // change of the items.
@@ -1550,7 +1557,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         </>
       )}
       {/* Scroll container wrapper */}
-      <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
+      <ListBoxScrollElement
+        ref={scrollRef}
+        mods={mods}
+        tokens={{ '$list-held-width': `${heldWidth}px` }}
+        {...focusProps}
+      >
         {isEmpty && (
           <Item
             id={emptyLabelId}
@@ -1628,7 +1640,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
               '$list-virtual-height': shouldVirtualize
                 ? `${rowVirtualizer.getTotalSize()}px`
                 : undefined,
-              '$list-held-width': `${heldWidth}px`,
             }}
             aria-disabled={isDisabled || undefined}
             mods={{
