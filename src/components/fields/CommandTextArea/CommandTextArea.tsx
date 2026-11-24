@@ -30,7 +30,6 @@ import {
 } from '../../../utils/react/nullableValue';
 import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
-import { mergeStyleLayers } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { getListBoxOptionId } from '../ListBox/optionId';
@@ -738,18 +737,6 @@ function CommandTextArea<T extends object>(
   const focusedKey = listStateRef.current?.selectionManager.focusedKey ?? null;
   const listBoxId = `CommandTextAreaListBox-${commandTextAreaId}`;
 
-  // ---- popover width ----------------------------------------------------
-  // The popover is anchored to the caret (a point), so it must not be sized to
-  // the textarea. We use the same default as the shared `ListBoxPopover` /
-  // `Picker` popovers: a `30x` floor (240px), `max-content` preferred, `50vw`
-  // cap. The concrete floor keeps the virtualized ListBox from collapsing to a
-  // sliver (it has no intrinsic width), and `max-content` lets short option
-  // lists size to their content. The user's `overlayStyles` still win on top.
-  const popoverOverlayStyles = mergeStyleLayers(
-    { width: '30x max-content 50vw' },
-    overlayStyles,
-  );
-
   // ---- assemble input props ---------------------------------------------
   const commandInputProps = mergeProps(
     inputProps,
@@ -809,7 +796,9 @@ function CommandTextArea<T extends object>(
         overlayOffset={overlayOffset}
         containerPadding={containerPadding}
         listBoxId={listBoxId}
-        overlayStyles={popoverOverlayStyles}
+        // Anchored to the caret, the popover passes no `comboBoxWidth`: it is
+        // not sized to the textarea.
+        overlayStyles={overlayStyles}
         listBoxStyles={listBoxStyles}
         optionStyles={optionStyles}
         optionHighlight={term}

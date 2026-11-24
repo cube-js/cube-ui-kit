@@ -20,6 +20,7 @@ import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransi
 import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
 import { Portal } from '../../portal/Portal';
 import { ListBox } from '../ListBox/ListBox';
+import { POPOVER_WIDTH } from '../popover-width';
 
 export interface ListBoxPopoverProps {
   isOpen: boolean;
@@ -150,7 +151,7 @@ const ListBoxPopoverElement = tasty({
     display: 'grid',
     gridRows: '1sf',
     gridColumns: '1sf',
-    width: '$overlay-min-width max-content 50vw',
+    width: POPOVER_WIDTH,
     height: 'initial max-content (50vh - 5x)',
     overflow: 'auto',
     fill: '#surface',
@@ -185,7 +186,8 @@ const ListBoxPopoverElement = tasty({
       '!open': 0.001,
     },
 
-    '$overlay-min-width': 'min 30x',
+    // The field's width, set from `comboBoxWidth` when it is known.
+    '$overlay-min-width': '30x',
   },
 });
 
