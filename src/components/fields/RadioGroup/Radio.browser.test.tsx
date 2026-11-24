@@ -104,6 +104,63 @@ describe('Radio.Button with a block description', () => {
 });
 
 /**
+ * A classic radio's label wraps instead of truncating, as the docs say. It used
+ * not to: the classic group took the joined row's `nowrap` and `max-content`
+ * width, so a long label ran past a narrow container, such as a dialog on a
+ * phone (CUB-8911). And the radio was `min-content` wide, so a label that did
+ * wrap broke after every word.
+ */
+describe('Radio.Group with a label too long for its container', () => {
+  const WRAPPING_LABEL =
+    'An option label long enough to wrap inside a narrow dialog';
+
+  it.each(['vertical', 'horizontal'] as const)(
+    'wraps the label at the container width (%s)',
+    (orientation) => {
+      renderWithRoot(
+        <div data-qa="Box" style={{ width: 240 }}>
+          <Radio.Group label="Event" orientation={orientation} defaultValue="a">
+            <Radio value="a">Short</Radio>
+            <Radio value="b">{WRAPPING_LABEL}</Radio>
+          </Radio.Group>
+        </div>,
+      );
+
+      const box = screen.getByTestId('Box').getBoundingClientRect();
+      const group = screen.getByRole('radiogroup').getBoundingClientRect();
+      const [short, long] = screen
+        .getAllByTestId('RadioLabel')
+        .map((label) => label.getBoundingClientRect());
+
+      expect(group.right).toBeLessThanOrEqual(box.right);
+      // It wraps…
+      expect(long.height).toBeGreaterThan(short.height);
+      // …at the group's width, not after every word.
+      expect(long.width).toBeGreaterThan(box.width / 2);
+    },
+  );
+
+  // Wrapping must not cost the fit: a group with room stays as wide as its
+  // radios. A horizontal group's radios grow with it (`flexGrow`), so a
+  // stretched group would make a click beside a label select it.
+  it('keeps a group with room as wide as its radios', () => {
+    renderWithRoot(
+      <div data-qa="Box" style={{ width: 600 }}>
+        <Radio.Group label="Event" orientation="horizontal" defaultValue="a">
+          <Radio value="a">Alpha</Radio>
+          <Radio value="b">Beta</Radio>
+        </Radio.Group>
+      </div>,
+    );
+
+    const box = screen.getByTestId('Box').getBoundingClientRect();
+    const group = screen.getByRole('radiogroup').getBoundingClientRect();
+
+    expect(group.width).toBeLessThan(box.width / 2);
+  });
+});
+
+/**
  * Whether a button radio's label truncates follows the room its group gets, so
  * it can change while the radio has focus. The auto tooltip used to wrap the
  * element only once the label truncated, which remounted the `<label>` and the
