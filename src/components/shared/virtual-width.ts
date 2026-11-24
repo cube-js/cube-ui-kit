@@ -61,10 +61,12 @@ export function rangeWithRows(range: Range, rows: readonly number[]) {
 
 /**
  * The widest the element's content box has been since it mounted, in whole
- * pixels, while `isEnabled`. A list gives it to a zero-height row in its grid
- * cell, capped at `100%`, so the row widens the list's `max-content` but never
- * the list itself. A popover unmounts its list when it closes, so each opening
- * starts from the rows it shows.
+ * pixels, while `isEnabled`. A list gives it as the preferred width of a
+ * spacer in its grid cell (ListBox's height spacer; an empty one in Tree)
+ * whose floor and cap are both `100%`. Sized to its content, the list counts
+ * a percentage floor and cap as none, so the spacer widens its `max-content`;
+ * otherwise the spacer just fills the list. A popover unmounts its list when
+ * it closes, so each opening starts from the rows it shows.
  */
 export function useHeldWidth(
   ref: RefObject<HTMLElement | null>,

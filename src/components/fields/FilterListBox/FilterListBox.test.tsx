@@ -1979,9 +1979,13 @@ describe('<FilterListBox />', () => {
       const visibleOptions = container.querySelectorAll('[role="option"]');
       expect(visibleOptions.length).toBeGreaterThan(0);
 
-      // Check that items are placed at their virtual offset
+      // Check that items are moved to their virtual offset, in flow so their
+      // width counts toward the list's
       const firstVisibleOption = visibleOptions[0] as HTMLElement;
-      expect(getComputedStyle(firstVisibleOption).position).toBe('absolute');
+      expect(getComputedStyle(firstVisibleOption).position).toBe('relative');
+      expect(getComputedStyle(firstVisibleOption).transform).toContain(
+        '--option-virtual-offset',
+      );
       expect(
         firstVisibleOption.style.getPropertyValue('--option-virtual-offset'),
       ).toMatch(/^\d+(\.\d+)?px$/);

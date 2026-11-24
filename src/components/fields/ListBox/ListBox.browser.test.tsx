@@ -649,8 +649,10 @@ describe('ListBox virtualized option heights', () => {
 });
 
 /**
- * A flat list places every option absolutely, so the list takes its height
- * from a spacer the virtualizer sizes. A `listStyles` height has to cap that
+ * A flat list moves every option with a transform, which takes no space, so
+ * the list takes its height from a spacer the virtualizer sizes, and the
+ * scroll element reaches the end only while that spacer fills the list's
+ * width. A `listStyles` height has to cap that
  * height, not replace it: Cube Cloud caps a value list with `height: 'max 30x'`.
  * In a browser because jsdom has no layout.
  */
