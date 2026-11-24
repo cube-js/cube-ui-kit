@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.219.0
+
+### Minor Changes
+
+- [#1707](https://github.com/cube-js/cube-ui-kit/pull/1707) [`ae9832386`](https://github.com/cube-js/cube-ui-kit/commit/ae9832386c59e3d7c37477c3aa125be58a030752) Thanks [@tenphi](https://github.com/tenphi)! - **FilterPicker:** `treeData` now takes `selectionMode="single"` to pick one leaf from a tree, such as a file in its folders. The tree has no checkboxes; a press, Enter or Space on a leaf picks it (`selectedKey`, `onSelectionChange(key)`) and closes the popover, and on a parent opens or closes it. The popover opens on the picked leaf, with its ancestors open, and the default summary is the leaf's text. Without `selectionMode="single"`, tree mode stays multiple selection with checkboxes. A new `treeItemProps` sets each tree row's `Item` props, such as a `prefix` icon or `suffix` marks, as `Tree`'s `itemProps` does, without `actions`, `autoHideActions` and `preserveActionsSpace`: its type, `CubeFilterPickerTreeItemProps`, is exported. In either tree mode, a press on a row after a touch open, or with `autoFocus={false}`, no longer focuses the search, so a phone's keyboard stays shut.
+
+- [#1709](https://github.com/cube-js/cube-ui-kit/pull/1709) [`392a410d4`](https://github.com/cube-js/cube-ui-kit/commit/392a410d495634cad214aee4b4e367ba9123dd32) Thanks [@tenphi](https://github.com/tenphi)! - **FilterPicker:** in tree mode, a `filter` function now gets the node as its third argument, so a search can match on what the node's text doesn't hold, such as a file's path in its `key`. A filter that returns `false` for a parent keeps it only as the opened ancestor of matching children. Two-argument filters work as before, and list mode is unchanged.
+
 ## 0.218.0
 
 ### Minor Changes
