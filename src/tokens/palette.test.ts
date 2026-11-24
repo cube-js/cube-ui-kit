@@ -10,6 +10,7 @@ import {
   variantToOkhsl,
 } from '@tenphi/glaze';
 
+import { HAIRLINE_STATE } from './base';
 import { colorSeed } from './color-seed';
 import { getColorTokens, renderColorTokens } from './colors';
 import {
@@ -112,11 +113,17 @@ function huesOf(tokens: Styles, name: string): string[] {
   );
 }
 
+/**
+ * The scheme tiers the palette emits. The hairline border arms are left out:
+ * they ride on the border colors only and `hairline borders` asserts them.
+ */
 function statesOf(tokens: Styles): string[] {
   const states = new Set<string>();
 
   for (const value of Object.values(tokens)) {
-    for (const state of Object.keys(value as TokenStates)) states.add(state);
+    for (const state of Object.keys(value as TokenStates)) {
+      if (!state.startsWith(HAIRLINE_STATE)) states.add(state);
+    }
   }
 
   return [...states].sort();
@@ -222,6 +229,75 @@ function expectSameColor(actual: string, expected: string, label: string) {
     `${label}: ${actual} vs ${expected}`,
   ).toBeLessThanOrEqual(1);
 }
+
+describe('hairline borders', () => {
+  const HAIRLINE_DARK = `${HAIRLINE_STATE} & @dark`;
+  const BORDERS = [
+    ['#border', '#surface'],
+    ['#primary-border', '#primary-surface'],
+    ['#danger-border', '#danger-surface'],
+    ['#danger-alert-border', '#danger-alert-surface'],
+  ] as const;
+
+  afterEach(() => {
+    resetPaletteConfig();
+  });
+
+  it('folds a stronger border color in under the hairline state', () => {
+    const tokens = getPaletteTokens();
+
+    for (const [border, surface] of BORDERS) {
+      const value = tokens[border] as TokenStates;
+      const page = tokens[surface] as TokenStates;
+
+      expect(Object.keys(value), border).toEqual([
+        '',
+        '@dark',
+        '@hc',
+        '@dark & @hc',
+        HAIRLINE_STATE,
+        HAIRLINE_DARK,
+      ]);
+
+      // A quarter more tone reads as roughly a quarter more contrast, in both
+      // schemes. The bounds keep it a nudge: a thin line, not a darker one.
+      for (const [regular, hairline, base] of [
+        [value[''], value[HAIRLINE_STATE], page['']],
+        [value['@dark'], value[HAIRLINE_DARK], page['@dark']],
+      ]) {
+        const gain =
+          (contrastOf(hairline, base) - 1) / (contrastOf(regular, base) - 1);
+
+        expect(gain, border).toBeGreaterThan(1.15);
+        expect(gain, border).toBeLessThan(1.45);
+      }
+    }
+  });
+
+  it('adds the hairline state to border colors only, and emits no twin', () => {
+    const tokens = getPaletteTokens();
+    const withHairline = Object.keys(tokens).filter((name) =>
+      Object.keys(tokens[name] as TokenStates).includes(HAIRLINE_STATE),
+    );
+
+    expect(withHairline.every((name) => name.endsWith('border'))).toBe(true);
+    expect(withHairline).toContain('#border');
+    expect(Object.keys(tokens).some((name) => name.endsWith('-hairline'))).toBe(
+      false,
+    );
+  });
+
+  it('keeps a region preview flat, with the regular border color', () => {
+    const preview = renderPaletteTokens({ scheme: 'light' });
+
+    expect(preview['#border']).toBe(
+      (getPaletteTokens()['#border'] as TokenStates)[''],
+    );
+    expect(
+      Object.keys(preview).some((name) => name.endsWith('-hairline')),
+    ).toBe(false);
+  });
+});
 
 describe('palette tokens', () => {
   afterEach(() => {
