@@ -75,6 +75,10 @@ export const TreeSizer = tasty({
     position: 'relative',
     width: '100%',
     height: '$tree-content-height',
+    // The virtualizer keeps the scroll offset as rows above are measured.
+    // Placed absolutely, rows were never the browser's scroll anchor; in flow
+    // they could be, so the browser stays out of it.
+    overflowAnchor: 'none',
 
     // Fills the sizer. Its preferred width, the widest the sizer has been
     // (`useHeldWidth`), counts only when the tree is sized to its content,

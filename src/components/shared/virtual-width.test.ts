@@ -6,12 +6,16 @@ vi.unmock('@tanstack/react-virtual');
 describe('getLongestRows', () => {
   const lengths = [3, 9, 1, 9, 7, 2, 8];
 
-  it('picks the three rows with the longest text, the earlier on a tie', () => {
+  it('picks the three rows with the longest text', () => {
     expect(
       getLongestRows(lengths.length, (index) => lengths[index]).sort(
         (a, b) => a - b,
       ),
     ).toEqual([1, 3, 6]);
+  });
+
+  it('keeps the earlier rows on a tie at the cut-off', () => {
+    expect(getLongestRows(4, () => 5).sort((a, b) => a - b)).toEqual([0, 1, 2]);
   });
 
   it('picks every row of a shorter list', () => {
