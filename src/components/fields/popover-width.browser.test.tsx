@@ -235,4 +235,25 @@ describe('picker popover width', () => {
 
     await waitFor(() => expect(isCut(labelOf(LONG))).toBe(false));
   });
+
+  it('keeps a ComboBox popover as wide as its field when its options are short', async () => {
+    renderWithRoot(
+      <ComboBox aria-label="Fruit" width="25x">
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+      </ComboBox>,
+    );
+    // The field's wrapper, whose width the popover's floor is set from.
+    const field = screen.getByRole('combobox').parentElement!;
+
+    await userEvent.click(screen.getByRole('button'));
+    await screen.findByRole('listbox');
+    const popover = document.querySelector('[data-qa="ComboBoxOverlay"]')!;
+
+    await waitFor(() =>
+      expect(Math.round(rect(popover).width)).toBe(
+        Math.round(rect(field).width),
+      ),
+    );
+  });
 });

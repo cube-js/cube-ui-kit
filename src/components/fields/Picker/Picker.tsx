@@ -46,7 +46,7 @@ import { wrapWithField } from '../../form/wrapper';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
-import { POPOVER_WIDTH } from '../popover-width';
+import { PICKER_POPOVER_WIDTH } from '../popover-width';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
@@ -860,7 +860,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
             styles={mergeStyleLayers(
               {
                 gridRows: '1sf',
-                width: POPOVER_WIDTH,
+                width: PICKER_POPOVER_WIDTH,
                 '$overlay-min-width': '30x',
               },
               popoverStyles,
