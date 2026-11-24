@@ -152,13 +152,6 @@ const ListElement = tasty({
       '': false,
       virtualized: '1sf',
     },
-    // The virtualizer keeps the scroll offset as options above are measured.
-    // Placed absolutely, options were never the browser's scroll anchor; in
-    // flow they could be, so the browser stays out of it.
-    overflowAnchor: {
-      '': false,
-      virtualized: 'none',
-    },
     // The space kept below the last option. Padding, so `listStyles` can take
     // it away, and outside the content box, where a virtualized list sets its
     // own height.
@@ -177,7 +170,7 @@ const ListElement = tasty({
     // The spacer fills the list's width. Its preferred width, the widest the
     // list has been (`useHeldWidth`), counts only when the list is sized to
     // its content, where a `100%` floor and cap count as none, so the list
-    // never narrows while mounted. A spacer narrower than the list, at `0`
+    // never narrows while mounted. A zero-width spacer, as the held width is
     // before the first measure, would add no height to the scroll element.
     // Virtualized, the options are moved by a transform, which takes no space,
     // so the list takes its height from the spacer in their cell: every
