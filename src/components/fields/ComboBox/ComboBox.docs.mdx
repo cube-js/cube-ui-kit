@@ -37,6 +37,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`shouldCommitOnBlur`** `boolean` (default: `true`) — Whether to commit custom value on blur in allowsCustomValue mode. When `false`, blur discards the uncommitted text
 - **`clearOnBlur`** `boolean` (default: `false`) — Whether to clear selection and input on blur, or on `Enter` with the popover closed, when the text names no selectable item (only applies to non-custom-value mode)
 - **`isClearable`** `boolean` (default: `false`) — Whether the combo box is clearable using ESC keyboard button or clear button inside the input
+- **`isIdentifier`** `boolean` (default: `false`) — Whether the text is an identifier, such as a name, key, branch or attribute name, rather than prose. Turns off the browser's text services for the input: `autocapitalize="none"`, `autocorrect="off"` and `spellcheck="false"` (the input's `autocomplete` is already `off`), so a phone keyboard neither starts the text with a capital nor rewrites it. An explicit `autoComplete` still wins. iOS still offers contact AutoFill above the keyboard: no attribute turns that off
 - **`sortSelectedToTop`** `boolean` (default: `true when items provided, false otherwise`) — Whether to sort selected item to the top when popover opens (only works with items prop)
 - **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — When the list opens on its own, see **popoverTrigger** below
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or false to disable filtering. If not provided, uses default contains filter
@@ -296,6 +297,17 @@ const [inputValue, setInputValue] = useState('');
   <ComboBox.Item key="react">React</ComboBox.Item>
   <ComboBox.Item key="vue">Vue</ComboBox.Item>
   <ComboBox.Item key="angular">Angular</ComboBox.Item>
+</ComboBox>
+```
+
+### Identifiers
+
+For a name, key or other identifier, `isIdentifier` keeps a phone keyboard from capitalizing or autocorrecting the typed text. It matters most with `allowsCustomValue`, where the typed text becomes the value.
+
+```jsx
+<ComboBox allowsCustomValue isIdentifier label="Variable name">
+  <ComboBox.Item key="CUBEJS_DB_HOST">CUBEJS_DB_HOST</ComboBox.Item>
+  <ComboBox.Item key="CUBEJS_DB_NAME">CUBEJS_DB_NAME</ComboBox.Item>
 </ComboBox>
 ```
 

@@ -187,6 +187,12 @@ const meta = {
         defaultValue: { summary: false },
       },
     },
+    isIdentifier: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the text is an identifier: no autocapitalization, autocorrect or spellcheck',
+      table: { defaultValue: { summary: false } },
+    },
     necessityIndicator: {
       options: [undefined, 'label', 'icon'],
       control: { type: 'radio' },

@@ -1,4 +1,5 @@
 import {
+  ComboBox,
   CommandTextArea,
   NumberInput,
   PasswordInput,
@@ -211,6 +212,65 @@ describe('isIdentifier', () => {
     expect(key).toHaveAttribute('spellcheck', 'false');
     expect(key).toHaveAttribute('autocomplete', 'off');
     expect(value).not.toHaveAttribute('autocapitalize');
+  });
+
+  describe('<ComboBox />', () => {
+    // A custom value is where the typed text becomes the value, so it is the case that matters.
+    const render = (props: Props) =>
+      getInput(
+        renderWithRoot(
+          <ComboBox allowsCustomValue label="field" {...props}>
+            <ComboBox.Item key="email">email</ComboBox.Item>
+          </ComboBox>,
+        ).container,
+      );
+
+    it('turns off the text services', () => {
+      const input = render({ isIdentifier: true });
+
+      expect(input).toHaveAttribute('autocapitalize', 'none');
+      expect(input).toHaveAttribute('autocorrect', 'off');
+      expect(input).toHaveAttribute('spellcheck', 'false');
+      expect(input).toHaveAttribute('autocomplete', 'off');
+    });
+
+    it('leaves them to the browser without the flag', () => {
+      const input = render({});
+
+      expect(input).not.toHaveAttribute('autocapitalize');
+      expect(input).not.toHaveAttribute('autocorrect');
+      expect(input).not.toHaveAttribute('spellcheck');
+      // ComboBox's own default, with or without the flag.
+      expect(input).toHaveAttribute('autocomplete', 'off');
+    });
+
+    it('lets an explicit autoComplete win', () => {
+      const input = render({ isIdentifier: true, autoComplete: 'username' });
+
+      expect(input).toHaveAttribute('autocomplete', 'username');
+      expect(input).toHaveAttribute('autocapitalize', 'none');
+    });
+  });
+
+  it('turns them off on a TextInputMapper combobox input', () => {
+    const { getByRole } = renderWithRoot(
+      <TextInputMapper
+        aria-label="Attributes"
+        value={{ email: 'mail' }}
+        keyProps={{
+          isIdentifier: true,
+          inputType: 'combobox',
+          options: ['email'],
+        }}
+      />,
+    );
+
+    const key = getByRole('combobox');
+
+    expect(key).toHaveAttribute('autocapitalize', 'none');
+    expect(key).toHaveAttribute('autocorrect', 'off');
+    expect(key).toHaveAttribute('spellcheck', 'false');
+    expect(key).toHaveAttribute('autocomplete', 'off');
   });
 
   it('turns them off on a TextInputMapper textarea input', () => {
