@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.220.0
+
+### Minor Changes
+
+- [#1714](https://github.com/cube-js/cube-ui-kit/pull/1714) [`32a2feb35`](https://github.com/cube-js/cube-ui-kit/commit/32a2feb350c4435a0b62fd16f355b7ec535d80e9) Thanks [@tenphi](https://github.com/tenphi)! - `ComboBox` takes the `isIdentifier` flag `TextInput`, `TextArea` and `TagInput` already have, for a combobox whose text is a name, key or other identifier. It sets `autocapitalize="none"`, `autocorrect="off"` and `spellcheck="false"` on the input (its `autocomplete` is already `off`), so a phone keyboard no longer capitalizes or autocorrects the typed text; an explicit `autoComplete` still wins. `TextInputMapper` now passes `isIdentifier` from `keyProps` and `valueProps` to its `combobox` input type too, which used to ignore it.
+
+### Patch Changes
+
+- [#1712](https://github.com/cube-js/cube-ui-kit/pull/1712) [`97c18b6d8`](https://github.com/cube-js/cube-ui-kit/commit/97c18b6d86c0c49f2d52dee471767fb59f91bb22) Thanks [@tenphi](https://github.com/tenphi)! - `Radio.Group`: a classic radio's label now wraps within the room the group gets, as documented, instead of running past a narrow container such as a dialog on a phone. A classic group with room keeps its width, and button and tabs groups are unchanged. The overrides that used to make a label wrap (group `width="100%"`, Radio `width="auto"` and `labelStyles={{ whiteSpace: 'normal' }}`) are no longer needed.
+
+- [#1715](https://github.com/cube-js/cube-ui-kit/pull/1715) [`73d0a64a1`](https://github.com/cube-js/cube-ui-kit/commit/73d0a64a1d8cf41816b7d9f9795da383c4aa6320) Thanks [@tenphi](https://github.com/tenphi)! - Picker popovers now size to their options: `Picker`, `FilterPicker` (list and tree mode), `ComboBox`, `SearchComboBox`, `TagInput` and `CommandTextArea` show long option labels and descriptions in full, however long the list. A popover is never narrower than its trigger (a picker's, at least `30x`) or its field, and never wider than half the viewport or `60x`, whichever is larger, nor than the viewport less a margin, so a phone's popover is no longer held at `30x`. It no longer narrows while open, as the list scrolls or a search filters it. A popover with an explicit `width` in `popoverStyles` or `overlayStyles` is unchanged. Outside a popover too, a `ListBox` or `FilterListBox` sized to its content is now as wide as its longest options and never narrows while mounted, and a `Tree` is as wide as its longest rows; one with a set width keeps it.
+
 ## 0.219.1
 
 ### Patch Changes
