@@ -83,6 +83,11 @@ import {
 } from '../../form/validation/resolve-validation-props';
 import { wrapWithField } from '../../form/wrapper';
 import { createMockDragState } from '../../shared/DraggableCollection';
+import {
+  getLongestRows,
+  rangeWithRows,
+  useHeldWidth,
+} from '../../shared/virtual-width';
 import { useOptionOriginPress } from '../option-origin-press';
 
 import { DraggableListBox } from './DraggableListBox';
@@ -136,7 +141,17 @@ const ListElement = tasty({
     // The space between options. Set from `listGap`, which also hands the
     // same number to the virtualizer.
     '$list-gap': '$item-gap',
-    display: 'block',
+    // Virtualized, the options share one grid cell, each moved down to its
+    // offset (`ListBoxItem`), so the widest one rendered sizes the list, and a
+    // popover sized to its content (see `shared/virtual-width.ts`).
+    display: {
+      '': 'block',
+      virtualized: 'grid',
+    },
+    gridColumns: {
+      '': false,
+      virtualized: '1sf',
+    },
     // The space kept below the last option. Padding, so `listStyles` can take
     // it away, and outside the content box, where a virtualized list sets its
     // own height.
@@ -152,9 +167,10 @@ const ListElement = tasty({
       '[data-shape="plain"] | empty': '0',
     },
     height: 'max-content',
-    // Virtualized, the options are placed absolutely, so the list takes its
-    // height from this spacer: every option, measured or estimated. As content,
-    // it leaves a `listStyles` height in charge, such as a `max` cap.
+    // Virtualized, the options are moved by a transform, which takes no space,
+    // so the list takes its height from this spacer in their cell: every
+    // option, measured or estimated. As content, it leaves a `listStyles`
+    // height in charge, such as a `max` cap.
     position: {
       '': false,
       virtualized: 'relative',
@@ -167,6 +183,7 @@ const ListElement = tasty({
         '': true,
         virtualized: false,
       },
+      gridArea: '1 / 1',
       height: '$list-virtual-height',
     },
   },
@@ -181,6 +198,19 @@ const ListBoxScrollElement = tasty({
     gridRows: '1sf',
     overflow: 'auto',
     scrollbar: 'styled',
+
+    // An empty row after the list, as wide as the list has been
+    // (`useHeldWidth`). Its `100%` floor and cap count only when the list is
+    // sized to its content, so it keeps a popover from narrowing but never
+    // widens the list. Here, not in the list, as a reorderable list swaps its
+    // `ul` when a search starts.
+    HeldWidth: {
+      $: '&::after',
+      content: '""',
+      display: 'block',
+      width: '100% $list-held-width 100%',
+      height: 0,
+    },
   },
 });
 
@@ -201,14 +231,16 @@ const ListBoxItem = tasty(Item, {
     // Inside the option: options sit a hairline apart, so a ring outside one
     // would cover its neighbour, and the scroll box would clip it at the edges.
     outlineOffset: '(-1 * $outline-offset)',
-    // Virtualized, the option sits at the offset the virtualizer gives it.
-    position: {
-      '': 'relative',
-      virtual: 'absolute',
-    },
-    inset: {
+    // Virtualized, the option shares the list's one grid cell and sits at the
+    // offset the virtualizer gives it.
+    position: 'relative',
+    gridArea: {
       '': false,
-      virtual: 'top dock',
+      virtual: '1 / 1',
+    },
+    alignSelf: {
+      '': false,
+      virtual: 'start',
     },
     transform: {
       '': false,
@@ -271,7 +303,7 @@ const ListBoxDropIndicatorElement = tasty({
 // The end of the list, which the load-more observer watches: zero height,
 // right after the last row, so a row scrolled into view brings it into view at
 // any margin. In flow it follows the last option. Virtualized, the options are
-// placed absolutely and the spacer's height is where the last one ends.
+// moved by a transform and the spacer's height is where the last one ends.
 const LoadMoreSentinelElement = tasty({
   as: 'li',
   styles: {
@@ -606,6 +638,22 @@ function getListOffset(
   return list.offsetParent === scrollElement
     ? list.offsetTop
     : list.offsetTop - scrollElement.offsetTop - scrollElement.clientTop;
+}
+
+/**
+ * How long an option's text is, standing in for its width when the longest
+ * rows are chosen (`getLongestRows`): a block description sits under the
+ * label, an inline one beside it.
+ */
+function getOptionTextLength(item: CollectionNode<unknown>): number {
+  const label = item.textValue?.length ?? 0;
+  const { description, descriptionPlacement } = item.props ?? {};
+  const descriptionLength =
+    typeof description === 'string' ? description.length : 0;
+
+  return descriptionPlacement === 'block'
+    ? Math.max(label, descriptionLength)
+    : label + descriptionLength;
 }
 
 /** The loading row's key, for the virtualizer and React. */
@@ -1131,6 +1179,18 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   const shouldVirtualize = !hasSections && !isReorderable;
 
+  // The options likeliest to be the widest, kept rendered so they size the
+  // list wherever it is scrolled (see `shared/virtual-width.ts`).
+  const longestRows = useMemo(
+    () =>
+      shouldVirtualize
+        ? getLongestRows(itemsArray.length, (index) =>
+            getOptionTextLength(itemsArray[index]),
+          )
+        : [],
+    [shouldVirtualize, itemsArray],
+  );
+
   const canLoadMore = !!onLoadMore && hasMore;
 
   const { listBoxProps, labelProps } = useListBox(
@@ -1206,10 +1266,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           SIZE_NAME_TO_KEY[size]) as keyof typeof SIZES
       ];
     },
-    // Options are positioned absolutely here, so their margins space nothing.
+    // Options are moved by a transform here, so their margins space nothing.
     // The virtualizer takes pixels: `1` matches the `$item-gap` default.
     gap: listGap ?? 1,
     overscan: 10,
+    rangeExtractor: (range) => rangeWithRows(range, longestRows),
     // Above the list's top, the scroll element's top reads as the list's:
     // `scrollToFn` scrolls there for offset 0, and react-virtual re-checks
     // that it arrived.
@@ -1235,6 +1296,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       rowVirtualizer.measure();
     }
   }, [shouldVirtualize, rowVirtualizer, listGap]);
+
+  // The list never narrows while mounted: not as virtual rows scroll in and
+  // out, nor when a filter leaves only short options.
+  const heldWidth = useHeldWidth(scrollRef);
 
   // The focused key this effect last saw, to tell a move of focus from a
   // change of the items.
@@ -1492,7 +1557,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         </>
       )}
       {/* Scroll container wrapper */}
-      <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
+      <ListBoxScrollElement
+        ref={scrollRef}
+        mods={mods}
+        tokens={{ '$list-held-width': `${heldWidth}px` }}
+        {...focusProps}
+      >
         {isEmpty && (
           <Item
             id={emptyLabelId}

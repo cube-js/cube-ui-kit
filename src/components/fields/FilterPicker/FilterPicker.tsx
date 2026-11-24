@@ -57,6 +57,7 @@ import {
   FilterListBox,
 } from '../FilterListBox/FilterListBox';
 import { ListBox } from '../ListBox/ListBox';
+import { PICKER_POPOVER_WIDTH } from '../popover-width';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import { FilterTree } from './FilterTree';
@@ -1158,7 +1159,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             styles={mergeStyleLayers(
               {
                 gridRows: '1sf',
-                width: 'max($overlay-min-width, 30x) max-content 50vw',
+                width: PICKER_POPOVER_WIDTH,
                 '$overlay-min-width': '30x',
               },
               popoverStyles,

@@ -20,6 +20,7 @@ import {
   getTreeNodeText,
   isTreeLeaf,
 } from '../../content/Tree/tree-index';
+import { useHeldWidth } from '../../shared/virtual-width';
 import {
   FilterListBoxWrapperElement,
   SearchInputElement,
@@ -94,6 +95,18 @@ const FilterTreeListElement = tasty({
     gridColumns: '1sf',
     gridRows: '1sf',
     height: 'min 0',
+
+    // An empty row after the tree, as wide as the tree has been
+    // (`useHeldWidth`). Its `100%` floor and cap count only when the popover
+    // is sized to its content, so it keeps the popover from narrowing as a
+    // search filters the tree, or matches nothing and replaces it.
+    HeldWidth: {
+      $: '&::after',
+      content: '""',
+      display: 'block',
+      width: '100% $filter-tree-held-width 100%',
+      height: 0,
+    },
   },
 });
 
@@ -204,6 +217,8 @@ export function FilterTree(props: FilterTreeProps) {
 
   const treeId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const heldWidth = useHeldWidth(listRef);
   const { contains } = useFilter({ sensitivity: 'base' });
 
   const [internalSearchValue, setInternalSearchValue] = useState('');
@@ -498,6 +513,8 @@ export function FilterTree(props: FilterTreeProps) {
         )}
       </SearchWrapperElement>
       <FilterTreeListElement
+        ref={listRef}
+        tokens={{ '$filter-tree-held-width': `${heldWidth}px` }}
         // Only the tree's own focus goes back: an empty label may hold a
         // control, such as Retry, that the keyboard has to reach. And only
         // where the search drives the tree: it opened focused (a mouse or

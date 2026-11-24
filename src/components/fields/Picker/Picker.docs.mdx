@@ -121,6 +121,8 @@ Customizes the ListBox component styles within the popover. See [ListBox documen
 
 Customizes the popover Dialog that contains the ListBox. See [Dialog documentation](/docs/overlays-dialog--docs) for available sub-elements.
 
+By default the popover is as wide as its options, long labels and descriptions included. It is never narrower than the trigger or `30x`, and never wider than half the viewport or `60x`, whichever is larger, nor than the viewport less a margin. It does not narrow while open, as the list scrolls. A `width` here replaces that rule.
+
 **Sub-elements:**
 
 - None for Dialog in popover mode

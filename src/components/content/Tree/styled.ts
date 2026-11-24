@@ -62,11 +62,16 @@ export const TreeScrollContainer = tasty({
 
 /**
  * The virtualizer's sizer: as tall as every row, measured or estimated
- * (`$tree-content-height`), and the box the rows are placed in.
+ * (`$tree-content-height`), and the box the rows are placed in. The rows share
+ * its one grid cell, each moved down to its offset, so the widest one rendered
+ * sizes the tree, and a popover sized to its content (see
+ * `shared/virtual-width.ts`).
  */
 export const TreeSizer = tasty({
   qa: 'TreeSizer',
   styles: {
+    display: 'grid',
+    gridColumns: '1sf',
     position: 'relative',
     width: '100%',
     height: '$tree-content-height',
@@ -78,18 +83,20 @@ export const TreeSizer = tasty({
  * `useTreeItem`, and the `--tree-level` CSS custom property used by
  * `TreeRowItem` to compute its left padding.
  *
- * It places the row at the virtualizer's offset (`--tree-row-offset`),
- * inset by `--tree-padding`. Otherwise it has no visual styles of its
- * own — the row's appearance lives on the inner `TreeRowItem` (which
- * extends `Item`).
+ * It places the row in `TreeSizer`'s one grid cell at the virtualizer's
+ * offset (`--tree-row-offset`), inset by `--tree-padding`. Otherwise it
+ * has no visual styles of its own — the row's appearance lives on the
+ * inner `TreeRowItem` (which extends `Item`).
  */
 export const TreeNodeRow = tasty({
   qa: 'TreeRow',
   styles: {
     display: 'block',
     outline: 0,
-    position: 'absolute',
-    inset: '0 $tree-padding top dock',
+    position: 'relative',
+    gridArea: '1 / 1',
+    alignSelf: 'start',
+    margin: '0 $tree-padding',
     transform: 'translateY($tree-row-offset)',
   },
 });
