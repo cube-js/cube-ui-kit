@@ -81,7 +81,9 @@ const RadioWrapperElement = tasty({
     gap: '1x',
     flow: 'column',
     preset: 'default',
-    width: 'min-content',
+    // As wide as its label, and no wider than the group: a longer label wraps
+    // at the group's width rather than one word per line.
+    width: 'fit-content',
     radius: true,
     margin: {
       '': '1x right',

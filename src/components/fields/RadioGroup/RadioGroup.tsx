@@ -53,7 +53,7 @@ export interface CubeRadioGroupProps
 // In button mode the group is the joined row `ToggleGroup` shares
 // (`joined-styles.ts`); in tabs mode it is the track of the segmented control
 // `Tabs type="radio"` shares (`segmented-styles.ts`). Both are merged in after
-// its own styles.
+// its own styles, and the classic layout's sizing after them.
 const RadioGroupElement = tasty({
   qa: 'RadioGroup',
   styles: mergeStyles(
@@ -86,6 +86,18 @@ const RadioGroupElement = tasty({
     JOINED_GROUP_STYLES,
     SEGMENTED_TRACK_STYLES,
     SEGMENTED_LIST_STYLES,
+    // A classic radio's label wraps instead of truncating, so the classic
+    // group is not the joined row's content-sized, `nowrap` box: it is as wide
+    // as its radios, never wider than the room it gets, and their labels wrap
+    // within it. The maps have no `''` key, so they extend the joined row's.
+    {
+      // oxlint-disable-next-line tasty/require-default-state -- extends the joined row's map (see above)
+      whiteSpace: { '!button & !tabs': 'normal' },
+      // oxlint-disable-next-line tasty/require-default-state -- extends the joined row's map (see above)
+      width: { '!button & !tabs & !fill-width': 'fit-content' },
+      // oxlint-disable-next-line tasty/require-default-state -- extends the joined row's map (see above)
+      flexShrink: { '!button & !tabs': 1 },
+    },
   ),
 });
 
