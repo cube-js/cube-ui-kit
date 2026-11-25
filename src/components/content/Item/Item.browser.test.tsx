@@ -316,3 +316,94 @@ describe('Item actions', () => {
     expect(onAction).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * While a plain `Item`'s auto-hidden actions are hidden, their column must take
+ * no width and no hit area: the docs promise it collapses to zero width, and
+ * on a touch screen there is no hover to reveal an action before a tap lands
+ * on it. `ItemButton` (the wrapper path) already behaves this way.
+ */
+describe('Item auto-hidden actions while hidden', () => {
+  const LONG_NAME = 'acme-corp-production-us-east-1-primary-semantic-layer';
+
+  function HiddenActionRow(props: { onPress?: () => void }) {
+    return (
+      <div style={{ width: 240 }}>
+        <Item
+          qa="Row"
+          autoHideActions
+          actions={
+            <Item.Action qa="RowAction" onPress={props.onPress}>
+              Deployment settings
+            </Item.Action>
+          }
+        >
+          {LONG_NAME}
+        </Item>
+      </div>
+    );
+  }
+
+  function labelOf(qa: string) {
+    return screen
+      .getByTestId(qa)
+      .querySelector('[data-element="Label"]') as HTMLElement;
+  }
+
+  function actionsOf(qa: string) {
+    return screen
+      .getByTestId(qa)
+      .querySelector('[data-element="Actions"]') as HTMLElement;
+  }
+
+  it('gives the label the room of an Item without actions', async () => {
+    renderWithRoot(
+      <>
+        <HiddenActionRow />
+        <div style={{ width: 240 }}>
+          <Item qa="Plain">{LONG_NAME}</Item>
+        </div>
+      </>,
+    );
+
+    expect(actionsOf('Row').getBoundingClientRect().width).toBe(0);
+    expect(labelOf('Row').getBoundingClientRect().width).toBe(
+      labelOf('Plain').getBoundingClientRect().width,
+    );
+  });
+
+  it('reveals a hidden action that keyboard focus reaches', async () => {
+    renderWithRoot(<HiddenActionRow />);
+
+    await userEvent.tab();
+
+    expect(screen.getByTestId('RowAction')).toHaveFocus();
+    await waitFor(() => {
+      const actions = actionsOf('Row');
+
+      expect(actions.getBoundingClientRect().width).toBeGreaterThan(0);
+      expect(getComputedStyle(actions).opacity).toBe('1');
+    });
+  });
+
+  describe('on a touch screen', () => {
+    useTouchEmulation();
+
+    it('lets a tap at the hidden action’s place reach the row', async () => {
+      const onPress = vi.fn();
+
+      renderWithRoot(<HiddenActionRow onPress={onPress} />);
+
+      const point = centerOf(screen.getByTestId('RowAction'));
+      const hit = document.elementFromPoint(point.x, point.y);
+
+      expect(actionsOf('Row').contains(hit)).toBe(false);
+      expect(screen.getByTestId('Row').contains(hit)).toBe(true);
+
+      await tapAt(point);
+      await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+      expect(onPress).not.toHaveBeenCalled();
+    });
+  });
+});

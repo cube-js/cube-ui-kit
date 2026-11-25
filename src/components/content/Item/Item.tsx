@@ -605,6 +605,18 @@ const ItemElement = tasty({
         // publishes a width of 0, and the padding would still reserve
         // `2 * $side-padding` for nothing, pushing a right icon inwards.
         'inside-wrapper': 0,
+        // Hidden auto-hide actions collapse to zero width, as documented: the
+        // label already restores its own end padding (`$label-padding-right`).
+        'auto-hide-actions & !preserve-actions-space & !inside-wrapper & !@interacted': 0,
+      },
+      // A hidden action is invisible but would still spill over the label
+      // and catch a tap there (a touch screen has no hover to reveal it first).
+      // `clip` removes that hit area and keeps the action focusable, so
+      // `:focus-within` still reveals it; unlike `hidden`, it never scrolls.
+      overflow: {
+        '': undefined,
+        'auto-hide-actions & !preserve-actions-space & !inside-wrapper & !@interacted':
+          'clip',
       },
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
