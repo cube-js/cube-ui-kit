@@ -356,7 +356,7 @@ describe('Item auto-hidden actions while hidden', () => {
       .querySelector('[data-element="Actions"]') as HTMLElement;
   }
 
-  it('gives the label the room of an Item without actions', async () => {
+  it('gives the label the room of an Item without actions', () => {
     renderWithRoot(
       <>
         <HiddenActionRow />
