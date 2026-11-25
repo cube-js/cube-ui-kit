@@ -926,6 +926,25 @@ export const ResizablePanes: Story = {
       </Layout>
     );
   },
+  // Keyboard focus shows what no pointer-free snapshot can: the handle's 2px
+  // edge line and focus ring, and the pane's own `focused` fill. The other
+  // edges show the handle at rest.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const [handle] = await canvas.findAllByRole('separator', {
+      name: 'Resize pane right',
+    });
+
+    for (
+      let step = 0;
+      step < 5 && canvasElement.ownerDocument.activeElement !== handle;
+      step++
+    ) {
+      await userEvent.tab();
+    }
+
+    await waitFor(() => expect(handle).toHaveFocus());
+  },
 };
 
 /**

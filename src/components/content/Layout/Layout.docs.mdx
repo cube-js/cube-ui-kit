@@ -369,9 +369,14 @@ Give the other items a zero flex basis, as the results get here: an item that sh
 - `Inner` - Scrollable inner container
 - `ScrollbarV` - Vertical scroll indicator (tiny mode)
 - `ScrollbarH` - Horizontal scroll indicator (tiny mode)
-- `ResizeHandler` - Drag handle for resizing
-- `Drag` - Visual drag indicator
-- `DragPart` - Individual dots in the drag indicator
+- `ResizeHandler` - The resize handle on the resizable edge, with:
+  - `Line` - The edge line
+  - `Grip` - The grip shown on touch screens
+  - `TouchArea` - The wider target for a coarse pointer
+
+### Resize handle
+
+Layout.Panel and Layout.Pane share one resize handle on their resizable edge. At rest the edge is a 1px line: a panel's own border, or a line the pane draws. On hover, while dragging and on keyboard focus it becomes a 2px accent line, and keyboard focus adds a focus ring. At the minimum or the maximum size, the cursor shows the one direction left (`e-resize`, `w-resize`, `n-resize` or `s-resize`). On touch screens, where nothing can hover, a grip shows on the edge, and a coarse pointer gets a 20px target. None of this moves the panel, the pane or the content beside them.
 
 ---
 
@@ -917,6 +922,7 @@ function ApplicationShell() {
 - Resize handlers can be focused and resized using arrow keys:
   - `Arrow keys` - Resize panel by 10px
   - `Shift + Arrow keys` - Resize panel by 50px
+  - `Home` / `End` - Resize to the minimum / maximum size, when it is known in pixels. A pane's limits are its own `minSize` and `maxSize` as numbers; a panel also resolves percentages and the room its Layout leaves
   - `Double-click` on resize handler - Reset to default size
 
 ### Screen Reader Support
@@ -932,7 +938,7 @@ function ApplicationShell() {
 - `aria-label` - Available on all components for custom labels
 - Landmarks are automatically set for header, footer, and toolbar
 - Panel close buttons include `aria-label="Close panel"`
-- Resize handlers have `role="separator"` with proper `aria-orientation` and `aria-label`
+- Resize handlers have `role="separator"` with `aria-orientation`, `aria-label` and `aria-valuenow` (the size in pixels), plus `aria-valuemin` and `aria-valuemax` when the limit is known in pixels. `aria-controls` points at the panel or pane, which gets a generated `id` when it has none
 
 ---
 
