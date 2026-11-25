@@ -199,6 +199,11 @@ describe('Item auto tooltip', () => {
   });
 });
 
+/** Past the click React Aria synthesizes 80 ms after a lift with no click. */
+function settle() {
+  return act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+}
+
 describe('Item actions', () => {
   function MenuRow(props: {
     onPress: () => void;
@@ -218,11 +223,6 @@ describe('Item actions', () => {
         </Menu.Item>
       </Menu>
     );
-  }
-
-  /** Past the click React Aria synthesizes 80 ms after a lift with no click. */
-  function settle() {
-    return act(() => new Promise((resolve) => setTimeout(resolve, 300)));
   }
 
   describe('on a touch screen', () => {
@@ -401,7 +401,7 @@ describe('Item auto-hidden actions while hidden', () => {
       expect(screen.getByTestId('Row').contains(hit)).toBe(true);
 
       await tapAt(point);
-      await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+      await settle();
 
       expect(onPress).not.toHaveBeenCalled();
     });
