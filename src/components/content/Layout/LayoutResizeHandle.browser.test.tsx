@@ -144,6 +144,35 @@ describe('Layout resize handle', () => {
     }
   });
 
+  // The item after a pane paints over anything past the pane's edge, so the
+  // grip and the touch target stay inside the pane, as its edge line does.
+  it("keeps the pane's touch grip and 20px touch target inside the pane", () => {
+    renderWithRoot(<PaneRow />);
+
+    const handle = screen.getByRole('separator');
+    const edge = screen.getByTestId('pane').getBoundingClientRect().right;
+    const gripElement = part(handle, 'Grip');
+    const areaElement = part(handle, 'TouchArea');
+
+    gripElement.style.display = 'block';
+    areaElement.style.display = 'block';
+
+    const grip = gripElement.getBoundingClientRect();
+    const area = areaElement.getBoundingClientRect();
+    const y = grip.top + grip.height / 2;
+
+    expect(grip.right).toBe(edge);
+    expect(grip.width).toBe(4);
+    expect(area.right).toBe(edge);
+    expect(area.width).toBe(20);
+
+    for (const x of [edge - 19, edge - 1]) {
+      expect(
+        document.elementFromPoint(x, y)?.closest('[role="separator"]'),
+      ).toBe(handle);
+    }
+  });
+
   it('hides the grip and the wider target where a pointer can hover', () => {
     renderWithRoot(<PanelLayout />);
 

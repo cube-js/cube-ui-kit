@@ -117,12 +117,16 @@ const ResizeHandleElement = tasty({
         '': '24px',
         drag: '28px',
       },
-      '$grip-inset':
-        '($handle-edge-inset + ($handle-line-size - $grip-size) / 2)',
+      // Centred on the line; kept inside the box where the line is drawn
+      // inside it, as an item beyond the box paints over anything past it.
+      '$grip-inset': {
+        '': '($handle-edge-inset + ($handle-line-size - $grip-size) / 2)',
+        inward: '$handle-edge-inset',
+      },
     },
 
     // A finger is less precise than a mouse pointer, so a coarse pointer gets
-    // a wider target, centred on the line, without moving the handle.
+    // a wider target on the line, without moving the handle.
     TouchArea: {
       position: 'absolute',
       hide: {
@@ -145,8 +149,11 @@ const ResizeHandleElement = tasty({
       },
       // Device pixels: a touch target's size is a physical one.
       '$touch-size': '20px',
-      '$touch-inset':
-        '($handle-edge-inset + ($handle-line-size - $touch-size) / 2)',
+      // Centred on the line, or inside the box as the grip is.
+      '$touch-inset': {
+        '': '($handle-edge-inset + ($handle-line-size - $touch-size) / 2)',
+        inward: '$handle-edge-inset',
+      },
     },
   },
 });
@@ -159,6 +166,8 @@ export interface LayoutResizeHandleProps {
   /**
    * The side of the handle the edge line keeps to; it thickens away from it.
    * The owner's styles set the line's distance from it, `$handle-edge-inset`.
+   * Opposite `side`, the line is drawn inside the box, and so are the grip
+   * and the touch target.
    */
   anchor: Side;
   /** Draw the edge at rest. Off where the box shows its own border there. */
@@ -168,6 +177,7 @@ export interface LayoutResizeHandleProps {
   controls?: string;
   /** The current size in pixels. */
   size: number;
+  isDragging?: boolean;
   /** The smallest size in pixels, when it is known. */
   minSize?: number;
   /** The largest size in pixels, when it is known. */
@@ -195,6 +205,7 @@ export function LayoutResizeHandle(props: LayoutResizeHandleProps) {
     label,
     controls,
     size,
+    isDragging = false,
     minSize,
     maxSize,
     moveProps,
@@ -265,7 +276,9 @@ export function LayoutResizeHandle(props: LayoutResizeHandleProps) {
           mods: {
             side,
             anchor,
+            inward: anchor !== side,
             horizontal: isHorizontal,
+            drag: isDragging,
             hovered: localIsHovered,
             focused: isFocusVisible,
             'edge-line': hasEdgeLine,

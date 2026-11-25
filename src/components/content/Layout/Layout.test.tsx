@@ -552,6 +552,20 @@ describe('Layout.Panel resize handler', () => {
     );
   });
 
+  it('adds no id to a panel or a pane that cannot be resized', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200}>
+          <div>Panel content</div>
+        </Layout.Panel>
+        <Layout.Pane>Pane</Layout.Pane>
+      </Layout>,
+    );
+
+    expect(screen.getByTestId('LayoutPanel')).not.toHaveAttribute('id');
+    expect(screen.getByTestId('LayoutPane')).not.toHaveAttribute('id');
+  });
+
   it('moves to the minimum and the maximum with Home and End', async () => {
     const onSizeChange = vi.fn();
 

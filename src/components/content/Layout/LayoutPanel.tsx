@@ -375,7 +375,7 @@ function LayoutPanel(
   const prevProvidedSizeRef = useRef(providedSize);
   const isHorizontal = side === 'left' || side === 'right';
   const { t } = useI18n();
-  // The resize handle controls the panel, so the panel needs an id.
+  // The resize handle controls the panel, so a resizable panel needs an id.
   const generatedId = useId();
   const panelId = otherProps.id ?? generatedId;
   // One key per side: a translated sentence can't take the side as a word.
@@ -929,7 +929,7 @@ function LayoutPanel(
             panelRefCallback(node, transitionRef);
           }}
           {...filterComponentBaseProps(otherProps, { eventProps: true })}
-          id={panelId}
+          id={isResizable ? panelId : otherProps.id}
           mods={{ ...panelMods, ...mods, offscreen, hidden: isHidden }}
           styles={finalStyles}
           tokens={{ ...panelTokens, ...otherProps.tokens }}
@@ -947,11 +947,11 @@ function LayoutPanel(
             label={resizeLabel}
             controls={panelId}
             size={size}
+            isDragging={isDragging}
             minSize={resolvedMin}
             maxSize={effectiveMax}
             styles={PANEL_HANDLE_STYLES}
             mods={{
-              drag: isDragging,
               offscreen,
               'has-transition': hasTransition && isReady,
             }}

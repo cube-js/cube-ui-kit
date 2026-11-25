@@ -366,7 +366,7 @@ function LayoutPane(
   const prevProvidedSizeRef = useRef(providedSize);
   const isHorizontal = resizeEdge === 'right';
   const { t } = useI18n();
-  // The resize handle controls the pane, so the pane needs an id.
+  // The resize handle controls the pane, so a resizable pane needs an id.
   const generatedId = useId();
   const paneId = otherProps.id ?? generatedId;
 
@@ -692,7 +692,7 @@ function LayoutPane(
     <PaneElement
       ref={combinedRef}
       {...filterComponentBaseProps(otherProps, { eventProps: true })}
-      id={paneId}
+      id={isResizable ? paneId : otherProps.id}
       {...hoverProps}
       mods={paneMods}
       styles={finalStyles}
@@ -718,8 +718,8 @@ function LayoutPane(
           size={size}
           minSize={minSizePx}
           maxSize={maxSizePx}
+          isDragging={isDragging}
           styles={PANE_HANDLE_STYLES}
-          mods={{ drag: isDragging }}
           moveProps={moveProps}
           onJump={handleJump}
           onDoubleClick={handleResetSize}
