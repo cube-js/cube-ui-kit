@@ -206,14 +206,6 @@ export function sourceFrom({
   };
 }
 
-/**
- * Glaze's measuring module. It resolves like the `@tenphi/glaze` import in
- * `main()`, so both come from the same Glaze.
- */
-export function loadMeasure() {
-  return import('@tenphi/glaze/harness/measure');
-}
-
 function number(metric, value) {
   return metric === 'apca' ? value.toFixed(1) : value.toFixed(2);
 }
@@ -337,18 +329,12 @@ async function main(argv) {
   console.warn = () => {};
 
   try {
-    const g = await import('@tenphi/glaze');
-    const measure = await loadMeasure();
-
-    if (!measure.FORMATS.includes(format)) {
-      console.error(
-        `uikit:colors: --format must be one of ${measure.FORMATS.join(', ')}`,
-      );
-
-      return 2;
-    }
-
-    const build = new URL('../../../dist/tokens/palette.js', import.meta.url);
+    // One built file holds Glaze, its measuring module and the palette, with
+    // no imports, so the tool runs from a package fetched without an install.
+    const build = new URL(
+      '../../../dist/harness/colors-deps.js',
+      import.meta.url,
+    );
 
     if (!existsSync(build)) {
       console.error(
@@ -358,12 +344,17 @@ async function main(argv) {
       return 2;
     }
 
-    const source = sourceFrom({
-      ...(await import(build.href)),
-      ...(await import(
-        new URL('../../../dist/tokens/colors.js', import.meta.url).href
-      )),
-    });
+    const { glaze: g, measure, ...palette } = await import(build.href);
+
+    if (!measure.FORMATS.includes(format)) {
+      console.error(
+        `uikit:colors: --format must be one of ${measure.FORMATS.join(', ')}`,
+      );
+
+      return 2;
+    }
+
+    const source = sourceFrom(palette);
     let tokens = listTokens(g, measure, source, { filters, format });
 
     if (on !== undefined) {

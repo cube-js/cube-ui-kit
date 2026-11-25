@@ -169,10 +169,10 @@ describe('the published build', () => {
       // file in a `vm` context. Node loads `tsdown.config.ts` itself.
       const script = `
         import { build } from 'tsdown';
-        import config from './tsdown.config.ts';
+        import { library } from './tsdown.config.ts';
 
         await build({
-          ...config,
+          ...library,
           // The real config is spread above. Without \`config: false\`,
           // tsdown also loads \`tsdown.config.ts\` and merges this object
           // into it, so the entry joins the library's entries instead of

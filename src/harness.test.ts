@@ -11,10 +11,10 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import * as glazeModule from '@tenphi/glaze';
+import * as measureModule from '@tenphi/glaze/harness/measure';
 
 import {
   listTokens,
-  loadMeasure,
   measureOn,
   render,
   sourceFrom,
@@ -106,8 +106,8 @@ describe('harness', () => {
 });
 
 describe('uikit:colors', () => {
-  it("loads Glaze's public measuring module from the pinned Glaze", async () => {
-    const measure = await loadMeasure();
+  it("builds on Glaze's public measuring module", () => {
+    const measure = measureModule;
 
     expect(typeof measure.inspectTheme).toBe('function');
     expect(measure.SCHEMES.map((s: { key: string }) => s.key)).toEqual([
@@ -119,7 +119,7 @@ describe('uikit:colors', () => {
   });
 
   it('lists every emitted token once, by its Tasty name', async () => {
-    const measure = await loadMeasure();
+    const measure = measureModule;
     const { tokenNames, ...rest } = source();
     const tokens = listTokens(glazeModule, measure, { tokenNames, ...rest });
     const names = tokens
@@ -136,7 +136,7 @@ describe('uikit:colors', () => {
   });
 
   it('shows what an alias resolves to, with its values', async () => {
-    const measure = await loadMeasure();
+    const measure = measureModule;
     const byName = new Map<string, { aliasOf?: string; values: object }>(
       listTokens(glazeModule, measure, source()).map(
         (t: { token: string; aliasOf?: string; values: object }) => [
@@ -167,7 +167,7 @@ describe('uikit:colors', () => {
   });
 
   it('keeps tokens whose name has every part, with or without #', async () => {
-    const measure = await loadMeasure();
+    const measure = measureModule;
     const tokens = listTokens(glazeModule, measure, source(), {
       filters: ['#Danger', 'accent-text'],
     });
@@ -179,7 +179,7 @@ describe('uikit:colors', () => {
   });
 
   it("measures each token against its base the way Glaze's solver does", async () => {
-    const measure = await loadMeasure();
+    const measure = measureModule;
     const [text] = listTokens(glazeModule, measure, source(), {
       filters: ['danger-accent-text'],
     });
@@ -201,13 +201,13 @@ describe('uikit:colors', () => {
 
   describe('--on', () => {
     const byName = async (...names: string[]) => {
-      const tokens = listTokens(glazeModule, await loadMeasure(), source());
+      const tokens = listTokens(glazeModule, measureModule, source());
 
       return names.map((name) => tokens.find((t) => t.token === name)!);
     };
 
     it("holds a token to its own floor on another surface, measured with Glaze's measurePair", async () => {
-      const measure = await loadMeasure();
+      const measure = measureModule;
       const [text, surface] = await byName('#danger-accent-text', '#surface');
       const [{ on }] = measureOn(glazeModule, measure, [text], surface);
 
@@ -229,7 +229,7 @@ describe('uikit:colors', () => {
     });
 
     it('gives a token without a floor its WCAG ratio and the best level it reaches', async () => {
-      const measure = await loadMeasure();
+      const measure = measureModule;
       const [border, surface] = await byName('#border', '#surface');
       const [{ on }] = measureOn(glazeModule, measure, [border], surface);
 
@@ -240,7 +240,7 @@ describe('uikit:colors', () => {
     });
 
     it('does not measure a translucent alias', async () => {
-      const measure = await loadMeasure();
+      const measure = measureModule;
       const [minor, surface] = await byName('#minor', '#surface');
       const [{ on }] = measureOn(glazeModule, measure, [minor], surface);
 
@@ -249,7 +249,7 @@ describe('uikit:colors', () => {
     });
 
     it('prints an "on" row, except on the base the row above already measures', async () => {
-      const measure = await loadMeasure();
+      const measure = measureModule;
       const [text, surface, base] = await byName(
         '#danger-accent-text',
         '#surface',

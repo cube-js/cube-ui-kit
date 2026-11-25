@@ -1,5 +1,13 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 
 import { checkReactPackage } from '../scripts/compiler/check-package.mjs';
@@ -34,7 +42,7 @@ it('ships the harness: uikit:colors runs from the tarball', () => {
   expect(
     tokens('danger-accent-text').map((t: { token: string }) => t.token),
   ).toContain('#danger-accent-text');
-  // The tool reads the aliases from the packed `dist/tokens/colors.js` too.
+  // The bundle the tool loads carries the aliases too.
   expect(tokens('dark-02')[0]).toMatchObject({
     token: '#dark-02',
     aliasOf: '#surface-text-soft',
@@ -45,6 +53,36 @@ it('ships the harness: uikit:colors runs from the tarball', () => {
     metric: 'wcag',
     schemes: { light: { target: 6, pass: true } },
   });
+});
+
+it('uikit:colors runs without an install, as from a package that harnesspm fetched', () => {
+  // `harnesspm fetch` downloads harness packages without their dependencies,
+  // so the tool and the one file it loads import nothing outside the package.
+  const dir = mkdtempSync(join(tmpdir(), 'uikit-fetched-'));
+
+  try {
+    for (const part of ['harness', 'dist/harness']) {
+      cpSync(join(packageRoot, part), join(dir, part), { recursive: true });
+    }
+
+    const found = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [
+          join(dir, 'harness/dev.harnesspm/scripts/colors.mjs'),
+          'danger-accent-text',
+          '--json',
+        ],
+        { cwd: dir, encoding: 'utf8' },
+      ),
+    );
+
+    expect(found.map((t: { token: string }) => t.token)).toContain(
+      '#danger-accent-text',
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 it('ships the docs as plain Markdown in docs/, which llms.txt indexes for the harness', () => {
