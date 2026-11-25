@@ -5,6 +5,7 @@ import {
   variantToOkhsl,
 } from '@tenphi/glaze';
 
+import { HAIRLINE_STATE } from './base';
 import { lazyStyles } from './lazy-styles';
 import {
   getPaletteConfig,
@@ -20,6 +21,8 @@ import type {
   GlazeConfigOverride,
   GlazePalette,
   GlazeTheme,
+  RegularColorDef,
+  RelativeValue,
 } from '@tenphi/glaze';
 import type { Styles, Tokens } from '@tenphi/tasty';
 import type {
@@ -650,6 +653,71 @@ glaze.configure({
   darkDesaturation: 0,
 });
 
+// ============================================================================
+// Hairline borders
+// ============================================================================
+
+/**
+ * How much further a border color steps from its base where the border is a
+ * `.5px` hairline ({@link HAIRLINE_STATE}). The thinner line reads lighter, so
+ * the color takes a quarter more tone to keep the edge as visible. High contrast
+ * keeps its `1px` border and its own tone.
+ */
+const HAIRLINE_TONE_FACTOR = 1.25;
+
+const HAIRLINE_SUFFIX = '-hairline';
+
+/**
+ * A border color plus its hairline twin: the same color with the normal-contrast
+ * tone step scaled by {@link HAIRLINE_TONE_FACTOR}. The twin never reaches CSS on
+ * its own: {@link foldHairlineColors} folds it into the border token.
+ */
+function withHairline(
+  name: string,
+  color: RegularColorDef & { tone: [RelativeValue, RelativeValue] },
+): ColorMap {
+  const [normal, highContrast] = color.tone;
+  const scaled = Number(normal) * HAIRLINE_TONE_FACTOR;
+  const hairline: RelativeValue = scaled < 0 ? `-${-scaled}` : `+${scaled}`;
+
+  return {
+    [name]: color,
+    [`${name}${HAIRLINE_SUFFIX}`]: { ...color, tone: [hairline, highContrast] },
+  };
+}
+
+/**
+ * Folds each hairline twin into its border token under {@link HAIRLINE_STATE},
+ * so the document takes the stronger color exactly where `$border-width` turns
+ * `.5px`. The twin adds its light and dark values only, since the state already
+ * excludes high contrast. Tokens without a twin pass through unchanged.
+ */
+function foldHairlineColors(tokens: Styles): Styles {
+  const { dark } = glaze.getConfig().states;
+  const folded: Styles = {};
+
+  for (const [name, value] of Object.entries(tokens)) {
+    if (name.endsWith(HAIRLINE_SUFFIX)) continue;
+
+    const twin = tokens[`${name}${HAIRLINE_SUFFIX}`];
+
+    if (!twin || typeof twin !== 'object' || typeof value !== 'object') {
+      folded[name] = value;
+      continue;
+    }
+
+    const { '': light, [dark]: darkValue } = twin as Record<string, string>;
+
+    folded[name] = {
+      ...(value as Record<string, string>),
+      [HAIRLINE_STATE]: light,
+      ...(darkValue ? { [`${HAIRLINE_STATE} & ${dark}`]: darkValue } : {}),
+    };
+  }
+
+  return folded;
+}
+
 /**
  * The config-free half of a colored theme's overrides — everything anchored to
  * the theme's own `surface` with a *relative* tone, so it follows wherever
@@ -662,11 +730,11 @@ glaze.configure({
  *     from scratch, so we restate the full definition here.
  */
 const TINTED_SURFACE_RAMP: ColorMap = {
-  border: {
+  ...withHairline('border', {
     base: 'surface',
     tone: ['-10', '-30'],
     saturation: 0.3,
-  },
+  }),
   'surface-text': {
     base: 'surface',
     tone: `${TEXT_TONE - TINTED_SURFACE_TONE_OFFSET}`,
@@ -716,12 +784,12 @@ const ALERT_COLORS: ColorMap = {
     saturation: 0.6,
     darkSaturation: 0.4,
   },
-  'alert-border': {
+  ...withHairline('alert-border', {
     base: 'alert-surface',
     tone: ['-12', '-30'],
     saturation: 0.6,
     darkSaturation: 0.6,
-  },
+  }),
 };
 
 /**
@@ -1185,12 +1253,12 @@ function buildPalette(
     },
 
     // ---- Other neutral UI primitives (default-only) ----
-    border: {
+    ...withHairline('border', {
       hue: baseHue,
       base: 'surface',
       tone: ['-10', '-30'],
       saturation: baseChroma(0.175),
-    },
+    }),
     placeholder: {
       hue: baseHue,
       base: 'surface',
@@ -1644,10 +1712,10 @@ function refresh() {
   const built = buildPalette(config);
 
   paletteCache = built.palette;
-  paletteTokensCache = {
+  paletteTokensCache = foldHairlineColors({
     ...built.palette.tasty({ prefix: TOKEN_PREFIXES, format: 'oklch' }),
     ...pickCodeTokens(built.codeTheme.tasty({ format: 'oklch' })),
-  } as Styles;
+  } as Styles);
   codeThemeCache = built.codeTheme;
   cachedVersion = version;
 }
@@ -1778,7 +1846,11 @@ export function renderPaletteTokens(
   const flat = renderVariants[variant] ?? renderVariants[scheme];
   const out: Tokens = {};
 
-  for (const name of Object.keys(flat)) out[`#${name}`] = flat[name];
+  // A region's tokens are inline custom properties, which cannot carry the
+  // hairline media query, so a preview keeps the regular border colors.
+  for (const name of Object.keys(flat)) {
+    if (!name.endsWith(HAIRLINE_SUFFIX)) out[`#${name}`] = flat[name];
+  }
 
   return out;
 }

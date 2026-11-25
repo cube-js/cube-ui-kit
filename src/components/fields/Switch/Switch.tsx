@@ -81,16 +81,26 @@ const SwitchElement = tasty({
       invalid: '#danger',
       valid: '#success',
     },
+    '$switch-height': {
+      '': '3x',
+      'size=medium': '2.5x',
+      'size=small': '2x',
+    },
+    '$thumb-size': {
+      '': '2x',
+      'size=medium': '1.5x',
+      'size=small': '1.25x',
+    },
+    // The thumb's gap to the outer edge, the same on every side. An absolute
+    // child is placed from the padding box, so the border comes off: the thumb
+    // stays centred whatever `$border-width` is.
+    '$thumb-inset': '(($switch-height - $thumb-size) / 2 - 1bw)',
     width: {
       '': '5x 5x',
       'size=medium': '4x 4x',
       'size=small': '3x 3x',
     },
-    height: {
-      '': '3x 3x',
-      'size=medium': '2.5x 2.5x',
-      'size=small': '2x 2x',
-    },
+    height: '$switch-height $switch-height',
     outline: {
       '': '#primary-text.0',
       focused: '$ring-width #primary-text',
@@ -101,34 +111,18 @@ const SwitchElement = tasty({
 
     Thumb: {
       position: 'absolute',
-      width: {
-        '': '2x 2x',
-        'size=medium': '1.5x 1.5x',
-        'size=small': '1.25x 1.25x',
-      },
-      height: {
-        '': '2x 2x',
-        'size=medium': '1.5x 1.5x',
-        'size=small': '1.25x 1.25x',
-      },
+      width: '$thumb-size $thumb-size',
+      height: '$thumb-size $thumb-size',
       radius: 'round',
       fill: {
         '': '#current',
         disabled: '#current.5',
         'disabled & checked': '#white.8',
       },
-      top: {
-        '': '.375x',
-        'size=medium': '.375x',
-        'size=small': '.25x',
-      },
+      top: '$thumb-inset',
       left: {
-        '': '.375x',
-        'size=medium': '.375x',
-        'size=small': '.25x',
-        checked: '2.25x',
-        'checked & size=medium': '1.75x',
-        'checked & size=small': '1.25x',
+        '': '$thumb-inset',
+        checked: '(100% - $thumb-size - $thumb-inset)',
       },
       transition: 'left, theme',
       cursor: '$pointer',
