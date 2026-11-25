@@ -4,6 +4,8 @@ import { defineConfig } from 'tsdown';
 
 import { reactCompilerPlugin } from './scripts/compiler/transform.mjs';
 
+import type { UserConfig } from 'tsdown';
+
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 const tastyPkg = JSON.parse(
   readFileSync('./node_modules/@tenphi/tasty/package.json', 'utf-8'),
@@ -29,7 +31,8 @@ const define = {
   'process.env.NODE_ENV': 'process.env.NODE_ENV',
 };
 
-export default defineConfig({
+/** The library build. Exported for the spec that builds one file with it. */
+export const library: UserConfig = {
   plugins:
     process.env.UIKIT_REACT_COMPILER === 'off' ? [] : [reactCompilerPlugin()],
   entry: {
@@ -57,4 +60,25 @@ export default defineConfig({
   banner,
   define,
   copy: ['README.md', 'CHANGELOG.md'],
-});
+};
+
+export default defineConfig([
+  library,
+  {
+    // `uikit:colors` loads this one file: Glaze, its measuring module and the
+    // palette, with everything they import bundled in. It may import nothing,
+    // so the tool runs from a package that harnesspm fetched without an install.
+    entry: { 'harness/colors-deps': 'src/harness/colors-deps.ts' },
+    format: 'esm',
+    outDir: 'dist',
+    platform: 'node',
+    target: 'es2022',
+    // `.js`, which `files` in package.json ships, not the node platform's `.mjs`.
+    fixedExtension: false,
+    dts: false,
+    minify: true,
+    clean: true,
+    deps: { alwaysBundle: [/./], onlyBundle: false, onlyImport: [] },
+    banner,
+  },
+]);
