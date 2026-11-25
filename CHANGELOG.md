@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.221.0
+
+### Minor Changes
+
+- [#1716](https://github.com/cube-js/cube-ui-kit/pull/1716) [`a3e2fb382`](https://github.com/cube-js/cube-ui-kit/commit/a3e2fb382fe7cec3ee2579977800d66942657b6d) Thanks [@tenphi](https://github.com/tenphi)! - Borders are a `.5px` hairline on screens of 2dppx and up: `$border-width` (the `bw` unit) is `.5px` there and stays `1px` on lower-density screens and in high contrast. Where the hairline is drawn, `#border`, `#<theme>-border` and `#<theme>-alert-border` step a quarter further from their surface so the thinner line keeps its contrast. Size anything that sits against a border with `bw` (`-1bw`, `(1x - 1bw)`), not a literal `1px`.
+
+### Patch Changes
+
+- [#1716](https://github.com/cube-js/cube-ui-kit/pull/1716) [`a3e2fb382`](https://github.com/cube-js/cube-ui-kit/commit/a3e2fb382fe7cec3ee2579977800d66942657b6d) Thanks [@tenphi](https://github.com/tenphi)! - `Switch` keeps its thumb centred at any border width, and the checked thumb in the medium and large sizes now sits as far from the right edge as the unchecked one does from the left (it was 1px further).
+
 ## 0.220.0
 
 ### Minor Changes
