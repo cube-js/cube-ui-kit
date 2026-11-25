@@ -286,6 +286,27 @@ describe('Layout resize handle', () => {
     });
   });
 
+  // A pane on its own can grow past its container, so the room bounds only
+  // the range: the value follows the pane, and the cursor shows no limit.
+  it('keeps the value and cursor of a pane larger than its container', async () => {
+    renderWithRoot(
+      <div style={{ width: 150, height: 300, display: 'flex' }}>
+        <Layout.Pane isResizable size={200}>
+          Pane
+        </Layout.Pane>
+      </div>,
+    );
+
+    const handle = screen.getByRole('separator');
+
+    expect(handle).toHaveAttribute('aria-valuenow', '200');
+    // Once the container is measured: 150px of room, below the pane.
+    await waitFor(() => {
+      expect(handle).toHaveAttribute('aria-valuemax', '200');
+    });
+    expect(getComputedStyle(handle).cursor).toBe('col-resize');
+  });
+
   it('stops a pane at the room the pane beside it leaves on End', async () => {
     const onSizeChange = vi.fn();
 

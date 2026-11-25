@@ -758,7 +758,8 @@ function LayoutPane(
           controls={paneId}
           size={size}
           minSize={minSizePx}
-          maxSize={maxSizePx ?? containerSize}
+          maxSize={maxSizePx}
+          valueMax={containerSize}
           isDragging={isDragging}
           styles={handleStyles}
           moveProps={moveProps}

@@ -180,11 +180,14 @@ export interface LayoutResizeHandleProps {
   isDragging?: boolean;
   /** The smallest size in pixels, when it is known. */
   minSize?: number;
-  /**
-   * The largest size in pixels. Without one, a screen reader reads the
-   * maximum as 100, so the owner passes the room it measured instead.
-   */
+  /** The largest size in pixels, when it is known. */
   maxSize?: number;
+  /**
+   * The top of the value range where there is no `maxSize`, such as the room
+   * the owner measured: a screen reader reads a missing maximum as 100. It
+   * bounds only the range, which still holds the size.
+   */
+  valueMax?: number;
   moveProps: ReturnType<typeof useMove>['moveProps'];
   /** Home and End: resize to the smallest or the largest size. */
   onJump?: (limit: Limit) => void;
@@ -211,6 +214,7 @@ export function LayoutResizeHandle(props: LayoutResizeHandleProps) {
     isDragging = false,
     minSize,
     maxSize,
+    valueMax,
     moveProps,
     onJump,
     onDoubleClick,
@@ -298,10 +302,11 @@ export function LayoutResizeHandle(props: LayoutResizeHandleProps) {
           'aria-label': label,
           'aria-controls': controls,
           'aria-valuenow': value,
-          // No box is smaller than nothing. The owner passes a maximum it
-          // measured where it has none of its own.
+          // No box is smaller than nothing.
           'aria-valuemin': minSize ?? 0,
-          'aria-valuemax': rangeMax,
+          'aria-valuemax':
+            rangeMax ??
+            (valueMax == null ? undefined : Math.max(valueMax, value)),
           onKeyDown,
           onDoubleClick,
         },
