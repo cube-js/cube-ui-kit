@@ -600,23 +600,28 @@ function LayoutPane(
   const maxSizePx = typeof maxSize === 'number' ? maxSize : undefined;
 
   // With no maximum in pixels, the handle's value range ends at the room the
-  // pane's container has, read when the handle gets keyboard focus: a screen
-  // reader reads a missing maximum as 100.
+  // pane's container has: a screen reader reads a missing maximum as 100,
+  // browsing the page as well as on focus, so the room is kept current.
   const [containerSize, setContainerSize] = useState<number>();
+  const measuresContainer = isResizable && maxSizePx == null;
 
-  const handleHandlerFocusChange = (isFocused: boolean) => {
-    setIsHandlerFocused(isFocused);
-
+  useEffect(() => {
     const container = combinedRef.current?.parentElement;
 
-    if (isFocused && maxSizePx == null && container) {
+    if (!measuresContainer || !container) return;
+
+    const observer = new ResizeObserver(() => {
       const room = Math.round(getAvailableSize(container, isHorizontal));
 
       // A container that is not laid out (hidden, or `display: contents`)
       // measures nothing, which is no limit.
-      if (room > 0) setContainerSize(room);
-    }
-  };
+      setContainerSize(room > 0 ? room : undefined);
+    });
+
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [combinedRef, measuresContainer, isHorizontal]);
 
   const handleJump = (limit: 'min' | 'max') => {
     const target = limit === 'min' ? minSizePx : maxSizePx;
@@ -760,7 +765,7 @@ function LayoutPane(
           onJump={handleJump}
           onDoubleClick={handleResetSize}
           onHoverChange={setIsHandlerHovered}
-          onFocusChange={handleHandlerFocusChange}
+          onFocusChange={setIsHandlerFocused}
         />
       )}
     </PaneElement>

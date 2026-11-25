@@ -270,10 +270,19 @@ describe('Layout resize handle', () => {
     expect(handle).toHaveAttribute('aria-valuenow', '150');
     expect(handle).toHaveAttribute('aria-valuemin', '80');
 
-    await press('{Tab}');
-
+    // Before any focus: a screen reader browsing the page reads it too.
     await waitFor(() => {
       expect(handle).toHaveAttribute('aria-valuemax', '400');
+    });
+
+    await act(async () => {
+      (
+        handle.closest('[data-qa="LayoutPane"]')!.parentElement as HTMLElement
+      ).style.height = '500px';
+    });
+
+    await waitFor(() => {
+      expect(handle).toHaveAttribute('aria-valuemax', '500');
     });
   });
 
