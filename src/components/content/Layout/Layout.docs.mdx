@@ -369,7 +369,7 @@ Give the other items a zero flex basis, as the results get here: an item that sh
 - `Inner` - Scrollable inner container
 - `ScrollbarV` - Vertical scroll indicator (tiny mode)
 - `ScrollbarH` - Horizontal scroll indicator (tiny mode)
-- `ResizeHandler` - The resize handle on the resizable edge, with these parts, each styled through the pane's `styles` as well:
+- `ResizeHandler` - The resize handle on the resizable edge, with these parts, each styled through the pane's `styles` as well. The parts take the handle's own states, not the pane's: `hovered`, `focused` (keyboard focus) and `drag` describe the handle, `horizontal` is set on a right edge, and `limit` is `min` or `max` at a limit:
   - `Line` - The edge line
   - `Grip` - The grip shown on touch screens
   - `TouchArea` - The wider target for a coarse pointer
