@@ -24,7 +24,7 @@ import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value'
 import { useI18n } from '../../../i18n/useI18n';
 import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';
 import { ScrollbarType } from './LayoutContent';
@@ -664,10 +664,20 @@ function LayoutPane(
     ...mods,
   };
 
+  // The handle draws its Line, Grip and TouchArea itself, so a consumer's
+  // styles for them go to the handle, where they outrank its own. From the
+  // pane, a selector for them would tie with the handle's and lose.
+  const { Line, Grip, TouchArea, ...paneStyles } = styles ?? {};
+  const handleStyles =
+    (Line ?? Grip ?? TouchArea)
+      ? // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `styles.Line`, `styles.Grip` and `styles.TouchArea` to the handle that draws them
+        mergeStyleLayers(PANE_HANDLE_STYLES, { Line, Grip, TouchArea })
+      : PANE_HANDLE_STYLES;
+
   // Merge styles: outer styles to root, inner styles to Inner element
   // Size is NOT included here - it's set via the `$pane-size` token in paneTokens for performance
   const finalStyles = mergeStyles(
-    styles,
+    paneStyles,
     outerStyles,
     // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `innerStyles` to `Inner`
     innerStyles ? { Inner: innerStyles } : null,
@@ -719,7 +729,7 @@ function LayoutPane(
           minSize={minSizePx}
           maxSize={maxSizePx}
           isDragging={isDragging}
-          styles={PANE_HANDLE_STYLES}
+          styles={handleStyles}
           moveProps={moveProps}
           onJump={handleJump}
           onDoubleClick={handleResetSize}

@@ -234,17 +234,24 @@ export function LayoutResizeHandle(props: LayoutResizeHandleProps) {
     notifyFocusChange(isFocusVisible);
   }, [isFocusVisible]);
 
+  // A box squeezed to no more than its minimum cannot move either way.
+  const isFixed = minSize != null && maxSize != null && maxSize <= minSize;
+  const rangeMax = isFixed ? minSize : maxSize;
   // The size drawn is held within the limits even while the stored one is
   // not, as CSS clamps it, where the minimum wins.
   const value = Math.round(
-    Math.max(minSize ?? 0, Math.min(maxSize ?? Infinity, size)),
+    Math.max(minSize ?? 0, Math.min(rangeMax ?? Infinity, size)),
   );
-  const limit: Limit | undefined =
-    minSize != null && value <= minSize
+  const limit: Limit | undefined = isFixed
+    ? undefined
+    : minSize != null && value <= minSize
       ? 'min'
       : maxSize != null && value >= maxSize
         ? 'max'
         : undefined;
+  // A screen reader fills a missing limit with 0 or 100, so the value goes
+  // out only with both.
+  const hasRange = minSize != null && rangeMax != null;
 
   const onKeyDown = (event: KeyboardEvent) => {
     const target: Limit | undefined =
@@ -290,9 +297,9 @@ export function LayoutResizeHandle(props: LayoutResizeHandleProps) {
           'aria-orientation': isHorizontal ? 'vertical' : 'horizontal',
           'aria-label': label,
           'aria-controls': controls,
-          'aria-valuenow': value,
-          'aria-valuemin': minSize,
-          'aria-valuemax': maxSize,
+          'aria-valuenow': hasRange ? value : undefined,
+          'aria-valuemin': hasRange ? minSize : undefined,
+          'aria-valuemax': hasRange ? rangeMax : undefined,
           onKeyDown,
           onDoubleClick,
         },

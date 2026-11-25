@@ -7,6 +7,7 @@ import {
   screen,
   waitFor,
 } from '../../../test';
+import { Block } from '../../Block';
 
 import { Layout } from './index';
 
@@ -173,6 +174,39 @@ describe('Layout resize handle', () => {
     }
   });
 
+  it("applies a pane's styles for its handle and the handle's parts", () => {
+    renderWithRoot(
+      <div style={{ width: 800, height: 300, display: 'flex' }}>
+        <Layout.Pane
+          isResizable
+          size={200}
+          styles={{
+            ResizeHandler: { cursor: 'pointer' },
+            Line: { fill: '#danger' },
+            Grip: { fill: '#danger' },
+            TouchArea: { fill: '#danger' },
+          }}
+        >
+          Pane
+        </Layout.Pane>
+        <Block qa="reference" fill="#danger">
+          Reference
+        </Block>
+      </div>,
+    );
+
+    const handle = screen.getByRole('separator');
+    const danger = getComputedStyle(
+      screen.getByTestId('reference'),
+    ).backgroundColor;
+
+    expect(getComputedStyle(handle).cursor).toBe('pointer');
+
+    for (const name of ['Line', 'Grip', 'TouchArea'] as const) {
+      expect(getComputedStyle(part(handle, name)).backgroundColor).toBe(danger);
+    }
+  });
+
   it('hides the grip and the wider target where a pointer can hover', () => {
     renderWithRoot(<PanelLayout />);
 
@@ -198,6 +232,30 @@ describe('Layout resize handle', () => {
       );
     },
   );
+
+  it('shows a panel squeezed to its minimum as unable to move', async () => {
+    renderWithRoot(
+      <div style={{ width: 500, height: 300, display: 'flex' }}>
+        <Layout>
+          <Layout.Panel side="left" isResizable>
+            Panel
+          </Layout.Panel>
+          <Layout.Content>Content</Layout.Content>
+        </Layout>
+      </div>,
+    );
+
+    const handle = screen.getByRole('separator');
+
+    // The default 200px minimum is more than the room the content leaves,
+    // once the Layout has measured itself.
+    await waitFor(() => {
+      expect(handle).toHaveAttribute('aria-valuemax', '200');
+    });
+    expect(handle).toHaveAttribute('aria-valuemin', '200');
+    expect(handle).toHaveAttribute('aria-valuenow', '200');
+    expect(getComputedStyle(handle).cursor).toBe('col-resize');
+  });
 
   it('stops a pane at the room the pane beside it leaves on End', async () => {
     const onSizeChange = vi.fn();

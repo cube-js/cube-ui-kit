@@ -369,7 +369,7 @@ Give the other items a zero flex basis, as the results get here: an item that sh
 - `Inner` - Scrollable inner container
 - `ScrollbarV` - Vertical scroll indicator (tiny mode)
 - `ScrollbarH` - Horizontal scroll indicator (tiny mode)
-- `ResizeHandler` - The resize handle on the resizable edge, with:
+- `ResizeHandler` - The resize handle on the resizable edge, with these parts, each styled through the pane's `styles` as well:
   - `Line` - The edge line
   - `Grip` - The grip shown on touch screens
   - `TouchArea` - The wider target for a coarse pointer
@@ -938,7 +938,7 @@ function ApplicationShell() {
 - `aria-label` - Available on all components for custom labels
 - Landmarks are automatically set for header, footer, and toolbar
 - Panel close buttons include `aria-label="Close panel"`
-- Resize handlers have `role="separator"` with `aria-orientation`, `aria-label` and `aria-valuenow` (the size in pixels), plus `aria-valuemin` and `aria-valuemax` when the limit is known in pixels. `aria-controls` points at the panel or pane, which gets a generated `id` when it has none
+- Resize handlers have `role="separator"` with `aria-orientation` and `aria-label`. Once both limits are known in pixels they also have `aria-valuenow`, `aria-valuemin` and `aria-valuemax` (the size and its limits): a panel's once its Layout is measured, a pane's when its `minSize` and `maxSize` are numbers. Without both, a screen reader would read a missing limit as 0 or 100. `aria-controls` points at the resizable panel or pane, which gets a generated `id` when it has none
 
 ---
 

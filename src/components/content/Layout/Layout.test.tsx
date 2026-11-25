@@ -623,10 +623,11 @@ describe('Layout.Pane resize handler', () => {
     expect(resizeHandler).toHaveAttribute('aria-controls', 'editor');
   });
 
-  it('leaves out a limit it cannot tell in pixels', () => {
+  // A screen reader would read a missing limit as 0 or 100.
+  it('exposes no value while a limit is unknown in pixels', () => {
     renderWithRoot(
       <Layout>
-        <Layout.Pane isResizable size={200} minSize="20%">
+        <Layout.Pane isResizable size={200} minSize={100}>
           Pane
         </Layout.Pane>
       </Layout>,
@@ -634,7 +635,7 @@ describe('Layout.Pane resize handler', () => {
 
     const resizeHandler = screen.getByRole('separator');
 
-    expect(resizeHandler).toHaveAttribute('aria-valuenow', '200');
+    expect(resizeHandler).not.toHaveAttribute('aria-valuenow');
     expect(resizeHandler).not.toHaveAttribute('aria-valuemin');
     expect(resizeHandler).not.toHaveAttribute('aria-valuemax');
   });
