@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.221.1
+
+### Patch Changes
+
+- [#1720](https://github.com/cube-js/cube-ui-kit/pull/1720) [`1347df53d`](https://github.com/cube-js/cube-ui-kit/commit/1347df53d55c2d00fca7e3171a82d0e046673b48) Thanks [@tenphi](https://github.com/tenphi)! - Update React Aria to 3.53.1, React Stately to 3.51.0 and @react-types/shared to 3.37.0. Remove the unused react-focus-lock dependency.
+
+- [#1718](https://github.com/cube-js/cube-ui-kit/pull/1718) [`134464233`](https://github.com/cube-js/cube-ui-kit/commit/1344642334787093e6d61f08cea6d1fc4cc61cd6) Thanks [@tenphi](https://github.com/tenphi)! - The `uikit:colors` harness tool now runs without the project's install, such as from a package that `harnesspm fetch` downloaded: it loads one bundled file instead of `@tenphi/glaze` and React.
+
 ## 0.221.0
 
 ### Minor Changes
