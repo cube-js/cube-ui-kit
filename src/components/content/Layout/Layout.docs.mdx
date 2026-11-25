@@ -938,7 +938,7 @@ function ApplicationShell() {
 - `aria-label` - Available on all components for custom labels
 - Landmarks are automatically set for header, footer, and toolbar
 - Panel close buttons include `aria-label="Close panel"`
-- Resize handlers have `role="separator"` with `aria-orientation`, `aria-label` and `aria-valuenow`, the size in pixels. `aria-valuemin` is the minimum in pixels, or 0 without one. `aria-valuemax` is a panel's maximum, which includes the room its Layout leaves, or a pane's numeric `maxSize`; a pane without one measures the room its container has when the handle gets keyboard focus, so the range always holds the value. `aria-controls` points at the resizable panel or pane, which gets a generated `id` when it has none
+- Resize handlers have `role="separator"` with `aria-orientation`, `aria-label` and `aria-valuenow`, the size in pixels. `aria-valuemin` is the minimum in pixels, or 0 without one. `aria-valuemax` is a panel's maximum, which includes the room its Layout leaves, or a pane's numeric `maxSize`; a pane without one uses the room its container has, measured when the handle gets keyboard focus, so from then on the range holds the value. `aria-controls` points at the resizable panel or pane, which gets a generated `id` when it has none
 
 ---
 

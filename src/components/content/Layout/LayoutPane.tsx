@@ -610,7 +610,11 @@ function LayoutPane(
     const container = combinedRef.current?.parentElement;
 
     if (isFocused && maxSizePx == null && container) {
-      setContainerSize(Math.round(getAvailableSize(container, isHorizontal)));
+      const room = Math.round(getAvailableSize(container, isHorizontal));
+
+      // A container that is not laid out (hidden, or `display: contents`)
+      // measures nothing, which is no limit.
+      if (room > 0) setContainerSize(room);
     }
   };
 
