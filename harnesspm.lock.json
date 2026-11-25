@@ -6,9 +6,9 @@
       "project": true
     },
     "@tenphi/eslint-plugin-tasty": {
-      "version": "1.21.2",
+      "version": "1.21.4",
       "plugin": "tasty-lint",
-      "integrity": "sha512-5frkjRntKk6AQsmmjXPLe2tcqAk1fVFtzt0TrH5TWKRz1dE0jwLucKz2d7a6J7beg4jNr/5eTQVq0yde1/+h5Q=="
+      "integrity": "sha512-fIOMzUFzatWg+naSs5DsAXw9Xh35tv1groCAM7d3jOw3UsgPagVhdo4yxv/2QDBmE1jL7CgCFEwjoBY0GBmDDw=="
     },
     "@tenphi/glaze": {
       "version": "3.2.0",
@@ -16,9 +16,9 @@
       "integrity": "sha512-KcI9hpEeBQtf5Yy93KwQ+APrPPO3a8/HHXSVeRmuqCLhAo1SSjVBpZX5HGzDFPczAwqCbu9/fWYjxVVLY658dQ=="
     },
     "@tenphi/harnesspm": {
-      "version": "0.12.1",
+      "version": "0.13.2",
       "plugin": "harnesspm",
-      "integrity": "sha512-pkewk0dsrUgWIki1R8+TnrbXxkT4mndbnZFx/SyUgB7P7M4V8ZXacRP3gwYMc8ts+yTqvHWjJJEVMWItx+kcvQ=="
+      "integrity": "sha512-fMkfurzPUBXR1gpWcXKf4esXL0JNNX6SQe0olJj7NBv629001zTktgYgnLGfJv8hhDLvzJzs9d8Nfk+ndPJ14Q=="
     },
     "@tenphi/tasty": {
       "version": "3.19.2",
@@ -53,7 +53,7 @@
     },
     "harnesspm:docs": {
       "kind": "docs",
-      "hash": "8a9c0a82c9b3a696"
+      "hash": "319fd931f8a93c28"
     },
     "harnesspm:rules/generated-files": {
       "kind": "rules",
@@ -77,7 +77,7 @@
     },
     "tasty-lint:docs": {
       "kind": "docs",
-      "hash": "50acc956f953f5c8"
+      "hash": "cc09e9ac1ff03bf2"
     },
     "tasty-lint:hooks/check-edit": {
       "kind": "hooks",
@@ -89,11 +89,11 @@
     },
     "tasty-lint:scripts/check": {
       "kind": "scripts",
-      "hash": "336a540574d71444"
+      "hash": "3eb16188031919f9"
     },
     "tasty-lint:scripts/check-edit": {
       "kind": "scripts",
-      "hash": "3c9e7a9ac1ef9e1f"
+      "hash": "2e2b9a26fbbe5ec9"
     },
     "tasty:docs": {
       "kind": "docs",
