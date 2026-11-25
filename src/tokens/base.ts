@@ -1,6 +1,22 @@
 import type { Styles } from '@tenphi/tasty';
 
 /**
+ * When borders are drawn as a `.5px` hairline instead of `1px`.
+ *
+ * - At 2dppx and up, `.5px` is a whole device pixel, so it renders crisp and
+ *   `getComputedStyle` reports `.5px`: `1bw` math matches the drawn border.
+ * - Below 2dppx a browser rounds a `.5px` border up to a whole device pixel,
+ *   while `calc(1bw)` stays `.5px`. Offsets built from `bw` would drift, so the
+ *   border stays `1px` there.
+ * - High contrast keeps `1px`: a thinner line is harder to see.
+ *
+ * The palette folds the stronger hairline border colors in under the same state
+ * (see `foldHairlineColors` in `./palette`), so the color always matches the
+ * width that is drawn.
+ */
+export const HAIRLINE_STATE = '@media(resolution >= 2dppx) & !@hc';
+
+/**
  * Base design system tokens.
  * These define the fundamental units and values used throughout the system.
  *
@@ -33,8 +49,14 @@ export const BASE_TOKENS: Styles = {
   '$ring-width': '1px',
   /** Hairline gap between adjacent items in a list, menu or action group */
   '$item-gap': '1px',
-  /** Border width for bordered elements */
-  '$border-width': '1px',
+  /**
+   * Border width for bordered elements (used with `bw`): `.5px` on dense screens,
+   * `1px` elsewhere and in high contrast. See {@link HAIRLINE_STATE}.
+   */
+  '$border-width': {
+    '': '1px',
+    [HAIRLINE_STATE]: '.5px',
+  },
 
   // Border radius
   /** Base border radius (used with `1r`, `2r` etc.) */

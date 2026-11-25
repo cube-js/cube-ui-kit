@@ -38,7 +38,7 @@ Tasty provides custom units that map to CSS custom properties defined on the Roo
 | `x` | `var(--gap)` | `2x` → `calc(var(--gap) * 2)` | 16px |
 | `r` | `var(--radius)` | `1r` → `var(--radius)` | 6px |
 | `cr` | `var(--card-radius)` | `1cr` → `var(--card-radius)` | 10px |
-| `bw` | `var(--border-width)` | `1bw` → `var(--border-width)` | 1px |
+| `bw` | `var(--border-width)` | `1bw` → `var(--border-width)` | .5px at 2dppx and up, else 1px |
 | `ow` | `var(--outline-width)` | `1ow` → `var(--outline-width)` | 3px |
 
 ## Base Tokens
@@ -49,7 +49,7 @@ These CSS custom properties are defined in `src/tokens/base.ts` and applied glob
 | --- | --- | --- |
 | `$gap` | `8px` | Base spacing unit (used with `x` multiplier) |
 | `$radius` | `6px` | Base border radius (used with `r` multiplier) |
-| `$border-width` | `1px` | Base border width (used with `bw` multiplier) |
+| `$border-width` | `.5px` / `1px` | Base border width (used with `bw` multiplier). A `.5px` hairline on screens of 2dppx and up; `1px` on lower-density screens, where a browser would round `.5px` up and `bw` math would drift, and in high contrast. Border colors (`#border`, `#<theme>-border`, `#<theme>-alert-border`) step a quarter further from their surface where the hairline is drawn, so the thinner line keeps its contrast. Size anything that sits against a border with `bw` (`(1x - 1bw)`, `-1bw`), never a literal `1px`. |
 | `$outline-width` | `3px` | Width of a field's thick focus ring (used with `ow` multiplier) |
 | `$outline-offset` | `1px` | Gap between a focus outline and its element |
 | `$ring-width` | `1px` | Width of a hairline focus or selection ring |
