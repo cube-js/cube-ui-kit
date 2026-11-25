@@ -16,9 +16,9 @@
       "integrity": "sha512-KcI9hpEeBQtf5Yy93KwQ+APrPPO3a8/HHXSVeRmuqCLhAo1SSjVBpZX5HGzDFPczAwqCbu9/fWYjxVVLY658dQ=="
     },
     "@tenphi/harnesspm": {
-      "version": "0.12.1",
+      "version": "0.13.0",
       "plugin": "harnesspm",
-      "integrity": "sha512-pkewk0dsrUgWIki1R8+TnrbXxkT4mndbnZFx/SyUgB7P7M4V8ZXacRP3gwYMc8ts+yTqvHWjJJEVMWItx+kcvQ=="
+      "integrity": "sha512-JXwqAAoY4EbmYggfsU8Zb9l65kdYl3wxGrGP+cEA7QQl2GbwfYRXbgnlCI46nnEOJRFQ6/drkmkSZhdDKnzAvQ=="
     },
     "@tenphi/tasty": {
       "version": "3.19.2",
@@ -53,7 +53,7 @@
     },
     "harnesspm:docs": {
       "kind": "docs",
-      "hash": "8a9c0a82c9b3a696"
+      "hash": "7fdbd46b03c5e967"
     },
     "harnesspm:rules/generated-files": {
       "kind": "rules",

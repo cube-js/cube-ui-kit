@@ -1,0 +1,8 @@
+# Lets search tools that read this file, such as ripgrep and Claude Code's Grep, into the
+# copies of the dependencies' docs that harnesspm writes to node_modules/.harnesspm/docs/.
+# The rest of node_modules stays out of search. See docs/rules/harness.md.
+!/node_modules/
+/node_modules/*
+!/node_modules/.harnesspm/
+/node_modules/.harnesspm/*
+!/node_modules/.harnesspm/docs/
