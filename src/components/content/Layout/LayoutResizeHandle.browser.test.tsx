@@ -1,0 +1,214 @@
+import { page, userEvent } from 'vitest/browser';
+
+import {
+  act,
+  userEvent as pointerUserEvent,
+  renderWithRoot,
+  screen,
+  waitFor,
+} from '../../../test';
+
+import { Layout } from './index';
+
+// vitest/browser's keyboard is not wrapped in act, and each key renders.
+function press(keys: string) {
+  return act(async () => {
+    await userEvent.keyboard(keys);
+  });
+}
+
+function part(handle: HTMLElement, name: 'Line' | 'Grip' | 'TouchArea') {
+  return handle.querySelector<HTMLElement>(`[data-element="${name}"]`)!;
+}
+
+const TRANSPARENT = 'rgba(0, 0, 0, 0)';
+
+function PanelLayout({
+  side = 'left',
+  size = 200,
+}: {
+  side?: 'left' | 'right';
+  size?: number;
+}) {
+  return (
+    <div style={{ width: 800, height: 400, display: 'flex' }}>
+      <Layout>
+        <Layout.Panel
+          qa="panel"
+          side={side}
+          isResizable
+          size={size}
+          minSize={150}
+          maxSize={300}
+        >
+          Panel
+        </Layout.Panel>
+        <Layout.Content>Content</Layout.Content>
+      </Layout>
+    </div>
+  );
+}
+
+function PaneRow() {
+  return (
+    <div style={{ width: 800, height: 300, display: 'flex' }}>
+      <Layout.Pane qa="pane" isResizable resizeEdge="right" size={200}>
+        Pane
+      </Layout.Pane>
+      <Layout.Pane qa="beside" flexGrow={1}>
+        Beside
+      </Layout.Pane>
+    </div>
+  );
+}
+
+describe('Layout resize handle', () => {
+  beforeEach(async () => {
+    await page.viewport(1000, 700);
+  });
+
+  it("leaves the panel's own border as its edge at rest", () => {
+    renderWithRoot(<PanelLayout />);
+
+    const line = part(screen.getByRole('separator'), 'Line');
+
+    expect(getComputedStyle(line).backgroundColor).toBe(TRANSPARENT);
+  });
+
+  it('turns the panel edge into a 2px line on hover, thickening away from the panel', async () => {
+    renderWithRoot(<PanelLayout />);
+
+    const handle = screen.getByRole('separator');
+    const line = part(handle, 'Line');
+    const panel = screen.getByTestId('panel').getBoundingClientRect();
+
+    await pointerUserEvent.hover(handle);
+
+    await waitFor(() => {
+      expect(line.getBoundingClientRect().width).toBe(2);
+    });
+    expect(getComputedStyle(line).backgroundColor).not.toBe(TRANSPARENT);
+    // It starts on the panel's border, its last pixel inside the panel.
+    expect(line.getBoundingClientRect().left).toBe(panel.right - 1);
+  });
+
+  it("draws the pane's edge at rest and thickens it into the pane on keyboard focus", async () => {
+    renderWithRoot(<PaneRow />);
+
+    const pane = screen.getByTestId('pane');
+    const line = part(screen.getByRole('separator'), 'Line');
+    const paneRight = pane.getBoundingClientRect().right;
+
+    expect(getComputedStyle(line).backgroundColor).not.toBe(TRANSPARENT);
+    expect(line.getBoundingClientRect().width).toBe(1);
+    expect(line.getBoundingClientRect().right).toBe(paneRight);
+
+    await press('{Tab}');
+
+    await waitFor(() => {
+      expect(line.getBoundingClientRect().width).toBe(2);
+    });
+    expect(line.getBoundingClientRect().right).toBe(paneRight);
+    expect(pane).toHaveAttribute('data-focused');
+  });
+
+  // `hover: none` and `pointer: coarse` show these. Chromium emulates both only
+  // through touch emulation, and `hover: none` outlives turning it off, which
+  // would leak into the specs after this one. So the test shows them itself
+  // and checks where they land.
+  it('centres the touch grip and the 20px touch target on the edge', () => {
+    renderWithRoot(<PanelLayout />);
+
+    const handle = screen.getByRole('separator');
+    const edge = screen.getByTestId('panel').getBoundingClientRect().right;
+    const gripElement = part(handle, 'Grip');
+    const areaElement = part(handle, 'TouchArea');
+
+    gripElement.style.display = 'block';
+    areaElement.style.display = 'block';
+
+    const grip = gripElement.getBoundingClientRect();
+    const area = areaElement.getBoundingClientRect();
+    const y = grip.top + grip.height / 2;
+
+    expect(grip.width).toBe(4);
+    expect(grip.height).toBe(24);
+    expect(grip.left + grip.width / 2).toBe(edge);
+    expect(area.width).toBe(20);
+    expect(area.left + area.width / 2).toBe(edge);
+
+    for (const x of [edge - 9, edge + 9]) {
+      expect(
+        document.elementFromPoint(x, y)?.closest('[role="separator"]'),
+      ).toBe(handle);
+    }
+  });
+
+  it('hides the grip and the wider target where a pointer can hover', () => {
+    renderWithRoot(<PanelLayout />);
+
+    const handle = screen.getByRole('separator');
+
+    expect(getComputedStyle(part(handle, 'Grip')).display).toBe('none');
+    expect(getComputedStyle(part(handle, 'TouchArea')).display).toBe('none');
+  });
+
+  it.each([
+    ['left', 150, 'e-resize'],
+    ['left', 300, 'w-resize'],
+    ['left', 200, 'col-resize'],
+    ['right', 150, 'w-resize'],
+    ['right', 300, 'e-resize'],
+  ] as const)(
+    'shows which way a %s panel of %ipx can still move',
+    (side, size, cursor) => {
+      renderWithRoot(<PanelLayout side={side} size={size} />);
+
+      expect(getComputedStyle(screen.getByRole('separator')).cursor).toBe(
+        cursor,
+      );
+    },
+  );
+
+  it('stops a pane at the room the pane beside it leaves on End', async () => {
+    const onSizeChange = vi.fn();
+
+    renderWithRoot(
+      <div style={{ height: 400, display: 'flex', flexDirection: 'column' }}>
+        <Layout.Pane
+          qa="pane"
+          isResizable
+          resizeEdge="bottom"
+          defaultSize={150}
+          minSize={80}
+          maxSize={1000}
+          flexShrink={1}
+          onSizeChange={onSizeChange}
+        >
+          Pane
+        </Layout.Pane>
+        <Layout.Pane
+          qa="beside"
+          resizeEdge="bottom"
+          defaultSize={150}
+          minSize={80}
+          flexShrink={1}
+        >
+          Beside
+        </Layout.Pane>
+        <div style={{ flex: '1 0 0' }} />
+      </div>,
+    );
+
+    screen.getByRole('separator').focus();
+    await press('{End}');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('beside').getBoundingClientRect().height).toBe(
+        80,
+      );
+    });
+    expect(screen.getByTestId('pane').getBoundingClientRect().height).toBe(320);
+    expect(onSizeChange).toHaveBeenLastCalledWith(320);
+  });
+});
