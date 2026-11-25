@@ -62,6 +62,19 @@ function givesWay(element: Element) {
   return parseFloat(getComputedStyle(element).flexShrink) > 0;
 }
 
+/** A container's content size along an axis: the room its items have. */
+function getAvailableSize(container: HTMLElement, isHorizontal: boolean) {
+  const style = getComputedStyle(container);
+
+  return isHorizontal
+    ? container.clientWidth -
+        parseFloat(style.paddingLeft) -
+        parseFloat(style.paddingRight)
+    : container.clientHeight -
+        parseFloat(style.paddingTop) -
+        parseFloat(style.paddingBottom);
+}
+
 /** How far a flex container's items run past its content box. */
 function getOverflow(container: HTMLElement, isHorizontal: boolean) {
   const style = getComputedStyle(container);
@@ -72,13 +85,7 @@ function getOverflow(container: HTMLElement, isHorizontal: boolean) {
     (isHorizontal
       ? rect.width / container.offsetWidth
       : rect.height / container.offsetHeight) || 1;
-  const available = isHorizontal
-    ? container.clientWidth -
-      parseFloat(style.paddingLeft) -
-      parseFloat(style.paddingRight)
-    : container.clientHeight -
-      parseFloat(style.paddingTop) -
-      parseFloat(style.paddingBottom);
+  const available = getAvailableSize(container, isHorizontal);
   let used = 0;
   let count = 0;
 
@@ -592,6 +599,21 @@ function LayoutPane(
   const minSizePx = typeof minSize === 'number' ? minSize : undefined;
   const maxSizePx = typeof maxSize === 'number' ? maxSize : undefined;
 
+  // With no maximum in pixels, the handle's value range ends at the room the
+  // pane's container has, read when the handle gets keyboard focus: a screen
+  // reader reads a missing maximum as 100.
+  const [containerSize, setContainerSize] = useState<number>();
+
+  const handleHandlerFocusChange = (isFocused: boolean) => {
+    setIsHandlerFocused(isFocused);
+
+    const container = combinedRef.current?.parentElement;
+
+    if (isFocused && maxSizePx == null && container) {
+      setContainerSize(Math.round(getAvailableSize(container, isHorizontal)));
+    }
+  };
+
   const handleJump = (limit: 'min' | 'max') => {
     const target = limit === 'min' ? minSizePx : maxSizePx;
 
@@ -727,14 +749,14 @@ function LayoutPane(
           controls={paneId}
           size={size}
           minSize={minSizePx}
-          maxSize={maxSizePx}
+          maxSize={maxSizePx ?? containerSize}
           isDragging={isDragging}
           styles={handleStyles}
           moveProps={moveProps}
           onJump={handleJump}
           onDoubleClick={handleResetSize}
           onHoverChange={setIsHandlerHovered}
-          onFocusChange={setIsHandlerFocused}
+          onFocusChange={handleHandlerFocusChange}
         />
       )}
     </PaneElement>

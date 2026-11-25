@@ -1,12 +1,6 @@
 import { page, userEvent } from 'vitest/browser';
 
-import {
-  act,
-  userEvent as pointerUserEvent,
-  renderWithRoot,
-  screen,
-  waitFor,
-} from '../../../test';
+import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { Block } from '../../Block';
 
 import { Layout } from './index';
@@ -83,7 +77,11 @@ describe('Layout resize handle', () => {
     const line = part(handle, 'Line');
     const panel = screen.getByTestId('panel').getBoundingClientRect();
 
-    await pointerUserEvent.hover(handle);
+    // React Aria ignores a hover until a pointer move sets the modality.
+    await act(async () => {
+      await userEvent.hover(document.body);
+      await userEvent.hover(handle);
+    });
 
     await waitFor(() => {
       expect(line.getBoundingClientRect().width).toBe(2);
@@ -255,6 +253,28 @@ describe('Layout resize handle', () => {
     expect(handle).toHaveAttribute('aria-valuemin', '200');
     expect(handle).toHaveAttribute('aria-valuenow', '200');
     expect(getComputedStyle(handle).cursor).toBe('col-resize');
+  });
+
+  it("ends a pane's value range at its container's room when it has no maximum", async () => {
+    renderWithRoot(
+      <div style={{ height: 400, display: 'flex', flexDirection: 'column' }}>
+        <Layout.Pane isResizable resizeEdge="bottom" size={150} minSize={80}>
+          Pane
+        </Layout.Pane>
+        <div style={{ flex: '1 0 0' }} />
+      </div>,
+    );
+
+    const handle = screen.getByRole('separator');
+
+    expect(handle).toHaveAttribute('aria-valuenow', '150');
+    expect(handle).toHaveAttribute('aria-valuemin', '80');
+
+    await press('{Tab}');
+
+    await waitFor(() => {
+      expect(handle).toHaveAttribute('aria-valuemax', '400');
+    });
   });
 
   it('stops a pane at the room the pane beside it leaves on End', async () => {
