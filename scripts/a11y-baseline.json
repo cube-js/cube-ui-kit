@@ -5,7 +5,7 @@
     "aria-allowed-role": 10,
     "aria-dialog-name": 10,
     "aria-input-field-name": 7,
-    "aria-required-attr": 15,
+    "aria-required-attr": 1,
     "aria-required-children": 14,
     "button-name": 35,
     "color-contrast": 647,
@@ -115,39 +115,24 @@
     "content-item--with-checkbox": { "aria-allowed-attr": 11 },
     "content-item--with-highlight": { "color-contrast": 1, "target-size": 2 },
     "content-item--with-loading": { "aria-allowed-attr": 1 },
-    "content-layout--all-panel-sides": { "aria-required-attr": 4 },
     "content-layout--center-golden-ratio": { "heading-order": 1 },
     "content-layout--collapsed-with-warning": {
       "scrollable-region-focusable": 1
     },
-    "content-layout--complete-application-shell": {
-      "aria-required-attr": 1,
-      "heading-order": 1
-    },
+    "content-layout--complete-application-shell": { "heading-order": 1 },
     "content-layout--flex-with-scrolling": { "scrollable-region-focusable": 1 },
     "content-layout--grid-with-scrolling": { "scrollable-region-focusable": 1 },
     "content-layout--horizontal-scrollable-content": {
       "scrollable-region-focusable": 1
     },
-    "content-layout--natural-boundaries": { "aria-required-attr": 2 },
     "content-layout--panel-as-dialog": { "aria-dialog-name": 1 },
-    "content-layout--resizable-panel": { "aria-required-attr": 1 },
-    "content-layout--resizable-panel-with-percent-max": {
-      "aria-required-attr": 1
-    },
-    "content-layout--resizable-panes": {
-      "aria-required-attr": 2,
-      "heading-order": 1
-    },
+    "content-layout--resizable-panes": { "heading-order": 1 },
     "content-layout--responsive-panel-to-dialog": {
       "button-name": 1,
       "color-contrast": 2,
       "heading-order": 1
     },
-    "content-layout--vertical-resizable-panes": {
-      "aria-required-attr": 1,
-      "heading-order": 1
-    },
+    "content-layout--vertical-resizable-panes": { "heading-order": 1 },
     "content-prismdiffcode--empty-line-diff": { "color-contrast": 1 },
     "content-prismdiffcode--sql-syntax": { "color-contrast": 14 },
     "content-prismdiffcode--yaml-syntax": { "color-contrast": 48 },
@@ -490,13 +475,7 @@
       "aria-dialog-name": 1
     },
     "getting-started-complex-layout--grid-dashboard": { "heading-order": 1 },
-    "getting-started-complex-layout--resizable-pane": {
-      "aria-required-attr": 1,
-      "heading-order": 1
-    },
-    "getting-started-complex-layout--resizable-panel": {
-      "aria-required-attr": 1
-    },
+    "getting-started-complex-layout--resizable-pane": { "heading-order": 1 },
     "getting-started-theming--contrast-level": { "color-contrast": 1 },
     "getting-started-theming--playground": {
       "aria-allowed-attr": 7,

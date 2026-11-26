@@ -893,7 +893,7 @@ export const ResizablePanes: Story = {
             size={leftSize}
             minSize={150}
             maxSize={400}
-            fill={{ '': '#white', 'drag | focused': '#purple.08' }}
+            fill={{ '': '#surface', 'drag | focused': '#purple.08' }}
             onSizeChange={setLeftSize}
           >
             <Title level={5}>Left Pane</Title>
@@ -908,7 +908,7 @@ export const ResizablePanes: Story = {
             resizeEdge="right"
             size={middleSize}
             minSize={200}
-            fill={{ '': '#white', 'drag | focused': '#purple.08' }}
+            fill={{ '': '#surface', 'drag | focused': '#purple.08' }}
             onSizeChange={setMiddleSize}
           >
             <Title level={5}>Middle Pane</Title>
@@ -925,6 +925,25 @@ export const ResizablePanes: Story = {
         </Layout.Flex>
       </Layout>
     );
+  },
+  // Keyboard focus shows what no pointer-free snapshot can: the handle's edge
+  // line in use, and the pane's own `focused` fill. The other edges show the
+  // handle at rest.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const [handle] = await canvas.findAllByRole('separator', {
+      name: 'Resize pane right',
+    });
+
+    for (
+      let step = 0;
+      step < 5 && canvasElement.ownerDocument.activeElement !== handle;
+      step++
+    ) {
+      await userEvent.tab();
+    }
+
+    await waitFor(() => expect(handle).toHaveFocus());
   },
 };
 

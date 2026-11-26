@@ -491,7 +491,7 @@ describe('Layout.Panel dialog size preservation', () => {
           const panel = screen.getByTestId('sized-panel');
           expect(panel.offsetWidth).toBe(350);
           expect(panel.style.getPropertyValue('--max-size')).toBe(
-            'min(50%, 378px)',
+            'min(50%, 380px)',
           );
           expect(frames.size).toBeGreaterThan(0);
         });
@@ -799,7 +799,7 @@ describe('Layout.Panel animation bounds', () => {
         screen
           .getByTestId('bounded-layout')
           .style.getPropertyValue('--inset-left'),
-      ).toBe('102px');
+      ).toBe('100px');
       view.rerender(<ToggleLayout side="left" openOverride={false} />);
       const animations = await expectSynchronizedSlide('left');
       await act(async () =>
@@ -1479,7 +1479,7 @@ describe('Layout.Panel hideOnClose', () => {
       await waitFor(() => expect(getComputedStyle(panel).display).toBe('flex'));
       expect(screen.getByLabelText('Draft')).toHaveValue('Unsent');
       await waitFor(() =>
-        expect(layout.style.getPropertyValue('--inset-right')).toBe('152px'),
+        expect(layout.style.getPropertyValue('--inset-right')).toBe('150px'),
       );
       await waitFor(() => expect(layout.style.overflow).toBe(''));
     },

@@ -5,7 +5,6 @@ import {
   mergeStyles,
   Styles,
   tasty,
-  Tokens,
 } from '@tenphi/tasty';
 import {
   ForwardedRef,
@@ -16,18 +15,17 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { useFocusRing, useHover, useMove } from 'react-aria';
+import { useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
-import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value';
 import { useI18n } from '../../../i18n/useI18n';
 import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
 import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
@@ -49,16 +47,16 @@ import {
   useLayoutStateContext,
 } from './LayoutContext';
 import { LayoutPanelTransition } from './LayoutPanelTransition';
+import { LayoutResizeHandle } from './LayoutResizeHandle';
 import { clampSize, getOppositeSide, resolveCssSize } from './utils';
 
 import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
 
 // Resize handler dimensions
 const HANDLER_WIDTH = 9;
-// How far from panel edge to position handler's inner edge (centers the 3px track on the edge)
+// Where the panel's edge is inside the handle, from the panel's side: the
+// handle overlaps the panel's border and the content beside it
 const HANDLER_OFFSET = 4;
-// Extra inset added for resizable panels (to accommodate handler grab area)
-const RESIZABLE_INSET_OFFSET = 2;
 
 const PanelElement = tasty({
   as: 'div',
@@ -140,159 +138,62 @@ const PanelElement = tasty({
   },
 });
 
-// Handler is positioned as sibling to panel (in Fragment), relative to Layout
-const ResizeHandlerElement = tasty({
-  qa: 'PanelResizeHandler',
-  styles: {
-    position: 'absolute',
+// The handle's box. It is a sibling of the panel (in a Fragment), positioned
+// relative to the Layout; LayoutResizeHandle draws the edge inside it.
+const PANEL_HANDLE_STYLES: Styles = {
+  // Device pixels: the handle's thickness, so its offsets stay whole pixels.
+  '$handle-size': `${HANDLER_WIDTH}px`,
+  // The edge line lies on the panel's own border. In use it widens to both
+  // sides of it: half a pixel into the panel, half over the content beside it.
+  '$handle-edge-inset': `(${HANDLER_OFFSET}px - 1bw)`,
 
-    // The handle's geometry is in device pixels so the grip stays crisp at any
-    // gap: `$grip-size` is the track's thickness and each dot's length,
-    // `$dot-size` each dot's thickness and `$dot-gap` the space between dots.
-    // The track and dot offsets below derive from these.
-    '$handle-size': `${HANDLER_WIDTH}px`,
-    '$grip-size': '3px',
-    '$dot-size': '1px',
-    '$dot-gap': '2px',
-
-    // Handler size
-    width: {
-      '': '100%',
-      horizontal: '$handle-size',
-      'disabled & horizontal': '1bw',
-    },
-    height: {
-      '': '$handle-size',
-      horizontal: '100%',
-      'disabled & !horizontal': '1bw',
-    },
-
-    // Position handler with direct offset (no centering needed)
-    top: {
-      '': 0,
-      'side=top': `calc($panel-size - ${HANDLER_OFFSET}px)`,
-      'side=bottom': 'initial',
-    },
-    bottom: {
-      '': 0,
-      'side=bottom': `calc($panel-size - ${HANDLER_OFFSET}px)`,
-      'side=top': 'initial',
-    },
-    left: {
-      '': 0,
-      'side=left': `calc($panel-size - ${HANDLER_OFFSET}px)`,
-      'side=right': 'initial',
-    },
-    right: {
-      '': 0,
-      'side=right': `calc($panel-size - ${HANDLER_OFFSET}px)`,
-      'side=left': 'initial',
-    },
-
-    // Offscreen transforms only (no centering needed with direct offset positioning)
-    transform: {
-      '': 'translateX(0)',
-      'offscreen & side=left': `translateX(calc(-1 * $panel-size - ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
-      'offscreen & side=right': `translateX(calc($panel-size + ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
-      'offscreen & side=top': `translateY(calc(-1 * $panel-size - ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
-      'offscreen & side=bottom': `translateY(calc($panel-size + ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
-    },
-
-    cursor: {
-      '': 'row-resize',
-      horizontal: 'col-resize',
-      disabled: 'not-allowed',
-    },
-    touchAction: {
-      '': 'none',
-      disabled: 'auto',
-    },
-    padding: 0,
-    outline: 0,
-    boxSizing: 'border-box',
-
-    // Transition must match panel for synchronized animation
-    transition: {
-      '': 'theme',
-      'has-transition': 'transform $transition ease-out, theme',
-    },
-
-    Track: {
-      width: {
-        '': 'initial',
-        horizontal: '$grip-size',
-        'disabled & horizontal': '1bw',
-      },
-      height: {
-        '': '$grip-size',
-        horizontal: 'initial',
-        'disabled & !horizontal': '1bw',
-      },
-      position: 'absolute',
-      inset: {
-        '': '(($handle-size - $grip-size) / 2) 0',
-        horizontal: '0 (($handle-size - $grip-size) / 2)',
-        disabled: '0 0',
-      },
-      fill: {
-        '': '#border',
-        '(hovered | drag | focused) & !disabled': '#purple-03',
-      },
-      border: 0,
-      transition: 'theme',
-      outline: {
-        '': '$ring-width #primary-text.0',
-        'drag | focused': '$ring-width #primary-text',
-      },
-      outlineOffset: '$outline-offset',
-    },
-
-    Drag: {
-      display: 'grid',
-      gap: '$dot-gap',
-      border: 0,
-      flow: {
-        '': 'row',
-        horizontal: 'column',
-      },
-      gridColumns: {
-        '': 'repeat(5, $grip-size)',
-        horizontal: 'auto',
-      },
-      gridRows: {
-        '': 'auto',
-        horizontal: 'repeat(5, $grip-size)',
-      },
-      width: {
-        '': 'auto',
-        horizontal: '$dot-size',
-      },
-      height: {
-        '': '$dot-size',
-        horizontal: 'auto',
-      },
-      inset: {
-        '': '(($handle-size - $dot-size) / 2) 50% auto auto',
-        horizontal: '50% (($handle-size - $dot-size) / 2) auto auto',
-      },
-      transform: {
-        '': 'translate(-50%, 0)',
-        horizontal: 'translate(0, -50%)',
-      },
-      position: 'absolute',
-      transition: 'theme',
-    },
-
-    DragPart: {
-      radius: true,
-      fill: {
-        '': '#dark-03',
-        'hovered | drag | focused': '#primary-text',
-        disabled: '#disabled-surface-text',
-      },
-    },
+  // Handler size
+  width: {
+    '': '100%',
+    horizontal: '$handle-size',
   },
-});
+  height: {
+    '': '$handle-size',
+    horizontal: '100%',
+  },
+
+  // Position handler with direct offset (no centering needed)
+  top: {
+    '': 0,
+    'side=top': `calc($panel-size - ${HANDLER_OFFSET}px)`,
+    'side=bottom': 'initial',
+  },
+  bottom: {
+    '': 0,
+    'side=bottom': `calc($panel-size - ${HANDLER_OFFSET}px)`,
+    'side=top': 'initial',
+  },
+  left: {
+    '': 0,
+    'side=left': `calc($panel-size - ${HANDLER_OFFSET}px)`,
+    'side=right': 'initial',
+  },
+  right: {
+    '': 0,
+    'side=right': `calc($panel-size - ${HANDLER_OFFSET}px)`,
+    'side=left': 'initial',
+  },
+
+  // Offscreen transforms only (no centering needed with direct offset positioning)
+  transform: {
+    '': 'translateX(0)',
+    'offscreen & side=left': `translateX(calc(-1 * $panel-size - ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
+    'offscreen & side=right': `translateX(calc($panel-size + ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
+    'offscreen & side=top': `translateY(calc(-1 * $panel-size - ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
+    'offscreen & side=bottom': `translateY(calc($panel-size + ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
+  },
+
+  // Transition must match panel for synchronized animation
+  transition: {
+    '': 'theme',
+    'has-transition': 'transform $transition ease-out, theme',
+  },
+};
 
 // Overlay backdrop for overlay mode - covers the content area behind the panel
 const OverlayBackdrop = tasty({
@@ -315,63 +216,6 @@ const OverlayBackdrop = tasty({
     transition: 'opacity .15s ease-out',
   },
 });
-
-interface ResizeHandlerProps {
-  side: Side;
-  isDisabled?: boolean;
-  mods?: Record<string, boolean>;
-  moveProps: ReturnType<typeof useMove>['moveProps'];
-  tokens?: Tokens;
-  onDoubleClick?: () => void;
-}
-
-function ResizeHandler(props: ResizeHandlerProps) {
-  const { side, isDisabled, mods, moveProps, tokens, onDoubleClick } = props;
-  const { t } = useI18n();
-  // One key per side: a translated sentence can't take the side as a word.
-  const label = {
-    left: t('layout.resizeLeftPanel', 'Resize left panel'),
-    top: t('layout.resizeTopPanel', 'Resize top panel'),
-    right: t('layout.resizeRightPanel', 'Resize right panel'),
-    bottom: t('layout.resizeBottomPanel', 'Resize bottom panel'),
-  }[side];
-  const { hoverProps, isHovered } = useHover({});
-  const { focusProps, isFocusVisible } = useFocusRing();
-  const isHorizontal = side === 'left' || side === 'right';
-  const localIsHovered = useDebouncedValue(isHovered, 150);
-
-  return (
-    <ResizeHandlerElement
-      {...mergeProps(hoverProps, focusProps, moveProps, {
-        mods: {
-          hovered: localIsHovered,
-          horizontal: isHorizontal,
-          disabled: isDisabled,
-          focused: isFocusVisible,
-          side,
-          ...mods,
-        },
-        tokens,
-        tabIndex: isDisabled ? undefined : 0,
-        role: 'separator',
-        'aria-orientation': isHorizontal ? 'vertical' : 'horizontal',
-        'aria-label': label,
-        onDoubleClick: isDisabled ? undefined : onDoubleClick,
-      })}
-    >
-      <div data-element="Track" />
-      {!isDisabled && (
-        <div data-element="Drag">
-          <div data-element="DragPart" />
-          <div data-element="DragPart" />
-          <div data-element="DragPart" />
-          <div data-element="DragPart" />
-          <div data-element="DragPart" />
-        </div>
-      )}
-    </ResizeHandlerElement>
-  );
-}
 
 /** Panel rendering mode */
 export type LayoutPanelMode = 'default' | 'sticky' | 'overlay' | 'dialog';
@@ -528,6 +372,17 @@ function LayoutPanel(
   const combinedRef = useCombinedRefs(ref);
   const prevProvidedSizeRef = useRef(providedSize);
   const isHorizontal = side === 'left' || side === 'right';
+  const { t } = useI18n();
+  // The resize handle controls the panel, so a resizable panel needs an id.
+  const generatedId = useId();
+  const panelId = otherProps.id ?? generatedId;
+  // One key per side: a translated sentence can't take the side as a word.
+  const resizeLabel = {
+    left: t('layout.resizeLeftPanel', 'Resize left panel'),
+    top: t('layout.resizeTopPanel', 'Resize top panel'),
+    right: t('layout.resizeRightPanel', 'Resize right panel'),
+    bottom: t('layout.resizeBottomPanel', 'Resize bottom panel'),
+  }[side];
 
   // Natural boundary computation
   const { containerWidth, containerHeight } = layoutState;
@@ -535,25 +390,12 @@ function LayoutPanel(
   const containerDimension = isHorizontal ? containerWidth : containerHeight;
   const oppositeSide = getOppositeSide(side);
   const oppositePanelSize = layoutState.panelSizes[oppositeSide];
-  const ownInsetOffset = isResizable ? RESIZABLE_INSET_OFFSET : 0;
   const naturalMax = useMemo(
     () =>
       !isDialogMode && containerDimension > 0
-        ? Math.max(
-            0,
-            containerDimension -
-              oppositePanelSize -
-              minContentSize -
-              ownInsetOffset,
-          )
+        ? Math.max(0, containerDimension - oppositePanelSize - minContentSize)
         : Infinity,
-    [
-      isDialogMode,
-      containerDimension,
-      oppositePanelSize,
-      minContentSize,
-      ownInsetOffset,
-    ],
+    [isDialogMode, containerDimension, oppositePanelSize, minContentSize],
   );
 
   // Panel open state
@@ -625,6 +467,13 @@ function LayoutPanel(
     }
     return undefined;
   }, [maxSize, containerDimension, isDialogMode]);
+
+  // The minimum in pixels, for the resize handle's value and Home key. CSS
+  // applies a string minimum; JS clamping applies only a number.
+  const resolvedMin =
+    containerDimension > 0 || typeof minSize === 'number'
+      ? resolveCssSize(minSize, containerDimension)
+      : undefined;
 
   // Effective max combines user's maxSize with natural boundary
   const effectiveMax = useMemo(() => {
@@ -756,17 +605,15 @@ function LayoutPanel(
   ]);
 
   // Register panel with layout context
-  // Include handler outside portion (minus border overlap) for proper content inset
+  // The content sits against the panel's border, resizable or not; the resize
+  // handle overlaps both and paints over the content.
   // In sticky, overlay, and dialog modes, panel doesn't push content, so size is 0
   // NOTE: We intentionally use `size` (not `clampValue(size)`) here to avoid a feedback
   // loop. `clampValue` depends on the opposite panel's context size, so clamping here
   // would create a period-2 oscillation through shared context. CSS --max-size handles
   // visual clamping immediately; the auto-shrink effect converges `size` state.
   const effectivePanelSize = isPanelShown && mode === 'default' ? size : 0;
-  const effectiveInsetSize = Math.round(
-    effectivePanelSize +
-      (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
-  );
+  const effectiveInsetSize = Math.round(effectivePanelSize);
 
   const { registerPanel, unregisterPanel, updatePanelSize } = layoutActions;
   const { isReady } = layoutState;
@@ -1012,6 +859,19 @@ function LayoutPanel(
     [combinedRef],
   );
 
+  // Home and End: the smallest size, or the largest the Layout leaves room for.
+  const handleJump = (limit: 'min' | 'max') => {
+    const target = limit === 'min' ? resolvedMin : effectiveMax;
+
+    if (target == null) return;
+
+    const nextSize = Math.round(clampValue(target));
+
+    setSize(nextSize);
+    onSizeChange?.(nextSize);
+    setStoredSize(nextSize);
+  };
+
   // Reset to default size on double-click
   const handleResetSize = useCallback(() => {
     const resetSize =
@@ -1052,6 +912,7 @@ function LayoutPanel(
             panelRefCallback(node, transitionRef);
           }}
           {...filterComponentBaseProps(otherProps, { eventProps: true })}
+          id={isResizable ? panelId : otherProps.id}
           mods={{ ...panelMods, ...mods, offscreen, hidden: isHidden }}
           styles={finalStyles}
           tokens={{ ...panelTokens, ...otherProps.tokens }}
@@ -1062,16 +923,24 @@ function LayoutPanel(
           </LayoutPanelContext.Provider>
         </PanelElement>
         {isResizable && !isHidden && (
-          <ResizeHandler
+          <LayoutResizeHandle
+            qa="PanelResizeHandler"
             side={side}
-            isDisabled={!isResizable}
+            anchor={side}
+            label={resizeLabel}
+            controls={panelId}
+            size={size}
+            isDragging={isDragging}
+            minSize={resolvedMin}
+            maxSize={effectiveMax}
+            styles={PANEL_HANDLE_STYLES}
             mods={{
-              drag: isDragging,
               offscreen,
               'has-transition': hasTransition && isReady,
             }}
-            moveProps={moveProps}
             tokens={panelTokens}
+            moveProps={moveProps}
+            onJump={handleJump}
             onDoubleClick={handleResetSize}
           />
         )}

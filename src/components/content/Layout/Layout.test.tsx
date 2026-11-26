@@ -508,6 +508,168 @@ describe('Layout.Panel resize handler', () => {
     // Should be clamped to minSize
     expect(onSizeChange).toHaveBeenCalledWith(150);
   });
+
+  it('exposes its size and the panel it controls', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel
+          isResizable
+          id="tools"
+          side="left"
+          size={240}
+          minSize={150}
+          maxSize={400}
+        >
+          <div>Panel content</div>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+
+    expect(resizeHandler).toHaveAttribute('aria-valuenow', '240');
+    expect(resizeHandler).toHaveAttribute('aria-valuemin', '150');
+    expect(resizeHandler).toHaveAttribute('aria-valuemax', '400');
+    expect(resizeHandler).toHaveAttribute('aria-controls', 'tools');
+    expect(screen.getByTestId('LayoutPanel')).toHaveAttribute('id', 'tools');
+  });
+
+  it('gives the panel an id to control when it has none', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel isResizable side="left" size={200}>
+          <div>Panel content</div>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const panelId = screen.getByTestId('LayoutPanel').id;
+
+    expect(panelId).not.toBe('');
+    expect(screen.getByRole('separator')).toHaveAttribute(
+      'aria-controls',
+      panelId,
+    );
+  });
+
+  it('adds no id to a panel or a pane that cannot be resized', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200}>
+          <div>Panel content</div>
+        </Layout.Panel>
+        <Layout.Pane>Pane</Layout.Pane>
+      </Layout>,
+    );
+
+    expect(screen.getByTestId('LayoutPanel')).not.toHaveAttribute('id');
+    expect(screen.getByTestId('LayoutPane')).not.toHaveAttribute('id');
+  });
+
+  it('moves to the minimum and the maximum with Home and End', async () => {
+    const onSizeChange = vi.fn();
+
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel
+          isResizable
+          side="left"
+          defaultSize={240}
+          minSize={150}
+          maxSize={400}
+          onSizeChange={onSizeChange}
+        >
+          <div>Panel content</div>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+
+    await userEvent.tab();
+    expect(resizeHandler).toHaveFocus();
+
+    await userEvent.keyboard('{Home}');
+    expect(onSizeChange).toHaveBeenLastCalledWith(150);
+    expect(resizeHandler).toHaveAttribute('aria-valuenow', '150');
+
+    await userEvent.keyboard('{End}');
+    expect(onSizeChange).toHaveBeenLastCalledWith(400);
+    expect(resizeHandler).toHaveAttribute('aria-valuenow', '400');
+  });
+});
+
+describe('Layout.Pane resize handler', () => {
+  it('exposes its size and the pane it controls', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Pane
+          isResizable
+          id="editor"
+          size={200}
+          minSize={100}
+          maxSize={300}
+        >
+          Pane
+        </Layout.Pane>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+
+    expect(resizeHandler).toHaveAttribute('aria-valuenow', '200');
+    expect(resizeHandler).toHaveAttribute('aria-valuemin', '100');
+    expect(resizeHandler).toHaveAttribute('aria-valuemax', '300');
+    expect(resizeHandler).toHaveAttribute('aria-controls', 'editor');
+  });
+
+  // A screen reader would read a missing minimum as 0 anyway; it says so.
+  it('falls back to 0 for a missing minimum', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Pane isResizable size={200} maxSize={300}>
+          Pane
+        </Layout.Pane>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+
+    expect(resizeHandler).toHaveAttribute('aria-valuenow', '200');
+    expect(resizeHandler).toHaveAttribute('aria-valuemin', '0');
+    expect(resizeHandler).toHaveAttribute('aria-valuemax', '300');
+  });
+
+  it('moves to its minimum and maximum with Home and End', async () => {
+    const onSizeChange = vi.fn();
+
+    renderWithRoot(
+      <Layout>
+        <Layout.Pane
+          isResizable
+          resizeEdge="bottom"
+          defaultSize={200}
+          minSize={100}
+          maxSize={300}
+          onSizeChange={onSizeChange}
+        >
+          Pane
+        </Layout.Pane>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+
+    await userEvent.tab();
+    expect(resizeHandler).toHaveFocus();
+
+    await userEvent.keyboard('{End}');
+    expect(onSizeChange).toHaveBeenLastCalledWith(300);
+
+    await userEvent.keyboard('{Home}');
+    expect(onSizeChange).toHaveBeenLastCalledWith(100);
+    expect(resizeHandler).toHaveAttribute('aria-valuenow', '100');
+  });
 });
 
 describe('Layout nested isolation', () => {

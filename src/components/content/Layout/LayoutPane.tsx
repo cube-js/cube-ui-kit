@@ -14,21 +14,22 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useId,
   useRef,
   useState,
 } from 'react';
-import { useFocusRing, useHover, useMove } from 'react-aria';
+import { useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value';
 import { useI18n } from '../../../i18n/useI18n';
 import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';
 import { ScrollbarType } from './LayoutContent';
 import { LayoutContextReset } from './LayoutContext';
+import { LayoutResizeHandle } from './LayoutResizeHandle';
 import { clampSize } from './utils';
 
 import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
@@ -61,6 +62,19 @@ function givesWay(element: Element) {
   return parseFloat(getComputedStyle(element).flexShrink) > 0;
 }
 
+/** A container's content size along an axis: the room its items have. */
+function getAvailableSize(container: HTMLElement, isHorizontal: boolean) {
+  const style = getComputedStyle(container);
+
+  return isHorizontal
+    ? container.clientWidth -
+        parseFloat(style.paddingLeft) -
+        parseFloat(style.paddingRight)
+    : container.clientHeight -
+        parseFloat(style.paddingTop) -
+        parseFloat(style.paddingBottom);
+}
+
 /** How far a flex container's items run past its content box. */
 function getOverflow(container: HTMLElement, isHorizontal: boolean) {
   const style = getComputedStyle(container);
@@ -71,13 +85,7 @@ function getOverflow(container: HTMLElement, isHorizontal: boolean) {
     (isHorizontal
       ? rect.width / container.offsetWidth
       : rect.height / container.offsetHeight) || 1;
-  const available = isHorizontal
-    ? container.clientWidth -
-      parseFloat(style.paddingLeft) -
-      parseFloat(style.paddingRight)
-    : container.clientHeight -
-      parseFloat(style.paddingTop) -
-      parseFloat(style.paddingBottom);
+  const available = getAvailableSize(container, isHorizontal);
   let used = 0;
   let count = 0;
 
@@ -268,98 +276,42 @@ const PaneElement = tasty({
       transition: 'opacity $scrollbar-transition',
       pointerEvents: 'none',
     },
-
-    // Compact resize handler - only drag dots
-    ResizeHandler: {
-      position: 'absolute',
-      // Size: 9px interactive area
-      width: {
-        '': '100%',
-        'edge=right': `${HANDLER_WIDTH}px`,
-      },
-      height: {
-        '': `${HANDLER_WIDTH}px`,
-        'edge=right': '100%',
-      },
-      // Position at edge, centered on the reserved space boundary
-      right: {
-        '': 'initial',
-        'edge=right': `${(HANDLER_RESERVED - HANDLER_WIDTH) / 2}px`,
-      },
-      bottom: {
-        '': `${(HANDLER_RESERVED - HANDLER_WIDTH) / 2}px`,
-        'edge=right': 'initial',
-      },
-      top: {
-        '': 'initial',
-        'edge=right': 0,
-      },
-      left: {
-        '': 0,
-        'edge=right': 'initial',
-      },
-      cursor: {
-        '': 'row-resize',
-        'edge=right': 'col-resize',
-        disabled: 'not-allowed',
-      },
-      padding: 0,
-      outline: 0,
-      boxSizing: 'border-box',
-      transition: 'theme',
-    },
-
-    Drag: {
-      // Grip dots and their spacing in device pixels, so they stay crisp at
-      // any gap.
-      '$grip-size': '3px',
-      '$dot-gap': '2px',
-      display: 'grid',
-      gap: '$dot-gap',
-      border: 0,
-      flow: {
-        '': 'row',
-        'edge=right': 'column',
-      },
-      gridColumns: {
-        '': 'repeat(5, $grip-size)',
-        'edge=right': 'auto',
-      },
-      gridRows: {
-        '': 'auto',
-        'edge=right': 'repeat(5, $grip-size)',
-      },
-      width: {
-        '': 'auto',
-        'edge=right': '$grip-size',
-      },
-      height: {
-        '': '$grip-size',
-        'edge=right': 'auto',
-      },
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      transition: 'theme',
-      radius: 'round',
-      outline: {
-        '': '0',
-        'focused | drag': '$ring-width #primary-text',
-      },
-      outlineOffset: '$outline-offset',
-    },
-
-    DragPart: {
-      radius: true,
-      fill: {
-        '': '#dark-03',
-        'handlerHovered | drag | focused': '#primary-text',
-        disabled: '#disabled-surface-text',
-      },
-    },
   },
 });
+
+// The handle's box, centred on the room the pane reserves beside its content;
+// LayoutResizeHandle draws the edge inside it.
+const PANE_HANDLE_STYLES: Styles = {
+  // Device pixels: the handle's thickness, so its offsets stay whole pixels.
+  '$handle-size': `${HANDLER_WIDTH}px`,
+  // The edge line lies on the pane's edge and thickens into the pane: an item
+  // after the pane paints over anything drawn past it.
+  '$handle-edge-inset': `${(HANDLER_WIDTH - HANDLER_RESERVED) / 2}px`,
+  width: {
+    '': '100%',
+    horizontal: '$handle-size',
+  },
+  height: {
+    '': '$handle-size',
+    horizontal: '100%',
+  },
+  right: {
+    '': 'initial',
+    horizontal: `${(HANDLER_RESERVED - HANDLER_WIDTH) / 2}px`,
+  },
+  bottom: {
+    '': `${(HANDLER_RESERVED - HANDLER_WIDTH) / 2}px`,
+    horizontal: 'initial',
+  },
+  top: {
+    '': 'initial',
+    horizontal: 0,
+  },
+  left: {
+    '': 0,
+    horizontal: 'initial',
+  },
+};
 
 export type ResizeEdge = 'right' | 'bottom';
 
@@ -394,63 +346,6 @@ export interface CubeLayoutPaneProps
   innerProps?: HTMLAttributes<HTMLDivElement>;
 }
 
-interface PaneResizeHandlerProps {
-  edge: ResizeEdge;
-  isDisabled?: boolean;
-  moveProps: ReturnType<typeof useMove>['moveProps'];
-  onDoubleClick?: () => void;
-  onHoverChange?: (isHovered: boolean) => void;
-  onFocusChange?: (isFocused: boolean) => void;
-}
-
-function PaneResizeHandler(props: PaneResizeHandlerProps) {
-  const {
-    edge,
-    isDisabled,
-    moveProps,
-    onDoubleClick,
-    onHoverChange,
-    onFocusChange,
-  } = props;
-  const { t } = useI18n();
-  const { hoverProps, isHovered } = useHover({
-    onHoverChange,
-  });
-  const { focusProps, isFocusVisible } = useFocusRing();
-  const isHorizontal = edge === 'right';
-
-  // Notify parent of focus changes
-  useEffect(() => {
-    onFocusChange?.(isFocusVisible);
-  }, [isFocusVisible, onFocusChange]);
-
-  return (
-    <div
-      data-element="ResizeHandler"
-      {...mergeProps(hoverProps, focusProps, isDisabled ? {} : moveProps, {
-        tabIndex: isDisabled ? undefined : 0,
-        role: 'separator',
-        'aria-orientation': isHorizontal ? 'vertical' : 'horizontal',
-        'aria-label':
-          edge === 'right'
-            ? t('layout.resizePaneRight', 'Resize pane right')
-            : t('layout.resizePaneBottom', 'Resize pane bottom'),
-        onDoubleClick: isDisabled ? undefined : onDoubleClick,
-      })}
-    >
-      {!isDisabled && (
-        <div data-element="Drag">
-          <div data-element="DragPart" />
-          <div data-element="DragPart" />
-          <div data-element="DragPart" />
-          <div data-element="DragPart" />
-          <div data-element="DragPart" />
-        </div>
-      )}
-    </div>
-  );
-}
-
 function LayoutPane(
   props: CubeLayoutPaneProps,
   ref: ForwardedRef<HTMLDivElement>,
@@ -477,6 +372,10 @@ function LayoutPane(
   const combinedInnerRef = useCombinedRefs(innerRefProp, internalInnerRef);
   const prevProvidedSizeRef = useRef(providedSize);
   const isHorizontal = resizeEdge === 'right';
+  const { t } = useI18n();
+  // The resize handle controls the pane, so a resizable pane needs an id.
+  const generatedId = useId();
+  const paneId = otherProps.id ?? generatedId;
 
   // Resize state
   const [isDragging, setIsDragging] = useState(false);
@@ -610,6 +509,61 @@ function LayoutPane(
     onSizeChange?.(finalSize);
   };
 
+  // The current move, or a new one. An arrow key pressed during a drag joins it.
+  const continueMove = (pointerType: string) => {
+    const move = moveRef.current ?? beginMove(combinedRef.current, pointerType);
+
+    moveRef.current = move;
+
+    return move;
+  };
+
+  const moveBy = (move: PaneMove, delta: number) => {
+    const pane = combinedRef.current;
+
+    move.target += delta;
+
+    let next = clampValue(move.target);
+
+    if (!move.container) {
+      // On its own, the pane keeps no travel past its limits.
+      move.target = next;
+    } else {
+      setPaneSize(pane, next);
+
+      // Holding its size, the pane would push the items beyond its grip out
+      // of the container once none of them can give way. It grows only into
+      // the room it would have taken while giving way, and the target keeps
+      // the travel past that, as flex did.
+      if (next > move.size) {
+        const excess =
+          getOverflow(move.container, isHorizontal) - move.maxOverflow;
+
+        if (excess > 0) {
+          next = Math.max(next - excess, move.size);
+          setPaneSize(pane, next);
+        }
+      }
+    }
+
+    move.size = next;
+    setSize(next);
+  };
+
+  const finishMove = (pointerType: string) => {
+    const move = moveRef.current;
+
+    // Beside other panes, a key pressed during a drag leaves the move to the
+    // pointer. On its own, the pane reports at the key's end, and the drag
+    // goes on as a new move, as before.
+    if (move?.container && move.pointerType !== pointerType) return;
+
+    moveRef.current = null;
+    setIsDragging(false);
+
+    if (move) endMove(move);
+  };
+
   const { moveProps } = useMove({
     onMoveStart() {
       if (!isResizable) return;
@@ -633,53 +587,52 @@ function LayoutPane(
       // A move across the resize axis changes nothing.
       if (!delta) return;
 
-      const pane = combinedRef.current;
-      // An arrow key pressed during a drag joins it.
-      const move = moveRef.current ?? beginMove(pane, e.pointerType);
-
-      moveRef.current = move;
-      move.target += delta;
-
-      let next = clampValue(move.target);
-
-      if (!move.container) {
-        // On its own, the pane keeps no travel past its limits.
-        move.target = next;
-      } else {
-        setPaneSize(pane, next);
-
-        // Holding its size, the pane would push the items beyond its grip out
-        // of the container once none of them can give way. It grows only into
-        // the room it would have taken while giving way, and the target keeps
-        // the travel past that, as flex did.
-        if (next > move.size) {
-          const excess =
-            getOverflow(move.container, isHorizontal) - move.maxOverflow;
-
-          if (excess > 0) {
-            next = Math.max(next - excess, move.size);
-            setPaneSize(pane, next);
-          }
-        }
-      }
-
-      move.size = next;
-      setSize(next);
+      moveBy(continueMove(e.pointerType), delta);
     },
     onMoveEnd(e) {
-      const move = moveRef.current;
-
-      // Beside other panes, a key pressed during a drag leaves the move to the
-      // pointer. On its own, the pane reports at the key's end, and the drag
-      // goes on as a new move, as before.
-      if (move?.container && move.pointerType !== e.pointerType) return;
-
-      moveRef.current = null;
-      setIsDragging(false);
-
-      if (move) endMove(move);
+      finishMove(e.pointerType);
     },
   });
+
+  // Home and End: a keyboard move to the pane's own minimum or maximum, which
+  // the panes beside it limit as they limit any other move.
+  const minSizePx = typeof minSize === 'number' ? minSize : undefined;
+  const maxSizePx = typeof maxSize === 'number' ? maxSize : undefined;
+
+  // With no maximum in pixels, the handle's value range ends at the room the
+  // pane's container has: a screen reader reads a missing maximum as 100,
+  // browsing the page as well as on focus, so the room is kept current.
+  const [containerSize, setContainerSize] = useState<number>();
+  const measuresContainer = isResizable && maxSizePx == null;
+
+  useEffect(() => {
+    const container = combinedRef.current?.parentElement;
+
+    if (!measuresContainer || !container) return;
+
+    const observer = new ResizeObserver(() => {
+      const room = Math.round(getAvailableSize(container, isHorizontal));
+
+      // A container that is not laid out (hidden, or `display: contents`)
+      // measures nothing, which is no limit.
+      setContainerSize(room > 0 ? room : undefined);
+    });
+
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [combinedRef, measuresContainer, isHorizontal]);
+
+  const handleJump = (limit: 'min' | 'max') => {
+    const target = limit === 'min' ? minSizePx : maxSizePx;
+
+    if (target == null) return;
+
+    const move = continueMove('keyboard');
+
+    moveBy(move, target - move.target);
+    finishMove('keyboard');
+  };
 
   const adoptSize = useEffectEvent((drawn: number) => {
     setPaneSize(combinedRef.current, drawn);
@@ -742,10 +695,20 @@ function LayoutPane(
     ...mods,
   };
 
+  // The handle draws its Line, Grip and TouchArea itself, so a consumer's
+  // styles for them go to the handle, where they outrank its own. From the
+  // pane, a selector for them would tie with the handle's and lose.
+  const { Line, Grip, TouchArea, ...paneStyles } = styles ?? {};
+  const handleStyles =
+    (Line ?? Grip ?? TouchArea)
+      ? // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `styles.Line`, `styles.Grip` and `styles.TouchArea` to the handle that draws them
+        mergeStyleLayers(PANE_HANDLE_STYLES, { Line, Grip, TouchArea })
+      : PANE_HANDLE_STYLES;
+
   // Merge styles: outer styles to root, inner styles to Inner element
   // Size is NOT included here - it's set via the `$pane-size` token in paneTokens for performance
   const finalStyles = mergeStyles(
-    styles,
+    paneStyles,
     outerStyles,
     // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `innerStyles` to `Inner`
     innerStyles ? { Inner: innerStyles } : null,
@@ -770,6 +733,7 @@ function LayoutPane(
     <PaneElement
       ref={combinedRef}
       {...filterComponentBaseProps(otherProps, { eventProps: true })}
+      id={isResizable ? paneId : otherProps.id}
       {...hoverProps}
       mods={paneMods}
       styles={finalStyles}
@@ -781,10 +745,25 @@ function LayoutPane(
       {isTinyScrollbar && hasOverflowY && <div data-element="ScrollbarV" />}
       {isTinyScrollbar && hasOverflowX && <div data-element="ScrollbarH" />}
       {isResizable && (
-        <PaneResizeHandler
-          edge={resizeEdge}
-          isDisabled={!isResizable}
+        <LayoutResizeHandle
+          data-element="ResizeHandler"
+          side={isHorizontal ? 'left' : 'top'}
+          anchor={resizeEdge}
+          hasEdgeLine
+          label={
+            isHorizontal
+              ? t('layout.resizePaneRight', 'Resize pane right')
+              : t('layout.resizePaneBottom', 'Resize pane bottom')
+          }
+          controls={paneId}
+          size={size}
+          minSize={minSizePx}
+          maxSize={maxSizePx}
+          valueMax={containerSize}
+          isDragging={isDragging}
+          styles={handleStyles}
           moveProps={moveProps}
+          onJump={handleJump}
           onDoubleClick={handleResetSize}
           onHoverChange={setIsHandlerHovered}
           onFocusChange={setIsHandlerFocused}

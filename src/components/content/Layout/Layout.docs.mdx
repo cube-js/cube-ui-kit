@@ -369,9 +369,14 @@ Give the other items a zero flex basis, as the results get here: an item that sh
 - `Inner` - Scrollable inner container
 - `ScrollbarV` - Vertical scroll indicator (tiny mode)
 - `ScrollbarH` - Horizontal scroll indicator (tiny mode)
-- `ResizeHandler` - Drag handle for resizing
-- `Drag` - Visual drag indicator
-- `DragPart` - Individual dots in the drag indicator
+- `ResizeHandler` - The resize handle on the resizable edge, with these parts, each styled through the pane's `styles` as well. The parts take the handle's own states, not the pane's: `hovered`, `focused` (keyboard focus) and `drag` describe the handle, `horizontal` is set on a right edge, and `limit` is `min` or `max` at a limit:
+  - `Line` - The edge line
+  - `Grip` - The grip shown on touch screens
+  - `TouchArea` - The wider target for a coarse pointer
+
+### Resize handle
+
+Layout.Panel and Layout.Pane share one resize handle on their resizable edge. At rest the edge is a border-width line (`1bw`: 1px, or a .5px hairline on dense screens): a panel's own border, or a line the pane draws. On hover, while dragging and on keyboard focus it becomes an accent line one pixel wider (2px, or 1.5px over a hairline). The content sits right against a panel's border, resizable or not, and the handle paints over the content's edge. A panel's line widens to both sides of its border, and its grip and touch target centre on the border; a pane keeps its line, grip and touch target inside the pane, as the item after it paints over anything past its edge. At the minimum or the maximum size, the cursor shows the one direction left (`e-resize`, `w-resize`, `n-resize` or `s-resize`). On touch screens, where nothing can hover, a grip shows on the edge, and a coarse pointer gets a 20px target. None of this changes the size of the panel or the pane.
 
 ---
 
@@ -917,6 +922,7 @@ function ApplicationShell() {
 - Resize handlers can be focused and resized using arrow keys:
   - `Arrow keys` - Resize panel by 10px
   - `Shift + Arrow keys` - Resize panel by 50px
+  - `Home` / `End` - Resize to the minimum / maximum size, when it is known in pixels. A pane's limits are its own `minSize` and `maxSize` as numbers; a panel also resolves percentages and the room its Layout leaves
   - `Double-click` on resize handler - Reset to default size
 
 ### Screen Reader Support
@@ -932,7 +938,7 @@ function ApplicationShell() {
 - `aria-label` - Available on all components for custom labels
 - Landmarks are automatically set for header, footer, and toolbar
 - Panel close buttons include `aria-label="Close panel"`
-- Resize handlers have `role="separator"` with proper `aria-orientation` and `aria-label`
+- Resize handlers have `role="separator"` with `aria-orientation`, `aria-label` and `aria-valuenow`, the size in pixels. `aria-valuemin` is the minimum in pixels, or 0 without one. `aria-valuemax` is a panel's maximum, which includes the room its Layout leaves, or a pane's numeric `maxSize`; a pane without one uses the room its container has, kept current as the container resizes, so the range always holds the value. `aria-controls` points at the resizable panel or pane, which gets a generated `id` when it has none
 
 ---
 
