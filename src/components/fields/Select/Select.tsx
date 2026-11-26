@@ -1095,8 +1095,9 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
 
-  // Not disabled for React Aria, which would drop focus from the option.
-  // `OptionItem` keeps a disabled option inert, and a pointer does not focus it.
+  // Not disabled for React Aria, which would drop focus from the option. The
+  // state refuses to select a disabled option, `useOptionOriginPress` ignores
+  // its press, and a pointer does not focus it.
   let { optionProps, isPressed, labelProps, descriptionProps } = useOption(
     {
       key: item.key,

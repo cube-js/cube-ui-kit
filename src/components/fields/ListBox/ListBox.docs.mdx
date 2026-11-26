@@ -785,7 +785,7 @@ const { data, hasNextPage, isFetchingNextPage, fetchNextPage } = useValues();
 
 - `Tab` - Moves focus to/from the ListBox. A disabled ListBox is not in the Tab order
 - `Tab` / `Shift+Tab` - Reach the "Select All" checkbox (with `showSelectAll`), which `Space` toggles
-- `Arrow Keys` - Navigate between options. A disabled option is reached too, as WAI-ARIA keeps it focusable, so a screen reader says why it is unavailable; it can't be selected
+- `Arrow Keys` - Navigate between options. A disabled option is reached too, as WAI-ARIA keeps it focusable, so a screen reader says why it is unavailable; it can't be selected. With `selectionBehavior="replace"`, where focus selects, the arrow keys skip it
 - `Space/Enter` - Select/deselect the focused option
 - `Home/End` - Move to first/last option
 - `Page Up/Page Down` - Move up/down by multiple items

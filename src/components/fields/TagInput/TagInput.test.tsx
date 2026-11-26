@@ -821,6 +821,8 @@ describe('<TagInput />', () => {
           /^row, two\b.*disabled/,
         ),
       );
+      // React Aria tells every chip how to remove it; a locked one can't be.
+      expect(await reader.lastSpokenPhrase()).not.toMatch(/remove/i);
 
       await userEvent.keyboard('{Delete}');
       await userEvent.keyboard('{Backspace}');

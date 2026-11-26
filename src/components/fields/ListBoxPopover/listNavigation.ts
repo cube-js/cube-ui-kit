@@ -22,19 +22,15 @@ export type NavigationEdge = 'first' | 'last';
 
 /**
  * Walks a collection (possibly nested under sections) and collects the keys of
- * its items, leaving out the ones `skip` returns true for. Mirrors the inline
- * walker that used to live in `useComboBoxKeyboard`.
+ * its items, disabled ones included. Mirrors the inline walker that used to
+ * live in `useComboBoxKeyboard`.
  */
-export function collectVisibleKeys(
-  nodes: Iterable<any>,
-  out: Key[],
-  skip?: (key: Key) => boolean,
-): void {
+export function collectVisibleKeys(nodes: Iterable<any>, out: Key[]): void {
   for (const node of nodes) {
     if (node.type === 'item') {
-      if (!skip?.(node.key)) out.push(node.key);
+      out.push(node.key);
     } else if (node.childNodes) {
-      collectVisibleKeys(node.childNodes, out, skip);
+      collectVisibleKeys(node.childNodes, out);
     }
   }
 }
@@ -56,11 +52,10 @@ export function getVisibleKeys(listState: ListStateLike): Key[] {
  * keys still reach a disabled option before it.
  */
 export function getFirstSelectableKey(listState: ListStateLike): Key | null {
-  const keys: Key[] = [];
-  collectVisibleKeys(listState.collection, keys, (key) =>
-    isItemDisabled(listState, key),
+  return (
+    getVisibleKeys(listState).find((key) => !isItemDisabled(listState, key)) ??
+    null
   );
-  return keys[0] ?? null;
 }
 
 /**

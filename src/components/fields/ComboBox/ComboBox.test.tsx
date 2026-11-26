@@ -345,7 +345,7 @@ describe('<ComboBox />', () => {
       expect(queryByRole('listbox')).not.toBeInTheDocument();
     });
 
-    // Test that disabled items are skipped
+    // A disabled option is listed, marked disabled
     await userEvent.clear(combobox);
     await userEvent.type(combobox, 'o');
 
@@ -415,6 +415,34 @@ describe('<ComboBox />', () => {
     await userEvent.type(combobox, 'b');
     await userEvent.keyboard('{Enter}');
     expect(onSelectionChange).toHaveBeenCalledWith('blueberry');
+  });
+
+  // React Stately moves a highlight the text filters out onto the next option,
+  // disabled or not. The list never highlights a disabled option on its own.
+  it('highlights nothing once the text leaves only disabled options', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="Color" disabledKeys={['black']}>
+        <ComboBox.Item key="blue">Blue</ComboBox.Item>
+        <ComboBox.Item key="black">Black</ComboBox.Item>
+        <ComboBox.Item key="green">Green</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await userEvent.type(combobox, 'bl');
+    await waitFor(() =>
+      expect(getActiveDescendant(combobox)).toHaveTextContent('Blue'),
+    );
+
+    await userEvent.type(combobox, 'a');
+    await waitFor(() =>
+      expect(
+        getByRole('listbox').querySelectorAll('[role="option"]'),
+      ).toHaveLength(1),
+    );
+    // The list highlights a couple of frames after the text changes.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+    expect(getActiveDescendant(combobox)).toBeNull();
   });
 
   it('should handle clear functionality', async () => {

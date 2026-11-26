@@ -187,6 +187,39 @@ describe('<SearchComboBox />', () => {
     });
   });
 
+  // Typing never highlights a disabled option, so with only disabled matches
+  // Enter submits the text, as it does with no match.
+  it('submits the text when every match is disabled', async () => {
+    const onSelect = vi.fn();
+    const onSubmit = vi.fn();
+
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox
+        label="Colors"
+        disabledKeys={['blue']}
+        onSelect={onSelect}
+        onSubmit={onSubmit}
+      >
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+
+    await userEvent.type(input, 'blu');
+    const blue = await waitFor(() => getByRole('option', { name: 'Blue' }));
+    expect(blue).toHaveAttribute('aria-disabled', 'true');
+    expect(getActiveDescendant(input)).toBeNull();
+
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onSubmit).toHaveBeenCalled();
+  });
+
   it('prefers onSelect over onSubmit when a match is auto-focused', async () => {
     const onSelect = vi.fn();
     const onSubmit = vi.fn();
