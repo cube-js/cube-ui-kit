@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.222.0
+
+### Minor Changes
+
+- [#1726](https://github.com/cube-js/cube-ui-kit/pull/1726) [`a0c770b09`](https://github.com/cube-js/cube-ui-kit/commit/a0c770b099fd9ca40032dd4605326f5d39dfad1e) Thanks [@tenphi](https://github.com/tenphi)! - `Layout.Panel` and `Layout.Pane` share a new resize handle. At rest the resizable edge is a border-width line (a panel's own border, or a line the pane now draws), with no gray track and no dots; on hover, while dragging and on keyboard focus it turns into an accent line one pixel wider (2px, or 1.5px over a .5px hairline), centred on a panel's border. At the minimum or maximum size the cursor shows the one direction left. On touch screens a grip shows on the edge and a coarse pointer gets a 20px target. The handle now exposes `aria-valuenow`, `aria-valuemin` and `aria-valuemax` (a pane without a `maxSize` uses the room its container has) and `aria-controls`; `Home` / `End` resize to the minimum / maximum. Panel and pane sizes stay as they were. The content beside a resizable panel loses the 2px gap the old track filled and sits against the panel's border, as beside a fixed panel, so it is 2px wider. Breaking for custom styles: `Layout.Pane` no longer renders the `Drag` and `DragPart` sub-elements; its `ResizeHandler` now holds `Line`, `Grip` and `TouchArea`, which the pane's `styles` reach. A pane that drew its own border on the resizable edge to show it can drop that border.
+
+### Patch Changes
+
+- [#1725](https://github.com/cube-js/cube-ui-kit/pull/1725) [`6a0db5093`](https://github.com/cube-js/cube-ui-kit/commit/6a0db50931d22328146fbe59c252f2171b7f8f58) Thanks [@tenphi](https://github.com/tenphi)! - `Item`: while `autoHideActions` hides the actions, their column now collapses to zero width, as documented, instead of keeping 8px, and the hidden actions can no longer be tapped through the end of the label on a touch screen. Hover, focus and keyboard still reveal them; `preserveActionsSpace` and `ItemButton` are unchanged.
+
 ## 0.221.1
 
 ### Patch Changes
