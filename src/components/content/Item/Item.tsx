@@ -328,6 +328,9 @@ const ItemElement = tasty({
     '@native-row': 'menu-native-row',
     '@interacted':
       'active | :hover | :focus | :focus-within | :has([data-pressed])',
+    // A plain Item's auto-hidden actions while they are hidden.
+    '@actions-collapsed':
+      'auto-hide-actions & !preserve-actions-space & !inside-wrapper & !@interacted',
 
     display: 'inline-grid',
     flow: 'column dense',
@@ -455,8 +458,7 @@ const ItemElement = tasty({
       '': '$inline-padding',
       'has-end-content': '0',
       // Restore padding when actions are hidden AND no other visible end content
-      '!inside-wrapper & !has-suffix & !has-right-icon & auto-hide-actions & !preserve-actions-space & !@interacted':
-        '$inline-padding',
+      '@actions-collapsed & !has-suffix & !has-right-icon': '$inline-padding',
       'inside-wrapper & !has-suffix & !has-right-icon & !preserve-actions-space & !actions-shown':
         '$inline-padding',
     },
@@ -605,6 +607,17 @@ const ItemElement = tasty({
         // publishes a width of 0, and the padding would still reserve
         // `2 * $side-padding` for nothing, pushing a right icon inwards.
         'inside-wrapper': 0,
+        // Hidden auto-hide actions collapse to zero width, as documented: the
+        // label already restores its own end padding (`$label-padding-right`).
+        '@actions-collapsed': 0,
+      },
+      // A hidden action is invisible but would still spill over the label
+      // and catch a tap there (a touch screen has no hover to reveal it first).
+      // `clip` removes that hit area and keeps the action focusable, so
+      // `:focus-within` still reveals it; unlike `hidden`, it never scrolls.
+      overflow: {
+        '': undefined,
+        '@actions-collapsed': 'clip',
       },
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
