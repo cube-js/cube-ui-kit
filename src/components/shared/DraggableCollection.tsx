@@ -29,6 +29,8 @@ import {
 
 import { useEvent } from '../../_internal/hooks/use-event';
 
+import { isItemDisabled } from './disabled-behavior';
+
 import type { Collection, DropOperation, Key, Node } from '@react-types/shared';
 
 const getAllowedDropOperations = (): DropOperation[] => ['move'];
@@ -174,20 +176,32 @@ export function DraggableCollection({
   // Without this, react-aria drags ALL selected items when any selected item
   // is grabbed (hardcoded in useDraggableCollectionState → internal getKeys).
   // The proxy intercepts `selectedKeys` and `isSelected` so every item looks
-  // unselected for drag, while all other methods (isDisabled, setFocusedKey, …)
-  // delegate to the real manager. `bind(target)` preserves `this` for methods
-  // that live on the prototype chain.
+  // unselected for drag. It answers `isDisabled` from the collection: a
+  // disabled item stays focusable (`disabledBehavior: 'selection'`), so the
+  // real manager no longer reports it, and react-aria would let it be dragged.
+  // All other methods (setFocusedKey, …) delegate to the real manager.
+  // `bind(target)` preserves `this` for methods on the prototype chain.
   const dragSelectionManager = useMemo(
     () =>
       new Proxy(state.selectionManager, {
         get(target, prop) {
           if (prop === 'selectedKeys') return new Set<Key>();
           if (prop === 'isSelected') return () => false;
+          if (prop === 'isDisabled') {
+            return (key: Key) =>
+              isItemDisabled(
+                {
+                  collection: state.collection,
+                  disabledKeys: state.disabledKeys,
+                },
+                key,
+              );
+          }
           const value = Reflect.get(target, prop);
           return typeof value === 'function' ? value.bind(target) : value;
         },
       }),
-    [state.selectionManager],
+    [state.selectionManager, state.collection, state.disabledKeys],
   );
 
   const previewRef = useRef<DragPreviewRenderer>(null);
@@ -322,10 +336,11 @@ export function DraggableCollection({
     e.preventDefault();
     e.stopPropagation();
 
-    const focusedKey = String(state.selectionManager.focusedKey);
-    const idx = orderedKeys.indexOf(focusedKey);
+    const { focusedKey } = state.selectionManager;
+    const idx = orderedKeys.indexOf(String(focusedKey));
 
-    if (idx === -1) return;
+    // The keyboard reaches a disabled item, which stays where it is.
+    if (idx === -1 || dragSelectionManager.isDisabled(focusedKey!)) return;
 
     const targetIdx = idx + direction;
 

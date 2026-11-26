@@ -71,10 +71,10 @@ function isComponentElement<T>(
   );
 }
 
-/** Checks if a child is a Tab component. */
 /** The tab list's navigation sees no disabled keys: it stops on every tab. */
 const NO_DISABLED_KEYS: Set<Key> = new Set();
 
+/** Checks if a child is a Tab component. */
 const isTabElement = (child: ReactNode): child is ReactElement<CubeTabProps> =>
   isComponentElement<CubeTabProps>(child, 'CubeTab');
 
@@ -461,10 +461,16 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   // `TabButton` activates a tab when the keyboard focuses it. React Aria's own
   // automatic activation clears the selection on a disabled tab. Its keyboard
   // delegate skips the state's disabled keys, so it navigates a view of the
-  // state that has none; `TabButton` reads them from the real state.
+  // state that has none. React Aria names tabs and panels after the state
+  // object `useTabList` gets, so they take this view too, and its identity
+  // follows `state`'s; `TabButton` reads disabled keys from the real state.
+  const listState = useMemo(
+    () => ({ ...state, disabledKeys: NO_DISABLED_KEYS }),
+    [state],
+  );
   const { tabListProps } = useTabList(
     { ...ariaProps, keyboardActivation: 'manual' },
-    { ...state, disabledKeys: NO_DISABLED_KEYS },
+    listState,
     listRef,
   );
 
@@ -587,6 +593,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   const baseContextValue = useMemo(
     () => ({
       state,
+      listState,
       type: effectiveType,
       size,
       placement,
@@ -605,6 +612,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
     }),
     [
       state,
+      listState,
       effectiveType,
       size,
       placement,
@@ -826,7 +834,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
           <CachedPanelRenderer
             parsedTabs={parsedTabs}
             explicitPanels={explicitPanels}
-            state={state}
+            state={listState}
             renderPanel={renderPanel}
             panelCacheKeys={panelCacheKeys}
             prerender={prerender}
@@ -848,7 +856,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
               <TabPanelRenderer
                 key={tab.key}
                 tabKey={tab.key}
-                state={state}
+                state={listState}
                 content={content}
                 prerender={prerender}
                 keepMounted={effectiveKeepMounted}

@@ -686,6 +686,54 @@ describe('<Tree />', () => {
       expect(onRowAction).toHaveBeenCalledExactlyOnceWith('a');
     });
 
+    // With no row action and no selection, React Aria expands a parent row on
+    // Enter, Space or a click. A disabled parent stays collapsed.
+    it('never expands a disabled parent on a press without a row action', async () => {
+      const treeData: CubeTreeNodeData[] = [
+        {
+          key: 'a',
+          title: 'Alpha',
+          children: [
+            { key: 'a1', title: 'Alpha one' },
+            { key: 'a2', title: 'Alpha two' },
+          ],
+        },
+        {
+          key: 'b',
+          title: 'Beta',
+          isDisabled: true,
+          children: [
+            { key: 'b1', title: 'Beta one' },
+            { key: 'b2', title: 'Beta two' },
+          ],
+        },
+      ];
+      const { getByRole, queryByRole } = renderWithRoot(
+        <Tree aria-label="Files" selectionMode="none" treeData={treeData} />,
+      );
+      const alpha = getByRole('row', { name: 'Alpha' });
+      const beta = getByRole('row', { name: 'Beta' });
+
+      await act(async () => alpha.focus());
+      await userEvent.keyboard('{ArrowDown}');
+      expect(beta).toHaveFocus();
+
+      // Each press would toggle it, so check after every one.
+      for (const press of [
+        () => userEvent.keyboard('{Enter}'),
+        () => userEvent.keyboard(' '),
+        () => userEvent.click(beta),
+      ]) {
+        await press();
+        expect(beta).toHaveAttribute('aria-expanded', 'false');
+        expect(queryByRole('row', { name: 'Beta one' })).toBeNull();
+      }
+
+      // The same press expands a parent you can use.
+      await userEvent.click(alpha);
+      expect(alpha).toHaveAttribute('aria-expanded', 'true');
+    });
+
     it('announces a disabled row when the arrow keys reach it', async () => {
       const { getByRole } = renderWithRoot(
         <Tree aria-label="Files" treeData={ALPHA_BETA_GAMMA} />,

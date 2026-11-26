@@ -1560,6 +1560,32 @@ describe('<ListBox />', () => {
       expect(onSelectionChange).not.toHaveBeenCalled();
     });
 
+    // With `selectionBehavior="replace"` focus selects, and a disabled option
+    // would clear the selection, so the arrow keys skip it there.
+    it('skips a disabled option when focus selects', async () => {
+      const onSelectionChange = vi.fn();
+      renderWithRoot(
+        <ListBox
+          label="Fruits"
+          selectionBehavior="replace"
+          defaultSelectedKey="apple"
+          disabledKeys={['banana']}
+          onSelectionChange={onSelectionChange}
+        >
+          <ListBox.Item key="apple">Apple</ListBox.Item>
+          <ListBox.Item key="banana">Banana</ListBox.Item>
+          <ListBox.Item key="cherry">Cherry</ListBox.Item>
+        </ListBox>,
+      );
+
+      await act(async () =>
+        screen.getByRole('option', { name: 'Apple' }).focus(),
+      );
+      await userEvent.keyboard('{ArrowDown}');
+      expect(screen.getByRole('option', { name: 'Cherry' })).toHaveFocus();
+      expect(onSelectionChange).not.toHaveBeenCalledWith(null);
+    });
+
     it('announces a disabled option and its description when the arrow keys reach it', async () => {
       renderWithRoot(
         <ListBox label="Fruits" disabledKeys={['banana']}>
@@ -1646,6 +1672,41 @@ describe('ListBox id and description', () => {
     );
 
     expect(getByRole('listbox')).toHaveAccessibleDescription('Pick one');
+  });
+});
+
+// The keyboard reaches a disabled option, which still can't be dragged or
+// moved: React Aria gives it no drag props, and Alt with an arrow does nothing.
+describe('ListBox reordering', () => {
+  it('never drags or moves a disabled option', async () => {
+    const onReorder = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <ListBox
+        isReorderable
+        aria-label="Fruits"
+        disabledKeys={['banana']}
+        onReorder={onReorder}
+      >
+        <ListBox.Item key="apple">Apple</ListBox.Item>
+        <ListBox.Item key="banana">Banana</ListBox.Item>
+        <ListBox.Item key="cherry">Cherry</ListBox.Item>
+      </ListBox>,
+    );
+    const banana = getByRole('option', { name: 'Banana' });
+
+    expect(getByRole('option', { name: 'Apple' })).toHaveAttribute(
+      'draggable',
+      'true',
+    );
+    expect(banana).not.toHaveAttribute('draggable');
+
+    await userEvent.tab();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(banana).toHaveFocus();
+
+    await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    await userEvent.keyboard('{Enter}{ArrowDown}{ArrowDown}{Enter}');
+    expect(onReorder).not.toHaveBeenCalled();
   });
 });
 

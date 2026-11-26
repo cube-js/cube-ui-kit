@@ -1623,12 +1623,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         ? renderTreeCellContent(
             treeEntry,
             tree.state.expandedKeys.has(treeEntry.key),
-            // The tree keeps a disabled row focusable, so React Aria would
-            // expand it: a disabled row stays as it is.
-            selection?.isRowDisabled(treeEntry.key) ||
-              tree.state.disabledKeys.has(treeEntry.key)
-              ? { ...treeItemAria?.expandButtonProps, onPress: undefined }
-              : treeItemAria?.expandButtonProps,
+            treeItemAria?.expandButtonProps,
             content,
           )
         : content;

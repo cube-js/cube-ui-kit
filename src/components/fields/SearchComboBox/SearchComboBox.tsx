@@ -46,6 +46,7 @@ import { getValidationMods } from '../../form/validation/resolve-validation-prop
 import { useValidationProps } from '../../form/validation/use-validation-props';
 import { getValidationIcon } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
@@ -54,7 +55,6 @@ import {
   getFirstSelectableKey,
   getNextVisibleKey,
   getVisibleKeys,
-  isDisabledKey,
   ListStateLike,
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
@@ -794,7 +794,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     if (
       keyToSelect != null &&
       listState &&
-      isDisabledKey(listState, keyToSelect)
+      isItemDisabled(listState, keyToSelect)
     ) {
       // A disabled option the arrow keys reached: Enter neither picks it nor
       // submits the text.

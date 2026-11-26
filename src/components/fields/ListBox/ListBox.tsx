@@ -82,7 +82,10 @@ import {
   getValidationTheme,
 } from '../../form/validation/resolve-validation-props';
 import { wrapWithField } from '../../form/wrapper';
-import { getDisabledBehavior } from '../../shared/disabled-behavior';
+import {
+  getDisabledBehavior,
+  isItemDisabled,
+} from '../../shared/disabled-behavior';
 import { createMockDragState } from '../../shared/DraggableCollection';
 import {
   getLongestRows,
@@ -1034,7 +1037,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     ...props,
     onSelectionChange: wrappedOnSelectionChange,
     // The option keeps a disabled option inert.
-    disabledBehavior: getDisabledBehavior(isDisabled),
+    disabledBehavior: getDisabledBehavior(isDisabled, props.selectionBehavior),
     filter,
     selectionMode: props.selectionMode || 'single',
     allowDuplicateSelectionEvents,
@@ -1849,10 +1852,8 @@ function Option({
   });
 
   // The list keeps a disabled option focusable, so the selection manager no
-  // longer reports it as disabled: the collection does.
-  const isOptionDisabled =
-    state.disabledKeys.has(item.key) || !!item.props?.isDisabled;
-  const isDisabled = isParentDisabled || isOptionDisabled;
+  // longer reports it as disabled.
+  const isDisabled = isParentDisabled || isItemDisabled(state, item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
 
   // Drag-and-drop support — only enable when both states are provided

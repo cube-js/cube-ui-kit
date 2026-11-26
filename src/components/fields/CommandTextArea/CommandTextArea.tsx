@@ -32,6 +32,7 @@ import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
@@ -427,10 +428,14 @@ function CommandTextArea<T extends object>(
   const selectableKeys = useMemo<Key[]>(() => {
     if (!activeToken) return [];
     const keys: Key[] = [];
-    collectVisibleKeys(
-      filterFn(localCollectionState.collection),
-      keys,
-      disabledKeySet,
+    collectVisibleKeys(filterFn(localCollectionState.collection), keys, (key) =>
+      isItemDisabled(
+        {
+          collection: localCollectionState.collection,
+          disabledKeys: disabledKeySet,
+        },
+        key,
+      ),
     );
     return keys;
   }, [activeToken, filterFn, localCollectionState.collection, disabledKeySet]);

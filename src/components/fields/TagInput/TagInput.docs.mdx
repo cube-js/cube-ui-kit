@@ -360,7 +360,7 @@ Tab goes from the input to the chips. Backspace in the empty input does too, lan
 
 <Story of={TagInputStories.LockedAndClearable} />
 
-A locked chip has no remove button and the keyboard skips it. The clear button inside the input clears the whole field: the typed text and every chip but the locked ones. It shows while there is something to clear, and calls `onChange` once with what is left. `Escape` clears only the typed text, so a stray key press never loses the values.
+A locked chip has no remove button. The arrow keys stop on it, so a screen reader announces it as disabled, but `Backspace` and `Delete` never remove it. The clear button inside the input clears the whole field: the typed text and every chip but the locked ones. It shows while there is something to clear, and calls `onChange` once with what is left. `Escape` clears only the typed text, so a stray key press never loses the values.
 
 ```jsx
 <TagInput
@@ -458,10 +458,10 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 - `Enter` - Commits the typed text. With the popover open, toggles the focused option, the one `aria-activedescendant` announces; with text typed, an option that is already a chip is refused as a duplicate rather than removed, and the text is cleared. Never submits a surrounding form, even with nothing typed, so one Enter too many after the last value does not send a half-filled dialog
 - `,` (or another delimiter) - Commits the text before the caret and keeps the rest typed
 - `Escape` - Closes the popover, or clears the typed text when it is closed. Either way it clears a message about the text, even once the input is empty
-- `Backspace` in the empty input - Moves focus to the last chip without removing it, and closes the popover. A Backspace held down to clear the text stops at the empty input
+- `Backspace` in the empty input - Moves focus to the last chip you can remove, without removing it, and closes the popover. A Backspace held down to clear the text stops at the empty input
 - `ArrowDown` / `ArrowUp` - Opens the popover or moves through the options. On typed text that matches no option, opens it with every option
 - `Home` / `End` - Moves to the first or last option while the popover is open
-- `ArrowLeft` / `ArrowRight` - Moves between chips. Locked chips are skipped
+- `ArrowLeft` / `ArrowRight` - Moves between chips, locked ones included. A locked chip is announced as disabled and is never removed
 - `ArrowLeft` at the start of the text, with `tagPlacement="inside"` - Moves focus to the last chip, as Backspace in the empty input does. `ArrowRight` on the last chip moves back to the text, with the caret at its start, and `ArrowLeft` on the first chip stays there instead of wrapping round. A modified arrow (Shift, Alt, Ctrl, Cmd) stays text editing. Below the box, the arrows in the input move the caret only
 - `Delete` / `Backspace` on a chip - Removes it and focuses its neighbour, or the input when no chip is left. Holding the key down removes one chip, not the whole row
 - `Escape` on a chip - Moves focus back to the input

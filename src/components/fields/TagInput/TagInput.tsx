@@ -50,6 +50,7 @@ import {
 } from '../../form/field-layout';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { rendersFieldChrome, wrapWithField } from '../../form/wrapper';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
@@ -1139,7 +1140,17 @@ function TagInput<T extends object>(
   // A locked chip stays put: no remove button, Delete or unpick.
   const isTagLocked = (key: string) => !!tagProps?.(key)?.isDisabled;
 
-  const disabledKeySet = new Set([...(disabledKeys ?? [])].map(String));
+  // The options `disabledKeys` lists, and the ones marked with their own
+  // `isDisabled`: never picked, however they are entered.
+  const optionKeys: Key[] = [];
+  collectVisibleKeys(collection, optionKeys);
+  const disabledKeySet = new Set([
+    ...[...(disabledKeys ?? [])].map(String),
+    ...optionKeys
+      .filter((key) => isItemDisabled({ collection }, key))
+      .map(String),
+  ]);
+  const isOptionDisabled = (key: Key) => disabledKeySet.has(String(key));
 
   // Called before the text changes (and the options with it) and when values
   // are added, while the options still hold the labels.
@@ -1217,14 +1228,12 @@ function TagInput<T extends object>(
     });
   };
 
+  // A disabled option is listed, and the arrow keys reach it: WAI-ARIA keeps
+  // it reachable, so a screen reader user hears why it is unavailable.
   const visibleOptionKeys: Key[] = [];
 
   if (hasOptions) {
-    collectVisibleKeys(
-      optionFilterFn(collection),
-      visibleOptionKeys,
-      disabledKeys ? new Set(disabledKeys) : undefined,
-    );
+    collectVisibleKeys(optionFilterFn(collection), visibleOptionKeys);
   }
 
   // Custom values unpicked in the list during this visit. They stay listed,
@@ -1297,8 +1306,10 @@ function TagInput<T extends object>(
 
   if (customTerm) visibleTargetKeys.push(customTerm);
 
+  // The row the list highlights on its own, so that Enter picks it: never a
+  // disabled option.
   const preferredOptionKey = getPreferredRowKey(
-    visibleTargetKeys,
+    visibleTargetKeys.filter((key) => !isOptionDisabled(key)),
     getExactRowKey(collection, {
       term,
       termOptionKey,
@@ -1633,7 +1644,7 @@ function TagInput<T extends object>(
 
       // A disabled option, or a locked value's, that the arrow keys reached:
       // Enter neither picks nor unpicks it.
-      if (disabledKeySet.has(key) || isTagLocked(key)) return;
+      if (isOptionDisabled(key) || isTagLocked(key)) return;
 
       // Typed text means "add". An option that is already a chip is refused
       // as a duplicate and the text cleared, as a comma or blur would;

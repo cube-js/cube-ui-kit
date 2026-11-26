@@ -5,6 +5,7 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
+import { startScreenReader } from '../../../test/screen-reader';
 import { Form } from '../../form/Form';
 import { createFormController } from '../../form/Form/modern/controller';
 
@@ -302,6 +303,26 @@ describe('<ToggleGroup />', () => {
         expect(screen.getByRole(role, { name: 'Underline' })).toHaveFocus();
       },
     );
+
+    it('announces a disabled item when the arrow keys reach it', async () => {
+      renderWithRoot(
+        <ToggleGroup aria-label="Format" selectionMode="multiple">
+          <ToggleGroup.Item key="bold">Bold</ToggleGroup.Item>
+          <ToggleGroup.Item key="italic" isDisabled>
+            Italic
+          </ToggleGroup.Item>
+        </ToggleGroup>,
+      );
+      const reader = await startScreenReader();
+
+      await userEvent.tab();
+      await userEvent.keyboard('{ArrowRight}');
+      await waitFor(async () =>
+        expect(await reader.lastSpokenPhrase()).toMatch(
+          /^button, Italic\b.*disabled/,
+        ),
+      );
+    });
 
     // As a disabled `Radio.Button` does (CUB-5387): the tooltip is usually
     // the reason it is disabled, and focus is how the keyboard opens it.

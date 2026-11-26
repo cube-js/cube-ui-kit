@@ -8,6 +8,7 @@ import {
   waitFor,
   within,
 } from '../../../test';
+import { startScreenReader } from '../../../test/screen-reader';
 import { Menu } from '../../actions/Menu/Menu';
 
 import { ItemTable } from './ItemTable';
@@ -69,6 +70,19 @@ describe('ItemTable flat row keyboard interaction', () => {
     expect(row('r0')).toHaveFocus();
     await userEvent.tab();
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+
+  it('announces a disabled row when the arrow keys reach it', async () => {
+    renderWithRoot(<Fixture onRowAction={() => {}} disabledKeys={['r1']} />);
+    const reader = await startScreenReader();
+
+    await act(async () => row('r0').focus());
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(async () =>
+      expect(await reader.lastSpokenPhrase()).toMatch(
+        /^row\b.*Row 1.*disabled/,
+      ),
+    );
   });
 
   it('enters the body from a sortable header without sorting it', async () => {

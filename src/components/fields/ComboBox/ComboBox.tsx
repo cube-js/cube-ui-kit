@@ -45,13 +45,13 @@ import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { getValidationMods } from '../../form/validation/resolve-validation-props';
 import { getValidationIcon } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
   filterCollectionNodes,
   getEdgeVisibleKey,
   getNextVisibleKey,
-  isDisabledKey,
   ListStateLike,
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
@@ -527,7 +527,7 @@ function useComboBoxKeyboard({
       ? resolveHighlightedKey(listState, selectedKey)
       : null;
 
-    if (key != null && isDisabledKey(listState, key)) {
+    if (key != null && isItemDisabled(listState, key)) {
       // A disabled option the arrow keys reached: Enter picks nothing, and the
       // list stays open.
       e.preventDefault();

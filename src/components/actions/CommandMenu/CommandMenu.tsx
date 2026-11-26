@@ -22,11 +22,11 @@ import {
   CubeSearchInputAttributes,
   SEARCH_TEXT_SERVICES,
 } from '../../fields/search-text-services';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { useMenuContext } from '../Menu/context';
 import { CubeMenuProps } from '../Menu/Menu';
 import {
   getMenuItemReactKey,
-  isMenuItemDisabled,
   MenuCollectionItem as Item,
 } from '../Menu/MenuCollectionItem';
 import { MenuItem } from '../Menu/MenuItem';
@@ -355,7 +355,7 @@ function CommandMenu<T extends object>(
   // Enter runs it. The arrow keys still reach a disabled match.
   const findFirstSelectableItem = () =>
     collectItemKeys(filteredCollectionItems).find(
-      (key) => !isMenuItemDisabled(treeState, key),
+      (key) => !isItemDisabled(treeState, key),
     ) ?? null;
 
   // Create a ref for the menu container
@@ -502,11 +502,7 @@ function CommandMenu<T extends object>(
   const handleActionKey = (e: KeyboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (
-      e.repeat ||
-      focusedKey == null ||
-      isMenuItemDisabled(treeState, focusedKey)
-    )
+    if (e.repeat || focusedKey == null || isItemDisabled(treeState, focusedKey))
       return;
     const item = menuRef.current?.ownerDocument.getElementById(
       itemId(focusedKey),

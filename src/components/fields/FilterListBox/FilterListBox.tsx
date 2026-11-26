@@ -33,12 +33,12 @@ import { splitFieldLayout } from '../../form/field-layout';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { getValidationMods } from '../../form/validation/resolve-validation-props';
 import { wrapWithField } from '../../form/wrapper';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   getEdgeVisibleKey,
   getNextVisibleKey,
-  isDisabledKey,
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
 import {
@@ -717,7 +717,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       for (const node of nodes) {
         if (node.type === 'item') {
           reachableKeys.push(node.key);
-          if (!isDisabledKey(listState, node.key)) out.push(node.key);
+          if (!isItemDisabled(listState, node.key)) out.push(node.key);
           if (inCustomSection) {
             newCustomValueKey = node.key;
             customValueHasMatches = true;
@@ -900,7 +900,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
         const keyToSelect = listState.selectionManager.focusedKey;
 
-        if (keyToSelect != null && isDisabledKey(listState, keyToSelect)) {
+        if (keyToSelect != null && isItemDisabled(listState, keyToSelect)) {
           // A disabled option the arrow keys reached picks nothing, and the
           // list stays open.
           e.preventDefault();

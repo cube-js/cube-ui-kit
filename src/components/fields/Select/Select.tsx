@@ -82,6 +82,7 @@ import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransi
 import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { Portal } from '../../portal/Portal';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { useOptionOriginPress } from '../option-origin-press';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
@@ -1089,8 +1090,8 @@ function SelectListBox({
 function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let ref = useRef<HTMLLIElement>(null);
   // The list keeps a disabled option focusable, so the selection manager no
-  // longer reports it as disabled: the collection does.
-  let isDisabled = state.disabledKeys.has(item.key) || !!item.props?.isDisabled;
+  // longer reports it as disabled.
+  let isDisabled = isItemDisabled(state, item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
 

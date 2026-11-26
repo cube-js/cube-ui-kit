@@ -317,6 +317,12 @@ describe('ItemTable tree rows', () => {
     await userEvent.keyboard('{ArrowUp}');
     expect(row('root')).toHaveFocus();
     expect(document.activeElement).not.toBe(grid());
+
+    await userEvent.click(
+      within(row('branch')).getByRole('button', { name: /^Expand/ }),
+    );
+    expect(row('branch')).toHaveAttribute('aria-expanded', 'false');
+    expect(onRowAction).not.toHaveBeenCalled();
   });
 
   it('keeps single and independent multiple selection non-cascading', async () => {

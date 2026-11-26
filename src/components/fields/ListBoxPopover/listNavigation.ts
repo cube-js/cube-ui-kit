@@ -1,5 +1,7 @@
 import { Key } from '@react-types/shared';
 
+import { isItemDisabled } from '../../shared/disabled-behavior';
+
 /**
  * Minimal view of a React Stately list state. Kept structural (no imports from
  * `react-stately`) so the helpers can be used from any collection-backed
@@ -20,21 +22,19 @@ export type NavigationEdge = 'first' | 'last';
 
 /**
  * Walks a collection (possibly nested under sections) and collects the keys of
- * its items, skipping the `disabledKeys` given. Mirrors the inline walker that
- * used to live in `useComboBoxKeyboard`.
+ * its items, leaving out the ones `skip` returns true for. Mirrors the inline
+ * walker that used to live in `useComboBoxKeyboard`.
  */
 export function collectVisibleKeys(
   nodes: Iterable<any>,
   out: Key[],
-  disabledKeys?: Set<Key>,
+  skip?: (key: Key) => boolean,
 ): void {
   for (const node of nodes) {
     if (node.type === 'item') {
-      if (!disabledKeys || !isDisabledNode(node, disabledKeys)) {
-        out.push(node.key);
-      }
+      if (!skip?.(node.key)) out.push(node.key);
     } else if (node.childNodes) {
-      collectVisibleKeys(node.childNodes, out, disabledKeys);
+      collectVisibleKeys(node.childNodes, out, skip);
     }
   }
 }
@@ -50,21 +50,6 @@ export function getVisibleKeys(listState: ListStateLike): Key[] {
   return keys;
 }
 
-/** Whether a node is disabled: by the list's keys or by its own prop. */
-function isDisabledNode(node: any, disabledKeys?: Set<Key>): boolean {
-  return !!disabledKeys?.has(node.key) || !!node.props?.isDisabled;
-}
-
-/** Whether the key is an option the user cannot pick. */
-export function isDisabledKey(listState: ListStateLike, key: Key): boolean {
-  const collection = listState.collection as { getItem?: (key: Key) => any };
-
-  return (
-    !!listState.disabledKeys?.has(key) ||
-    !!collection.getItem?.(key)?.props?.isDisabled
-  );
-}
-
 /**
  * The first option the user can pick: the one a list highlights on its own
  * (on opening, or as the search changes) so that Enter picks it. The arrow
@@ -72,10 +57,8 @@ export function isDisabledKey(listState: ListStateLike, key: Key): boolean {
  */
 export function getFirstSelectableKey(listState: ListStateLike): Key | null {
   const keys: Key[] = [];
-  collectVisibleKeys(
-    listState.collection,
-    keys,
-    (listState.disabledKeys as Set<Key> | undefined) ?? new Set(),
+  collectVisibleKeys(listState.collection, keys, (key) =>
+    isItemDisabled(listState, key),
   );
   return keys[0] ?? null;
 }

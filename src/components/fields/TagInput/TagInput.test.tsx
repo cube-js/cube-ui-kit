@@ -2243,6 +2243,37 @@ describe('<TagInput />', () => {
     await waitFor(() => expect(active()).toBe('refresh'));
   });
 
+  // An option disabled with its own `isDisabled` is the same as one in
+  // `disabledKeys`: listed, reached, and never picked.
+  it('never picks an option disabled with its own isDisabled', async () => {
+    const onChange = vi.fn();
+    const { getByRole, getByText } = renderWithRoot(
+      <TagInput label="Fruits" onChange={onChange}>
+        <TagInput.Item key="apple">apple</TagInput.Item>
+        <TagInput.Item key="banana" isDisabled>
+          banana
+        </TagInput.Item>
+      </TagInput>,
+    );
+    const input = getByRole('combobox');
+
+    // The only match is disabled: it is listed, and nothing is highlighted.
+    await userEvent.type(input, 'ban');
+    const banana = await waitFor(() => getByRole('option', { name: 'banana' }));
+    expect(banana).toHaveAttribute('aria-disabled', 'true');
+    expect(getActiveDescendant(input)).toBeNull();
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(getActiveDescendant(input)).toBe(banana));
+    await userEvent.keyboard('{Enter}');
+    expect(onChange).not.toHaveBeenCalled();
+
+    await userEvent.clear(input);
+    await userEvent.type(input, 'banana{Enter}');
+    expect(getByText('"banana" is not available')).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('focuses the first match not added yet while typing', async () => {
     const { getByRole } = renderWithRoot(
       <Actions defaultValue={['read', 'rebuild']} />,

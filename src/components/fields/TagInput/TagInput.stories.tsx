@@ -684,7 +684,7 @@ LockedAndClearable.parameters = {
   docs: {
     description: {
       story:
-        '`isClearable` adds a button to the input that clears the field: the typed text and every chip but the locked ones. A chip with `isDisabled` from `tagProps` is locked: it has no remove button, the keyboard skips it and the clear button leaves it.',
+        '`isClearable` adds a button to the input that clears the field: the typed text and every chip but the locked ones. A chip with `isDisabled` from `tagProps` is locked: it has no remove button, the keyboard reaches it but never removes it, and the clear button leaves it.',
     },
   },
 };
