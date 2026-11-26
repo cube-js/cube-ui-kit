@@ -622,13 +622,13 @@ describe('<Tree />', () => {
     ];
 
     it('stops on a disabled row with the arrow keys and never selects it', async () => {
-      const onSelectionChange = vi.fn();
+      const onSelect = vi.fn();
       const { getByRole } = renderWithRoot(
         <Tree
           aria-label="Files"
           selectionMode="single"
           treeData={ALPHA_BETA_GAMMA}
-          onSelectionChange={onSelectionChange}
+          onSelect={onSelect}
         />,
       );
       const alpha = getByRole('row', { name: 'Alpha' });
@@ -643,13 +643,17 @@ describe('<Tree />', () => {
       await userEvent.keyboard('{Enter}');
       await userEvent.keyboard(' ');
       await userEvent.click(beta);
-      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(onSelect).not.toHaveBeenCalled();
 
       await act(async () => beta.focus());
       await userEvent.keyboard('{ArrowDown}');
       expect(gamma).toHaveFocus();
       await userEvent.keyboard('{ArrowUp}');
       expect(beta).toHaveFocus();
+
+      // The same handler runs for a row that can be selected.
+      await userEvent.click(alpha);
+      expect(onSelect).toHaveBeenCalled();
     });
 
     it('never runs the row action or expands a disabled row', async () => {
