@@ -10,6 +10,7 @@ import {
   waitForElementToBeRemoved,
   within,
 } from '../../../test/index';
+import { startScreenReader } from '../../../test/screen-reader';
 import { Field } from '../../form';
 
 import { Select } from './Select';
@@ -642,7 +643,9 @@ describe('<Select />', () => {
       );
     });
 
-    it('skips disabled options at either end', async () => {
+    // WAI-ARIA keeps a disabled option focusable, so the list opens on its
+    // edge option even when that one is disabled.
+    it('reaches disabled options at either end', async () => {
       renderWithRoot(
         <Select label="Item" disabledKeys={['item-1', 'item-50']}>
           {fifty}
@@ -653,7 +656,58 @@ describe('<Select />', () => {
       await act(async () => await userEvent.keyboard('{ArrowUp}'));
 
       await waitFor(() =>
-        expect(screen.getByRole('option', { name: 'Item 49' })).toHaveFocus(),
+        expect(screen.getByRole('option', { name: 'Item 50' })).toHaveFocus(),
+      );
+      expect(screen.getByRole('option', { name: 'Item 50' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    });
+
+    it('stops on a disabled option with the arrow keys and never picks it', async () => {
+      const onSelectionChange = vi.fn();
+      renderWithRoot(
+        <Select
+          label="Fruit"
+          defaultSelectedKey="apple"
+          disabledKeys={['banana']}
+          onSelectionChange={onSelectionChange}
+        >
+          <Select.Item key="apple">Apple</Select.Item>
+          <Select.Item key="banana" description="Out of stock">
+            Banana
+          </Select.Item>
+          <Select.Item key="cherry">Cherry</Select.Item>
+        </Select>,
+      );
+      const reader = await startScreenReader();
+
+      await focusTrigger();
+      await act(async () => await userEvent.keyboard('{ArrowDown}'));
+      await waitFor(() =>
+        expect(screen.getByRole('option', { name: 'Apple' })).toHaveFocus(),
+      );
+
+      await act(async () => await userEvent.keyboard('{ArrowDown}'));
+      const banana = screen.getByRole('option', { name: 'Banana' });
+      await waitFor(() => expect(banana).toHaveFocus());
+      expect(banana).toHaveAttribute('aria-disabled', 'true');
+      await waitFor(async () =>
+        expect(await reader.lastSpokenPhrase()).toMatch(
+          /^option, Banana, Out of stock\b.*disabled/,
+        ),
+      );
+
+      await act(async () => await userEvent.keyboard('{Enter}'));
+      await act(async () => await userEvent.keyboard(' '));
+      await act(async () => await userEvent.click(banana));
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+      await act(async () => banana.focus());
+      await act(async () => await userEvent.keyboard('{ArrowDown}'));
+      await waitFor(() =>
+        expect(screen.getByRole('option', { name: 'Cherry' })).toHaveFocus(),
       );
     });
   });

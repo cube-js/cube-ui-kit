@@ -19,6 +19,7 @@ import {
   Tag,
   TAG_CLOSE_ACTION_STYLES,
 } from '../../content/Tag/Tag';
+import { getDisabledBehavior } from '../../shared/disabled-behavior';
 
 /** One chip as the list renders it. */
 export interface TagListEntry {
@@ -284,10 +285,9 @@ export function TagList(props: TagListProps) {
     disabledKeys: tags
       .filter((tag) => isDisabled || tag.isDisabled)
       .map((tag) => tag.key),
-    // A locked chip stays reachable by the arrow keys, as WAI-ARIA keeps a
-    // disabled item focusable; `TagRow` keeps it inert. A disabled field's
-    // chips drop out of the Tab order along with its input.
-    disabledBehavior: isDisabled ? 'all' : 'selection',
+    // A locked chip stays reachable; `TagRow` keeps it inert. A disabled
+    // field's chips drop out of the Tab order along with its input.
+    disabledBehavior: getDisabledBehavior(isDisabled),
     children: (entry) => (
       <Item key={entry.key} textValue={entry.label}>
         {entry.label}

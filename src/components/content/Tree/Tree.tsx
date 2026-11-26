@@ -10,6 +10,7 @@ import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
+import { getDisabledBehavior } from '../../shared/disabled-behavior';
 import { getLongestRows, rangeWithRows } from '../../shared/virtual-width';
 
 import { TreeElement, TreeScrollContainer, TreeSizer } from './styled';
@@ -294,9 +295,8 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       defaultExpandedKeys: effectiveDefaultExpandedKeys,
       onExpandedChange: handleExpandedChange,
       disabledKeys,
-      // A disabled row stays focusable, as WAI-ARIA tree items do; `TreeNode`
-      // keeps it inert. A disabled tree keeps every row out of the keyboard.
-      disabledBehavior: isDisabled ? ('all' as const) : ('selection' as const),
+      // `TreeNode` keeps a disabled row inert.
+      disabledBehavior: getDisabledBehavior(isDisabled),
       items: treeData,
       children: renderItem as any,
       'aria-label': treeLabel,

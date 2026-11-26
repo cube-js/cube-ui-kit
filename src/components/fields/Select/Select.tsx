@@ -427,8 +427,12 @@ function Select<T extends object>(
     form,
   } = props;
   const { t } = useI18n();
-  // `useSelectState` reports `onOpenChange` itself, once per transition.
-  let state = getValueSelectionState(useSelectState(props));
+  // `useSelectState` reports `onOpenChange` itself, once per transition. A
+  // disabled option stays focusable in the open list, as WAI-ARIA keeps a
+  // disabled option reachable; `Option` keeps it inert.
+  let state = getValueSelectionState(
+    useSelectState({ ...props, disabledBehavior: 'selection' } as typeof props),
+  );
   // Read-only and loading keep the trigger focusable, but its value is fixed.
   const isLocked = !!props.isReadOnly || !!isLoading;
 
@@ -904,12 +908,9 @@ function getEdgeOptionKey(
 
   if (edge === 'last') keys.reverse();
 
+  // A disabled option counts: the keyboard reaches it.
   return (
-    keys.find(
-      (key) =>
-        state.collection.getItem(key)?.type === 'item' &&
-        state.selectionManager.canSelectItem(key),
-    ) ?? null
+    keys.find((key) => state.collection.getItem(key)?.type === 'item') ?? null
   );
 }
 
@@ -1087,17 +1088,20 @@ function SelectListBox({
 
 function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let ref = useRef<HTMLLIElement>(null);
-  let isDisabled = state.disabledKeys.has(item.key);
+  // The list keeps a disabled option focusable, so the selection manager no
+  // longer reports it as disabled: the collection does.
+  let isDisabled = state.disabledKeys.has(item.key) || !!item.props?.isDisabled;
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
 
+  // Not disabled for React Aria, which would drop focus from the option.
+  // `OptionItem` keeps a disabled option inert, and a pointer does not focus it.
   let { optionProps, isPressed, labelProps, descriptionProps } = useOption(
     {
       key: item.key,
-      isDisabled,
       isSelected,
       shouldSelectOnPressUp: true,
-      shouldFocusOnHover: true,
+      shouldFocusOnHover: !isDisabled,
       shouldUseVirtualFocus,
     },
     state,
@@ -1152,6 +1156,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         keyboardProps,
       )}
       ref={ref}
+      isDisabled={isDisabled}
       mods={{
         listboxitem: true,
         selected: isSelected,
