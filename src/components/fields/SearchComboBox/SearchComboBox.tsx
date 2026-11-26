@@ -915,9 +915,9 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   // (parity with ComboBox's initial-focus behaviour). The user's own highlight
   // is left untouched while the focused option is still visible; a missing or
   // filtered-out focus falls back to the first option the user can pick, or to
-  // none. This is a layout effect so that it runs before React Stately's own
-  // reset (a passive effect), which would move a filtered-out highlight onto
-  // the next option, disabled or not, where Enter does nothing.
+  // none. A layout effect, so the first option is highlighted before paint;
+  // ListBox's `useDisabledFocusReset` keeps any other reset off a disabled
+  // option.
   useLayoutEffect(() => {
     if (!shouldShowPopover) return;
 

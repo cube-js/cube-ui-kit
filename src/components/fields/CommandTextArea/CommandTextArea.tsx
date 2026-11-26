@@ -734,9 +734,7 @@ function CommandTextArea<T extends object>(
     const listState = listStateRef.current;
     if (!listState) return;
 
-    // With no option to insert, nothing is highlighted. Clearing it here also
-    // keeps React Stately, which runs after this, from moving a highlight that
-    // dropped out of the list onto a disabled option.
+    // With no option to insert, nothing is highlighted.
     const focused = listState.selectionManager.focusedKey;
     if (focused == null || !visibleFilteredKeys.includes(focused)) {
       markKeyboardFocus(listState);

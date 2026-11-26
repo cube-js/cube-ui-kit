@@ -1560,6 +1560,43 @@ describe('<ListBox />', () => {
       expect(onSelectionChange).not.toHaveBeenCalled();
     });
 
+    // When the focused option goes away, React Stately moves focus to the next
+    // one, disabled or not. The list moves on to the next option the user can
+    // pick, or clears focus when none is left.
+    it.each([
+      ['moves focus past a disabled option', ['banana', 'cherry'], 'cherry'],
+      ['clears focus when only disabled options are left', ['banana'], null],
+    ])(
+      '%s when the focused option goes away',
+      async (_, keysAfter, focusedAfter) => {
+        const fruits = (keys: string[]) => (
+          <ListBox label="Fruits" disabledKeys={['banana']}>
+            {keys.map((key) => (
+              <ListBox.Item key={key}>{key}</ListBox.Item>
+            ))}
+          </ListBox>
+        );
+        const { rerender } = renderWithRoot(
+          fruits(['apple', 'banana', 'cherry']),
+        );
+
+        await act(async () =>
+          screen.getByRole('option', { name: 'apple' }).focus(),
+        );
+        rerender(fruits(keysAfter));
+
+        await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+        expect(
+          screen.getByRole('option', { name: 'banana' }),
+        ).not.toHaveFocus();
+        if (focusedAfter) {
+          expect(
+            screen.getByRole('option', { name: focusedAfter }),
+          ).toHaveFocus();
+        }
+      },
+    );
+
     // With `selectionBehavior="replace"` focus selects, and a disabled option
     // would clear the selection, so the arrow keys skip it there.
     it('skips a disabled option when focus selects', async () => {
