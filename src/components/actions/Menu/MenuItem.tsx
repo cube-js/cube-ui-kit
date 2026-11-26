@@ -23,6 +23,7 @@ import {
   normalizeNavigationUrl,
 } from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
+import { getDisabledElementProps } from '../../../utils/react/disabledProps';
 import { mergeProps } from '../../../utils/react/mergeProps';
 import {
   COLLECTION_ITEM_CLICK,
@@ -354,11 +355,6 @@ function MenuItemContent<T>(
     // Inline controls own activation; the menu handles their row navigation.
     if ((e.target as HTMLElement).closest('[data-element="Actions"]')) return;
     if (primaryInCell && (e.key === ' ' || e.key === 'Enter')) {
-      if (isDisabled) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
       if (e.nativeEvent.isComposing || (e.key === ' ' && e.repeat)) {
         e.preventDefault();
         e.stopPropagation();
@@ -482,12 +478,19 @@ function MenuItemContent<T>(
         }
         nativeMenuItemProps={
           primaryInCell
-            ? primaryMenuItemProps(
-                semanticProps,
-                consumerSemanticProps,
-                isLink,
-                props.id,
-                filteredItemProps.type,
+            ? mergeProps(
+                primaryMenuItemProps(
+                  semanticProps,
+                  consumerSemanticProps,
+                  isLink,
+                  props.id,
+                  filteredItemProps.type,
+                ),
+                // `Item` drops the row's key handlers while it is disabled, and
+                // the keyboard focuses this primary, not the row: keep Enter and
+                // Space from running their default action (Space scrolls).
+                getDisabledElementProps({ isDisabled, keepEvents: true })
+                  .inertProps,
               )
             : undefined
         }

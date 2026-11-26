@@ -885,6 +885,50 @@ describe('<Menu />', () => {
     expect(unavailable).toHaveFocus();
   });
 
+  // A link row or a row with inline actions focuses its native primary, not
+  // the row, so the row's own key guard never sees the key. Space would scroll
+  // the page.
+  it.each(['link', 'actions'] as const)(
+    'blocks the default Enter and Space on a disabled %s row',
+    async (kind) => {
+      render(
+        <Root>
+          <Menu aria-label="Workbooks">
+            <Menu.Item key="first" tooltip={false}>
+              First command
+            </Menu.Item>
+            <Menu.Item
+              key="unavailable"
+              tooltip={false}
+              isDisabled
+              {...(kind === 'link'
+                ? { to: '/unavailable' }
+                : {
+                    actions: (
+                      <Menu.Item.Action aria-label="Unavailable settings" />
+                    ),
+                  })}
+            >
+              Unavailable workbook
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const unavailable = screen.getByRole('menuitem', {
+        name: 'Unavailable workbook',
+      });
+
+      await act(async () =>
+        screen.getByRole('menuitem', { name: 'First command' }).focus(),
+      );
+      await userEvent.keyboard('{ArrowDown}');
+      expect(unavailable).toHaveFocus();
+      expect(unavailable.tagName).toBe('A');
+      expect(fireEvent.keyDown(unavailable, { key: ' ' })).toBe(false);
+      expect(fireEvent.keyDown(unavailable, { key: 'Enter' })).toBe(false);
+    },
+  );
+
   // Sections tests
   it('should render sections with titles', () => {
     const { getByText, getByRole } = render(
