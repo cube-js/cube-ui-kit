@@ -96,6 +96,7 @@ import { useOptionOriginPress } from '../option-origin-press';
 
 import { DraggableListBox } from './DraggableListBox';
 import { EMPTY_ROW_STYLES } from './empty-row';
+import { useDisabledFocusReset } from './use-disabled-focus-reset';
 
 import type { SelectionManager } from '@react-stately/selection';
 import type {
@@ -1063,6 +1064,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   }
 
   const listState = getValueSelectionState(useListState(listStateProps));
+  useDisabledFocusReset(listState);
 
   const hasSelectAll = !!showSelectAll && props.selectionMode === 'multiple';
 

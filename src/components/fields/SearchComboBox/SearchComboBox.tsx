@@ -53,7 +53,6 @@ import {
   collectVisibleKeys,
   filterCollectionNodes,
   getEdgeVisibleKey,
-  getFirstSelectableKey,
   getNextVisibleKey,
   getVisibleKeys,
   ListStateLike,
@@ -548,19 +547,27 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     [disabledKeys],
   );
 
-  // Flat list of selectable keys after filtering. Doubles as the dependency
-  // that re-triggers auto-focus whenever the visible results change.
-  const selectableItemKeys = useMemo(() => {
+  // Flat lists of the keys after filtering, disabled ones included, and of the
+  // ones the user can pick. They follow the typed text at once, where the
+  // list's own state can lag a render behind it, and they re-trigger the
+  // highlight whenever the results change.
+  const visibleItemKeys = useMemo(() => {
     const collection = localCollectionState?.collection;
     const keys: Key[] = [];
-    if (!collection) return keys;
+    if (collection) {
+      collectVisibleKeys(filterFn(collection) as Iterable<any>, keys);
+    }
+    return keys;
+  }, [localCollectionState?.collection, filterFn]);
+  const selectableItemKeys = useMemo(() => {
+    const collection = localCollectionState?.collection;
+    if (!collection) return [];
 
-    collectVisibleKeys(filterFn(collection) as Iterable<any>, keys);
-    return keys.filter(
+    return visibleItemKeys.filter(
       (key) =>
         !isItemDisabled({ collection, disabledKeys: disabledKeySet }, key),
     );
-  }, [localCollectionState?.collection, filterFn, disabledKeySet]);
+  }, [localCollectionState?.collection, visibleItemKeys, disabledKeySet]);
 
   const trimmedInput = effectiveInputValue.trim();
 
@@ -754,22 +761,19 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
   // The option Enter commits. Prefer the highlighted option, but only when
   // it's still visible (further typing may have filtered it out); otherwise
-  // fall back to the first visible option so typing a match and pressing
-  // Enter always selects the top result.
-  //
-  // `listStateRef` can still be null while the popover is mounting/
-  // transitioning. In that window we fall back to the parent-computed
-  // `selectableItemKeys` so a matching query commits via `onSelect` instead of
-  // leaking through to `onSubmit`.
+  // fall back to the first option the user can pick, so typing a match and
+  // pressing Enter always selects the top result. Read from this field's own
+  // keys: `listStateRef` can lag a render behind the text, or be null while
+  // the popover mounts, and a matching query must still commit via `onSelect`
+  // instead of leaking through to `onSubmit`.
   const getKeyToSelect = (listState: ListStateLike | null): Key | null => {
-    if (!listState) return selectableItemKeys[0] ?? null;
+    const focusedKey = listState?.selectionManager.focusedKey;
 
-    const focusedKey = listState.selectionManager.focusedKey;
-
-    if (focusedKey != null && getVisibleKeys(listState).includes(focusedKey))
+    if (focusedKey != null && visibleItemKeys.includes(focusedKey)) {
       return focusedKey;
+    }
 
-    return getFirstSelectableKey(listState);
+    return selectableItemKeys[0] ?? null;
   };
 
   // Enter commits an option, else submits the raw text, else does nothing
@@ -925,25 +929,21 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
       const listState = listStateRef.current;
 
-      if (listState) {
-        const keys = getVisibleKeys(listState);
+      if (listState && getVisibleKeys(listState).length > 0) {
+        const focusedKey = listState.selectionManager.focusedKey;
 
-        if (keys.length > 0) {
-          const focusedKey = listState.selectionManager.focusedKey;
-          const isFocusValid = focusedKey != null && keys.includes(focusedKey);
-
-          if (!isFocusValid) {
-            // The first option Enter can pick, or none, so Enter submits the
-            // text; the arrow keys still reach a disabled one.
-            markKeyboardFocus(listState);
-            listState.selectionManager.setFocusedKey(
-              getFirstSelectableKey(listState),
-            );
-            bumpFocus();
-          }
-
-          return;
+        // Checked against this field's own keys: the list's can lag.
+        if (focusedKey == null || !visibleItemKeys.includes(focusedKey)) {
+          // The first option Enter can pick, or none, so Enter submits the
+          // text; the arrow keys still reach a disabled one.
+          markKeyboardFocus(listState);
+          listState.selectionManager.setFocusedKey(
+            selectableItemKeys[0] ?? null,
+          );
+          bumpFocus();
         }
+
+        return;
       }
 
       // The listbox mounts inside a portal/transition, so its state may not be
@@ -959,7 +959,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     return () => {
       if (timer != null) clearTimeout(timer);
     };
-  }, [shouldShowPopover, selectableItemKeys]);
+  }, [shouldShowPopover, visibleItemKeys, selectableItemKeys]);
 
   const resolvedEmptyLabel =
     emptyLabel !== undefined

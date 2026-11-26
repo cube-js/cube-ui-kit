@@ -2276,6 +2276,30 @@ describe('<TagInput />', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  // React Stately would move a highlight the text filters out onto the next
+  // option, disabled or not. The list never highlights a disabled one itself.
+  it('highlights nothing once the text leaves only disabled options', async () => {
+    const { getByRole } = renderWithRoot(
+      <TagInput label="Colors" disabledKeys={['blue']}>
+        <TagInput.Item key="black">black</TagInput.Item>
+        <TagInput.Item key="blue">blue</TagInput.Item>
+      </TagInput>,
+    );
+    const input = getByRole('combobox');
+
+    await userEvent.type(input, 'bl');
+    await waitFor(() =>
+      expect(getActiveDescendant(input)).toHaveTextContent('black'),
+    );
+    await userEvent.type(input, 'u');
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+
+    expect(getByRole('option', { name: 'blue' })).not.toHaveAttribute(
+      'data-focused',
+    );
+    expect(getActiveDescendant(input)).toBeNull();
+  });
+
   it('focuses the first match not added yet while typing', async () => {
     const { getByRole } = renderWithRoot(
       <Actions defaultValue={['read', 'rebuild']} />,

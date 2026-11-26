@@ -909,9 +909,14 @@ function getEdgeOptionKey(
 
   if (edge === 'last') keys.reverse();
 
-  // A disabled option counts: the keyboard reaches it.
+  // The list opens on an option the user can pick; the arrow keys still reach
+  // a disabled one from there.
   return (
-    keys.find((key) => state.collection.getItem(key)?.type === 'item') ?? null
+    keys.find(
+      (key) =>
+        state.collection.getItem(key)?.type === 'item' &&
+        state.selectionManager.canSelectItem(key),
+    ) ?? null
   );
 }
 

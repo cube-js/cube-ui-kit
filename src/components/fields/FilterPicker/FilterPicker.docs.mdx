@@ -817,7 +817,7 @@ const [keyOrder, setKeyOrder] = useState([
 - `Tab` - Moves focus to the trigger button
 - `Tab` (popover open, search not focused) - Moves focus to the search input. A touch or pen open, or `autoFocus={false}`, leaves focus on the popover, and the keys below work from the search
 - `Space/Enter` - Opens the dropdown popover. The first selected option is highlighted, or the first option when none is selected, unless `defaultFocusedKey` names another
-- `Arrow Up/Down` - Opens the popover (when closed) or navigates through options (when open)
+- `Arrow Up/Down` - Opens the popover (when closed) or navigates through options (when open). A disabled option is reached too, as WAI-ARIA keeps it focusable, so a screen reader says why it is unavailable; Enter ignores it, and the list never highlights one on its own
 - `Enter` (popover open) - Selects the highlighted option, or toggles it in multiple selection mode. Closes the popover in single selection mode and with `isCheckable`
 - `Escape` - Closes the popover or clears search
 - `Home/End` - Navigate to first/last option

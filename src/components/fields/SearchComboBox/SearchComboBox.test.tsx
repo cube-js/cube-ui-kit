@@ -220,6 +220,77 @@ describe('<SearchComboBox />', () => {
     expect(onSubmit).toHaveBeenCalled();
   });
 
+  // Typing that filters out the highlighted option moves the highlight to the
+  // next one the user can pick, never onto a disabled one.
+  describe('when typing filters out the highlighted option', () => {
+    const renderColors = (keys: string[]) => {
+      const onSelect = vi.fn();
+      const onSubmit = vi.fn();
+      const utils = renderWithRoot(
+        <SearchComboBox
+          label="Colors"
+          disabledKeys={['blue']}
+          onSelect={onSelect}
+          onSubmit={onSubmit}
+        >
+          {keys.map((key) => (
+            <SearchComboBox.Item key={key}>
+              {key[0].toUpperCase() + key.slice(1)}
+            </SearchComboBox.Item>
+          ))}
+        </SearchComboBox>,
+      );
+
+      return { ...utils, onSelect, onSubmit };
+    };
+
+    it('moves the highlight past a disabled option', async () => {
+      const { getByRole, onSelect, onSubmit } = renderColors([
+        'black',
+        'blue',
+        'blur',
+      ]);
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'bl');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('Black'),
+      );
+      await userEvent.type(input, 'u');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('Blur'),
+      );
+      expect(getByRole('option', { name: 'Blue' })).not.toHaveAttribute(
+        'data-focused',
+      );
+
+      await userEvent.keyboard('{Enter}');
+      await waitFor(() =>
+        expect(onSelect).toHaveBeenCalledWith('blur', 'Blur'),
+      );
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('submits the text once only disabled options are left', async () => {
+      const { getByRole, onSelect, onSubmit } = renderColors(['black', 'blue']);
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'bl');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('Black'),
+      );
+      await userEvent.type(input, 'u');
+      await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+      expect(getByRole('option', { name: 'Blue' })).not.toHaveAttribute(
+        'data-focused',
+      );
+
+      await userEvent.keyboard('{Enter}');
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(onSubmit).toHaveBeenCalled();
+    });
+  });
+
   it('prefers onSelect over onSubmit when a match is auto-focused', async () => {
     const onSelect = vi.fn();
     const onSubmit = vi.fn();

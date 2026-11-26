@@ -242,9 +242,9 @@ useEffect(() => {
 ### Keyboard Navigation
 
 - `Tab` - Moves focus to/from the input
-- `ArrowDown` - Opens the popover (if closed) or moves focus to the next suggestion
+- `ArrowDown` - Opens the popover (if closed) or moves focus to the next suggestion. A disabled option is reached too, as WAI-ARIA keeps it focusable, so a screen reader says why it is unavailable; Enter ignores it, and the list never highlights one on its own
 - `ArrowUp` - Opens the popover (if closed) or moves focus to the previous suggestion
-- `Enter` - Selects the highlighted suggestion, falling back to the first visible suggestion; when no suggestion is visible, submits the raw text via `onSubmit`
+- `Enter` - Selects the highlighted suggestion, falling back to the first suggestion the user can pick; when there is none, submits the raw text via `onSubmit`. On a disabled suggestion the arrow keys reached, it does nothing
 - `Escape` - Closes the popover (if open) or clears the input (if clearable and popover closed)
 - `Home` / `End` - Moves focus to the first / last suggestion (when the popover is open)
 - Typing - Filters suggestions based on the input value

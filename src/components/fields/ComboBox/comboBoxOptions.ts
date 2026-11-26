@@ -1,6 +1,5 @@
 import { Key } from '@react-types/shared';
 
-import { isItemDisabled } from '../../shared/disabled-behavior';
 import {
   getFirstSelectableKey,
   ListStateLike,
@@ -139,25 +138,12 @@ export function highlightOption(
 ): Key | null {
   if (!listState?.selectionManager || !listState.collection) return null;
 
-  const { selectionManager } = listState;
-
-  // The list's own highlight is never a disabled option, and this runs as the
-  // list opens or the text filters it, not on the arrow keys. React Stately
-  // moves a highlight the filter drops onto the next option, disabled or not.
-  if (
-    selectionManager.focusedKey != null &&
-    isItemDisabled(listState, selectionManager.focusedKey)
-  ) {
-    selectionManager.setFocusedKey(null);
-  }
-
   const key = resolveHighlightedKey(listState, selectedKey);
 
   markKeyboardFocus(listState);
 
-  // With nothing to highlight, the highlight clears.
-  if (key !== selectionManager.focusedKey) {
-    selectionManager.setFocusedKey(key);
+  if (key != null && key !== listState.selectionManager.focusedKey) {
+    listState.selectionManager.setFocusedKey(key);
   }
 
   return key;

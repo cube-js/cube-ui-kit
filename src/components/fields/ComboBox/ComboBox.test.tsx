@@ -445,6 +445,28 @@ describe('<ComboBox />', () => {
     expect(getActiveDescendant(combobox)).toBeNull();
   });
 
+  // The list highlights a couple of frames after the text changes. A disabled
+  // option the arrow keys reach in the meantime stays highlighted, and the
+  // input keeps pointing at it.
+  it('keeps a disabled option the arrow keys reach while the list settles', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="Color" disabledKeys={['black']}>
+        <ComboBox.Item key="blue">Blue</ComboBox.Item>
+        <ComboBox.Item key="black">Black</ComboBox.Item>
+        <ComboBox.Item key="green">Green</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await userEvent.type(combobox, 'bla');
+    await userEvent.keyboard('{ArrowDown}');
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+    const black = getByRole('option', { name: 'Black' });
+    expect(black).toHaveAttribute('data-focused');
+    expect(getActiveDescendant(combobox)).toBe(black);
+  });
+
   it('should handle clear functionality', async () => {
     const onClear = vi.fn();
 

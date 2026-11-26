@@ -643,9 +643,9 @@ describe('<Select />', () => {
       );
     });
 
-    // WAI-ARIA keeps a disabled option focusable, so the list opens on its
-    // edge option even when that one is disabled.
-    it('reaches disabled options at either end', async () => {
+    // The list opens on an option the user can pick. WAI-ARIA keeps a
+    // disabled option focusable, so the arrow keys still reach the one past it.
+    it('opens past disabled options at either end and still reaches them', async () => {
       renderWithRoot(
         <Select label="Item" disabledKeys={['item-1', 'item-50']}>
           {fifty}
@@ -655,6 +655,11 @@ describe('<Select />', () => {
       await focusTrigger();
       await act(async () => await userEvent.keyboard('{ArrowUp}'));
 
+      await waitFor(() =>
+        expect(screen.getByRole('option', { name: 'Item 49' })).toHaveFocus(),
+      );
+
+      await act(async () => await userEvent.keyboard('{ArrowDown}'));
       await waitFor(() =>
         expect(screen.getByRole('option', { name: 'Item 50' })).toHaveFocus(),
       );
