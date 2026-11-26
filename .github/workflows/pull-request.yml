@@ -63,20 +63,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-  # Only the tests on the changed surface run here: scripts/test-changed.mjs
-  # walks the import graph of `src` and selects the test files whose imports
-  # reach the files this PR changes. A PR that touches the suite's config or
-  # dependencies runs the full suite instead. The full suite still runs before
-  # every release (publish.yml).
+  # Vitest selects related tests before sharding. Keep all three shards so
+  # shared setup, config or tooling changes can run the full suite in parallel.
   tests:
-    name: 'Source tests (changed surface)'
+    name: 'Source tests (${{ matrix.shard }}/3)'
     needs: plan
     if: ${{ !cancelled() && github.head_ref != 'changeset-release/main' && needs.plan.outputs.tests != 'false' }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       # Installs the pnpm pinned by `packageManager` — the same field pnpm reads
       # to switch itself locally, so CI and a contributor cannot drift apart.
@@ -92,7 +93,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run the tests for the changed surface
-        run: pnpm test:changed
+        run: pnpm test:changed --base HEAD^1 -- --shard=${{ matrix.shard }}/3
 
   static-checks:
     name: 'Lint, types & diagnostics'

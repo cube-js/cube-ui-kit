@@ -1,211 +1,115 @@
 #!/usr/bin/env node
-/**
- * Runs only the unit tests for the changed surface.
- *
- * The changed surface is every file that differs between the working tree and
- * the merge base with the base branch (default `origin/main`, or the branch
- * named by `--base`, or `$GITHUB_BASE_REF`). That is exactly what merging
- * would change, including uncommitted edits and untracked files.
- *
- * For each changed file the script walks the relative import graph of `src`
- * and selects every test file that transitively imports it. A changed test
- * file selects itself. A file no job reads — specs, docs, repository notes —
- * selects nothing, and the run is a no-op success. Anything the graph cannot
- * describe (config, dependencies, the suite setup) selects the full suite:
- * the default is to test more, never less.
- *
- * Usage:
- *   node scripts/test-changed.mjs [--base <ref>] [-- <vitest args>]
- *
- * With no changed surface at all the suite is skipped and the exit code is 0.
- * Any extra arguments after `--` are passed to vitest verbatim.
- */
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname, extname, join, relative, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
+import { kindOf } from './ci/plan-jobs.mjs';
 
-/** Files whose change invalidates the whole suite, not one surface. */
-const FULL_SUITE = [
-  /^package\.json$/,
-  /^pnpm-lock\.yaml$/,
-  /^pnpm-workspace\.yaml$/,
-  /^tsconfig.*\.json$/,
-  /^vitest\..*\.config\.ts$/,
-  /^vitest\.config\.ts$/,
-  /^src\/test\/setup\.ts$/,
-  /^\.github\//,
-];
-
-const SRC_EXT = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'];
+const root = fileURLToPath(new URL('..', import.meta.url));
+const publicApiTest = 'src/public-api.test.ts';
 
 function git(...args) {
-  return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  return execFileSync('git', args, { cwd: root, encoding: 'utf8' });
+}
+
+function defaultBase() {
+  for (const ref of ['origin/main', 'main']) {
+    if (
+      spawnSync('git', ['rev-parse', '--verify', '--quiet', ref], { cwd: root })
+        .status === 0
+    )
+      return ref;
+  }
 }
 
 function changedFiles(base) {
-  let baseRef = base;
-  if (!baseRef) {
-    const refs = ['origin/main', 'main'];
-    baseRef = refs.find((r) => {
-      try {
-        git('rev-parse', '--verify', '--quiet', r);
-        return true;
-      } catch {
-        return false;
-      }
-    });
-  }
-  let diff;
-  if (baseRef) {
-    const mergeBase = git('merge-base', baseRef, 'HEAD');
-    // Tracked changes vs the merge base, plus untracked files (git diff does
-    // not list them).
-    diff = git('diff', '--name-only', mergeBase);
-  } else {
-    // No base to compare against: the working tree is the surface.
-    diff = git('status', '--porcelain', '-z')
-      .split('\0')
-      .filter(Boolean)
-      .map((line) => line.slice(3))
-      .join('\n');
-  }
-  const untracked = git('ls-files', '--others', '--exclude-standard');
-  return [...new Set([...diff.split('\n'), ...untracked.split('\n')].filter(Boolean))];
-}
-
-function* walk(dir) {
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (entry === 'node_modules' || entry.startsWith('.')) continue;
-    if (statSync(full).isDirectory()) yield* walk(full);
-    else yield full;
-  }
-}
-
-function resolveImport(fromFile, specifier) {
-  if (!specifier.startsWith('.')) return null;
-  const target = resolve(dirname(fromFile), specifier);
-  const candidates = [
-    target,
-    ...SRC_EXT.map((ext) => target + ext),
-    ...SRC_EXT.map((ext) => join(target, `index${ext}`)),
-  ];
-  return candidates.find((c) => existsSync(c) && statSync(c).isFile()) ?? null;
-}
-
-const IMPORT_RE = /(?:import|export)[^'"]*?from\s*['"]([^'"]+)['"]|import\s*['"]([^'"]+)['"]/g;
-
-function importsOf(file) {
-  const source = readFileSync(file, 'utf8');
-  const specifiers = [];
-  for (const match of source.matchAll(IMPORT_RE)) {
-    specifiers.push(match[1] ?? match[2]);
-  }
-  return specifiers;
-}
-
-function buildGraph() {
-  const files = [...walk(join(root, 'src'))].filter((f) =>
-    /\.(ts|tsx|js|jsx)$/.test(f),
+  const mergeBase = base
+    ? git('merge-base', '--', base, 'HEAD').trim()
+    : 'HEAD';
+  // Both sides of a rename matter. A removed path no longer has an import
+  // graph, and `git diff` doesn't include files that have never been staged.
+  const tracked = git(
+    'diff',
+    '--no-renames',
+    '--name-only',
+    '-z',
+    mergeBase,
+    '--',
   );
-  const importers = new Map(); // file -> set of files that import it
-  for (const file of files) {
-    for (const specifier of importsOf(file)) {
-      const target = resolveImport(file, specifier);
-      if (!target) continue;
-      if (!importers.has(target)) importers.set(target, new Set());
-      importers.get(target).add(file);
-    }
-  }
-  return { files, importers };
+  const untracked = git('ls-files', '--others', '--exclude-standard', '-z');
+  return [...new Set(`${tracked}${untracked}`.split('\0').filter(Boolean))];
 }
 
-function testFilesImporting(seedFiles, importers) {
-  const selected = new Set(seedFiles.filter((f) => /\.test\.tsx?$/.test(f)));
-  const queue = [...seedFiles];
-  while (queue.length > 0) {
-    const file = queue.pop();
-    for (const importer of importers.get(file) ?? []) {
-      if (selected.has(importer)) continue;
-      selected.add(importer);
-      queue.push(importer);
-    }
-  }
-  return [...selected].filter((f) => /\.test\.tsx?$/.test(f) && !/\.browser\.test\.tsx?$/.test(f));
-}
+export function vitestArgs(files) {
+  const inputs = files.filter((file) => kindOf(file).reads.includes('tests'));
+  if (inputs.length === 0) return [];
 
-function selectTests(files, { fullSuite = false } = {}) {
-  if (fullSuite) return null; // null means "run everything"
-  const full = files.some((f) => FULL_SUITE.some((re) => re.test(f)));
-  if (full) return null;
-
-  const { files: srcFiles, importers } = buildGraph();
-  const byRel = new Map(srcFiles.map((f) => [relative(root, f), f]));
-  const seeds = [];
-  let unknown = false;
-  for (const file of files) {
-    if (!file.startsWith('src/')) continue; // docs, notes, scripts: no surface
-    const abs = byRel.get(file);
-    if (!abs) {
-      // A src file that does not parse (or a deleted/renamed file) is not
-      // safely classifiable.
-      unknown = true;
-      continue;
-    }
-    seeds.push(abs);
+  // The planner knows which tooling and configuration can affect the suite.
+  // It also catches missing inputs whose old imports can no longer be traced.
+  if (
+    inputs.some(
+      (file) => !file.startsWith('src/') || !existsSync(resolve(root, file)),
+    )
+  ) {
+    return ['run'];
   }
-  if (unknown) return null;
-  const selected = testFilesImporting(seeds, importers);
-  return selected;
+
+  // Vitest follows imports (including setup files and their dependencies).
+  // These specs also read source directly, including erased type-only edges.
+  const related = new Set(inputs);
+  if (inputs.some((file) => kindOf(file).kind === 'full')) {
+    related.add(publicApiTest);
+    related.add('src/tokens/tasty-config.test.ts');
+  }
+  if (related.has('src/__snapshots__/public-api.md'))
+    related.add(publicApiTest);
+  if (inputs.some((file) => /\.(m?[jt]sx?|mdx)$/.test(file))) {
+    related.add('scripts/ci/plan-jobs.test.mjs');
+  }
+
+  return ['related', '--run', ...related];
 }
 
 function main(argv) {
-  const args = [...argv];
+  // Usage: pnpm test:changed [--base <ref>] [-- <vitest options>]
   let base = process.env.GITHUB_BASE_REF
     ? `origin/${process.env.GITHUB_BASE_REF}`
     : undefined;
-  const passthrough = [];
-  let i = 0;
-  while (i < args.length) {
-    const arg = args[i];
+  const options = [];
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
     if (arg === '--base') {
-      base = args[i + 1];
-      i += 2;
+      base = argv[++i];
+      if (!base || base.startsWith('--'))
+        throw new Error('--base requires a Git ref');
     } else if (arg === '--') {
-      passthrough.push(...args.slice(i + 1));
+      options.push(...argv.slice(i + 1));
       break;
     } else {
-      passthrough.push(arg);
-      i += 1;
+      options.push(arg);
     }
   }
 
-  const files = changedFiles(base);
+  const files = changedFiles(base ?? defaultBase());
   console.log(`test-changed: ${files.length} changed file(s)`);
-  for (const f of files) console.log(`  ${f}`);
+  for (const file of files) console.log(`  ${file}`);
 
-  const selected = selectTests(files);
-  if (selected === null) {
-    console.log('test-changed: full suite selected');
-    return spawnSync('pnpm', ['vitest', 'run', ...passthrough], {
-      cwd: root,
-      stdio: 'inherit',
-    }).status ?? 1;
-  }
-  if (selected.length === 0) {
-    console.log('test-changed: no tests on the changed surface; skipping');
+  const args = vitestArgs(files);
+  if (args.length === 0) {
+    console.log('test-changed: no test inputs changed; skipping');
     return 0;
   }
-  console.log(`test-changed: running ${selected.length} test file(s)`);
-  for (const f of selected) console.log(`  ${relative(root, f)}`);
-  return spawnSync(
-    'pnpm',
-    ['vitest', 'run', ...selected.map((f) => relative(root, f)), ...passthrough],
-    { cwd: root, stdio: 'inherit' },
-  ).status ?? 1;
+  if (args[0] === 'run') console.log('test-changed: full suite selected');
+
+  const result = spawnSync('pnpm', ['exec', 'vitest', ...args, ...options], {
+    cwd: root,
+    stdio: 'inherit',
+  });
+  if (result.error) throw result.error;
+  return result.status ?? 1;
 }
 
-process.exit(main(process.argv.slice(2)));
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  process.exitCode = main(process.argv.slice(2));
+}

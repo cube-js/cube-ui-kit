@@ -72,7 +72,6 @@ export const KINDS = [
   // Shipped in the package for harnesspm, and `src/harness.test.ts` imports its
   // script, so it comes before the catch-all `notes`.
   { kind: 'harness', reads: ['tests', 'canary'], test: /^harness\// },
-  { kind: 'notes', reads: [], test: /\.md$/ },
   // Read only by `pnpm test:types`, in `Lint, types & diagnostics`.
   { kind: 'type-fixture', reads: [], test: /^src\/.*\.test-d\.tsx?$/ },
   {
@@ -83,8 +82,10 @@ export const KINDS = [
   {
     kind: 'spec',
     reads: ['tests'],
-    test: /^src\/.*(\.test\.tsx?|\/__snapshots__\/.+)$/,
+    test: /^src\/(.*\.test\.tsx?|(?:.*\/)?__snapshots__\/.+)$/,
   },
+  // File snapshots can be Markdown, e.g. the public API snapshot.
+  { kind: 'notes', reads: [], test: /\.md$/ },
   // `src/test/` is not narrow: the defaults-registry tooling in
   // `src/eslint-plugin/` imports it.
   {
@@ -149,12 +150,22 @@ export const kindOf = (path) =>
 /**
  * Hash of every tracked file a job group reads, from `git ls-tree -r` lines
  * (`<mode> <type> <blob>\t<path>`), so it changes exactly when one of them does.
+ * The source-test job also hashes its changed paths, which select the suite.
  */
-export function inputHash(tree, group) {
+export function inputHash(tree, group, changedPaths) {
   const hash = createHash('sha256');
   for (const line of tree) {
     const path = line.slice(line.indexOf('\t') + 1);
     if (kindOf(path).reads.includes(group)) hash.update(`${line}\n`);
+  }
+  if (changedPaths) {
+    hash.update(
+      JSON.stringify(
+        changedPaths
+          .filter((path) => kindOf(path).reads.includes(group))
+          .sort(),
+      ),
+    );
   }
   return hash.digest('hex').slice(0, 40);
 }
@@ -179,7 +190,12 @@ export function plan({ jobs, files, tree = null, markers = null }) {
       if (affected && !affected.has(reads))
         return [job, { run: false, reason: 'unaffected', marker: '' }];
       const marker =
-        usesMarker && tree ? markerKey(job, inputHash(tree, reads)) : '';
+        usesMarker && tree
+          ? markerKey(
+              job,
+              inputHash(tree, reads, job === 'tests' ? files : undefined),
+            )
+          : '';
       if (marker && markers?.has(marker))
         return [job, { run: false, reason: 'passed', marker }];
       return [

@@ -23,7 +23,8 @@ permissions:
 # the release tag, and each push ran the pre-push hook — the full jsdom suite,
 # ~4 minutes — delaying the Version Packages PR after every merge, and running
 # after `npm publish`, where a flaky test failed a release that had already
-# shipped and kept its tag off GitHub. Testing is the Pull Request workflow's job.
+# shipped and kept its tag off GitHub. Stable releases run the full source suite
+# in the release job below, before the Changesets action.
 env:
   HUSKY: '0'
 
@@ -231,8 +232,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      # PRs run only the changed surface (see pull-request.yml); the full
-      # suite runs here, before anything ships.
+      # Gate stable releases with the full source suite on pushes to main.
       - name: Run the full test suite
         run: pnpm test
 
