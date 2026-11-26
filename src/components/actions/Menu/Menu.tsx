@@ -134,9 +134,11 @@ function Menu<T extends object>(
     onSelectionChange: handleSelectionChange,
   });
 
-  // Props used for collection building.
+  // Props used for collection building. A disabled item stays focusable, as in
+  // WAI-ARIA menus; `MenuItem` keeps it disabled through `isMenuItemDisabled`.
   const state = useTreeState({
     ...completeProps,
+    disabledBehavior: 'selection',
     children: completeProps.children as CollectionChildren<T>,
   });
   const collectionItems = [...state.collection];
@@ -175,13 +177,14 @@ function Menu<T extends object>(
       return;
     }
     if (event.shiftKey) return;
+    // A disabled item stays in the sequence; a natively disabled inline action
+    // (one in a disabled row) is not focusable and stays out.
     const items = Array.from(
       menu.querySelectorAll<HTMLElement>('[role^="menuitem"]'),
     ).filter(
       (element) =>
         element.closest('[role="menu"]') === menu &&
         !element.hasAttribute('disabled') &&
-        element.getAttribute('aria-disabled') !== 'true' &&
         isFocusable(element),
     );
     const index = items.indexOf(item);

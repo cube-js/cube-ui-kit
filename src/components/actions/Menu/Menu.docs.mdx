@@ -251,7 +251,7 @@ Use `Menu.Item.Action` in the `actions` slot for an independent action associate
 </Menu>
 ```
 
-Up/Down and Home/End include inline actions in DOM order. Disabled actions are skipped. Tab and Shift+Tab leave the menu rather than visiting each action. Give every action an accessible name that identifies its context, such as “Delete saved workbook”; an icon or a repeated “Delete” label alone does not identify the affected row.
+Up/Down and Home/End include inline actions in DOM order. A disabled action that keeps focus, such as an icon-only action whose tooltip is its name, is reached and does nothing. A natively disabled one, such as every action of a disabled row, is skipped. Tab and Shift+Tab leave the menu rather than visiting each action. Give every action an accessible name that identifies its context, such as “Delete saved workbook”; an icon or a repeated “Delete” label alone does not identify the affected row.
 
 Keep the label and description non-interactive: text, icons and decorative badges are suitable, but buttons, links and inputs belong outside those content slots. `Menu.Item.Action` supplies the menu-item contract automatically. A custom control in `actions` must provide the same contract, including an appropriate menu-item role, accessible name, `tabIndex={-1}`, disabled behavior and keyboard activation; a generic button is not sufficient. Inline actions support the default DOM-focus mode; combining them with virtual focus is unsupported.
 
@@ -517,8 +517,9 @@ const items = [
 ### Keyboard Navigation
 
 - Open the menu with its trigger to move focus into it. A standalone Menu can use `autoFocus` or be reached with Tab.
-- `ArrowUp`/`ArrowDown` - Navigate through enabled primary items and inline actions in DOM order. Navigation wraps by default; set `shouldFocusWrap={false}` to stop at the ends.
-- `Home`/`End` - Move to the first/last enabled menu item, including inline actions.
+- `ArrowUp`/`ArrowDown` - Navigate through primary items and inline actions in DOM order. Navigation wraps by default; set `shouldFocusWrap={false}` to stop at the ends.
+- `Home`/`End` - Move to the first/last menu item, including inline actions.
+- A disabled item is reached like any other, as in the [WAI-ARIA menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/), so a screen reader reads its label, its description and that it is disabled. `Enter`, `Space` and a click do nothing on it, and the menu stays open.
 - `Enter`/`Space` - Activate the focused command, destination or inline action, or open a submenu.
 - `ArrowRight` - Open a submenu from its trigger. On a row with inline actions, move from the primary item into its actions.
 - `ArrowLeft` - Return from inline actions to their primary item, or close a submenu and return to its trigger. Left/Right directions reverse in RTL layouts; submenu behavior takes priority over row shortcuts.
@@ -572,11 +573,13 @@ Default Menu navigation moves DOM focus directly to items. CommandMenu owns the 
    - Use `selectionMode="single"` for mutually exclusive options
    - Use `selectionMode="multiple"` for independent toggles
 
-5. **Disabled States**: Clearly indicate unavailable actions
+5. **Disabled States**: Clearly indicate unavailable actions, and say why in the item's `description`: the keyboard reaches a disabled item, so keyboard and screen reader users read the reason too
 
    ```jsx
    <Menu disabledKeys={['paste']}>
-     <Menu.Item key="paste">Paste</Menu.Item>
+     <Menu.Item key="paste" description="The clipboard is empty">
+       Paste
+     </Menu.Item>
    </Menu>
    ```
 

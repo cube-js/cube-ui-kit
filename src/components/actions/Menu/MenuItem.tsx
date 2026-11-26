@@ -32,7 +32,10 @@ import { ItemWithNativeLinks } from '../../content/Item/ItemWithNativeLinks';
 import { parseTo } from '../use-action';
 
 import { useMenuContext } from './context';
-import { CURRENT_DOCUMENT_LINK } from './MenuCollectionItem';
+import {
+  CURRENT_DOCUMENT_LINK,
+  isMenuItemDisabled,
+} from './MenuCollectionItem';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
 export type MenuSelectionType = 'checkbox' | 'radio' | 'checkmark';
@@ -222,7 +225,7 @@ function MenuItemContent<T>(
 
   const isSelectable = state.selectionManager.selectionMode !== 'none';
   const isDisabledKey =
-    state.selectionManager.isDisabled(key) ||
+    isMenuItemDisabled(state, key) ||
     submenuContext?.isDisabled ||
     (filteredItemProps.isLoading && filteredItemProps.isDisabled !== false);
 

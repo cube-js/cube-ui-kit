@@ -1,6 +1,9 @@
 import { PlusIcon } from '../../../icons/PlusIcon';
-import { renderWithRoot } from '../../../test';
-import { readWithScreenReader } from '../../../test/screen-reader';
+import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import {
+  readWithScreenReader,
+  startScreenReader,
+} from '../../../test/screen-reader';
 
 import { Menu } from './Menu';
 
@@ -107,4 +110,34 @@ it('reads explicit names and descriptions instead of replacing them with visible
     'Description only',
   ]);
   expect(entries[1]).toContain('Updated yesterday');
+});
+
+it('announces a disabled item and its reason when the arrow keys reach it', async () => {
+  renderWithRoot(
+    <Menu aria-label="Cell menu">
+      <Menu.Item key="copy" tooltip={false}>
+        Copy
+      </Menu.Item>
+      <Menu.Item
+        key="open"
+        tooltip={false}
+        isDisabled
+        description="The target dashboard isn't published"
+      >
+        Open in dashboard
+      </Menu.Item>
+      <Menu.Item key="reset" tooltip={false}>
+        Reset
+      </Menu.Item>
+    </Menu>,
+  );
+  const reader = await startScreenReader();
+
+  await act(async () => screen.getByRole('menuitem', { name: 'Copy' }).focus());
+  await userEvent.keyboard('{ArrowDown}');
+  await waitFor(async () =>
+    expect(await reader.lastSpokenPhrase()).toMatch(
+      /^menuitem, Open in dashboard, The target dashboard isn't published, disabled\b/,
+    ),
+  );
 });

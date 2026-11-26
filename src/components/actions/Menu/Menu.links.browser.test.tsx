@@ -1017,12 +1017,19 @@ describe('Menu navigation links', () => {
   it('keeps Arrow/Home/End, typeahead, Escape and focus restoration across links and commands', async () => {
     renderMenu();
     const link = await openMenu();
+    const unavailable = screen.getByRole('menuitem', { name: 'Unavailable' });
     await userEvent.keyboard('{Home}');
     expect(link).toHaveFocus();
+    // The disabled destination is reached too, and stays without a URL.
+    await userEvent.keyboard('{ArrowDown}');
+    expect(unavailable).toHaveFocus();
+    expect(unavailable).not.toHaveAttribute('href');
     await userEvent.keyboard('{ArrowDown}');
     expect(
       screen.getByRole('menuitem', { name: 'Create workbook' }),
     ).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    expect(unavailable).toHaveFocus();
     await userEvent.keyboard('{ArrowUp}');
     expect(link).toHaveFocus();
     await userEvent.keyboard('{End}');

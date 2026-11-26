@@ -37,7 +37,7 @@ const HookWrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe('<Menu />', () => {
   it.each([undefined, false])(
-    'aligns loading-item keyboard focus and activation with isDisabled=%s',
+    'reaches a loading item by keyboard and runs it only with isDisabled=%s',
     async (isDisabled) => {
       const onAction = vi.fn();
       render(
@@ -61,15 +61,27 @@ describe('<Menu />', () => {
           </Menu>
         </Root>,
       );
-      const expectedKey = isDisabled === false ? 'loading' : 'ready';
-      const expectedItem = screen.getByRole('menuitem', {
-        name: isDisabled === false ? 'Loading workbook' : 'Ready workbook',
+      const loading = screen.getByRole('menuitem', {
+        name: 'Loading workbook',
       });
-      await waitFor(() => expect(expectedItem).toHaveFocus());
+      const ready = screen.getByRole('menuitem', { name: 'Ready workbook' });
+      // A loading item is disabled unless `isDisabled={false}`. Disabled or
+      // not, the keyboard reaches it.
+      await waitFor(() => expect(loading).toHaveFocus());
       await userEvent.keyboard('{End}{Home}');
-      expect(expectedItem).toHaveFocus();
+      expect(loading).toHaveFocus();
       await userEvent.keyboard('{Enter}');
-      expect(onAction).toHaveBeenCalledExactlyOnceWith(expectedKey);
+      if (isDisabled === false) {
+        expect(onAction).toHaveBeenCalledExactlyOnceWith('loading');
+      } else {
+        expect(loading).toHaveAttribute('aria-disabled', 'true');
+        expect(onAction).not.toHaveBeenCalled();
+      }
+      onAction.mockClear();
+      await userEvent.keyboard('{ArrowDown}');
+      expect(ready).toHaveFocus();
+      await userEvent.keyboard('{Enter}');
+      expect(onAction).toHaveBeenCalledExactlyOnceWith('ready');
     },
   );
 
@@ -735,6 +747,142 @@ describe('<Menu />', () => {
     });
 
     expect(onAction).toHaveBeenCalledWith('paste');
+  });
+
+  // WAI-ARIA menus keep disabled items focusable, so a keyboard user reaches
+  // the item and hears why it is unavailable.
+  it.each(['isDisabled', 'disabledKeys'] as const)(
+    'stops on an item disabled by %s with arrow keys and keeps it inert',
+    async (disabledBy) => {
+      const onAction = vi.fn();
+      const onItemAction = vi.fn();
+      const onClick = vi.fn();
+      const onClose = vi.fn();
+      render(
+        <Root>
+          <MenuContext.Provider value={{ onClose }}>
+            <Menu
+              aria-label="Cell menu"
+              disabledKeys={disabledBy === 'disabledKeys' ? ['open'] : []}
+              onAction={onAction}
+            >
+              <Menu.Item key="copy" tooltip={false}>
+                Copy
+              </Menu.Item>
+              <Menu.Item
+                key="open"
+                tooltip={false}
+                isDisabled={disabledBy === 'isDisabled'}
+                description="The target dashboard isn't published"
+                onAction={onItemAction}
+                onClick={onClick}
+              >
+                Open in dashboard
+              </Menu.Item>
+              <Menu.Item key="reset" tooltip={false}>
+                Reset
+              </Menu.Item>
+            </Menu>
+          </MenuContext.Provider>
+        </Root>,
+      );
+      const copy = screen.getByRole('menuitem', { name: 'Copy' });
+      const open = screen.getByRole('menuitem', { name: 'Open in dashboard' });
+      const reset = screen.getByRole('menuitem', { name: 'Reset' });
+
+      await act(async () => copy.focus());
+      await userEvent.keyboard('{ArrowDown}');
+      expect(open).toHaveFocus();
+      expect(open).toHaveAttribute('aria-disabled', 'true');
+      expect(open).toHaveAttribute('data-disabled');
+
+      await userEvent.keyboard('{Enter}');
+      await userEvent.keyboard(' ');
+      await userEvent.click(open);
+      expect(onAction).not.toHaveBeenCalled();
+      expect(onItemAction).not.toHaveBeenCalled();
+      expect(onClick).not.toHaveBeenCalled();
+      expect(onClose).not.toHaveBeenCalled();
+
+      await act(async () => open.focus());
+      await userEvent.keyboard('{ArrowDown}');
+      expect(reset).toHaveFocus();
+      await userEvent.keyboard('{ArrowUp}');
+      expect(open).toHaveFocus();
+      await userEvent.keyboard('{ArrowUp}');
+      expect(copy).toHaveFocus();
+    },
+  );
+
+  it('never selects a disabled item that the keyboard reaches', async () => {
+    const onSelectionChange = vi.fn();
+    render(
+      <Root>
+        <Menu
+          aria-label="Granularity"
+          selectionMode="single"
+          onSelectionChange={onSelectionChange}
+        >
+          <Menu.Item key="day" tooltip={false}>
+            Day
+          </Menu.Item>
+          <Menu.Item key="fiscal" tooltip={false} isDisabled>
+            Fiscal year
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const day = screen.getByRole('menuitemradio', { name: 'Day' });
+    const fiscal = screen.getByRole('menuitemradio', { name: 'Fiscal year' });
+
+    await act(async () => day.focus());
+    await userEvent.keyboard('{ArrowDown}');
+    expect(fiscal).toHaveFocus();
+    await userEvent.keyboard(' ');
+    await userEvent.keyboard('{Enter}');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(fiscal).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('stops on a disabled row in a menu with inline actions, but not on its actions', async () => {
+    render(
+      <Root>
+        <Menu aria-label="Workbook actions">
+          <Menu.Item
+            key="create"
+            tooltip={false}
+            actions={<Menu.Item.Action aria-label="Create settings" />}
+          >
+            Create workbook
+          </Menu.Item>
+          <Menu.Item
+            key="unavailable"
+            tooltip={false}
+            isDisabled
+            actions={<Menu.Item.Action aria-label="Unavailable settings" />}
+          >
+            Unavailable workbook
+          </Menu.Item>
+          <Menu.Item key="last" tooltip={false}>
+            Last command
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const settings = screen.getByRole('menuitem', { name: 'Create settings' });
+    const unavailable = screen.getByRole('menuitem', {
+      name: 'Unavailable workbook',
+    });
+    const last = screen.getByRole('menuitem', { name: 'Last command' });
+
+    await act(async () => settings.focus());
+    await userEvent.keyboard('{ArrowDown}');
+    expect(unavailable).toHaveFocus();
+    expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.keyboard('{ArrowDown}');
+    expect(last).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    expect(unavailable).toHaveFocus();
   });
 
   // Sections tests
