@@ -1448,10 +1448,13 @@ function TagInput<T extends object>(
   });
 
   // Focusing the row itself tells the tag group which chip is focused, as a
-  // click would.
-  const focusLastTag = useEvent(() => {
+  // click would. Backspace goes to the last chip it can remove; the arrow,
+  // which only navigates, to the last chip, a locked one included.
+  const focusLastTag = useEvent((includeLocked: boolean) => {
     const rows = tagListRef.current?.querySelectorAll<HTMLElement>(
-      '[role="row"]:not([aria-disabled="true"])',
+      includeLocked
+        ? '[role="row"]'
+        : '[role="row"]:not([aria-disabled="true"])',
     );
 
     rows?.[rows.length - 1]?.focus();
@@ -1608,7 +1611,7 @@ function TagInput<T extends object>(
     if (e.repeat) return;
 
     setIsPopoverOpen(false);
-    focusLastTag();
+    focusLastTag(e.key !== 'Backspace');
   });
 
   const handleEnterKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
@@ -1708,10 +1711,11 @@ function TagInput<T extends object>(
       } else if ((e.key === 'Home' || e.key === 'End') && shouldShowPopover) {
         handleEdgeKey(e);
       } else if (
-        (e.key === 'Backspace'
-          ? !draft
-          : tagPlacement === 'inside' && isArrowPastStart(e, textDirection)) &&
-        uniqueValues.some((value) => !isTagLocked(value))
+        e.key === 'Backspace'
+          ? !draft && uniqueValues.some((value) => !isTagLocked(value))
+          : tagPlacement === 'inside' &&
+            isArrowPastStart(e, textDirection) &&
+            uniqueValues.length > 0
       ) {
         handleToTagsKey(e);
       } else if (e.key === 'Enter') {

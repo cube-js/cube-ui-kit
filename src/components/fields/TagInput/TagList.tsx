@@ -33,7 +33,10 @@ export interface TagListEntry {
   invalidMessage?: string;
   /** Extra props for this chip's `Tag`, from the `tagProps` callback. */
   tagProps?: Partial<CubeTagProps>;
-  /** Whether the chip is locked: it cannot be focused or removed. */
+  /**
+   * Whether the chip is locked: it cannot be removed. The arrow keys still
+   * reach it, so a keyboard or screen reader user hears that it is locked.
+   */
   isDisabled?: boolean;
 }
 
@@ -86,11 +89,7 @@ function handleEdgeArrow(
     return false;
   }
 
-  // Locked chips take no focus, so the edges are the focusable ones.
-  const rows = [
-    ...(list?.querySelectorAll('[role="row"]:not([aria-disabled="true"])') ??
-      []),
-  ];
+  const rows = [...(list?.querySelectorAll('[role="row"]') ?? [])];
   const row = (e.target as Element).closest('[role="row"]');
 
   if (e.key === forward && row === rows.at(-1) && input && !input.disabled) {
@@ -169,8 +168,8 @@ function TagRow({
     theme: tagTheme,
     styles: ownTagStyles,
     children: tagChildren,
-    // Locking goes through the list's disabled keys, so the tag group skips
-    // the chip too.
+    // Locking goes through the list's disabled keys, which keep the chip
+    // inert: no remove button, no removal on Delete or Backspace.
     isDisabled: _isDisabled,
     ...otherTagProps
   } = entry.tagProps ?? {};
@@ -191,10 +190,26 @@ function TagRow({
     rowProps.onKeyDown?.(e);
   };
 
+  // The list keeps a locked chip focusable, so React Aria no longer marks it
+  // disabled, and its roving Tab stop leaves it out: both are set here. A
+  // disabled field's chips stay out of the keyboard.
+  const lockedProps =
+    isTagDisabled && !isDisabled
+      ? {
+          'aria-disabled': true,
+          tabIndex:
+            state.selectionManager.focusedKey == null ||
+            state.selectionManager.focusedKey === item.key
+              ? 0
+              : -1,
+        }
+      : undefined;
+
   return (
     <TagRowElement
       ref={ref}
       {...mergeProps(rowProps, focusProps)}
+      {...lockedProps}
       onKeyDown={handleKeyDown}
       aria-describedby={describedBy}
       mods={{ focused: isFocusVisible }}
@@ -266,11 +281,13 @@ export function TagList(props: TagListProps) {
 
   const state = useListState<TagListEntry>({
     items: tags,
-    // A disabled field's chips drop out of the Tab order along with its input,
-    // and so do locked ones.
     disabledKeys: tags
       .filter((tag) => isDisabled || tag.isDisabled)
       .map((tag) => tag.key),
+    // A locked chip stays reachable by the arrow keys, as WAI-ARIA keeps a
+    // disabled item focusable; `TagRow` keeps it inert. A disabled field's
+    // chips drop out of the Tab order along with its input.
+    disabledBehavior: isDisabled ? 'all' : 'selection',
     children: (entry) => (
       <Item key={entry.key} textValue={entry.label}>
         {entry.label}
@@ -335,11 +352,9 @@ export function TagList(props: TagListProps) {
       qa={qa}
       {...otherGridProps}
       onKeyDownCapture={handleKeyDownCapture}
-      // With every chip disabled or locked, the grid itself would otherwise
-      // stay a Tab stop that focuses nothing.
-      tabIndex={
-        state.disabledKeys.size === tags.length ? -1 : gridProps.tabIndex
-      }
+      // With no chip to focus (none, or a disabled field), the grid itself
+      // would otherwise stay a Tab stop that focuses nothing.
+      tabIndex={isDisabled || tags.length === 0 ? -1 : gridProps.tabIndex}
       styles={styles}
     >
       {[...state.collection].map((item) => (

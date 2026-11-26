@@ -785,17 +785,52 @@ describe('<TagInput />', () => {
       expect(getAllByRole('row')[0]).toHaveFocus();
     });
 
-    it('skips a locked last chip on the way to the text', async () => {
+    // WAI-ARIA keeps a disabled item of a grid focusable, so a keyboard user
+    // reaches a locked chip and hears that it is locked.
+    it('reaches a locked last chip on the way to the text', async () => {
       const { getByRole, getAllByRole } = render(
         <Inside tagProps={(value) => ({ isDisabled: value === 'three' })} />,
       );
 
       await userEvent.click(getByRole('textbox'));
       await userEvent.keyboard('{ArrowLeft}');
-      expect(getAllByRole('row')[1]).toHaveFocus();
+      expect(getAllByRole('row')[2]).toHaveFocus();
+      expect(getAllByRole('row')[2]).toHaveAttribute('aria-disabled', 'true');
 
       await userEvent.keyboard('{ArrowRight}');
       expect(getByRole('textbox')).toHaveFocus();
+    });
+
+    it('stops on a locked chip with the arrow keys and never removes it', async () => {
+      const onChange = vi.fn();
+      const { getAllByRole } = render(
+        <Inside
+          tagProps={(value) => ({ isDisabled: value === 'two' })}
+          onChange={onChange}
+        />,
+      );
+      const [one, two, three] = getAllByRole('row');
+      const reader = await startScreenReader();
+
+      await act(async () => one.focus());
+      await userEvent.keyboard('{ArrowRight}');
+      expect(two).toHaveFocus();
+      expect(two).toHaveAttribute('aria-disabled', 'true');
+      await waitFor(async () =>
+        expect(await reader.lastSpokenPhrase()).toMatch(
+          /^row, two\b.*disabled/,
+        ),
+      );
+
+      await userEvent.keyboard('{Delete}');
+      await userEvent.keyboard('{Backspace}');
+      expect(onChange).not.toHaveBeenCalled();
+      expect(getAllByRole('row')).toHaveLength(3);
+
+      await userEvent.keyboard('{ArrowRight}');
+      expect(three).toHaveFocus();
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(two).toHaveFocus();
     });
 
     it('leaves the arrows to the text below the box', async () => {
