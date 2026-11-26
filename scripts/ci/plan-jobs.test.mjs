@@ -34,6 +34,7 @@ describe('kindOf', () => {
     ['src/components/overlays/Dialog/DialogTrigger.test.tsx', 'spec'],
     ['src/tokens/tasty-config.test.ts', 'spec'],
     ['src/components/Foo/__snapshots__/Foo.test.tsx.snap', 'spec'],
+    ['src/__snapshots__/public-api.md', 'spec'],
     ['src/test/setup.ts', 'full'],
     ['src/components/form/Form/modern/field.fixture.tsx', 'fixture'],
     ['src/components/actions/Button/Button.docs.mdx', 'docs-page'],
@@ -135,8 +136,10 @@ describe('plan by pass markers', () => {
         ? line.replace(/blob \w+/, `blob ${blob}`)
         : line,
     );
-  const passed = (job, onTree) =>
-    markerKey(job, inputHash(onTree, JOBS[job].reads));
+  const source = 'src/components/actions/Button/Button.tsx';
+  const spec = 'src/components/actions/Button/Button.test.tsx';
+  const passed = (job, onTree, files) =>
+    markerKey(job, inputHash(onTree, JOBS[job].reads, files));
 
   it('hashes only the files a group reads', () => {
     expect(inputHash(edit('AGENTS.md', 'eeee'), 'tests')).toBe(
@@ -149,33 +152,41 @@ describe('plan by pass markers', () => {
     expect(inputHash(edit(story, 'eeee'), 'a11y')).not.toBe(
       inputHash(tree, 'a11y'),
     );
-    const source = 'src/components/actions/Button/Button.tsx';
     expect(inputHash(edit(source, 'eeee'), 'tests')).not.toBe(
       inputHash(tree, 'tests'),
     );
   });
 
   it('skips a job that passed on identical inputs', () => {
-    const markers = new Set([passed('tests', tree)]);
-    const files = ['src/components/actions/Button/Button.tsx'];
+    const marker = passed('tests', tree, [source]);
+    const markers = new Set([marker]);
+    const files = [source, 'AGENTS.md'];
     const decisions = plan({ jobs, files, tree, markers });
     expect(decisions.tests).toEqual({
       run: false,
       reason: 'passed',
-      marker: passed('tests', tree),
+      marker,
     });
     expect(decisions['compiled-tests'].run).toBe(true);
   });
 
   it('runs it again once one of its inputs changes', () => {
-    const markers = new Set([passed('tests', tree)]);
-    const changed = edit(
-      'src/components/actions/Button/Button.test.tsx',
-      'ffff',
-    );
-    const decisions = plan({ jobs, files: ['x.ts'], tree: changed, markers });
+    const files = [source];
+    const markers = new Set([passed('tests', tree, files)]);
+    const changed = edit(spec, 'ffff');
+    const decisions = plan({ jobs, files, tree: changed, markers });
     expect(decisions.tests.run).toBe(true);
-    expect(decisions.tests.marker).toBe(passed('tests', changed));
+    expect(decisions.tests.marker).toBe(passed('tests', changed, files));
+  });
+
+  it('runs source tests again when the selected paths change on an identical tree', () => {
+    const markers = new Set([
+      passed('tests', tree, [source]),
+      passed('compiled-tests', tree),
+    ]);
+    const decisions = plan({ jobs, files: [source, spec], tree, markers });
+    expect(decisions.tests.run).toBe(true);
+    expect(decisions['compiled-tests'].run).toBe(false);
   });
 
   it('never skips Chromatic, the size check or the canary by marker', () => {
