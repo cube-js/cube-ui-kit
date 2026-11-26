@@ -33,11 +33,10 @@ const ResizeHandleElement = tasty({
       '(limit=min & side=top) | (limit=max & side=bottom)': 's-resize',
       '(limit=max & side=top) | (limit=min & side=bottom)': 'n-resize',
     },
-    outline: {
-      '': '$ring-width #focus.0',
-      focused: '$ring-width #focus',
-    },
-    outlineOffset: '$outline-offset',
+    // Keyboard focus shows the edge as hover and drag do, with the line in
+    // use: a ring round the handle's box, the browser's included, would sit
+    // off the line.
+    outline: 0,
     transition: 'theme',
 
     // Where the hairline starts, from the anchor side. The owner sets it.
