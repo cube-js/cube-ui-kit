@@ -369,7 +369,11 @@ DifferentSizes.parameters = {
 export const DisabledKeys = ({ ...props }) => {
   const menu = (
     <Menu id="menu" disabledKeys={['copy', 'cut']} {...props} width="220px">
-      <Menu.Item key="copy" hotkeys="Ctrl+C">
+      <Menu.Item
+        key="copy"
+        hotkeys="Ctrl+C"
+        description="Select some text first"
+      >
         Copy
       </Menu.Item>
       <Menu.Item key="paste" hotkeys="Ctrl+V">
@@ -400,6 +404,21 @@ export const DisabledKeys = ({ ...props }) => {
       </MenuTrigger>
     </Space>
   );
+};
+
+// The keyboard reaches a disabled item, as in WAI-ARIA menus, and the snapshot
+// shows it focused: the row keeps the focus highlight with its dimmed label.
+DisabledKeys.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const paste = await canvas.findByRole('menuitem', { name: 'Paste' });
+
+  paste.focus();
+  await userEvent.keyboard('{ArrowUp}');
+
+  const copy = canvas.getByRole('menuitem', { name: 'Copy' });
+
+  await waitFor(() => expect(copy).toHaveFocus());
+  expect(copy).toHaveAttribute('aria-disabled', 'true');
 };
 
 export const InsideModal = () => {
