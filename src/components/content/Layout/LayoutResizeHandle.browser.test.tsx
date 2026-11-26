@@ -18,15 +18,32 @@ function part(handle: HTMLElement, name: 'Line' | 'Grip' | 'TouchArea') {
 
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 
+// The centre of a part along the handle's thickness.
+function centre(element: HTMLElement) {
+  const { left, width } = element.getBoundingClientRect();
+
+  return left + width / 2;
+}
+
 function PanelLayout({
   side = 'left',
   size = 200,
+  borderWidth,
 }: {
   side?: 'left' | 'right';
   size?: number;
+  /** Stands in for the .5px hairline that dense screens get. */
+  borderWidth?: string;
 }) {
   return (
-    <div style={{ width: 800, height: 400, display: 'flex' }}>
+    <div
+      style={{
+        width: 800,
+        height: 400,
+        display: 'flex',
+        ...(borderWidth ? { '--border-width': borderWidth } : null),
+      }}
+    >
       <Layout>
         <Layout.Panel
           qa="panel"
@@ -70,7 +87,7 @@ describe('Layout resize handle', () => {
     expect(getComputedStyle(line).backgroundColor).toBe(TRANSPARENT);
   });
 
-  it('turns the panel edge into a 2px line on hover, thickening away from the panel', async () => {
+  it('turns the panel edge into a 2px line on hover, centred on its border', async () => {
     renderWithRoot(<PanelLayout />);
 
     const handle = screen.getByRole('separator');
@@ -87,8 +104,37 @@ describe('Layout resize handle', () => {
       expect(line.getBoundingClientRect().width).toBe(2);
     });
     expect(getComputedStyle(line).backgroundColor).not.toBe(TRANSPARENT);
-    // It starts on the panel's border, its last pixel inside the panel.
-    expect(line.getBoundingClientRect().left).toBe(panel.right - 1);
+    // The panel's 1px border is its last pixel; the line widens to both sides.
+    expect(centre(line)).toBe(panel.right - 0.5);
+  });
+
+  // Dense screens draw borders as a .5px hairline. The line in use widens to
+  // 1.5px around it, and the grip and the touch target stay on its centre.
+  it('keeps the line, the grip and the touch target on the centre of a hairline edge', async () => {
+    renderWithRoot(<PanelLayout borderWidth=".5px" />);
+
+    const handle = screen.getByRole('separator');
+    const line = part(handle, 'Line');
+    const grip = part(handle, 'Grip');
+    const area = part(handle, 'TouchArea');
+
+    grip.style.display = 'block';
+    area.style.display = 'block';
+
+    expect(line.getBoundingClientRect().width).toBe(0.5);
+
+    const edge = centre(line);
+
+    expect(centre(grip)).toBe(edge);
+    expect(centre(area)).toBe(edge);
+
+    await press('{Tab}');
+
+    await waitFor(() => {
+      expect(line.getBoundingClientRect().width).toBe(1.5);
+    });
+    expect(centre(line)).toBe(edge);
+    expect(centre(grip)).toBe(edge);
   });
 
   it("draws the pane's edge at rest and thickens it into the pane on keyboard focus", async () => {
@@ -115,11 +161,13 @@ describe('Layout resize handle', () => {
   // through touch emulation, and `hover: none` outlives turning it off, which
   // would leak into the specs after this one. So the test shows them itself
   // and checks where they land.
-  it('centres the touch grip and the 20px touch target on the edge', () => {
+  it("centres the touch grip and the 20px touch target on the panel's border", () => {
     renderWithRoot(<PanelLayout />);
 
     const handle = screen.getByRole('separator');
-    const edge = screen.getByTestId('panel').getBoundingClientRect().right;
+    // The middle of the panel's 1px border, its last pixel.
+    const edge =
+      screen.getByTestId('panel').getBoundingClientRect().right - 0.5;
     const gripElement = part(handle, 'Grip');
     const areaElement = part(handle, 'TouchArea');
 
@@ -132,9 +180,9 @@ describe('Layout resize handle', () => {
 
     expect(grip.width).toBe(4);
     expect(grip.height).toBe(24);
-    expect(grip.left + grip.width / 2).toBe(edge);
+    expect(centre(gripElement)).toBe(edge);
     expect(area.width).toBe(20);
-    expect(area.left + area.width / 2).toBe(edge);
+    expect(centre(areaElement)).toBe(edge);
 
     for (const x of [edge - 9, edge + 9]) {
       expect(

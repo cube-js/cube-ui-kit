@@ -12,9 +12,10 @@ import type { Side } from './LayoutContext';
  *
  * Its owner keeps the handle's box: size, position and transforms, with
  * `$handle-edge-inset` in its styles. Inside that box the handle draws the
- * edge: a line at `$handle-edge-inset` from its `anchor` side, which thickens
- * away from that side while the handle is in use. The grip and the touch area
- * centre on that line. Nothing outside the handle moves.
+ * edge: a hairline at `$handle-edge-inset` from its `anchor` side. While the
+ * handle is in use the line widens to both sides of that hairline, or only
+ * into the box where it is drawn inside it. The grip and the touch area
+ * centre on the hairline. Nothing outside the handle moves.
  */
 const ResizeHandleElement = tasty({
   styles: {
@@ -39,21 +40,30 @@ const ResizeHandleElement = tasty({
     outlineOffset: '$outline-offset',
     transition: 'theme',
 
-    // Where the line starts, from the anchor side. The owner sets it.
+    // Where the hairline starts, from the anchor side. The owner sets it.
     '$handle-edge-inset': '0px',
-    // A marker line in device pixels while the handle is in use, like the
-    // table's column resizer and drop indicators.
-    '$handle-line-size': '2px',
+    // The line while the handle is in use: a pixel wider than the hairline,
+    // half on each side, so it stays centred on it in whole device pixels:
+    // 1.5px over a .5px hairline, 2px over a 1px border.
+    '$handle-line-size': '(1bw + 1px)',
 
     // The edge. A hairline at rest, where the box has no border of its own to
-    // show it; a marker line in device pixels while the handle is in use.
+    // show it; a wider marker line while the handle is in use.
     Line: {
       position: 'absolute',
       inset: {
-        '': '0 auto 0 $handle-edge-inset',
-        'anchor=right': '0 $handle-edge-inset 0 auto',
-        'anchor=top': '$handle-edge-inset 0 auto 0',
-        'anchor=bottom': 'auto 0 $handle-edge-inset 0',
+        '': '0 auto 0 $line-inset',
+        'anchor=right': '0 $line-inset 0 auto',
+        'anchor=top': '$line-inset 0 auto 0',
+        'anchor=bottom': 'auto 0 $line-inset 0',
+      },
+      // In use, the line widens to both sides of the hairline. Drawn inside
+      // the box, it widens into the box only, as an item beyond the box paints
+      // over anything past it.
+      '$line-inset': {
+        '': '$handle-edge-inset',
+        '(hovered | drag | focused) & !inward':
+          '($handle-edge-inset - ($handle-line-size - 1bw) / 2)',
       },
       width: {
         '': 'auto',
@@ -117,10 +127,11 @@ const ResizeHandleElement = tasty({
         '': '24px',
         drag: '28px',
       },
-      // Centred on the line; kept inside the box where the line is drawn
-      // inside it, as an item beyond the box paints over anything past it.
+      // Centred on the hairline, which the line stays centred on as it
+      // widens; kept inside the box where the line is drawn inside it, as an
+      // item beyond the box paints over anything past it.
       '$grip-inset': {
-        '': '($handle-edge-inset + ($handle-line-size - $grip-size) / 2)',
+        '': '($handle-edge-inset + (1bw - $grip-size) / 2)',
         inward: '$handle-edge-inset',
       },
     },
@@ -149,9 +160,9 @@ const ResizeHandleElement = tasty({
       },
       // Device pixels: a touch target's size is a physical one.
       '$touch-size': '20px',
-      // Centred on the line, or inside the box as the grip is.
+      // Centred on the hairline, or inside the box as the grip is.
       '$touch-inset': {
-        '': '($handle-edge-inset + ($handle-line-size - $touch-size) / 2)',
+        '': '($handle-edge-inset + (1bw - $touch-size) / 2)',
         inward: '$handle-edge-inset',
       },
     },

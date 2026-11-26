@@ -145,8 +145,9 @@ const PanelElement = tasty({
 const PANEL_HANDLE_STYLES: Styles = {
   // Device pixels: the handle's thickness, so its offsets stay whole pixels.
   '$handle-size': `${HANDLER_WIDTH}px`,
-  // The edge line lies on the panel's own border and thickens away from the
-  // panel, into the inset the Layout leaves beside it.
+  // The edge line lies on the panel's own border. In use it widens to both
+  // sides of it: half a pixel into the panel, half into the inset the Layout
+  // leaves beside it.
   '$handle-edge-inset': `(${HANDLER_OFFSET}px - 1bw)`,
 
   // Handler size
