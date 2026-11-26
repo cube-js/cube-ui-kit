@@ -108,6 +108,40 @@ describe('Layout resize handle', () => {
     expect(centre(line)).toBe(panel.right - 0.5);
   });
 
+  // No gap beside a resizable panel: content with its own fill would show the
+  // Layout behind it as a strip along the edge.
+  it("puts the content against a resizable panel's border, under the line in use", async () => {
+    renderWithRoot(
+      <div style={{ width: 800, height: 400, display: 'flex' }}>
+        <Layout>
+          <Layout.Panel qa="panel" side="left" isResizable size={200}>
+            Panel
+          </Layout.Panel>
+          <Layout.Content qa="content" fill="#light">
+            Content
+          </Layout.Content>
+        </Layout>
+      </div>,
+    );
+
+    const panel = screen.getByTestId('panel').getBoundingClientRect();
+    const line = part(screen.getByRole('separator'), 'Line');
+
+    expect(screen.getByTestId('content').getBoundingClientRect().left).toBe(
+      panel.right,
+    );
+
+    await press('{Tab}');
+
+    await waitFor(() => {
+      expect(line.getBoundingClientRect().width).toBe(2);
+    });
+    // The line's outer half lies over the content and paints above its fill.
+    expect(
+      document.elementFromPoint(panel.right, panel.top + panel.height / 2),
+    ).toBe(line);
+  });
+
   // Dense screens draw borders as a .5px hairline. The line in use widens to
   // 1.5px around it, and the grip and the touch target stay on its centre.
   it('keeps the line, the grip and the touch target on the centre of a hairline edge', async () => {

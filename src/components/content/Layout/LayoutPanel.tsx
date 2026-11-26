@@ -55,10 +55,8 @@ import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps
 // Resize handler dimensions
 const HANDLER_WIDTH = 9;
 // Where the panel's edge is inside the handle, from the panel's side: the
-// handle overlaps the panel's border and the inset gap beyond it
+// handle overlaps the panel's border and the content beside it
 const HANDLER_OFFSET = 4;
-// Extra inset added for resizable panels (to accommodate handler grab area)
-const RESIZABLE_INSET_OFFSET = 2;
 
 const PanelElement = tasty({
   as: 'div',
@@ -146,8 +144,7 @@ const PANEL_HANDLE_STYLES: Styles = {
   // Device pixels: the handle's thickness, so its offsets stay whole pixels.
   '$handle-size': `${HANDLER_WIDTH}px`,
   // The edge line lies on the panel's own border. In use it widens to both
-  // sides of it: half a pixel into the panel, half into the inset the Layout
-  // leaves beside it.
+  // sides of it: half a pixel into the panel, half over the content beside it.
   '$handle-edge-inset': `(${HANDLER_OFFSET}px - 1bw)`,
 
   // Handler size
@@ -393,25 +390,12 @@ function LayoutPanel(
   const containerDimension = isHorizontal ? containerWidth : containerHeight;
   const oppositeSide = getOppositeSide(side);
   const oppositePanelSize = layoutState.panelSizes[oppositeSide];
-  const ownInsetOffset = isResizable ? RESIZABLE_INSET_OFFSET : 0;
   const naturalMax = useMemo(
     () =>
       !isDialogMode && containerDimension > 0
-        ? Math.max(
-            0,
-            containerDimension -
-              oppositePanelSize -
-              minContentSize -
-              ownInsetOffset,
-          )
+        ? Math.max(0, containerDimension - oppositePanelSize - minContentSize)
         : Infinity,
-    [
-      isDialogMode,
-      containerDimension,
-      oppositePanelSize,
-      minContentSize,
-      ownInsetOffset,
-    ],
+    [isDialogMode, containerDimension, oppositePanelSize, minContentSize],
   );
 
   // Panel open state
@@ -621,17 +605,15 @@ function LayoutPanel(
   ]);
 
   // Register panel with layout context
-  // Include handler outside portion (minus border overlap) for proper content inset
+  // The content sits against the panel's border, resizable or not; the resize
+  // handle overlaps both and paints over the content.
   // In sticky, overlay, and dialog modes, panel doesn't push content, so size is 0
   // NOTE: We intentionally use `size` (not `clampValue(size)`) here to avoid a feedback
   // loop. `clampValue` depends on the opposite panel's context size, so clamping here
   // would create a period-2 oscillation through shared context. CSS --max-size handles
   // visual clamping immediately; the auto-shrink effect converges `size` state.
   const effectivePanelSize = isPanelShown && mode === 'default' ? size : 0;
-  const effectiveInsetSize = Math.round(
-    effectivePanelSize +
-      (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
-  );
+  const effectiveInsetSize = Math.round(effectivePanelSize);
 
   const { registerPanel, unregisterPanel, updatePanelSize } = layoutActions;
   const { isReady } = layoutState;
