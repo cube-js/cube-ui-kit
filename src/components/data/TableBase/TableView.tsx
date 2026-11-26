@@ -2443,8 +2443,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     )
       return;
 
-    if (origin.target?.isConnected && !selection?.isRowDisabled(origin.key))
-      origin.target.focus();
+    if (origin.target?.isConnected) origin.target.focus();
     else {
       const currentIndex = rowIndexForKey(origin.key);
       const index =

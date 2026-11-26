@@ -1,4 +1,3 @@
-import { getInteractionModality } from '@react-aria/interactions';
 import {
   Children,
   cloneElement,
@@ -288,22 +287,8 @@ export function TabButton({
   const isActive = state.selectedKey === item.key;
   const isDisabled = state.disabledKeys.has(item.key);
   // The tab list keeps a disabled tab focusable, as WAI-ARIA tabs do, so React
-  // Aria no longer marks it disabled. Automatic activation runs here rather
-  // than in React Aria, whose version clears the selection when the keyboard
-  // reaches a disabled tab, and the tab list then falls back to its first tab.
-  const disabledFocusProps = {
-    'aria-disabled': isDisabled || undefined,
-    onFocus: () => {
-      if (
-        !isDisabled &&
-        !isActive &&
-        !state.isDisabled &&
-        getInteractionModality() === 'keyboard'
-      ) {
-        state.setSelectedKey(item.key);
-      }
-    },
-  };
+  // Aria no longer marks it disabled.
+  const disabledFocusProps = { 'aria-disabled': isDisabled || undefined };
   const isDeletable = !!onDelete;
   const isEditing = editingKey === item.key;
 

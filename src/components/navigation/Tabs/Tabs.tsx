@@ -458,21 +458,24 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   }, [state.selectedKey]);
 
   // Get tablist props from react-aria
-  // `TabButton` activates a tab when the keyboard focuses it. React Aria's own
-  // automatic activation clears the selection on a disabled tab. Its keyboard
-  // delegate skips the state's disabled keys, so it navigates a view of the
-  // state that has none. React Aria names tabs and panels after the state
-  // object `useTabList` gets, so they take this view too, and its identity
-  // follows `state`'s; `TabButton` reads disabled keys from the real state.
-  const listState = useMemo(
-    () => ({ ...state, disabledKeys: NO_DISABLED_KEYS }),
-    [state],
-  );
-  const { tabListProps } = useTabList(
-    { ...ariaProps, keyboardActivation: 'manual' },
-    listState,
-    listRef,
-  );
+  // React Aria's keyboard delegate skips the state's disabled keys, so the tab
+  // list navigates a view of the state that has none. Activating a disabled
+  // tab, as the arrow keys and a click do, would clear the selection, so the
+  // view's selection manager leaves it as it is there. React Aria names tabs
+  // and panels after the state object `useTabList` gets, so they take this
+  // view too, and its identity follows `state`'s. `TabButton` reads disabled
+  // keys from the real state.
+  const listState = useMemo(() => {
+    const selectionManager = Object.create(state.selectionManager);
+    selectionManager.replaceSelection = (key: Key) => {
+      if (!state.disabledKeys.has(key)) {
+        state.selectionManager.replaceSelection(key);
+      }
+    };
+
+    return { ...state, disabledKeys: NO_DISABLED_KEYS, selectionManager };
+  }, [state]);
+  const { tabListProps } = useTabList(ariaProps, listState, listRef);
 
   // Handle selection from TabPicker (needs to update internal state in uncontrolled mode)
   const handleTabPickerSelect = useEvent((key: string) => {

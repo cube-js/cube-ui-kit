@@ -174,12 +174,11 @@ function TagRow({
     isDisabled: _isDisabled,
     ...otherTagProps
   } = entry.tagProps ?? {};
-  // React Aria describes how to remove a chip; a locked one can't be removed.
+  // React Aria tells every chip how to remove it; one that can't be removed
+  // (locked, or in a read-only field) isn't told.
+  const removeHintId = canRemove ? rowProps['aria-describedby'] : undefined;
   const describedBy =
-    [
-      isTagDisabled ? null : rowProps['aria-describedby'],
-      entry.invalidMessage ? invalidId : null,
-    ]
+    [removeHintId, entry.invalidMessage ? invalidId : null]
       .filter(Boolean)
       .join(' ') || undefined;
 

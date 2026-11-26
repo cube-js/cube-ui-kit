@@ -1245,6 +1245,37 @@ describe('<ComboBox />', () => {
       expect(onSelectionChange).not.toHaveBeenCalled();
       await waitFor(() => expect(combobox).toHaveValue('Rita Added'));
     });
+
+    // An item disabled with its own `isDisabled` is the same as one in
+    // `disabledKeys`: typing its label and leaving selects nothing.
+    it('restores the selected label after typing the label of an item with its own isDisabled', async () => {
+      const onSelectionChange = vi.fn();
+      const onBlur = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          label="Person"
+          defaultSelectedKey="mark"
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        >
+          <ComboBox.Item key="mark">Mark</ComboBox.Item>
+          <ComboBox.Item key="rita" isDisabled>
+            Rita
+          </ComboBox.Item>
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.clear(combobox);
+      await userEvent.type(combobox, 'Rita');
+      await act(async () => {
+        combobox.blur();
+      });
+      await waitFor(() => expect(onBlur).toHaveBeenCalled());
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      await waitFor(() => expect(combobox).toHaveValue('Mark'));
+    });
   });
 
   describe('blur with repeated labels', () => {

@@ -82,7 +82,7 @@ export function findTypedOption(
   options: ComboBoxOption[],
   text: string,
   selectedKey: Key | null,
-  disabledKeys: Set<Key>,
+  isDisabled: (key: Key) => boolean,
   isSameText: (textValue: string, text: string) => boolean,
 ): Key | null {
   const term = text.trim();
@@ -94,11 +94,11 @@ export function findTypedOption(
   );
   const match =
     exactMatches.find((option) => option.key === selectedKey) ??
-    exactMatches.find((option) => !disabledKeys.has(option.key)) ??
+    exactMatches.find((option) => !isDisabled(option.key)) ??
     exactMatches[0] ??
     (options.length === 1 ? options[0] : null);
 
-  if (!match || (match.key !== selectedKey && disabledKeys.has(match.key))) {
+  if (!match || (match.key !== selectedKey && isDisabled(match.key))) {
     return null;
   }
 

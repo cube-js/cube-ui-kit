@@ -1047,7 +1047,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       getTypedOptions(),
       effectiveInputValue,
       effectiveSelectedKey,
-      localCollectionState.disabledKeys,
+      (key) => isItemDisabled(localCollectionState, key),
       isSameText,
     );
 

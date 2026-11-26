@@ -376,6 +376,24 @@ describe('<Tabs />', () => {
       },
     );
 
+    // Focus moved to a tab by code, as when a menu or an inline edit hands it
+    // back, is not the arrow keys choosing it: the tab stays inactive.
+    it('keeps a tab inactive when code moves focus to it', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1" onChange={onChange}>
+          <Tab key="tab1" title="Tab 1" />
+          <Tab key="tab2" title="Tab 2" />
+        </Tabs>,
+      );
+      const tab2 = getByRole('tab', { name: 'Tab 2' });
+
+      await userEvent.tab();
+      await act(async () => tab2.focus());
+      expect(tab2).toHaveAttribute('aria-selected', 'false');
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
     it('announces a disabled tab when the arrow keys reach it', async () => {
       const { getByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1">

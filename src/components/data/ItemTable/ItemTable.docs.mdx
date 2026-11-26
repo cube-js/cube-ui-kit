@@ -79,7 +79,7 @@ Use `DataTable` instead when a _cell_ is the unit of interest — query results,
 - **`selectAllMode`** `'page' | 'filtered' | 'all'` (default: `'page'`) — What the header checkbox acts on.
 - **`isRowSelectable`** `(row: T) => boolean` — The row stays focusable and clickable; only its checkbox goes inert.
 - **`selectionTooltip`** `string | ((row: T) => string | undefined)` — Explains an inert checkbox.
-- **`disabledKeys`** `Key[]` — Rows that cannot be interacted with at all.
+- **`disabledKeys`** `Key[]` — Inert rows: no selection, link, action, menu, expansion or reordering. The arrow keys still reach them, so a screen reader announces them as disabled.
 - **`treeSelectionBehavior`** `'cascade' | 'independent'` (default: `'cascade'` in tree mode) — Multiple selection only. Cascade selects eligible descendants and derives checked or indeterminate ancestors; single selection is always independent.
 - **`rowLink`** `(row: T, index: number) => NavigateArg | undefined` — Turns the row-header cell into a stretched link covering the whole row. Return `undefined` for a row that should not navigate.
 - **`onRowAction`** `(row: T, key: Key) => void` — Non-navigational activation: Enter, or a click that did not land on a control inside a cell.
@@ -611,7 +611,7 @@ Deliberately distinct, and not interchangeable:
 
 | Prop | Focusable | Interactive | Selectable |
 | --- | --- | --- | --- |
-| `disabledKeys` | no | no | no |
+| `disabledKeys` | yes, with the arrow keys | no | no |
 | `isRowSelectable` | yes | yes | no |
 | `getRowProps().isDimmed` | yes | yes | **yes** — it is purely visual |
 
@@ -673,7 +673,7 @@ The row-header cell is styled as a link — `#purple-text` at weight 600, matchi
 
 `onRowAction` is the non-navigational alternative — Enter, or a click that did not land on a control inside a cell. Use one or the other, not both.
 
-Flat tables with row links, row actions or exposed row menus have a resting body-row tab stop. Up/Down move between interactive rows, Home/End move to the first/last, and Enter activates the focused row's link or action. Down from a focused column header enters the body. Up/Down stop on a disabled row, so a screen reader announces it as disabled, but it stays inert: no link, action, menu, selection, expansion or reordering. Making a row unselectable only disables its checkbox. In-cell controls keep their own keys and Tab behavior. Reorderable rows retain their drag shortcuts.
+Flat tables with row links, row actions or exposed row menus have a resting body-row tab stop. Up/Down move between rows, Home/End move to the first/last, and Enter activates the focused row's link or action. Down from a focused column header enters the body. Up/Down stop on a disabled row, so a screen reader announces it as disabled, but it stays inert: no link, action, menu, selection, expansion or reordering. Making a row unselectable only disables its checkbox. In-cell controls keep their own keys and Tab behavior. Reorderable rows retain their drag shortcuts.
 
 Keyboard focus emphasizes the row background, including selected rows, matching the kit's list items. Controls inside a row keep their own focus appearance.
 
