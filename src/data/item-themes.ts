@@ -234,8 +234,9 @@ export const DEFAULT_ITEM_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-text.12',
     'selected & pressed': '#surface-text.15',
     disabled: '#clear',
-    // A menu lets the keyboard reach a disabled row, and an `item` row shows
-    // focus by its fill alone, so the focus tint survives `disabled`.
+    // A disabled row can keep focus — a menu item the arrow keys reach, an
+    // `ItemButton` with a tooltip — and an `item` row shows focus by its fill
+    // alone, so the focus tint survives `disabled`.
     'disabled & focused': '#surface-text.04',
   },
   color: {
@@ -1165,6 +1166,9 @@ export const CURRENT_CLEAR_STYLES: Styles = mergeStyles(
       // documented there: the disabled label dims `currentcolor` to `.4`, and
       // this alpha resolves against it, rendering as ~`.07`.
       'selected & disabled': '#current.18',
+      // The item ramp's focus fill on a disabled row is for a row with no
+      // ring; `clear` has one, and keeps every other `*_CLEAR_STYLES`' fill.
+      'disabled & focused': '#clear',
     },
   },
 );

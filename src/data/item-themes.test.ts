@@ -245,7 +245,8 @@ describe('card variants', () => {
  * `disabled`, and it repeats the enabled focus tint. `current.item` writes its
  * tint pre-multiplied, as it does every disabled alpha (the disabled label has
  * faded its own `currentcolor` to `.4`), so only its place is pinned here.
- * `special.item` has no focus fill at all.
+ * `special.item` has no focus fill at all. The rule is for rows that show
+ * focus by their fill, so ringed `clear` controls keep their disabled fill.
  */
 describe('item rows keep the focus fill when disabled', () => {
   const ITEM_ROWS = [
@@ -269,5 +270,13 @@ describe('item rows keep the focus fill when disabled', () => {
     const fill = ITEM_VARIANTS[variant].fill as Record<string, string>;
 
     expect(fill['disabled & focused']).toBe(fill['hovered | focused']);
+  });
+
+  // `current.clear` is built on the `current.item` ramp, but a `clear` control
+  // shows focus with its ring and keeps a disabled fill like every other theme.
+  it('current.clear leaves a disabled focus to its ring', () => {
+    const fill = ITEM_VARIANTS['current.clear'].fill as Record<string, string>;
+
+    expect(fill['disabled & focused']).toBe(fill.disabled);
   });
 });
