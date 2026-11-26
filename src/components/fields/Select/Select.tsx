@@ -1154,9 +1154,12 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         focusProps,
         filteredItemProps,
         keyboardProps,
+        // React Aria no longer marks a disabled option, which the list keeps
+        // focusable. Only the attribute: controls inside the option, such as a
+        // form or an action, keep working as they did.
+        { 'aria-disabled': isDisabled || undefined },
       )}
       ref={ref}
-      isDisabled={isDisabled}
       mods={{
         listboxitem: true,
         selected: isSelected,
