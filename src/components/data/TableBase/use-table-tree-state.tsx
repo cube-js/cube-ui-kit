@@ -3,6 +3,7 @@ import { Item, useTreeState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n/useI18n';
+import { getDisabledBehavior } from '../../shared/disabled-behavior';
 
 import type { Key, Node } from '@react-types/shared';
 import type { ReactElement } from 'react';
@@ -139,7 +140,10 @@ export function useTableTreeState<T>(
     expandedKeys: effectiveExpandedKeys,
     onExpandedChange: handleExpandedChange,
     disabledKeys,
-    disabledBehavior: 'all' as const,
+    // A disabled row stays focusable, as WAI-ARIA keeps a disabled row
+    // reachable; the table keeps it inert. Under `'all'` React Aria gave it no
+    // tab stop, so the arrow keys focused the treegrid in its place.
+    disabledBehavior: getDisabledBehavior(false),
     // Prevent `useTreeItem` from treating a row press as an implicit toggle.
     // Tables keep row activation and expansion as separate interactions.
     onAction: () => {},

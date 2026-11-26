@@ -159,8 +159,9 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
   /**
    * Two distinct notions of "not available", deliberately kept apart:
    *
-   * - `disabledKeys` — the row is inert. Not focusable, not interactive. This
-   *   is React Aria's standard meaning.
+   * - `disabledKeys` — the row is inert: not selectable, no row action, link
+   *   or menu. The keyboard still reaches it, as WAI-ARIA keeps a disabled row
+   *   focusable, so a screen reader user hears that it is disabled.
    * - `isRowSelectable` — the row is fully interactive, only its checkbox is
    *   inert. This is what Cloud's tables do today.
    *

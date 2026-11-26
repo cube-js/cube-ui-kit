@@ -117,17 +117,19 @@ export function TreeGridTable<T>(props: {
 
     const hasChildren = entry.children.length > 0;
     const isExpanded = tree.state.expandedKeys.has(entry.key);
+    // The arrow keys reach a disabled row, which neither opens nor closes.
+    const isDisabled = tree.state.disabledKeys.has(entry.key);
     let handled = false;
 
     if (event.key === 'ArrowRight' && hasChildren) {
       if (isExpanded) handled = focusEntry(entry.children[0]);
       else {
-        tree.state.toggleKey(entry.key);
+        if (!isDisabled) tree.state.toggleKey(entry.key);
         handled = true;
       }
     } else if (event.key === 'ArrowLeft') {
       if (hasChildren && isExpanded) {
-        tree.state.toggleKey(entry.key);
+        if (!isDisabled) tree.state.toggleKey(entry.key);
         handled = true;
       } else if (entry.parentKey != null) {
         handled = focusEntry(
