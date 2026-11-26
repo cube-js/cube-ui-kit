@@ -669,6 +669,32 @@ describe('<Select />', () => {
       );
     });
 
+    // When the focused option goes away while the list is open, focus moves
+    // on to the next option the user can pick, not onto a disabled one.
+    it('moves focus past a disabled option when the focused one goes away', async () => {
+      const fruits = (keys: string[]) => (
+        <Select label="Fruit" disabledKeys={['banana']}>
+          {keys.map((key) => (
+            <Select.Item key={key}>{key}</Select.Item>
+          ))}
+        </Select>
+      );
+      const { rerender } = renderWithRoot(
+        fruits(['apple', 'banana', 'cherry']),
+      );
+
+      await focusTrigger();
+      await act(async () => await userEvent.keyboard('{ArrowDown}'));
+      await waitFor(() =>
+        expect(screen.getByRole('option', { name: 'apple' })).toHaveFocus(),
+      );
+
+      rerender(fruits(['banana', 'cherry']));
+      await waitFor(() =>
+        expect(screen.getByRole('option', { name: 'cherry' })).toHaveFocus(),
+      );
+    });
+
     it('stops on a disabled option with the arrow keys and never picks it', async () => {
       const onSelectionChange = vi.fn();
       renderWithRoot(

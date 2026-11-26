@@ -1,5 +1,6 @@
 import { Key } from '@react-types/shared';
 
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import {
   getFirstSelectableKey,
   ListStateLike,
@@ -106,8 +107,8 @@ export function findTypedOption(
 
 /**
  * The option the list should highlight: the one it already highlights while
- * the filter keeps it, otherwise the selection when shown, otherwise the first
- * enabled option.
+ * the filter keeps it, otherwise the selection when shown and enabled,
+ * otherwise the first enabled option.
  */
 export function resolveHighlightedKey(
   listState: ListState,
@@ -120,7 +121,11 @@ export function resolveHighlightedKey(
     return focusedKey;
   }
 
-  if (selectedKey != null && collection.getItem(selectedKey) != null) {
+  if (
+    selectedKey != null &&
+    collection.getItem(selectedKey) != null &&
+    !isItemDisabled(listState, selectedKey)
+  ) {
     return selectedKey;
   }
 

@@ -284,19 +284,18 @@ export function FilterTree(props: FilterTreeProps) {
   // hid falls back to the value's first row in view, then the first row. In
   // single mode a search falls back to its first leaf before the first row,
   // so Enter picks a match rather than closing the folder above it.
-  // The fallback is a row the user can use; the arrow keys still reach a
-  // disabled one.
+  // Every fallback is a row the user can use, or none: the arrow keys still
+  // reach a disabled one.
   const [storedActiveKey, setActiveKey] = useState<string | null>(null);
   const usableRows = rows.filter((row) => !row.isDisabled);
   const activeKey =
     storedActiveKey != null && rowKeys.includes(storedActiveKey)
       ? storedActiveKey
-      : (rowKeys.find(isValue) ??
+      : (usableRows.find((row) => isValue(row.key))?.key ??
         (isSingle && isSearching
           ? usableRows.find(isTreeLeaf)?.key
           : undefined) ??
         usableRows[0]?.key ??
-        rowKeys[0] ??
         null);
 
   // Whether the node could be toggled: one with its checkbox disabled or

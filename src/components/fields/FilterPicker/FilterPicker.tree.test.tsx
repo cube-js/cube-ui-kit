@@ -733,6 +733,48 @@ describe('<FilterPicker treeData />', () => {
     },
   );
 
+  // The tree's own highlight is never a disabled row, not even one that holds
+  // the value or is the only match of a search.
+  describe('highlight on its own', () => {
+    const data: CubeTreeNodeData[] = [
+      { key: 'alpha', title: 'Alpha', isLeaf: true },
+      { key: 'beta', title: 'Beta', isLeaf: true, isDisabled: true },
+      { key: 'gamma', title: 'Gamma', isLeaf: true },
+    ];
+    const active = () => search().getAttribute('aria-activedescendant');
+
+    it.each([
+      [
+        'a disabled selected row',
+        { selectionMode: 'single' as const, defaultSelectedKey: 'beta' },
+        'alpha',
+      ],
+      [
+        'a disabled checked row',
+        { defaultSelectedKeys: ['beta', 'gamma'] },
+        'gamma',
+      ],
+    ])('opens past %s', async (_, props, expected) => {
+      const { getByRole } = renderWithRoot(
+        <FilterPicker label="Groups" treeData={data} {...props} />,
+      );
+
+      await open(getByRole);
+      expect(active()).toBe(row(expected)!.id);
+    });
+
+    it('highlights nothing when a search matches only a disabled row', async () => {
+      const { getByRole } = renderWithRoot(
+        <FilterPicker label="Groups" selectionMode="single" treeData={data} />,
+      );
+
+      await open(getByRole);
+      await user.type(search(), 'bet');
+      expect(row('beta')).toBeInTheDocument();
+      expect(active()).toBeFalsy();
+    });
+  });
+
   it('holds its value as a form field', async () => {
     const { getByRole, formInstance } = renderWithForm(
       <FilterPicker name="groups" label="Groups" treeData={GROUPS} />,

@@ -467,6 +467,27 @@ describe('<ComboBox />', () => {
     expect(getActiveDescendant(combobox)).toBe(black);
   });
 
+  // A selection that became disabled is not where the list opens.
+  it('opens past a disabled selected option', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        label="Color"
+        defaultSelectedKey="black"
+        disabledKeys={['black']}
+      >
+        <ComboBox.Item key="black">Black</ComboBox.Item>
+        <ComboBox.Item key="blue">Blue</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await act(async () => combobox.focus());
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(getActiveDescendant(combobox)).toHaveTextContent('Blue'),
+    );
+  });
+
   it('should handle clear functionality', async () => {
     const onClear = vi.fn();
 

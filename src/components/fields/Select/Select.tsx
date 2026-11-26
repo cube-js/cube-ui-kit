@@ -83,6 +83,7 @@ import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { Portal } from '../../portal/Portal';
 import { isItemDisabled } from '../../shared/disabled-behavior';
+import { useDisabledFocusReset } from '../ListBox/use-disabled-focus-reset';
 import { useOptionOriginPress } from '../option-origin-press';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
@@ -434,6 +435,7 @@ function Select<T extends object>(
   let state = getValueSelectionState(
     useSelectState({ ...props, disabledBehavior: 'selection' } as typeof props),
   );
+  useDisabledFocusReset(state);
   // Read-only and loading keep the trigger focusable, but its value is fixed.
   const isLocked = !!props.isReadOnly || !!isLoading;
 

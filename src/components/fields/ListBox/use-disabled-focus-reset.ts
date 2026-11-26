@@ -12,7 +12,8 @@ import type { ListState } from 'react-stately';
  * React Stately then moves the highlight to the next option, but under
  * `disabledBehavior: 'selection'` its check (`selectionManager.isDisabled`)
  * no longer sees a disabled one, so it can land there, where Enter does
- * nothing. This runs after it (call it after `useListState`) and moves the
+ * nothing. This runs after it (call it right after the hook that builds the
+ * state: `useListState` in ListBox, `useSelectState` in Select) and moves the
  * highlight on to the next option the user can pick, or clears it. A field
  * that picks the highlight itself before then, as most do in a layout effect,
  * leaves nothing to correct.
