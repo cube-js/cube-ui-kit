@@ -2409,6 +2409,8 @@ NavigationLinks.play = async ({ canvasElement }) => {
 
   recent.focus();
   for (const name of [
+    // The disabled destination is reached too, so its state is read out.
+    'Unavailable workbook',
     'Browse all',
     'Saved workbook',
     'Actions for Saved workbook',
@@ -2419,6 +2421,10 @@ NavigationLinks.play = async ({ canvasElement }) => {
     await waitFor(() =>
       expect(canvas.getByRole('menuitem', { name, exact: true })).toHaveFocus(),
     );
+    if (name === 'Unavailable workbook')
+      expect(
+        canvas.getByRole('menuitem', { name, exact: true }),
+      ).toHaveAttribute('aria-disabled', 'true');
   }
   await userEvent.keyboard('{Home}');
   expect(window.location.href).toBe(initialLocation);
