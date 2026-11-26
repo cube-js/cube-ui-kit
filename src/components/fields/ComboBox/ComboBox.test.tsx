@@ -356,6 +356,67 @@ describe('<ComboBox />', () => {
     });
   });
 
+  // WAI-ARIA keeps a disabled option reachable, so a keyboard or screen reader
+  // user hears it and why it is unavailable. It stays inert.
+  it('highlights a disabled option with the arrow keys and never picks it', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole, getAllByRole } = renderWithRoot(
+      <ComboBox
+        label="Fruit"
+        disabledKeys={['banana']}
+        onSelectionChange={onSelectionChange}
+      >
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+    const active = () => getActiveDescendant(combobox)?.textContent;
+
+    await act(async () => combobox.focus());
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(getByRole('listbox')).toBeInTheDocument());
+    await waitFor(() => expect(active()).toBe('Apple'));
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(active()).toBe('Banana'));
+    expect(getActiveDescendant(combobox)).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+
+    await userEvent.keyboard('{Enter}');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(combobox).toHaveValue('');
+    expect(getByRole('listbox')).toBeInTheDocument();
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(active()).toBe('Cherry'));
+    await userEvent.keyboard('{ArrowUp}');
+    await waitFor(() => expect(active()).toBe('Banana'));
+    expect(getAllByRole('option')).toHaveLength(3);
+  });
+
+  it('keeps highlighting the first option it can pick as the text changes', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        label="Fruit"
+        disabledKeys={['banana']}
+        onSelectionChange={onSelectionChange}
+      >
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="blueberry">Blueberry</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await userEvent.type(combobox, 'b');
+    await userEvent.keyboard('{Enter}');
+    expect(onSelectionChange).toHaveBeenCalledWith('blueberry');
+  });
+
   it('should handle clear functionality', async () => {
     const onClear = vi.fn();
 

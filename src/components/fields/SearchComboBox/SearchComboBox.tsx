@@ -51,8 +51,10 @@ import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
   filterCollectionNodes,
   getEdgeVisibleKey,
+  getFirstSelectableKey,
   getNextVisibleKey,
   getVisibleKeys,
+  isDisabledKey,
   ListStateLike,
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
@@ -769,9 +771,12 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     const visibleKeys = listState ? getVisibleKeys(listState) : visibleItemKeys;
     const focusedKey = listState?.selectionManager.focusedKey;
 
-    return focusedKey != null && visibleKeys.includes(focusedKey)
-      ? focusedKey
-      : (visibleKeys[0] ?? null);
+    if (focusedKey != null && visibleKeys.includes(focusedKey))
+      return focusedKey;
+
+    return listState
+      ? getFirstSelectableKey(listState)
+      : (visibleItemKeys[0] ?? null);
   };
 
   // Enter commits an option, else submits the raw text, else does nothing
@@ -785,6 +790,16 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     // `listStateRef` must not be committed.
     const listState = listStateRef.current;
     const keyToSelect = shouldShowPopover ? getKeyToSelect(listState) : null;
+
+    if (
+      keyToSelect != null &&
+      listState &&
+      isDisabledKey(listState, keyToSelect)
+    ) {
+      // A disabled option the arrow keys reached: Enter neither picks it nor
+      // submits the text.
+      return;
+    }
 
     if (keyToSelect != null) {
       if (listState) {
@@ -924,8 +939,12 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           const isFocusValid = focusedKey != null && keys.includes(focusedKey);
 
           if (!isFocusValid) {
+            // The first option Enter can pick; the arrow keys still reach a
+            // disabled one before it.
             markKeyboardFocus(listState);
-            listState.selectionManager.setFocusedKey(keys[0]);
+            listState.selectionManager.setFocusedKey(
+              getFirstSelectableKey(listState) ?? keys[0],
+            );
             bumpFocus();
           }
 

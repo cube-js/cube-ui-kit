@@ -2216,6 +2216,33 @@ describe('<TagInput />', () => {
     });
   });
 
+  // WAI-ARIA keeps a disabled option reachable, so a keyboard or screen reader
+  // user hears it and why it is unavailable. Enter neither picks it nor
+  // reports it: typing still highlights the first option the user can pick.
+  it('highlights a disabled option with the arrow keys and never picks it', async () => {
+    const onChange = vi.fn();
+    const { getByRole, queryByRole } = renderWithRoot(
+      <Actions disabledKeys={['read']} onChange={onChange} />,
+    );
+    const input = getByRole('combobox');
+    const active = () => getActiveDescendant(input)?.textContent;
+
+    await userEvent.type(input, 're');
+    await waitFor(() => expect(active()).toBe('refresh'));
+
+    await userEvent.keyboard('{ArrowUp}');
+    await waitFor(() => expect(active()).toBe('read'));
+    expect(getActiveDescendant(input)).toHaveAttribute('aria-disabled', 'true');
+
+    await userEvent.keyboard('{Enter}');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(input).toHaveValue('re');
+    expect(queryByRole('alert')).toBeNull();
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(active()).toBe('refresh'));
+  });
+
   it('focuses the first match not added yet while typing', async () => {
     const { getByRole } = renderWithRoot(
       <Actions defaultValue={['read', 'rebuild']} />,

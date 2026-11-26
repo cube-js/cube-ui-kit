@@ -1631,6 +1631,10 @@ function TagInput<T extends object>(
 
       const key = String(targetKey);
 
+      // A disabled option, or a locked value's, that the arrow keys reached:
+      // Enter neither picks nor unpicks it.
+      if (disabledKeySet.has(key) || isTagLocked(key)) return;
+
       // Typed text means "add". An option that is already a chip is refused
       // as a duplicate and the text cleared, as a comma or blur would;
       // unpicking one takes the arrows, a click, or an empty input.

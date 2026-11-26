@@ -856,9 +856,16 @@ describe('<FilterListBox />', () => {
       expect(focusedKeys(container)).toEqual([]);
     });
 
-    it('skips disabled options with the arrow keys', async () => {
+    // WAI-ARIA keeps a disabled option reachable, so a keyboard or screen
+    // reader user hears it and why it is unavailable. It stays inert.
+    it('highlights a disabled option with the arrow keys and never picks it', async () => {
+      const onSelectionChange = vi.fn();
       const { container, getByRole } = render(
-        <FilterListBox label="Fruit" disabledKeys={['banana']}>
+        <FilterListBox
+          label="Fruit"
+          disabledKeys={['banana']}
+          onSelectionChange={onSelectionChange}
+        >
           {basicItems}
         </FilterListBox>,
       );
@@ -870,10 +877,25 @@ describe('<FilterListBox />', () => {
       await waitFor(() =>
         expect(getActiveDescendant(searchInput)).toHaveAttribute(
           'data-key',
+          'banana',
+        ),
+      );
+      expect(getActiveDescendant(searchInput)).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+      expect(focusedKeys(container)).toEqual(['banana']);
+
+      await userEvent.keyboard('{Enter}');
+      expect(onSelectionChange).not.toHaveBeenCalled();
+
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(() =>
+        expect(getActiveDescendant(searchInput)).toHaveAttribute(
+          'data-key',
           'cherry',
         ),
       );
-      expect(focusedKeys(container)).toEqual(['cherry']);
     });
 
     it('wraps the arrow keys with shouldFocusWrap', async () => {
@@ -895,7 +917,7 @@ describe('<FilterListBox />', () => {
       );
     });
 
-    it('skips disabled options at the edges, on open and with Home and End', async () => {
+    it('opens on the first option it can pick, and Home and End reach the disabled edges', async () => {
       const { getByRole } = render(
         <FilterListBox label="Fruit" disabledKeys={['apple', 'elderberry']}>
           {basicItems}
@@ -911,11 +933,11 @@ describe('<FilterListBox />', () => {
 
       await userEvent.keyboard('{End}');
 
-      await waitFor(() => expect(activeKey()).toBe('date'));
+      await waitFor(() => expect(activeKey()).toBe('elderberry'));
 
       await userEvent.keyboard('{Home}');
 
-      await waitFor(() => expect(activeKey()).toBe('banana'));
+      await waitFor(() => expect(activeKey()).toBe('apple'));
     });
   });
 

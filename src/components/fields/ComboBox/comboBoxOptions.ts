@@ -1,7 +1,7 @@
 import { Key } from '@react-types/shared';
 
 import {
-  getEdgeVisibleKey,
+  getFirstSelectableKey,
   ListStateLike,
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
@@ -124,7 +124,7 @@ export function resolveHighlightedKey(
     return selectedKey;
   }
 
-  return getEdgeVisibleKey(listState, 'first');
+  return getFirstSelectableKey(listState);
 }
 
 /**

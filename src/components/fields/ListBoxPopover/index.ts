@@ -11,6 +11,8 @@ export {
   getVisibleKeys,
   getNextVisibleKey,
   getEdgeVisibleKey,
+  getFirstSelectableKey,
+  isDisabledKey,
   markKeyboardFocus,
   filterCollectionNodes,
 } from './listNavigation';

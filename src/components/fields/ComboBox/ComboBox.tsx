@@ -51,6 +51,7 @@ import {
   filterCollectionNodes,
   getEdgeVisibleKey,
   getNextVisibleKey,
+  isDisabledKey,
   ListStateLike,
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
@@ -526,7 +527,11 @@ function useComboBoxKeyboard({
       ? resolveHighlightedKey(listState, selectedKey)
       : null;
 
-    if (key != null) {
+    if (key != null && isDisabledKey(listState, key)) {
+      // A disabled option the arrow keys reached: Enter picks nothing, and the
+      // list stays open.
+      e.preventDefault();
+    } else if (key != null) {
       e.preventDefault();
       listState.selectionManager.select(key, e);
       // Close even when the selection stays the same.

@@ -38,6 +38,7 @@ import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   getEdgeVisibleKey,
   getNextVisibleKey,
+  isDisabledKey,
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
 import {
@@ -705,6 +706,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
     let newCustomValueKey: Key | null = null;
     let customValueHasMatches = false;
 
+    // A disabled option is not a focus target this effect picks, but the arrow
+    // keys reach it, so focus already on it stays.
+    const reachableKeys: Key[] = [];
     const collectFocusableKeys = (
       nodes: Iterable<any>,
       out: Key[],
@@ -712,7 +716,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
     ) => {
       for (const node of nodes) {
         if (node.type === 'item') {
-          if (!listState.disabledKeys.has(node.key)) out.push(node.key);
+          reachableKeys.push(node.key);
+          if (!isDisabledKey(listState, node.key)) out.push(node.key);
           if (inCustomSection) {
             newCustomValueKey = node.key;
             customValueHasMatches = true;
@@ -758,7 +763,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     // Decide whether the current focus is already on the right thing. If yes,
     // don't disturb it. Otherwise fall through and re-pick a focus target.
     const currentFocused = selectionManager.focusedKey;
-    if (currentFocused != null && visibleKeys.includes(currentFocused)) {
+    if (currentFocused != null && reachableKeys.includes(currentFocused)) {
       const currentIsNewCustomValue =
         newCustomValueKey != null && currentFocused === newCustomValueKey;
       const keepsFocus = customValueShouldBeFocused
@@ -855,7 +860,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         if (!listState) return;
 
         // The collection is already filtered by React Stately via filterFn;
-        // disabled options are skipped.
+        // the arrow keys reach a disabled option too.
         // Wrapping from the last loaded option to the first would skip the
         // options still to load.
         const nextKey = getNextVisibleKey(
@@ -895,7 +900,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
         const keyToSelect = listState.selectionManager.focusedKey;
 
-        if (keyToSelect != null) {
+        if (keyToSelect != null && isDisabledKey(listState, keyToSelect)) {
+          // A disabled option the arrow keys reached picks nothing, and the
+          // list stays open.
+          e.preventDefault();
+        } else if (keyToSelect != null) {
           e.preventDefault();
           listState.selectionManager.select(keyToSelect, e);
 

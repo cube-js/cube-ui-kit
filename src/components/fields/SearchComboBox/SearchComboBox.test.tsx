@@ -108,6 +108,52 @@ describe('<SearchComboBox />', () => {
     });
   });
 
+  // WAI-ARIA keeps a disabled option reachable, so a keyboard or screen reader
+  // user hears it and why it is unavailable. It stays inert, and the first
+  // match the user can pick is still the one typing highlights.
+  it('highlights a disabled option with the arrow keys and never picks or submits it', async () => {
+    const onSelect = vi.fn();
+    const onSubmit = vi.fn();
+
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox
+        label="Colors"
+        disabledKeys={['red']}
+        onSelect={onSelect}
+        onSubmit={onSubmit}
+      >
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+    const active = () => getActiveDescendant(input)?.textContent;
+
+    // "re" matches "Red" (disabled) and "Green": typing highlights Green.
+    await userEvent.type(input, 're');
+    await waitFor(() => expect(active()).toBe('Green'));
+
+    await userEvent.keyboard('{ArrowUp}');
+    await waitFor(() => expect(active()).toBe('Red'));
+    expect(getActiveDescendant(input)).toHaveAttribute('aria-disabled', 'true');
+
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(input).toHaveValue('re');
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(active()).toBe('Green'));
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() =>
+      expect(onSelect).toHaveBeenCalledWith('green', 'Green'),
+    );
+  });
+
   it('keeps aria-activedescendant in sync with virtual focus', async () => {
     const { getByRole } = renderWithRoot(
       <SearchComboBox label="Colors">
