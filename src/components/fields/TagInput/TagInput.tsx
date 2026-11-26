@@ -1479,8 +1479,9 @@ function TagInput<T extends object>(
     const removed = new Set(keys);
     const next = uniqueValues.filter((value) => !removed.has(value));
 
-    // Focus leaves the list before the last chip it can land on unmounts under
-    // it; locked chips take no focus.
+    // Once no chip that can be removed is left, focus goes back to the input
+    // before the last one unmounts under it: the locked chips that remain take
+    // focus, but there is nothing left for Delete or Backspace to do there.
     if (!next.some((value) => !isTagLocked(value))) {
       inputRef.current?.focus();
     }

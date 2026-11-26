@@ -286,9 +286,6 @@ export function TabButton({
 
   const isActive = state.selectedKey === item.key;
   const isDisabled = state.disabledKeys.has(item.key);
-  // The tab list keeps a disabled tab focusable, as WAI-ARIA tabs do, so React
-  // Aria no longer marks it disabled.
-  const disabledFocusProps = { 'aria-disabled': isDisabled || undefined };
   const isDeletable = !!onDelete;
   const isEditing = editingKey === item.key;
 
@@ -691,17 +688,11 @@ export function TabButton({
             as="button"
             // A tab switches panels; inside a form it must not submit it.
             htmlType="button"
-            {...mergeProps(
-              tabProps,
-              disabledFocusProps,
-              hoverProps,
-              focusProps,
-              {
-                onKeyDown: handleKeyDown,
-                onPointerEnter: handleSpringLoadEnter,
-                onPointerLeave: clearSpringLoad,
-              },
-            )}
+            {...mergeProps(tabProps, hoverProps, focusProps, {
+              onKeyDown: handleKeyDown,
+              onPointerEnter: handleSpringLoadEnter,
+              onPointerLeave: clearSpringLoad,
+            })}
             {...ariaProps}
             {...omitComponentOwnedProps(itemStyleProps)}
             ref={ref}

@@ -762,17 +762,14 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   // `selectableItemKeys` so a matching query commits via `onSelect` instead of
   // leaking through to `onSubmit`.
   const getKeyToSelect = (listState: ListStateLike | null): Key | null => {
-    const visibleKeys = listState
-      ? getVisibleKeys(listState)
-      : selectableItemKeys;
-    const focusedKey = listState?.selectionManager.focusedKey;
+    if (!listState) return selectableItemKeys[0] ?? null;
 
-    if (focusedKey != null && visibleKeys.includes(focusedKey))
+    const focusedKey = listState.selectionManager.focusedKey;
+
+    if (focusedKey != null && getVisibleKeys(listState).includes(focusedKey))
       return focusedKey;
 
-    return listState
-      ? getFirstSelectableKey(listState)
-      : (selectableItemKeys[0] ?? null);
+    return getFirstSelectableKey(listState);
   };
 
   // Enter commits an option, else submits the raw text, else does nothing
@@ -909,13 +906,14 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
   const searchComboBoxWidth = wrapperRef?.current?.offsetWidth;
 
-  // Highlight the first visible suggestion when the popover opens or when the
-  // filtered results change, so the top match is visibly pre-selected (parity
-  // with ComboBox's initial-focus behaviour). The user's own highlight is left
-  // untouched while the focused option is still visible; a missing or
-  // filtered-out focus falls back to the first visible key. This only drives
-  // the visual highlight — Enter always resolves the option itself, so
-  // correctness never depends on this effect's timing.
+  // Highlight the first suggestion the user can pick when the popover opens or
+  // the filtered results change, so the top match is visibly pre-selected
+  // (parity with ComboBox's initial-focus behaviour). The user's own highlight
+  // is left untouched while the focused option is still visible; a missing or
+  // filtered-out focus falls back to the first option the user can pick, or to
+  // none. This is a layout effect so that it runs before React Stately's own
+  // reset (a passive effect), which would move a filtered-out highlight onto
+  // the next option, disabled or not, where Enter does nothing.
   useLayoutEffect(() => {
     if (!shouldShowPopover) return;
 

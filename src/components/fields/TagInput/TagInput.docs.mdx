@@ -463,7 +463,7 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 - `Home` / `End` - Moves to the first or last option while the popover is open
 - `ArrowLeft` / `ArrowRight` - Moves between chips, locked ones included. A locked chip is announced as disabled and is never removed
 - `ArrowLeft` at the start of the text, with `tagPlacement="inside"` - Moves focus to the last chip, as Backspace in the empty input does. `ArrowRight` on the last chip moves back to the text, with the caret at its start, and `ArrowLeft` on the first chip stays there instead of wrapping round. A modified arrow (Shift, Alt, Ctrl, Cmd) stays text editing. Below the box, the arrows in the input move the caret only
-- `Delete` / `Backspace` on a chip - Removes it and focuses its neighbour, or the input when no chip is left. Holding the key down removes one chip, not the whole row
+- `Delete` / `Backspace` on a chip - Removes it and focuses its neighbour, or the input when no chip that can be removed is left. Holding the key down removes one chip, not the whole row
 - `Escape` on a chip - Moves focus back to the input
 - Typing on a chip - Moves focus back to the input, where the typed character lands
 

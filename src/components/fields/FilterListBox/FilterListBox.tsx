@@ -709,7 +709,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     // A disabled option is not a focus target this effect picks, but the arrow
     // keys reach it, so focus already on it stays.
     const visibleKeys: Key[] = [];
-    const collectFocusableKeys = (
+    const collectOptionKeys = (
       nodes: Iterable<any>,
       out: Key[],
       inCustomSection = false,
@@ -725,13 +725,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
         } else if (node.childNodes) {
           const isCustomSection =
             inCustomSection || node.key === '__custom_value__';
-          collectFocusableKeys(node.childNodes, out, isCustomSection);
+          collectOptionKeys(node.childNodes, out, isCustomSection);
         }
       }
     };
 
     const selectableKeys: Key[] = [];
-    collectFocusableKeys(collection, selectableKeys);
+    collectOptionKeys(collection, selectableKeys);
 
     // Detect the appended-at-top-level case (no items text-match). The custom
     // option is added with key === trimmed search term and lives directly in
