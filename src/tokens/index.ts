@@ -76,7 +76,7 @@ export type {
 export { SIZES, SIZE_NAME_TO_KEY, SIZE_TOKENS } from './sizes';
 export type { SizeKey, SizeName } from './sizes';
 export { SPACE_TOKENS } from './spacing';
-export { SHADOW_TOKENS } from './shadows';
+export { GLASS_TOKENS, SHADOW_TOKENS } from './shadows';
 export { LAYOUT_TOKENS } from './layout';
 export { BASE_TOKENS } from './base';
 export { TYPOGRAPHY_PRESETS } from './typography';
