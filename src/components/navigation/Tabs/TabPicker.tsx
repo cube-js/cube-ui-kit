@@ -94,6 +94,8 @@ export function TabPicker({
       }
       triggerStyles={{ border: 0 }}
       aria-label={t('tabs.selectTab', 'Select tab')}
+      // A disabled tab is a disabled option: choosing it must not activate it.
+      disabledKeys={tabs.filter((tab) => tab.isDisabled).map((tab) => tab.key)}
       isReorderable={isReorderable}
       onReorder={onReorder}
       onSelectionChange={(key) => {

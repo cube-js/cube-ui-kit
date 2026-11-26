@@ -115,6 +115,9 @@ export function ToggleGroupItem(props: CubeToggleGroupItemProps) {
       icon={icon}
       tooltip={tooltip}
       isDisabled={isItemDisabled}
+      // The arrow keys reach a disabled item, as in a WAI-ARIA toolbar or radio
+      // group, so it keeps its focus. A disabled group stays natively disabled.
+      keepFocusWhenDisabled={!state.isDisabled}
       styles={styles}
       // `selected` goes through `mods`, not `isSelected`: `Item` would turn
       // that into `aria-selected`, which a toggle button and a radio don't

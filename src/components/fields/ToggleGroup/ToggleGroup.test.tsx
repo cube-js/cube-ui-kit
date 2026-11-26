@@ -259,22 +259,49 @@ describe('<ToggleGroup />', () => {
       expect(onSelectionChange).not.toHaveBeenCalled();
     });
 
-    it('skips a disabled item without a tooltip with the arrow keys', async () => {
-      renderWithRoot(
-        <ToggleGroup aria-label="Format" selectionMode="multiple">
-          <ToggleGroup.Item key="bold">Bold</ToggleGroup.Item>
-          <ToggleGroup.Item key="italic" isDisabled>
-            Italic
-          </ToggleGroup.Item>
-          <ToggleGroup.Item key="underline">Underline</ToggleGroup.Item>
-        </ToggleGroup>,
-      );
+    // WAI-ARIA keeps a disabled item of a toolbar or radio group focusable,
+    // so a keyboard user reaches it and hears why it is unavailable. Whether
+    // it has a tooltip makes no difference.
+    it.each([
+      ['multiple', 'button'],
+      ['single', 'radio'],
+    ] as const)(
+      'stops on a disabled item without a tooltip with the arrow keys in %s mode and keeps it inert',
+      async (selectionMode, role) => {
+        const onSelectionChange = vi.fn();
 
-      await userEvent.tab();
-      await userEvent.keyboard('{ArrowRight}');
+        renderWithRoot(
+          <ToggleGroup
+            aria-label="Format"
+            selectionMode={selectionMode}
+            onSelectionChange={onSelectionChange}
+          >
+            <ToggleGroup.Item key="bold">Bold</ToggleGroup.Item>
+            <ToggleGroup.Item key="italic" isDisabled>
+              Italic
+            </ToggleGroup.Item>
+            <ToggleGroup.Item key="underline">Underline</ToggleGroup.Item>
+          </ToggleGroup>,
+        );
 
-      expect(screen.getByRole('button', { name: 'Underline' })).toHaveFocus();
-    });
+        const italic = screen.getByRole(role, { name: 'Italic' });
+
+        await userEvent.tab();
+        await userEvent.keyboard('{ArrowRight}');
+
+        expect(italic).toHaveFocus();
+        expect(italic).not.toHaveAttribute('disabled');
+        expect(italic).toHaveAttribute('aria-disabled', 'true');
+
+        await userEvent.keyboard(' ');
+        await userEvent.keyboard('{Enter}');
+        await userEvent.click(italic);
+        expect(onSelectionChange).not.toHaveBeenCalled();
+
+        await userEvent.keyboard('{ArrowRight}');
+        expect(screen.getByRole(role, { name: 'Underline' })).toHaveFocus();
+      },
+    );
 
     // As a disabled `Radio.Button` does (CUB-5387): the tooltip is usually
     // the reason it is disabled, and focus is how the keyboard opens it.

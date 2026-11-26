@@ -7,6 +7,7 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
+import { startScreenReader } from '../../../test/screen-reader';
 import { Menu } from '../../actions/Menu';
 
 import { Tab, Tabs } from './Tabs';
@@ -322,34 +323,98 @@ describe('<Tabs />', () => {
       );
     });
 
-    it('should skip disabled tabs during keyboard navigation', async () => {
+    // WAI-ARIA keeps a disabled tab focusable, so a keyboard user reaches it
+    // and hears why it is unavailable. Focusing it must not activate it.
+    it.each([
+      ['without a tooltip', undefined],
+      ['with a tooltip', 'Locked'],
+    ])(
+      'stops on a disabled tab %s without activating it',
+      async (_, tooltip) => {
+        const onChange = vi.fn();
+        const { getByRole, getByText, queryByText } = renderWithRoot(
+          <Tabs defaultActiveKey="tab1" onChange={onChange}>
+            <Tab key="tab1" title="Tab 1">
+              Content 1
+            </Tab>
+            <Tab key="tab2" isDisabled tooltip={tooltip} title="Tab 2">
+              Content 2
+            </Tab>
+            <Tab key="tab3" title="Tab 3">
+              Content 3
+            </Tab>
+          </Tabs>,
+        );
+
+        const tab1 = getByRole('tab', { name: 'Tab 1' });
+        const tab2 = getByRole('tab', { name: 'Tab 2' });
+        const tab3 = getByRole('tab', { name: 'Tab 3' });
+
+        await act(async () => {
+          tab1.focus();
+        });
+
+        await userEvent.keyboard('{ArrowRight}');
+        await waitFor(() => expect(tab2).toHaveFocus());
+        expect(tab2).toHaveAttribute('aria-disabled', 'true');
+        expect(tab1).toHaveAttribute('aria-selected', 'true');
+        expect(getByText('Content 1')).toBeInTheDocument();
+
+        await userEvent.keyboard('{Enter}');
+        await userEvent.keyboard(' ');
+        expect(tab1).toHaveAttribute('aria-selected', 'true');
+        expect(queryByText('Content 2')).not.toBeInTheDocument();
+
+        await userEvent.keyboard('{ArrowRight}');
+        await waitFor(() => expect(tab3).toHaveFocus());
+        expect(tab3).toHaveAttribute('aria-selected', 'true');
+
+        await userEvent.keyboard('{ArrowLeft}');
+        await waitFor(() => expect(tab2).toHaveFocus());
+        expect(tab3).toHaveAttribute('aria-selected', 'true');
+        expect(onChange.mock.calls).toEqual([['tab3']]);
+      },
+    );
+
+    it('announces a disabled tab when the arrow keys reach it', async () => {
       const { getByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1">
-          <Tab key="tab1" title="Tab 1">
-            Content 1
-          </Tab>
-          <Tab key="tab2" isDisabled title="Tab 2">
-            Content 2
-          </Tab>
-          <Tab key="tab3" title="Tab 3">
-            Content 3
-          </Tab>
+          <Tab key="tab1" title="Tab 1" />
+          <Tab key="tab2" isDisabled title="Tab 2" />
+          <Tab key="tab3" title="Tab 3" />
+        </Tabs>,
+      );
+      const reader = await startScreenReader();
+
+      await act(async () => getByRole('tab', { name: 'Tab 1' }).focus());
+      await userEvent.keyboard('{ArrowRight}');
+      await waitFor(async () =>
+        expect(await reader.lastSpokenPhrase()).toMatch(
+          /^tab, Tab 2, .*disabled/,
+        ),
+      );
+    });
+
+    it('lists a disabled tab as a disabled option in the tab picker', async () => {
+      const onChange = vi.fn();
+      const { getByRole, findByRole } = renderWithRoot(
+        <Tabs showTabPicker defaultActiveKey="tab1" onChange={onChange}>
+          <Tab key="tab1" title="Tab 1" />
+          <Tab key="tab2" isDisabled title="Tab 2" />
+          <Tab key="tab3" title="Tab 3" />
         </Tabs>,
       );
 
-      const tab1 = getByRole('tab', { name: 'Tab 1' });
+      await userEvent.click(getByRole('button', { name: 'Select tab' }));
+      const option = await findByRole('option', { name: 'Tab 2' });
+      expect(option).toHaveAttribute('aria-disabled', 'true');
 
-      await act(async () => {
-        tab1.focus();
-      });
-
-      await userEvent.keyboard('{ArrowRight}');
-
-      // Should skip disabled tab2 and select tab3
-      expect(getByRole('tab', { name: 'Tab 3' })).toHaveAttribute(
+      await userEvent.click(option);
+      expect(getByRole('tab', { name: 'Tab 1' })).toHaveAttribute(
         'aria-selected',
         'true',
       );
+      expect(onChange).not.toHaveBeenCalled();
     });
   });
 

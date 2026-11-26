@@ -72,6 +72,9 @@ function isComponentElement<T>(
 }
 
 /** Checks if a child is a Tab component. */
+/** The tab list's navigation sees no disabled keys: it stops on every tab. */
+const NO_DISABLED_KEYS: Set<Key> = new Set();
+
 const isTabElement = (child: ReactNode): child is ReactElement<CubeTabProps> =>
   isComponentElement<CubeTabProps>(child, 'CubeTab');
 
@@ -440,8 +443,12 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
     ],
   );
 
-  // Create state using useTabListState
-  const state = useTabListState(ariaProps);
+  // Create state using useTabListState. A disabled tab stays focusable, as
+  // WAI-ARIA tabs do; `TabButton` keeps it disabled and never activates it.
+  const state = useTabListState({
+    ...ariaProps,
+    disabledBehavior: 'selection',
+  } as AriaTabListProps<object>);
 
   // Track initial selected key for visited tabs
   useEffect(() => {
@@ -451,10 +458,19 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   }, [state.selectedKey]);
 
   // Get tablist props from react-aria
-  const { tabListProps } = useTabList(ariaProps, state, listRef);
+  // `TabButton` activates a tab when the keyboard focuses it. React Aria's own
+  // automatic activation clears the selection on a disabled tab. Its keyboard
+  // delegate skips the state's disabled keys, so it navigates a view of the
+  // state that has none; `TabButton` reads them from the real state.
+  const { tabListProps } = useTabList(
+    { ...ariaProps, keyboardActivation: 'manual' },
+    { ...state, disabledKeys: NO_DISABLED_KEYS },
+    listRef,
+  );
 
   // Handle selection from TabPicker (needs to update internal state in uncontrolled mode)
   const handleTabPickerSelect = useEvent((key: string) => {
+    if (disabledKeys.has(key)) return;
     // Update internal state (for uncontrolled mode)
     state.setSelectedKey(key);
     // Also call the external onChange handler

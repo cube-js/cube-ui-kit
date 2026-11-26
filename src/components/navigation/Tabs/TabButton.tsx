@@ -1,3 +1,4 @@
+import { getInteractionModality } from '@react-aria/interactions';
 import {
   Children,
   cloneElement,
@@ -285,6 +286,23 @@ export function TabButton({
 
   const isActive = state.selectedKey === item.key;
   const isDisabled = state.disabledKeys.has(item.key);
+  // The tab list keeps a disabled tab focusable, as WAI-ARIA tabs do, so React
+  // Aria no longer marks it disabled. Automatic activation runs here rather
+  // than in React Aria, whose version clears the selection when the keyboard
+  // reaches a disabled tab, and the tab list then falls back to its first tab.
+  const disabledFocusProps = {
+    'aria-disabled': isDisabled || undefined,
+    onFocus: () => {
+      if (
+        !isDisabled &&
+        !isActive &&
+        !state.isDisabled &&
+        getInteractionModality() === 'keyboard'
+      ) {
+        state.setSelectedKey(item.key);
+      }
+    },
+  };
   const isDeletable = !!onDelete;
   const isEditing = editingKey === item.key;
 
@@ -687,11 +705,17 @@ export function TabButton({
             as="button"
             // A tab switches panels; inside a form it must not submit it.
             htmlType="button"
-            {...mergeProps(tabProps, hoverProps, focusProps, {
-              onKeyDown: handleKeyDown,
-              onPointerEnter: handleSpringLoadEnter,
-              onPointerLeave: clearSpringLoad,
-            })}
+            {...mergeProps(
+              tabProps,
+              disabledFocusProps,
+              hoverProps,
+              focusProps,
+              {
+                onKeyDown: handleKeyDown,
+                onPointerEnter: handleSpringLoadEnter,
+                onPointerLeave: clearSpringLoad,
+              },
+            )}
             {...ariaProps}
             {...omitComponentOwnedProps(itemStyleProps)}
             ref={ref}
@@ -701,6 +725,8 @@ export function TabButton({
             mods={mods}
             isSelected={isActive}
             isDisabled={isDisabled}
+            // The arrow keys reach a disabled tab, so it keeps its focus.
+            keepFocusWhenDisabled
             size={itemSize}
             type={itemType}
             shape={itemShape}
