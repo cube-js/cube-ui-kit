@@ -231,6 +231,11 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
+      # PRs run only the changed surface (see pull-request.yml); the full
+      # suite runs here, before anything ships.
+      - name: Run the full test suite
+        run: pnpm test
+
       - name: Clear .npmrc auth token (use OIDC instead)
         run: npm config delete //registry.npmjs.org/:_authToken || true
 
