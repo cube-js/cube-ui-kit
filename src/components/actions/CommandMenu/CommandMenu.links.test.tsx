@@ -260,7 +260,7 @@ describe('CommandMenu navigation items', () => {
     expect(onAction).not.toHaveBeenCalled();
   });
 
-  it('skips disabled navigation items and never routes them', async () => {
+  it('reaches disabled navigation items by keyboard and never routes them', async () => {
     const user = userEvent.setup();
     const navigate = vi.fn();
     const onAction = vi.fn();
@@ -281,6 +281,11 @@ describe('CommandMenu navigation items', () => {
     expect(disabled).toHaveAttribute('aria-disabled', 'true');
     expect(disabled).not.toHaveAttribute('href');
     await user.click(search);
+    await user.keyboard('{ArrowDown}');
+    expect(search).toHaveAttribute('aria-activedescendant', disabled.id);
+    await user.keyboard('{Enter}');
+    expect(onAction).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
     await user.keyboard('{ArrowDown}');
     expect(search).toHaveAttribute(
       'aria-activedescendant',

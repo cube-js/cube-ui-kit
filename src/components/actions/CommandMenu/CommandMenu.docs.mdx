@@ -214,7 +214,7 @@ Alias for MenuTrigger component. See [Menu.Trigger documentation](/docs/actions-
 The CommandMenu component provides comprehensive keyboard support:
 
 - **Search Input Focus**: The search input is automatically focused when the palette opens
-- **ArrowUp/ArrowDown**: Navigate through enabled filtered items while keeping the search input focused
+- **ArrowUp/ArrowDown**: Navigate through the filtered items while keeping the search input focused. A disabled item is reached too, so a screen reader reads why it is unavailable; Enter and Space do nothing on it. Typing highlights the first match that can run
 - **Enter**: Activate the currently highlighted command or navigation destination
 - **Space**: Activate the highlighted item only when the search is empty; otherwise insert a space into the query
 - **Escape**: Clear search term or close the palette
