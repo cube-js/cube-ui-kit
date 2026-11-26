@@ -294,7 +294,9 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       defaultExpandedKeys: effectiveDefaultExpandedKeys,
       onExpandedChange: handleExpandedChange,
       disabledKeys,
-      disabledBehavior: 'all' as const,
+      // A disabled row stays focusable, as WAI-ARIA tree items do; `TreeNode`
+      // keeps it inert. A disabled tree keeps every row out of the keyboard.
+      disabledBehavior: isDisabled ? ('all' as const) : ('selection' as const),
       items: treeData,
       children: renderItem as any,
       'aria-label': treeLabel,
@@ -302,7 +304,9 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       // outside the tree point at a row with `aria-activedescendant`.
       id,
       onAction: onRowAction
-        ? (key: Key) => onRowAction(String(key))
+        ? (key: Key) => {
+            if (!disabledKeys.includes(String(key))) onRowAction(String(key));
+          }
         : undefined,
     }),
     [
@@ -315,6 +319,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       effectiveDefaultExpandedKeys,
       handleExpandedChange,
       disabledKeys,
+      isDisabled,
       treeData,
       treeLabel,
       id,

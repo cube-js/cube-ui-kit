@@ -1,5 +1,5 @@
 import { Children, memo, useMemo, useRef, useState } from 'react';
-import { useHover, useTreeItem } from 'react-aria';
+import { useHover, useLocale, useTreeItem } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n/useI18n';
@@ -151,6 +151,7 @@ function TreeNodeInner(props: TreeNodeProps) {
   );
 
   const isDisabled = state.disabledKeys.has(node.key);
+  const { direction } = useLocale();
   const isSelected =
     isOutsideSelected ?? state.selectionManager.isSelected(node.key);
 
@@ -333,6 +334,29 @@ function TreeNodeInner(props: TreeNodeProps) {
     [node.level, virtualOffset],
   );
 
+  // ---- Disabled row ----------------------------------------------------------
+
+  // A disabled row is reached by the arrow keys but stays inert: it neither
+  // expands nor collapses. Moving from it to its parent is navigation, and
+  // React Aria still does that.
+  const disabledRowKeyDownCapture = (e: KeyboardEvent<HTMLDivElement>) => {
+    const isExpandKey =
+      e.key === (direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+    const isCollapseKey =
+      e.key === (direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft');
+    if (
+      isDisabled &&
+      !isLeaf &&
+      state.selectionManager.focusedKey === node.key &&
+      ((isExpandKey && !isExpanded) || (isCollapseKey && isExpanded))
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    rowProps.onKeyDownCapture?.(e);
+  };
+
   // ---- Compose row props ---------------------------------------------------
 
   // Merge react-aria + hover props but EXCLUDE `onKeyDown` from the
@@ -344,6 +368,10 @@ function TreeNodeInner(props: TreeNodeProps) {
     // The row's checkbox carries checked and mixed; the row has `checked` and
     // `indeterminate` mods.
     ...mergeProps(rowProps, hoverProps),
+    // The tree keeps a disabled row focusable (`disabledBehavior:
+    // 'selection'`), so React Aria no longer marks it disabled.
+    'aria-disabled': isDisabled || undefined,
+    onKeyDownCapture: disabledRowKeyDownCapture,
     onKeyDown: composedKeyDown,
     // Under an outside control (`isActive` set) no row is a tab stop, not
     // even one a click focused.
@@ -362,7 +390,13 @@ function TreeNodeInner(props: TreeNodeProps) {
   const toggleNode = isLeaf ? (
     <TreeNodeTogglePlaceholder aria-hidden data-element="Toggle" />
   ) : (
-    <TreeNodeToggle {...expandButtonProps} tabIndex={-1} data-element="Toggle">
+    <TreeNodeToggle
+      {...expandButtonProps}
+      // React Aria would expand a disabled row: the tree keeps it focusable.
+      onPress={isDisabled ? undefined : expandButtonProps.onPress}
+      tabIndex={-1}
+      data-element="Toggle"
+    >
       {isLoading ? (
         <LoadingIcon />
       ) : (

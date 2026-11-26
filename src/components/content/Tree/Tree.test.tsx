@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
+import { startScreenReader } from '../../../test/screen-reader';
 import { Menu } from '../../actions/Menu';
 
 import { getTreeRowId } from './rowId';
@@ -605,6 +606,106 @@ describe('<Tree />', () => {
       const rows = getAllByRole('row');
       expect(rows[0]).toHaveAttribute('aria-disabled', 'true');
       expect(rows[1]).not.toHaveAttribute('aria-disabled', 'true');
+    });
+
+    // WAI-ARIA keeps a disabled tree item focusable, so a keyboard user
+    // reaches it and hears why it is unavailable. It stays inert.
+    const ALPHA_BETA_GAMMA: CubeTreeNodeData[] = [
+      { key: 'a', title: 'Alpha' },
+      {
+        key: 'b',
+        title: 'Beta',
+        isDisabled: true,
+        children: [{ key: 'b1', title: 'Beta child' }],
+      },
+      { key: 'c', title: 'Gamma' },
+    ];
+
+    it('stops on a disabled row with the arrow keys and never selects it', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Tree
+          aria-label="Files"
+          selectionMode="single"
+          treeData={ALPHA_BETA_GAMMA}
+          onSelectionChange={onSelectionChange}
+        />,
+      );
+      const alpha = getByRole('row', { name: 'Alpha' });
+      const beta = getByRole('row', { name: 'Beta' });
+      const gamma = getByRole('row', { name: 'Gamma' });
+
+      await act(async () => alpha.focus());
+      await userEvent.keyboard('{ArrowDown}');
+      expect(beta).toHaveFocus();
+      expect(beta).toHaveAttribute('aria-disabled', 'true');
+
+      await userEvent.keyboard('{Enter}');
+      await userEvent.keyboard(' ');
+      await userEvent.click(beta);
+      expect(onSelectionChange).not.toHaveBeenCalled();
+
+      await act(async () => beta.focus());
+      await userEvent.keyboard('{ArrowDown}');
+      expect(gamma).toHaveFocus();
+      await userEvent.keyboard('{ArrowUp}');
+      expect(beta).toHaveFocus();
+    });
+
+    it('never runs the row action or expands a disabled row', async () => {
+      const onRowAction = vi.fn();
+      const { getByRole, queryByRole } = renderWithRoot(
+        <Tree
+          aria-label="Files"
+          treeData={ALPHA_BETA_GAMMA}
+          _onRowAction={onRowAction}
+        />,
+      );
+      const alpha = getByRole('row', { name: 'Alpha' });
+      const beta = getByRole('row', { name: 'Beta' });
+
+      await act(async () => alpha.focus());
+      await userEvent.keyboard('{ArrowDown}');
+      expect(beta).toHaveFocus();
+
+      await userEvent.keyboard('{Enter}');
+      await userEvent.keyboard('{ArrowRight}');
+      await userEvent.click(
+        beta.querySelector('button[data-element="Toggle"]') as HTMLElement,
+      );
+      expect(onRowAction).not.toHaveBeenCalled();
+      expect(beta).not.toHaveAttribute('aria-expanded', 'true');
+      expect(queryByRole('row', { name: 'Beta child' })).toBeNull();
+
+      await act(async () => alpha.focus());
+      await userEvent.keyboard('{Enter}');
+      expect(onRowAction).toHaveBeenCalledExactlyOnceWith('a');
+    });
+
+    it('announces a disabled row when the arrow keys reach it', async () => {
+      const { getByRole } = renderWithRoot(
+        <Tree aria-label="Files" treeData={ALPHA_BETA_GAMMA} />,
+      );
+      const reader = await startScreenReader();
+
+      await act(async () => getByRole('row', { name: 'Alpha' }).focus());
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(async () =>
+        expect(await reader.lastSpokenPhrase()).toMatch(
+          /^row, Beta\b.*disabled/,
+        ),
+      );
+    });
+
+    it('keeps a fully disabled tree out of the keyboard order', async () => {
+      const { getAllByRole } = renderWithRoot(
+        <Tree aria-label="Files" isDisabled treeData={ALPHA_BETA_GAMMA} />,
+      );
+
+      await userEvent.tab();
+      for (const row of getAllByRole('row')) {
+        expect(row).not.toHaveFocus();
+      }
     });
   });
 
