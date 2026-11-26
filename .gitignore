@@ -1,4 +1,7 @@
 node_modules
+# The dependency docs harnesspm copies for search. Here, not only in .git/info/exclude,
+# so Prettier and other tools that read only .gitignore skip them too.
+/.harnesspm/
 .DS_Store
 .idea
 .vscode
