@@ -26,6 +26,7 @@ import { useMenuContext } from '../Menu/context';
 import { CubeMenuProps } from '../Menu/Menu';
 import {
   getMenuItemReactKey,
+  isMenuItemDisabled,
   MenuCollectionItem as Item,
 } from '../Menu/MenuCollectionItem';
 import { MenuItem } from '../Menu/MenuItem';
@@ -61,26 +62,21 @@ function collectItemKeys(nodes: Iterable<any>, keys: Key[] = []): Key[] {
 }
 
 /**
- * The key an arrow press moves to: the next enabled key after `currentKey` in
- * `direction`, wrapping round to the first enabled key in that direction (the
- * last one going up). With nothing focused, or the focused key filtered out,
- * it returns that key.
+ * The key an arrow press moves to: the next key after `currentKey` in
+ * `direction`, wrapping round to the first key (the last one going up). A
+ * disabled key counts, as it does in `Menu`, so the highlight reaches it and
+ * a screen reader reads why it is unavailable. With nothing focused, or the
+ * focused key filtered out, it starts from that edge.
  */
-function getNextEnabledKey(
+function getNextKey(
   keys: Key[],
   currentKey: Key | null,
   direction: 1 | -1,
-  isDisabled: (key: Key) => boolean,
 ): Key | null {
-  const isEnabled = (key: Key) => !isDisabled(key);
   const index = currentKey == null ? -1 : keys.indexOf(currentKey);
-  const ahead =
-    direction === 1
-      ? keys.slice(index + 1)
-      : keys.slice(0, Math.max(index, 0)).reverse();
-  const ordered = direction === 1 ? keys : [...keys].reverse();
+  if (index < 0) return (direction === 1 ? keys[0] : keys.at(-1)) ?? null;
 
-  return ahead.find(isEnabled) ?? ordered.find(isEnabled) ?? null;
+  return keys[(index + direction + keys.length) % keys.length] ?? null;
 }
 
 export interface CommandMenuItem {
@@ -324,6 +320,8 @@ function CommandMenu<T extends object>(
     children: completeProps.children as CollectionChildren<T>,
     filter: collectionFilter,
     shouldUseVirtualFocus: true, // Always use virtual focus for CommandMenu
+    // A disabled item stays reachable, as in `Menu`.
+    disabledBehavior: 'selection' as const,
   };
 
   const treeState = useTreeState(treeStateProps);
@@ -353,10 +351,11 @@ function CommandMenu<T extends object>(
     (item) => item.type === 'section',
   );
 
-  // Helper function to find the first selectable item from filtered results
+  // The first match that can run, highlighted as the search changes so that
+  // Enter runs it. The arrow keys still reach a disabled match.
   const findFirstSelectableItem = () =>
     collectItemKeys(filteredCollectionItems).find(
-      (key) => !treeState.selectionManager.isDisabled(key),
+      (key) => !isMenuItemDisabled(treeState, key),
     ) ?? null;
 
   // Create a ref for the menu container
@@ -488,11 +487,10 @@ function CommandMenu<T extends object>(
 
     const { selectionManager } = treeState;
     const currentKey = selectionManager.focusedKey;
-    const nextKey = getNextEnabledKey(
+    const nextKey = getNextKey(
       collectItemKeys(filteredCollectionItems),
       currentKey,
       e.key === 'ArrowDown' ? 1 : -1,
-      (key) => selectionManager.isDisabled(key),
     );
 
     if (nextKey != null) {
@@ -507,7 +505,7 @@ function CommandMenu<T extends object>(
     if (
       e.repeat ||
       focusedKey == null ||
-      treeState.selectionManager.isDisabled(focusedKey)
+      isMenuItemDisabled(treeState, focusedKey)
     )
       return;
     const item = menuRef.current?.ownerDocument.getElementById(

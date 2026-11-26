@@ -234,6 +234,10 @@ export const DEFAULT_ITEM_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-text.12',
     'selected & pressed': '#surface-text.15',
     disabled: '#clear',
+    // A disabled row can keep focus — a menu item the arrow keys reach, an
+    // `ItemButton` with a tooltip — and an `item` row shows focus by its fill
+    // alone, so the focus tint survives `disabled`.
+    'disabled & focused': '#surface-text.04',
   },
   color: {
     '': '#surface-text-soft',
@@ -390,6 +394,8 @@ export const DANGER_ITEM_STYLES: Styles = {
     'selected & (hovered | focused)': '#danger-accent-text.12',
     pressed: '#danger-accent-text.09',
     disabled: '#clear',
+    // See `DEFAULT_ITEM_STYLES`.
+    'disabled & focused': '#danger-accent-text.03',
   },
   color: {
     '': '#danger-accent-text',
@@ -518,6 +524,8 @@ export const SUCCESS_ITEM_STYLES: Styles = {
     'selected & (hovered | focused)': '#success-accent-text.12',
     pressed: '#success-accent-text.09',
     disabled: '#clear',
+    // See `DEFAULT_ITEM_STYLES`.
+    'disabled & focused': '#success-accent-text.03',
   },
   color: {
     '': '#success-accent-text',
@@ -646,6 +654,8 @@ export const WARNING_ITEM_STYLES: Styles = {
     'selected & (hovered | focused)': '#warning-accent-text.12',
     pressed: '#warning-accent-text.09',
     disabled: '#clear',
+    // See `DEFAULT_ITEM_STYLES`.
+    'disabled & focused': '#warning-accent-text.03',
   },
   color: {
     '': '#warning-accent-text',
@@ -771,6 +781,8 @@ export const NOTE_ITEM_STYLES: Styles = {
     'selected & (hovered | focused)': '#note-accent-text.12',
     pressed: '#note-accent-text.09',
     disabled: '#clear',
+    // See `DEFAULT_ITEM_STYLES`.
+    'disabled & focused': '#note-accent-text.03',
   },
   color: {
     '': '#note-accent-text',
@@ -1085,6 +1097,12 @@ const CURRENT_FOCUS_RING: Styles = {
 // styles (the collection that owns the row indicates focus), and only steps the
 // fill.
 export const CURRENT_ITEM_STYLES: Styles = mergeStyles(CURRENT_ITEM_RAMP, {
+  // `$current-hover` written pre-multiplied (`/ .4`): the disabled label has
+  // already faded this element's own `currentcolor`.
+  '$current-disabled-focus': {
+    '': '#current.1',
+    '@dark': '#current.078',
+  },
   border: '#clear',
   fill: {
     '': '#current.0',
@@ -1094,6 +1112,8 @@ export const CURRENT_ITEM_STYLES: Styles = mergeStyles(CURRENT_ITEM_RAMP, {
     'selected & (hovered | focused)': '$current-selected-hover',
     'selected & pressed': '$current-selected-press',
     disabled: '#clear',
+    // See `DEFAULT_ITEM_STYLES`.
+    'disabled & focused': '$current-disabled-focus',
   },
   color: {
     '': '#current',
@@ -1146,6 +1166,9 @@ export const CURRENT_CLEAR_STYLES: Styles = mergeStyles(
       // documented there: the disabled label dims `currentcolor` to `.4`, and
       // this alpha resolves against it, rendering as ~`.07`.
       'selected & disabled': '#current.18',
+      // The item ramp's focus fill on a disabled row is for a row with no
+      // ring; `clear` has one, and keeps every other `*_CLEAR_STYLES`' fill.
+      'disabled & focused': '#clear',
     },
   },
 );

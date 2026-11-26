@@ -527,7 +527,7 @@ describe('Stable visible native menu targets', () => {
     },
   );
 
-  it('keeps a disabled visible primary stable and skips it in keyboard order', async () => {
+  it('keeps a disabled visible primary stable and reaches it in keyboard order', async () => {
     render(
       <Root>
         <Menu aria-label="Disabled targets" autoFocus="first">
@@ -552,6 +552,9 @@ describe('Stable visible native menu targets', () => {
     });
     expect(disabled).toBeVisible();
     expect(disabled).toHaveAttribute('aria-disabled', 'true');
+    expect(disabled).not.toHaveAttribute('href');
+    await act(() => userEvent.keyboard('{ArrowDown}'));
+    expect(disabled).toHaveFocus();
     expect(disabled).not.toHaveAttribute('href');
     await act(() => userEvent.keyboard('{ArrowDown}'));
     expect(

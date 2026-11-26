@@ -1,4 +1,4 @@
-import { tasty } from '@tenphi/tasty';
+import { mergeStyles, tasty } from '@tenphi/tasty';
 import { render } from '@testing-library/react';
 
 import { Root } from '../components/Root';
@@ -106,6 +106,58 @@ describe('item theme fill priority', () => {
             `${variant}: ${JSON.stringify(state)}`,
           ).toEqual(background(view.getByTestId(`expected-${index}`)));
         }
+
+        view.unmount();
+      }
+    },
+  );
+});
+
+// A menu lets the keyboard reach a disabled item, and an `item` row's only
+// focus indicator is its fill, so a focused disabled row must not paint the
+// same as an unfocused one. The whole variant renders, so `current.item`
+// resolves its ramp properties and fades its own `currentcolor`.
+describe('item rows show focus when disabled', () => {
+  const ITEM_ROWS = [
+    'default.item',
+    'danger.item',
+    'success.item',
+    'warning.item',
+    'note.item',
+    'current.item',
+  ] as const;
+
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-scheme');
+    document.documentElement.removeAttribute('data-contrast');
+  });
+
+  it.each([
+    ['light', 'normal'],
+    ['dark', 'normal'],
+    ['light', 'high'],
+    ['dark', 'high'],
+  ])(
+    'paints a focused disabled row in %s / %s contrast',
+    (scheme, contrast) => {
+      document.documentElement.setAttribute('data-scheme', scheme);
+      document.documentElement.setAttribute('data-contrast', contrast);
+
+      for (const variant of ITEM_ROWS) {
+        const Row = tasty({
+          styles: mergeStyles(ITEM_VARIANTS[variant], { transition: 'none' }),
+        });
+        const view = render(
+          <>
+            <Row qa="disabled" mods={{ disabled: true }} />
+            <Row qa="focused" mods={{ disabled: true, focused: true }} />
+          </>,
+          { wrapper: Root },
+        );
+
+        expect(background(view.getByTestId('focused')), variant).not.toEqual(
+          background(view.getByTestId('disabled')),
+        );
 
         view.unmount();
       }

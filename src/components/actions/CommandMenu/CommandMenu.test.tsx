@@ -26,7 +26,7 @@ describe('CommandMenu', () => {
   ];
 
   it.each([undefined, false])(
-    'aligns loading-item keyboard focus and activation with isDisabled=%s',
+    'reaches a loading item by keyboard and runs it only with isDisabled=%s',
     async (isDisabled) => {
       const user = userEvent.setup();
       const onAction = vi.fn();
@@ -48,16 +48,28 @@ describe('CommandMenu', () => {
         </Root>,
       );
       const search = screen.getByRole('searchbox');
-      const expectedKey = isDisabled === false ? 'loading' : 'ready';
-      const expectedItem = screen.getByRole('menuitem', {
-        name: isDisabled === false ? 'Loading workbook' : 'Ready workbook',
+      const loading = screen.getByRole('menuitem', {
+        name: 'Loading workbook',
       });
+      const ready = screen.getByRole('menuitem', { name: 'Ready workbook' });
       await user.click(search);
+      // A loading item is disabled unless `isDisabled={false}`. Disabled or
+      // not, the arrow keys reach it.
       await user.keyboard('{ArrowDown}');
-      expect(search).toHaveAttribute('aria-activedescendant', expectedItem.id);
-      expect(document.getElementById(expectedItem.id)).toBe(expectedItem);
+      expect(search).toHaveAttribute('aria-activedescendant', loading.id);
+      expect(document.getElementById(loading.id)).toBe(loading);
       await user.keyboard('{Enter}');
-      expect(onAction).toHaveBeenCalledExactlyOnceWith(expectedKey);
+      if (isDisabled === false) {
+        expect(onAction).toHaveBeenCalledExactlyOnceWith('loading');
+      } else {
+        expect(loading).toHaveAttribute('aria-disabled', 'true');
+        expect(onAction).not.toHaveBeenCalled();
+      }
+      onAction.mockClear();
+      await user.keyboard('{ArrowDown}');
+      expect(search).toHaveAttribute('aria-activedescendant', ready.id);
+      await user.keyboard('{Enter}');
+      expect(onAction).toHaveBeenCalledExactlyOnceWith('ready');
       expect(search).toHaveFocus();
     },
   );
@@ -417,13 +429,22 @@ describe('CommandMenu', () => {
     },
   );
 
-  it('skips disabled items with arrow keys, including across the wrap', async () => {
+  // WAI-ARIA menus keep disabled items focusable, so a keyboard user reaches
+  // the item and hears why it is unavailable.
+  it('stops on disabled items with arrow keys, including across the wrap, and keeps them inert', async () => {
     const user = userEvent.setup();
+    const onAction = vi.fn();
+    const onClick = vi.fn();
 
     render(
-      <CommandMenu qa="TestMenu" disabledKeys={['2']}>
+      <CommandMenu qa="TestMenu" disabledKeys={['1']} onAction={onAction}>
         {items.map((item) => (
-          <CommandMenu.Item key={item.id} id={item.id}>
+          <CommandMenu.Item
+            key={item.id}
+            id={item.id}
+            description={item.id === '1' ? 'No folder is open' : undefined}
+            onClick={onClick}
+          >
             {item.textValue}
           </CommandMenu.Item>
         ))}
@@ -432,26 +453,41 @@ describe('CommandMenu', () => {
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
     const expectFocused = (key: string) => expectActiveItem(searchInput, key);
+    const disabledItem = screen.getByRole('menuitem', { name: 'Create file' });
 
     await user.click(searchInput);
 
-    await user.keyboard('{ArrowDown}');
-    expectFocused('1');
-    await user.keyboard('{ArrowDown}');
+    // Nothing focused yet: ArrowUp starts from the last item.
+    await user.keyboard('{ArrowUp}');
     expectFocused('3');
     await user.keyboard('{ArrowDown}');
+    expectFocused('1');
+    expect(disabledItem).toHaveAttribute('aria-disabled', 'true');
+
+    await user.keyboard('{Enter}');
+    await user.click(disabledItem);
+    expect(onAction).not.toHaveBeenCalled();
+    expect(onClick).not.toHaveBeenCalled();
+
+    await user.click(searchInput);
+    await user.keyboard('{ArrowDown}');
+    expectFocused('2');
+    await user.keyboard('{ArrowUp}');
     expectFocused('1');
     await user.keyboard('{ArrowUp}');
     expectFocused('3');
-    await user.keyboard('{ArrowUp}');
-    expectFocused('1');
+
+    // The same handler is wired to an enabled item.
+    await user.click(screen.getByRole('menuitem', { name: 'Open folder' }));
+    expect(onClick).toHaveBeenCalled();
   });
 
-  it('skips disabled edge items when wrapping or starting unfocused', async () => {
+  it('highlights the first enabled match on search, and the arrow keys reach a disabled match above it', async () => {
     const user = userEvent.setup();
+    const onAction = vi.fn();
 
     render(
-      <CommandMenu qa="TestMenu" disabledKeys={['1', '3']}>
+      <CommandMenu qa="TestMenu" disabledKeys={['1']} onAction={onAction}>
         {items.map((item) => (
           <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
@@ -463,16 +499,13 @@ describe('CommandMenu', () => {
     const searchInput = screen.getByPlaceholderText('Search commands...');
     const expectFocused = (key: string) => expectActiveItem(searchInput, key);
 
-    await user.click(searchInput);
-
-    // Nothing focused yet: ArrowUp starts from the last enabled item.
-    await user.keyboard('{ArrowUp}');
-    expectFocused('2');
-    // Both edges are disabled, so each wrap comes back to the only enabled item.
-    await user.keyboard('{ArrowDown}');
+    await user.type(searchInput, 'e');
+    // Typing then Enter runs the first match that can run.
     expectFocused('2');
     await user.keyboard('{ArrowUp}');
-    expectFocused('2');
+    expectFocused('1');
+    await user.keyboard('{Enter}');
+    expect(onAction).not.toHaveBeenCalled();
   });
 
   it('moves between sections with arrow keys', async () => {

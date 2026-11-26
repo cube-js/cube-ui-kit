@@ -236,3 +236,47 @@ describe('card variants', () => {
     });
   });
 });
+
+/**
+ * A menu or command menu lets the keyboard reach a disabled item, as WAI-ARIA
+ * menus do, so the row's focus fill — the only focus indicator of an `item`
+ * row: the collection that owns the row shows focus, and these styles carry no
+ * ring — has to survive `disabled`. The key comes last so it beats the bare
+ * `disabled`, and it repeats the enabled focus tint. `current.item` writes its
+ * tint pre-multiplied, as it does every disabled alpha (the disabled label has
+ * faded its own `currentcolor` to `.4`), so only its place is pinned here.
+ * `special.item` has no focus fill at all. The rule is for rows that show
+ * focus by their fill, so ringed `clear` controls keep their disabled fill.
+ */
+describe('item rows keep the focus fill when disabled', () => {
+  const ITEM_ROWS = [
+    'default.item',
+    'danger.item',
+    'success.item',
+    'warning.item',
+    'note.item',
+  ] as const;
+
+  it.each([...ITEM_ROWS, 'current.item'] as const)(
+    '%s puts `disabled & focused` last',
+    (variant) => {
+      const fill = ITEM_VARIANTS[variant].fill as Record<string, string>;
+
+      expect(Object.keys(fill).at(-1)).toBe('disabled & focused');
+    },
+  );
+
+  it.each(ITEM_ROWS)('%s repeats the enabled focus tint', (variant) => {
+    const fill = ITEM_VARIANTS[variant].fill as Record<string, string>;
+
+    expect(fill['disabled & focused']).toBe(fill['hovered | focused']);
+  });
+
+  // `current.clear` is built on the `current.item` ramp, but a `clear` control
+  // shows focus with its ring and keeps a disabled fill like every other theme.
+  it('current.clear leaves a disabled focus to its ring', () => {
+    const fill = ITEM_VARIANTS['current.clear'].fill as Record<string, string>;
+
+    expect(fill['disabled & focused']).toBe(fill.disabled);
+  });
+});

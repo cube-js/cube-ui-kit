@@ -95,6 +95,13 @@ it('speaks the consumer search name while virtual focus resolves to the primary 
   };
   await waitFor(() => expectActive('Create workbook'));
   await reader.press('ArrowDown');
+  await waitFor(() =>
+    expect(expectActive('Unavailable workbook')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    ),
+  );
+  await reader.press('ArrowDown');
   await waitFor(() => {
     const item = expectActive('Saved workbook');
     expect(item.tagName).toBe('A');

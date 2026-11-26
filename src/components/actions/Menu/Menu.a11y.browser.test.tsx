@@ -309,7 +309,7 @@ describe('Mixed menu accessibility', () => {
   );
 
   it.each(['item', 'keys'] as const)(
-    'suppresses a disabled composed destination and skips its actions (disabled by %s)',
+    'suppresses a disabled composed destination, reaches it and skips its actions (disabled by %s)',
     async (disabledBy) => {
       const itemAction = vi.fn();
       const actionPress = vi.fn();
@@ -362,6 +362,12 @@ describe('Mixed menu accessibility', () => {
           screen.getByRole('menuitem', { name: 'First command' }),
         ).toHaveFocus(),
       );
+      await act(() => userEvent.keyboard('{ArrowDown}'));
+      expect(primary).toHaveFocus();
+      await act(() => userEvent.keyboard('{ArrowRight}'));
+      expect(primary).toHaveFocus();
+      await act(() => userEvent.keyboard('{Enter}'));
+      await act(() => userEvent.keyboard(' '));
       await act(() => userEvent.keyboard('{ArrowDown}'));
       expect(
         screen.getByRole('menuitem', { name: 'Available workbook' }),
@@ -791,6 +797,7 @@ it('reads the focused primary and inline menu items during keyboard activation',
   for (const [name, key] of [
     ['Create workbook', 'Enter'],
     ['Create settings', 'Space'],
+    ['Unavailable workbook', 'Enter'],
     ['Saved workbook', 'Enter'],
     ['Delete saved workbook', 'Space'],
     ['Last command', undefined],
@@ -803,6 +810,9 @@ it('reads the focused primary and inline menu items during keyboard activation',
     expect(spoken[0]).toContain(`menuitem, ${name}`);
     if (name === 'Saved workbook')
       expect(spoken[0]).toContain('Open the saved workbook');
+    // A disabled item is reached and read as disabled; Enter does nothing.
+    if (name === 'Unavailable workbook')
+      expect(spoken[0]).toContain('disabled');
     if (key)
       await act(() => userEvent.keyboard(key === 'Space' ? ' ' : '{Enter}'));
     if (name !== 'Last command')
