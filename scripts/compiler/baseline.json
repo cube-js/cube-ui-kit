@@ -1,20 +1,10 @@
 {
-  "src/_internal/hooks/use-chained-callback.ts": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
   "src/_internal/hooks/use-debounced-value.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
   "src/_internal/hooks/use-deprecation-warning.ts": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/_internal/hooks/use-effect-once.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -37,11 +27,6 @@
     "optOuts": 0
   },
   "src/_internal/hooks/use-timer/use-timer.ts": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/_internal/hooks/use-update-effect.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0

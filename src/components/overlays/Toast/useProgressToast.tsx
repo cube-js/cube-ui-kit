@@ -3,8 +3,7 @@ import { Key, useEffect, useRef } from 'react';
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n/useI18n';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
-
-import { useToastContext } from './ToastProvider';
+import { useToastContext } from '../Notifications/NotificationContext';
 
 import type {
   ProgressToastEmpty,

@@ -4,8 +4,7 @@ import { CheckIcon } from '../../../icons/CheckIcon';
 import { DangerIcon } from '../../../icons/DangerIcon';
 import { InfoCircleIcon } from '../../../icons/InfoCircleIcon';
 import { WarningIcon } from '../../../icons/WarningIcon';
-
-import { useToastContext } from './ToastProvider';
+import { useToastContext } from '../Notifications/NotificationContext';
 
 import type { ToastApi, ToastData, ToastType } from './types';
 

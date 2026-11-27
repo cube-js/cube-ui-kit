@@ -1,11 +1,12 @@
 // Declarative Toast component
 import { Key, ReactNode, useEffect, useRef } from 'react';
 
-import { useToastContext } from './ToastProvider';
+import { useToastContext } from '../Notifications/NotificationContext';
+
 import { ProgressToastOptions, ToastData } from './types';
 import { useProgressToast } from './useProgressToast';
 
-export { useToastContext } from './ToastProvider';
+export { useToastContext } from '../Notifications/NotificationContext';
 export { ToastItem } from './ToastItem';
 export type { ToastItemProps } from './ToastItem';
 export { useToast, getThemeIcon } from './useToast';

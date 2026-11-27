@@ -4,21 +4,15 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "@typescript-eslint/parser": "8.69.0"
   },
-  "filesLinted": 694,
+  "filesLinted": 690,
   "files": {
     "src/_internal/hooks/use-deprecation-warning.ts": {
       "react-hooks/exhaustive-deps": 2
-    },
-    "src/_internal/hooks/use-effect-once.ts": {
-      "react-hooks/exhaustive-deps": 1
     },
     "src/_internal/hooks/use-is-first-render.ts": { "react-hooks/refs": 3 },
     "src/_internal/hooks/use-timer/use-timer.ts": {
       "react-hooks/exhaustive-deps": 2,
       "react-hooks/set-state-in-effect": 2
-    },
-    "src/_internal/hooks/use-update-effect.ts": {
-      "react-hooks/exhaustive-deps": 2
     },
     "src/_internal/hooks/use-warn.ts": { "react-hooks/refs": 2 },
     "src/components/actions/CommandMenu/CommandMenu.tsx": {
@@ -205,7 +199,7 @@
     }
   },
   "totals": {
-    "react-hooks/exhaustive-deps": 59,
+    "react-hooks/exhaustive-deps": 56,
     "react-hooks/immutability": 26,
     "react-hooks/incompatible-library": 3,
     "react-hooks/preserve-manual-memoization": 9,
