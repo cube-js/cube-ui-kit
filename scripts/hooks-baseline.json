@@ -97,8 +97,7 @@
     },
     "src/components/fields/SearchComboBox/SearchComboBox.tsx": {
       "react-hooks/exhaustive-deps": 2,
-      "react-hooks/refs": 6,
-      "react-hooks/set-state-in-effect": 1
+      "react-hooks/refs": 6
     },
     "src/components/fields/Select/Select.tsx": {
       "react-hooks/immutability": 1,
@@ -211,7 +210,7 @@
     "react-hooks/preserve-manual-memoization": 9,
     "react-hooks/refs": 94,
     "react-hooks/rules-of-hooks": 3,
-    "react-hooks/set-state-in-effect": 11,
+    "react-hooks/set-state-in-effect": 10,
     "react-hooks/use-memo": 2
   }
 }

@@ -36,7 +36,7 @@ Choose a different component when the interaction has another outcome:
 - **`icon`** `ReactElement | null` — Icon rendered before the input. Defaults to a search icon; pass `null` to remove it
 - **`inputValue`** `string` — The current input value in controlled mode
 - **`defaultInputValue`** `string` — The default input value in uncontrolled mode
-- **`emptyLabel`** `ReactNode` (default: context-aware `No results found` / `Loading…`) — Label shown when the list is empty
+- **`emptyLabel`** `ReactNode` (default: context-aware `No results found` / `Loading…`) — Label shown when the list is empty. Once the list settles on a text label, not while `isLoading`, a polite status announces it to screen readers (an element label is shown but not announced), so a text label is on the page twice: a test finds it through the listbox's description (`toHaveAccessibleDescription`) rather than `getByText`
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function, or `false` to disable internal filtering for external/server-side filtering
 - **`isClearable`** `boolean` (default: `true`) — Whether the input is clearable via the clear button or Escape key
 - **`hideTrigger`** `boolean` (default: `true`) — Whether the dropdown trigger button is hidden (search-field look)
@@ -69,7 +69,7 @@ Choose a different component when the interaction has another outcome:
 
 **filter** — By default the list is filtered client-side with a contains match. Pass a custom `(textValue, inputValue) => boolean`, or set `filter={false}` to disable internal filtering entirely and provide already-filtered `items` yourself (server-side filtering).
 
-**isLoading + loadingDelay** — While `isLoading` is `true`, the previous results stay visible. The loading indicator (and the `Loading…` empty label) only appear after `loadingDelay` has elapsed, so fast responses never flash a loading state.
+**isLoading + loadingDelay** — While `isLoading` is `true`, the previous results stay visible, and a list already on screen stays even when the load empties it, showing `Loading…` (or your `emptyLabel`), so a search doesn't make it blink out between keystrokes. The loading indicator, and a list that opens with no results while loading, only appear after `loadingDelay` has elapsed, so fast responses never flash a loading state.
 
 ### Base Properties
 
@@ -229,7 +229,13 @@ useEffect(() => {
   inputValue={value}
   isLoading={isLoading}
   items={results}
-  emptyLabel={value.trim() ? 'No countries found' : 'Type to search'}
+  emptyLabel={
+    !value.trim()
+      ? 'Type to search'
+      : isLoading
+        ? 'Searching…'
+        : 'No countries found'
+  }
   onInputChange={setValue}
   onSelect={(key) => selectCountry(key)}
 >

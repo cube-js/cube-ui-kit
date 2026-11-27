@@ -48,6 +48,7 @@ import { getValidationIcon } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
 import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/optionId';
+import { EmptyLabelStatus } from '../ListBoxPopover/EmptyLabelStatus';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
   collectVisibleKeys,
@@ -59,6 +60,10 @@ import {
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
 import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
+import {
+  LOADING_DELAY,
+  useDelayedLoading,
+} from '../ListBoxPopover/useDelayedLoading';
 import {
   CubeSearchInputAttributes,
   SEARCH_TEXT_SERVICES,
@@ -216,8 +221,10 @@ export interface CubeSearchComboBoxProps<T>
   isDisabled?: boolean;
   /**
    * Whether items are being loaded (e.g. from a server). While loading, the
-   * previous results stay visible; the loading indicator only appears after
-   * `loadingDelay` to avoid flicker on fast responses.
+   * previous results stay visible, and a list already shown stays shown even
+   * when the load empties it. The loading indicator, and a list that opens
+   * empty while loading, only appear after `loadingDelay` to avoid flicker on
+   * fast responses.
    */
   isLoading?: boolean;
   /** Delay in milliseconds before the loading indicator is shown. Defaults to 1000. */
@@ -238,34 +245,6 @@ export interface CubeSearchComboBoxProps<T>
   suffixPosition?: 'before' | 'after';
   /** Callback called when the popover open state changes */
   onOpenChange?: (isOpen: boolean) => void;
-}
-
-// ============================================================================
-// Hook: useDelayedFlag
-// ----------------------------------------------------------------------------
-// Turns `true` only after `delay` ms of `active` staying true, and back to
-// `false` immediately when `active` becomes false. Used to defer the loading
-// indicator so fast responses never flash a loading state.
-// ============================================================================
-function useDelayedFlag(active: boolean, delay: number): boolean {
-  const [flag, setFlag] = useState(false);
-
-  useEffect(() => {
-    if (!active) {
-      setFlag(false);
-      return;
-    }
-
-    if (delay <= 0) {
-      setFlag(true);
-      return;
-    }
-
-    const id = setTimeout(() => setFlag(true), delay);
-    return () => clearTimeout(id);
-  }, [active, delay]);
-
-  return flag;
 }
 
 // ============================================================================
@@ -402,7 +381,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     popoverRef,
     listBoxRef,
     isLoading,
-    loadingDelay = 1000,
+    loadingDelay = LOADING_DELAY,
     inputProps,
     inputStyles,
     optionStyles,
@@ -524,7 +503,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   );
 
   // Delayed loading indicator
-  const showLoading = useDelayedFlag(!!isLoading, loadingDelay);
+  const showLoading = useDelayedLoading(!!isLoading, loadingDelay);
 
   // Check if there are any results after filtering
   const hasResults = useMemo(() => {
@@ -571,10 +550,15 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
   const trimmedInput = effectiveInputValue.trim();
 
+  // Whether the popover showed on the last render.
+  const [wasPopoverShown, setWasPopoverShown] = useState(false);
+
   // Keep the popover visible while there's something meaningful to show:
   // results, a loading indicator, or an empty state for a non-empty query.
-  // While a load is in flight but the delayed indicator hasn't kicked in yet,
-  // suppress the empty state so users never see a false "No results found".
+  // A load that has no results yet shows the empty state only once the
+  // delayed indicator kicks in, so a fast response never flashes it, unless
+  // the popover is already shown: a load never hides it, so a search that
+  // empties the results doesn't make it blink out between keystrokes.
   //
   // `isPopoverOpen` can still be true while this is false (loading delay with
   // no results, or opening an empty collection). Sync, notifications, and
@@ -582,8 +566,15 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   // an invisible overlay (incl. stale keys left in `listStateRef`).
   const shouldShowPopover = Boolean(
     isPopoverOpen &&
-    (hasResults || showLoading || (trimmedInput.length > 0 && !isLoading)),
+    (hasResults ||
+      showLoading ||
+      (isLoading && wasPopoverShown) ||
+      (trimmedInput.length > 0 && !isLoading)),
   );
+
+  if (wasPopoverShown !== shouldShowPopover) {
+    setWasPopoverShown(shouldShowPopover);
+  }
 
   usePopoverSync({
     menuId: searchComboBoxId,
@@ -961,10 +952,12 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     };
   }, [shouldShowPopover, visibleItemKeys, selectableItemKeys]);
 
+  // A load the popover stays shown through says so before the delayed
+  // indicator, never a false "No results found".
   const resolvedEmptyLabel =
     emptyLabel !== undefined
       ? emptyLabel
-      : showLoading
+      : isLoading
         ? t('searchComboBox.loading', 'Loading…')
         : t('searchComboBox.noResults', 'No results found');
 
@@ -1000,6 +993,13 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
         onChange={handleInputChange}
         onFocus={handleInputFocus}
       />
+      {/* Screen readers hear the empty state once the list settles on it, not
+      while a load is still running. */}
+      <EmptyLabelStatus>
+        {shouldShowPopover && !hasResults && !isLoading
+          ? resolvedEmptyLabel
+          : null}
+      </EmptyLabelStatus>
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
         {showLoading ? (

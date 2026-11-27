@@ -345,7 +345,13 @@ export const ServerSideFiltering = () => {
         inputValue={value}
         isLoading={isLoading}
         items={results.map((name) => ({ key: name, name }))}
-        emptyLabel={value.trim() ? 'No countries found' : 'Type to search'}
+        emptyLabel={
+          !value.trim()
+            ? 'Type to search'
+            : isLoading
+              ? 'Searching…'
+              : 'No countries found'
+        }
         onInputChange={setValue}
         onSelect={(key) => console.log('selected', key)}
       >
@@ -357,7 +363,9 @@ export const ServerSideFiltering = () => {
         <Paragraph preset="t4" color="#dark-03">
           Items are provided by the parent based on the query with `filter=
           {'{false}'}`. The loading indicator only appears if the fetch takes
-          longer than `loadingDelay` (1s by default).
+          longer than `loadingDelay` (1s by default). A list on screen stays
+          while the next search runs, so type &quot;zz&quot; and keep typing: it
+          says &quot;Searching…&quot;, then &quot;No countries found&quot;.
         </Paragraph>
       </Space>
     </Flow>
