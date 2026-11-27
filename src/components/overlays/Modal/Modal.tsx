@@ -10,7 +10,7 @@ import { useOverlayEscapeGuard } from '../../../utils/react/use-overlay-escape-g
 import {
   ModalContainmentProvider,
   useModalContainment,
-} from './modal-containment';
+} from './ModalContainmentProvider';
 import { Overlay } from './Overlay';
 import { ModalProps, TransitionState, WithCloseBehavior } from './types';
 import { Underlay } from './Underlay';

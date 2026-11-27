@@ -16,7 +16,7 @@ import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import {
   ModalContainmentProvider,
   useModalContainment,
-} from './modal-containment';
+} from './ModalContainmentProvider';
 import { CubeOverlayProps, Overlay } from './Overlay';
 import { TransitionState } from './types';
 import { Underlay } from './Underlay';

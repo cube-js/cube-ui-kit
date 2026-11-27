@@ -29,12 +29,12 @@ export {
   useEventBus,
   useEventListener,
   EventBusProvider,
-} from './use-event-bus';
+} from './EventBusProvider';
 export type {
   EventBusListener,
   EventBusContextValue,
   EventBusProviderProps,
-} from './use-event-bus';
+} from './EventBusProvider';
 export { usePopoverSync, useDismissParentPopover } from './use-popover-sync';
 export type { UsePopoverSyncOptions } from './use-popover-sync';
 export { useControlledFocusVisible } from './use-controlled-focus-visible';

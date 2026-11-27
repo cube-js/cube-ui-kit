@@ -6,7 +6,7 @@ import {
   EventBusContext,
   EventBusProvider,
   useEventBus,
-} from './use-event-bus';
+} from './EventBusProvider';
 import { useDismissParentPopover, usePopoverSync } from './use-popover-sync';
 
 const HookWrapper = ({ children }: { children: ReactNode }) => (

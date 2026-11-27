@@ -9,7 +9,7 @@ import {
 
 import { defaultNavigationAdapter } from './providers/navigation-adapter.default';
 import { NavigationAdapter } from './providers/navigation.types';
-import { EventBusProvider } from './utils/react/use-event-bus';
+import { EventBusProvider } from './utils/react/EventBusProvider';
 
 import type { Props } from './props';
 

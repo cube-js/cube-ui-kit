@@ -7,7 +7,7 @@ import { mergeProps } from '../../../utils/react/merge-props';
 import { mergeRefs } from '../../../utils/react/use-combined-refs';
 import { useOverlayEscapeGuard } from '../../../utils/react/use-overlay-escape-guard';
 
-import { useModalLayerRef } from './modal-containment';
+import { useModalLayerRef } from './ModalContainmentProvider';
 import { CubeOverlayProps, Overlay } from './Overlay';
 import { TransitionState } from './types';
 

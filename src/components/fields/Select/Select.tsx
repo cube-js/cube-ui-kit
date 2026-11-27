@@ -79,7 +79,7 @@ import { getValidationMods } from '../../form/validation/resolve-validation-prop
 import { getValidationIcon } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
-import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
+import { useModalLayerRef } from '../../overlays/Modal/ModalContainmentProvider';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { Portal } from '../../portal/Portal';
 import { isItemDisabled } from '../../shared/disabled-behavior';

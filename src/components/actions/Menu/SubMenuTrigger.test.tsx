@@ -8,7 +8,7 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
-import { EventBusProvider } from '../../../utils/react/use-event-bus';
+import { EventBusProvider } from '../../../utils/react/EventBusProvider';
 import { Button } from '../Button/Button';
 
 import { Menu } from './Menu';

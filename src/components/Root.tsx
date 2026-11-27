@@ -16,7 +16,7 @@ import { Provider } from '../Provider';
 import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import { PaletteConfig, setPaletteConfig } from '../tokens/palette-config';
-import { EventBusProvider } from '../utils/react/use-event-bus';
+import { EventBusProvider } from '../utils/react/EventBusProvider';
 import { AMBIENT_PREDEFINED_STATES } from '../utils/react/use-scheme';
 import { extractStyles } from '../utils/styles';
 import { TASTY_VERSION, VERSION } from '../version';

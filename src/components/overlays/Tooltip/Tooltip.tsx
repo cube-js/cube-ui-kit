@@ -20,7 +20,7 @@ import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-custo
 import { mergeRefs } from '../../../utils/react/use-combined-refs';
 import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
 import { extractStyles } from '../../../utils/styles';
-import { useModalLayerRef } from '../Modal/modal-containment';
+import { useModalLayerRef } from '../Modal/ModalContainmentProvider';
 
 import { TooltipContext } from './TooltipContext';
 

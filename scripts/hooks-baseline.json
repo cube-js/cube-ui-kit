@@ -185,9 +185,9 @@
     },
     "src/icons/DirectionIcon.tsx": { "react-hooks/exhaustive-deps": 1 },
     "src/Provider.tsx": { "react-hooks/refs": 1 },
+    "src/utils/react/EventBusProvider.ts": { "react-hooks/exhaustive-deps": 2 },
     "src/utils/react/RenderCache.tsx": { "react-hooks/refs": 5 },
     "src/utils/react/use-buffered-value.ts": { "react-hooks/refs": 4 },
-    "src/utils/react/use-event-bus.ts": { "react-hooks/exhaustive-deps": 2 },
     "src/utils/react/use-id.tsx": {
       "react-hooks/exhaustive-deps": 1,
       "react-hooks/refs": 2

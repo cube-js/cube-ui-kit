@@ -14,7 +14,7 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
-import { EventBusProvider } from '../../../utils/react/use-event-bus';
+import { EventBusProvider } from '../../../utils/react/EventBusProvider';
 import { Select } from '../../fields';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { Root } from '../../Root';
@@ -3055,4 +3055,4 @@ describe('MenuTrigger with an actions row as the trigger', () => {
 // 4. The event bus uses setTimeout(0) to ensure async emission after render cycles
 // 5. This prevents race conditions where components close themselves immediately after opening
 //
-// The synchronization is handled by the EventBusProvider in use-event-bus.ts
+// The synchronization is handled by the EventBusProvider in EventBusProvider.ts
