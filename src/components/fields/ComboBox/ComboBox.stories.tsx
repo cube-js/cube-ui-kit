@@ -3,6 +3,10 @@ import { userEvent, within } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import {
+  waitForOverlay,
+  waitForTransitions,
+} from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
@@ -120,9 +124,18 @@ const meta = {
     },
     isLoading: {
       control: { type: 'boolean' },
-      description: 'Whether the ComboBox is in a loading state',
+      description:
+        'Whether the options are loading: the input shows a spinner. With `emptyLabel`, a load also keeps an empty list open',
       table: {
         defaultValue: { summary: false },
+      },
+    },
+    emptyLabel: {
+      control: { type: 'text' },
+      description:
+        'The status the list shows when it has no options: typed text that matches none, no items, or a load with none yet. With it set, the list stays open and shows the label, which is not an option, instead of closing',
+      table: {
+        type: { summary: 'ReactNode' },
       },
     },
     filter: {
@@ -624,6 +637,29 @@ export const Loading = (args) => (
     <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
   </ComboBox>
 );
+
+export const EmptyLabel: StoryObj<typeof ComboBox> = {
+  render: (args) => (
+    <ComboBox
+      {...args}
+      label="Fruit"
+      placeholder="Type 'xyz'..."
+      emptyLabel="No fruit matches"
+    >
+      <ComboBox.Item key="apple">Apple</ComboBox.Item>
+      <ComboBox.Item key="banana">Banana</ComboBox.Item>
+      <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+    </ComboBox>
+  ),
+  // The label shows only in an open list, on text that matches nothing.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.type(canvas.getByRole('combobox'), 'xyz');
+    await waitForOverlay('listbox');
+    await waitForTransitions();
+  },
+};
 
 export const Disabled = () => (
   <ComboBox

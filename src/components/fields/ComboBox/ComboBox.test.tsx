@@ -7,6 +7,7 @@ import {
   renderWithRoot,
   userEvent,
 } from '../../../test/index';
+import { readWithScreenReader } from '../../../test/screen-reader';
 import { Button } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
 import { Dialog } from '../../overlays/Dialog/Dialog';
@@ -2864,6 +2865,233 @@ describe('<ComboBox />', () => {
 
       expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
       expect(expanded).toEqual(['false', 'false', 'false']);
+    });
+  });
+
+  describe('emptyLabel', () => {
+    // A server-side search: `results` are what the server returned, and
+    // `isLoading` is on while a request runs.
+    function ServerSearch({
+      results,
+      isLoading,
+      onOpenChange,
+    }: {
+      results: typeof items;
+      isLoading: boolean;
+      onOpenChange?: (isOpen: boolean) => void;
+    }) {
+      return (
+        <ComboBox
+          label="Color"
+          filter={false}
+          isLoading={isLoading}
+          emptyLabel={isLoading ? 'Searching…' : 'No matches'}
+          items={results}
+          onOpenChange={onOpenChange}
+        >
+          {(item: (typeof items)[number]) => (
+            <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          )}
+        </ComboBox>
+      );
+    }
+
+    it('keeps the list open on text that matches nothing, showing the label instead of options', async () => {
+      const onOpenChange = vi.fn();
+      const { getByRole, queryAllByRole } = renderWithRoot(
+        <ComboBox
+          label="Color"
+          emptyLabel="No matches"
+          onOpenChange={onOpenChange}
+        >
+          {colorItems}
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'zzz');
+
+      const listbox = await waitFor(() => getByRole('listbox'));
+
+      expect(queryAllByRole('option')).toHaveLength(0);
+      expect(combobox).toHaveAttribute('aria-expanded', 'true');
+      expect(combobox).toHaveAttribute('aria-controls', listbox.id);
+      // The label describes the empty listbox rather than sitting in it.
+      expect(listbox).toHaveAccessibleDescription('No matches');
+      expect(onOpenChange.mock.calls).toEqual([[true]]);
+    });
+
+    it('reads the empty list by its label, with no option in it', async () => {
+      const { getByRole } = renderWithRoot(
+        <ComboBox label="Color" emptyLabel="No matches">
+          {colorItems}
+        </ComboBox>,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'zzz');
+      await waitFor(() => getByRole('listbox'));
+
+      const phrases = await readWithScreenReader();
+
+      expect(phrases).toContain(
+        'listbox, Color, No matches, orientated vertically',
+      );
+      expect(phrases.filter((phrase) => phrase.startsWith('option'))).toEqual(
+        [],
+      );
+    });
+
+    it('keeps the arrow keys and Enter off the label', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          label="Color"
+          emptyLabel="No matches"
+          onSelectionChange={onSelectionChange}
+        >
+          {colorItems}
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'zzz');
+      await waitFor(() => getByRole('listbox'));
+
+      for (const key of ['{ArrowDown}', '{ArrowUp}', '{Home}', '{End}']) {
+        await userEvent.keyboard(key);
+
+        expect(combobox).not.toHaveAttribute('aria-activedescendant');
+        expect(getByRole('listbox')).toBeInTheDocument();
+      }
+
+      await userEvent.keyboard('{Enter}');
+
+      // Text that names no option clears the selection, as with the list
+      // closed: nothing is picked.
+      for (const [key] of onSelectionChange.mock.calls) {
+        expect(key).toBeNull();
+      }
+    });
+
+    it.each([
+      ['null', null],
+      ['false', false],
+      ['an empty string', ''],
+    ])(
+      'closes the list on text that matches nothing when the label is %s',
+      async (_, emptyLabel) => {
+        const { getByRole, getByTestId, queryByRole } = renderWithRoot(
+          <ComboBox label="Color" emptyLabel={emptyLabel}>
+            {colorItems}
+          </ComboBox>,
+        );
+
+        await userEvent.click(getByTestId('ComboBoxTrigger'));
+        await waitFor(() => getByRole('listbox'));
+        await userEvent.keyboard('zzz');
+
+        await waitFor(() => {
+          expect(queryByRole('listbox')).not.toBeInTheDocument();
+        });
+        expect(getByRole('combobox')).toHaveAttribute('aria-expanded', 'false');
+      },
+    );
+
+    it('shows the label for a load with no options only once it has run for a second', () => {
+      vi.useFakeTimers();
+
+      try {
+        const { getByRole, queryByRole } = renderWithRoot(
+          <ComboBox
+            isLoading
+            label="Color"
+            emptyLabel="Searching…"
+            popoverTrigger="focus"
+          >
+            {[]}
+          </ComboBox>,
+        );
+        const combobox = getByRole('combobox');
+
+        act(() => combobox.focus());
+        act(() => {
+          vi.advanceTimersByTime(999);
+        });
+
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
+        expect(combobox).toHaveAttribute('aria-expanded', 'false');
+
+        act(() => {
+          vi.advanceTimersByTime(1);
+        });
+
+        expect(getByRole('listbox')).toHaveAccessibleDescription('Searching…');
+        expect(combobox).toHaveAttribute('aria-expanded', 'true');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('keeps a shown list open when a load empties it, and shows the results that land', async () => {
+      const onOpenChange = vi.fn();
+      const { getByRole, getAllByRole, queryAllByRole, rerender } =
+        renderWithRoot(
+          <ServerSearch
+            results={items}
+            isLoading={false}
+            onOpenChange={onOpenChange}
+          />,
+        );
+
+      await userEvent.type(getByRole('combobox'), 'r');
+      await waitFor(() => expect(getAllByRole('option')).toHaveLength(7));
+
+      // The next keystroke's search empties the list before it lands.
+      rerender(
+        <ServerSearch results={[]} isLoading onOpenChange={onOpenChange} />,
+      );
+
+      expect(getByRole('listbox')).toHaveAccessibleDescription('Searching…');
+      expect(queryAllByRole('option')).toHaveLength(0);
+
+      rerender(
+        <ServerSearch
+          results={items.slice(0, 2)}
+          isLoading={false}
+          onOpenChange={onOpenChange}
+        />,
+      );
+
+      await waitFor(() => expect(getAllByRole('option')).toHaveLength(2));
+      expect(onOpenChange.mock.calls).toEqual([[true]]);
+    });
+
+    it('drops the open list on blur while a load holds back its label', async () => {
+      const { getByRole, queryByRole, rerender } = renderWithRoot(
+        <>
+          <ServerSearch results={[]} isLoading />
+          <button type="button">outside</button>
+        </>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'r');
+
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+
+      await userEvent.click(getByRole('button', { name: 'outside' }));
+      await waitFor(() => expect(combobox).not.toHaveFocus());
+
+      // Results land after focus has left: the list stays closed.
+      rerender(
+        <>
+          <ServerSearch results={items} isLoading={false} />
+          <button type="button">outside</button>
+        </>,
+      );
+
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
     });
   });
 

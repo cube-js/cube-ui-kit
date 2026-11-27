@@ -56,6 +56,7 @@ import {
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
 import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
+import { useDelayedLoading } from '../ListBoxPopover/useDelayedLoading';
 import { getIdentifierTextServices } from '../TextInput/identifier-text-services';
 import {
   CubeIdentifierInputProps,
@@ -207,8 +208,21 @@ export interface CubeComboBoxProps<T>
 
   /** Whether the combobox is disabled */
   isDisabled?: boolean;
-  /** Whether the combobox is in loading state */
+  /**
+   * Whether the options are loading: the input shows a spinner. With
+   * `emptyLabel`, a load also keeps an empty list open (see `emptyLabel`).
+   */
   isLoading?: boolean;
+  /**
+   * The status the list shows when it has no options: typed text that
+   * matches none, no items, or a load with none yet. With it set, the list
+   * stays open and shows the label, which is not an option, instead of
+   * closing. While `isLoading`, an empty list shows it once the load has run
+   * for a second, so a fast load never flashes it, and a list already shown
+   * stays through the load. Switch the text on `isLoading` to say the list is
+   * loading. `null`, `false` or `''` keep the list closing when it is empty.
+   */
+  emptyLabel?: ReactNode;
   /** Keys of disabled items */
   disabledKeys?: Iterable<Key>;
   /** Whether to flip the popover placement */
@@ -235,7 +249,8 @@ export interface CubeComboBoxProps<T>
   sortSelectedToTop?: boolean;
   /**
    * Callback called when the list shows or hides. Not called on mount, nor
-   * while typed text that matches nothing keeps it hidden.
+   * while a list with no options to show stays hidden, as it does without
+   * `emptyLabel`.
    */
   onOpenChange?: (isOpen: boolean) => void;
 }
@@ -809,6 +824,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     popoverRef,
     listBoxRef,
     isLoading,
+    emptyLabel,
     inputStyles,
     optionStyles,
     triggerStyles,
@@ -973,7 +989,24 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const getTypedOptions = () =>
     collectOptions(matchTypedText(localCollectionState.collection));
   const hasResults = filteredOptions.length > 0;
-  const shouldShowPopover = isPopoverOpen && hasResults;
+  // A label that renders nothing leaves the list closing when it is empty, so
+  // `emptyLabel={query && 'No matches'}` works.
+  const hasEmptyLabel =
+    emptyLabel != null && emptyLabel !== false && emptyLabel !== '';
+  const hasLongLoad = useDelayedLoading(!!isLoading);
+  // Whether the list showed on the last render.
+  const [wasListShown, setWasListShown] = useState(false);
+  // With `emptyLabel`, a list with no options shows the label instead of
+  // closing. While loading, an empty list waits for the load to run a while
+  // before it appears, so a fast load never flashes the label, and one already
+  // shown stays, so a search that empties it doesn't hide it between
+  // keystrokes.
+  const shouldShowPopover =
+    isPopoverOpen &&
+    (hasResults ||
+      (hasEmptyLabel && (!isLoading || hasLongLoad || wasListShown)));
+
+  if (wasListShown !== shouldShowPopover) setWasListShown(shouldShowPopover);
 
   // Report the list showing or hiding, as the user sees it: not on mount, and
   // not for text that reopens an empty list keystroke after keystroke.
@@ -1325,12 +1358,13 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // The list is at least as wide as the field, measured as it shows.
   const [comboBoxWidth, setComboBoxWidth] = useState<number>();
 
-  // Close popover if no results
+  // Without `emptyLabel`, a list with no options closes. With it, the list
+  // stays open, hidden only while a load holds back its label.
   useEffect(() => {
-    if (isPopoverOpen && !hasResults) {
+    if (isPopoverOpen && !hasResults && !hasEmptyLabel) {
       setIsPopoverOpen(false);
     }
-  }, [isPopoverOpen, hasResults, setIsPopoverOpen]);
+  }, [isPopoverOpen, hasResults, hasEmptyLabel, setIsPopoverOpen]);
 
   // Highlight an option once the list shows, and again whenever the typed
   // text filters the list, so the input's active descendant follows it. The
@@ -1501,6 +1535,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         compositeFocusProps={compositeFocusProps}
         filter={filterFn}
         size={size}
+        emptyLabel={emptyLabel}
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >
