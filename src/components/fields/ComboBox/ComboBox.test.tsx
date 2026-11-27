@@ -3032,6 +3032,35 @@ describe('<ComboBox />', () => {
       }
     });
 
+    it('cancels a list a load holds back on Escape, so it never shows', () => {
+      vi.useFakeTimers();
+
+      try {
+        const { getByRole, queryByRole } = renderWithRoot(
+          <ComboBox
+            isLoading
+            label="Color"
+            emptyLabel="Searching…"
+            popoverTrigger="focus"
+          >
+            {[]}
+          </ComboBox>,
+        );
+        const combobox = getByRole('combobox');
+
+        act(() => combobox.focus());
+        fireEvent.keyDown(combobox, { key: 'Escape' });
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
+        expect(combobox).toHaveAttribute('aria-expanded', 'false');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('keeps a shown list open when a load empties it, and shows the results that land', async () => {
       const onOpenChange = vi.fn();
       const { getByRole, getAllByRole, queryAllByRole, rerender } =

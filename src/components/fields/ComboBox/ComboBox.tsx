@@ -439,8 +439,13 @@ function useComboBoxFiltering({
 // Hook: useComboBoxKeyboard
 // ============================================================================
 interface UseComboBoxKeyboardProps {
-  /** Whether the list is shown: open, with options to show. */
+  /** Whether the list is on screen, with options or its empty label. */
   isListShown: boolean;
+  /**
+   * Whether the list is open, also while a load holds back its empty label
+   * and it is not on screen yet.
+   */
+  isListOpen: boolean;
   isReadOnly?: boolean;
   listStateRef: RefObject<any>;
   /**
@@ -474,6 +479,7 @@ function isComposing(e: AriaKeyboardEvent) {
 
 function useComboBoxKeyboard({
   isListShown,
+  isListOpen,
   isReadOnly,
   listStateRef,
   hasTypedMatch,
@@ -576,6 +582,10 @@ function useComboBoxKeyboard({
 
       return true;
     }
+
+    // A list a load holds back would show later: Escape cancels it too, and
+    // goes on as it does with the list closed.
+    if (isListOpen) onCloseList();
 
     if (effectiveInputValue && isClearable) {
       e.preventDefault();
@@ -687,7 +697,7 @@ interface ComboBoxInputProps {
   onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
   onPointerDown: () => void;
   onClick: () => void;
-  /** Whether the list is shown: open, with options to show. */
+  /** Whether the list is on screen, with options or its empty label. */
   isListShown: boolean;
   comboBoxId: string;
   /** The id of the option under virtual focus, while the popover is open. */
@@ -1302,6 +1312,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Keyboard navigation hook
   const { keyboardProps } = useComboBoxKeyboard({
     isListShown: shouldShowPopover,
+    isListOpen: isPopoverOpen,
     isReadOnly,
     listStateRef,
     hasTypedMatch: () =>
