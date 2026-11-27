@@ -791,7 +791,7 @@ describe('<SearchComboBox />', () => {
     expect(input).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('does not commit a stale option on Enter while the overlay is suppressed during loading', async () => {
+  it('keeps the shown overlay through a load that empties it, and Enter submits the text instead of a stale option', async () => {
     const onSelect = vi.fn();
     const onSubmit = vi.fn();
 
@@ -821,7 +821,7 @@ describe('<SearchComboBox />', () => {
       );
     }
 
-    const { getByRole, queryByRole, rerender } = renderWithRoot(
+    const { getByRole, queryByRole, queryAllByRole, rerender } = renderWithRoot(
       <Harness results={items} isLoading={false} />,
     );
 
@@ -832,13 +832,12 @@ describe('<SearchComboBox />', () => {
       expect(queryByRole('listbox')).toBeInTheDocument();
     });
 
-    // Drop results and start loading — overlay hides during the delay, but
-    // open intent (and a stale listStateRef) can remain.
+    // Drop results and start loading: the shown overlay stays, saying it is
+    // loading rather than that nothing matched, and holds no option.
     rerender(<Harness results={[]} isLoading />);
 
-    await waitFor(() => {
-      expect(queryByRole('listbox')).not.toBeInTheDocument();
-    });
+    expect(getByRole('listbox')).toHaveAccessibleDescription('Loading…');
+    expect(queryAllByRole('option')).toHaveLength(0);
 
     await userEvent.keyboard('{Enter}');
 

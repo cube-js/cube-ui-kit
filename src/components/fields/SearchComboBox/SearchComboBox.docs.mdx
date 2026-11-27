@@ -69,7 +69,7 @@ Choose a different component when the interaction has another outcome:
 
 **filter** — By default the list is filtered client-side with a contains match. Pass a custom `(textValue, inputValue) => boolean`, or set `filter={false}` to disable internal filtering entirely and provide already-filtered `items` yourself (server-side filtering).
 
-**isLoading + loadingDelay** — While `isLoading` is `true`, the previous results stay visible. The loading indicator (and the `Loading…` empty label) only appear after `loadingDelay` has elapsed, so fast responses never flash a loading state.
+**isLoading + loadingDelay** — While `isLoading` is `true`, the previous results stay visible, and a list already on screen stays even when the load empties it, showing `Loading…` (or your `emptyLabel`), so a search doesn't make it blink out between keystrokes. The loading indicator, and a list that opens with no results while loading, only appear after `loadingDelay` has elapsed, so fast responses never flash a loading state.
 
 ### Base Properties
 
