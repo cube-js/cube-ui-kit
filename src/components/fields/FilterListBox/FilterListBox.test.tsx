@@ -1,3 +1,4 @@
+import { fireEvent } from '@testing-library/react';
 import { createRef, JSX } from 'react';
 
 import { FilterListBox } from '../../../index';
@@ -1568,6 +1569,49 @@ describe('<FilterListBox />', () => {
 
       expect(onSelectionChange).toHaveBeenCalledWith('mango');
     });
+
+    it.each([
+      ['isComposing', { isComposing: true }],
+      ['keyCode 229', { keyCode: 229 }],
+    ])(
+      'leaves the keys during IME composition to the IME (%s)',
+      async (_, init) => {
+        const onSelectionChange = vi.fn();
+        const onEscape = vi.fn();
+
+        const { getByPlaceholderText } = render(
+          <FilterListBox
+            label="Select a fruit"
+            searchPlaceholder="Search..."
+            selectionMode="multiple"
+            allowsCustomValue={true}
+            onSelectionChange={onSelectionChange}
+            onEscape={onEscape}
+          >
+            {basicItems}
+          </FilterListBox>,
+        );
+
+        const searchInput = getByPlaceholderText('Search...');
+
+        // The marked text of a composition that matches no option, so the
+        // custom value is the focused option.
+        await act(async () => {
+          await userEvent.type(searchInput, 's w ch');
+        });
+
+        expect(getActiveDescendant(searchInput)).toHaveTextContent('s w ch');
+
+        for (const key of ['Enter', 'ArrowDown', 'End', 'Escape']) {
+          fireEvent.keyDown(searchInput, { key, ...init });
+        }
+
+        expect(onSelectionChange).not.toHaveBeenCalled();
+        expect(onEscape).not.toHaveBeenCalled();
+        expect(searchInput).toHaveValue('s w ch');
+        expect(getActiveDescendant(searchInput)).toHaveTextContent('s w ch');
+      },
+    );
 
     it('should hide non-matching stale items and focus the custom value while server fetch is in flight (filter=false + isLoadingItems)', async () => {
       const staleItems = [

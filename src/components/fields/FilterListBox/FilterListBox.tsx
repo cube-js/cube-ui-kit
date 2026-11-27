@@ -855,6 +855,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
   // Keyboard navigation handler for search input
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
+      // During an IME composition the keys pick, move and cancel candidates,
+      // and the input holds unfinished text: leave them to the IME.
+      if (e.nativeEvent?.isComposing || e.keyCode === 229) return;
+
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
 
