@@ -659,7 +659,7 @@ describe('<FilterPicker treeData />', () => {
     expect(search()).not.toHaveAttribute('aria-activedescendant');
   });
 
-  it('steps Left past a disabled parent to the nearest reachable one', async () => {
+  it('steps Left to a disabled parent, which the keyboard reaches too', async () => {
     const data: CubeTreeNodeData[] = [
       {
         key: 'org',
@@ -685,7 +685,94 @@ describe('<FilterPicker treeData />', () => {
     await open(getByRole);
     await user.keyboard('{End}{ArrowLeft}');
 
-    expect(search().getAttribute('aria-activedescendant')).toBe(row('org')!.id);
+    expect(search().getAttribute('aria-activedescendant')).toBe(
+      row('team')!.id,
+    );
+  });
+
+  // WAI-ARIA keeps a disabled tree item reachable, so a keyboard or screen
+  // reader user hears it and why it is unavailable. It stays inert, and the
+  // tree still opens on the first row the user can use.
+  it.each([
+    ['single', { selectionMode: 'single' as const }],
+    ['checkable', {}],
+  ])(
+    'highlights a disabled row with the arrow keys and never picks or checks it (%s)',
+    async (_, props) => {
+      const onSelectionChange = vi.fn();
+      const data: CubeTreeNodeData[] = [
+        { key: 'alpha', title: 'Alpha', isLeaf: true },
+        { key: 'beta', title: 'Beta', isLeaf: true, isDisabled: true },
+        { key: 'gamma', title: 'Gamma', isLeaf: true },
+      ];
+      const { getByRole } = renderWithRoot(
+        <FilterPicker
+          label="Groups"
+          treeData={data}
+          onSelectionChange={onSelectionChange}
+          {...props}
+        />,
+      );
+      const active = () => search().getAttribute('aria-activedescendant');
+
+      await open(getByRole);
+      expect(active()).toBe(row('alpha')!.id);
+
+      await user.keyboard('{ArrowDown}');
+      expect(active()).toBe(row('beta')!.id);
+      expect(row('beta')).toHaveAttribute('aria-disabled', 'true');
+
+      await user.keyboard('{Enter}');
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(search()).toHaveFocus();
+
+      await user.keyboard('{ArrowDown}');
+      expect(active()).toBe(row('gamma')!.id);
+      await user.keyboard('{ArrowUp}');
+      expect(active()).toBe(row('beta')!.id);
+    },
+  );
+
+  // The tree's own highlight is never a disabled row, not even one that holds
+  // the value or is the only match of a search.
+  describe('highlight on its own', () => {
+    const data: CubeTreeNodeData[] = [
+      { key: 'alpha', title: 'Alpha', isLeaf: true },
+      { key: 'beta', title: 'Beta', isLeaf: true, isDisabled: true },
+      { key: 'gamma', title: 'Gamma', isLeaf: true },
+    ];
+    const active = () => search().getAttribute('aria-activedescendant');
+
+    it.each([
+      [
+        'a disabled selected row',
+        { selectionMode: 'single' as const, defaultSelectedKey: 'beta' },
+        'alpha',
+      ],
+      [
+        'a disabled checked row',
+        { defaultSelectedKeys: ['beta', 'gamma'] },
+        'gamma',
+      ],
+    ])('opens past %s', async (_, props, expected) => {
+      const { getByRole } = renderWithRoot(
+        <FilterPicker label="Groups" treeData={data} {...props} />,
+      );
+
+      await open(getByRole);
+      expect(active()).toBe(row(expected)!.id);
+    });
+
+    it('highlights nothing when a search matches only a disabled row', async () => {
+      const { getByRole } = renderWithRoot(
+        <FilterPicker label="Groups" selectionMode="single" treeData={data} />,
+      );
+
+      await open(getByRole);
+      await user.type(search(), 'bet');
+      expect(row('beta')).toBeInTheDocument();
+      expect(active()).toBeFalsy();
+    });
   });
 
   it('holds its value as a form field', async () => {

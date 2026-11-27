@@ -1,7 +1,8 @@
 import { Key } from '@react-types/shared';
 
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import {
-  getEdgeVisibleKey,
+  getFirstSelectableKey,
   ListStateLike,
   markKeyboardFocus,
 } from '../ListBoxPopover/listNavigation';
@@ -81,7 +82,7 @@ export function findTypedOption(
   options: ComboBoxOption[],
   text: string,
   selectedKey: Key | null,
-  disabledKeys: Set<Key>,
+  isDisabled: (key: Key) => boolean,
   isSameText: (textValue: string, text: string) => boolean,
 ): Key | null {
   const term = text.trim();
@@ -93,11 +94,11 @@ export function findTypedOption(
   );
   const match =
     exactMatches.find((option) => option.key === selectedKey) ??
-    exactMatches.find((option) => !disabledKeys.has(option.key)) ??
+    exactMatches.find((option) => !isDisabled(option.key)) ??
     exactMatches[0] ??
     (options.length === 1 ? options[0] : null);
 
-  if (!match || (match.key !== selectedKey && disabledKeys.has(match.key))) {
+  if (!match || (match.key !== selectedKey && isDisabled(match.key))) {
     return null;
   }
 
@@ -106,8 +107,8 @@ export function findTypedOption(
 
 /**
  * The option the list should highlight: the one it already highlights while
- * the filter keeps it, otherwise the selection when shown, otherwise the first
- * enabled option.
+ * the filter keeps it, otherwise the selection when shown and enabled,
+ * otherwise the first enabled option.
  */
 export function resolveHighlightedKey(
   listState: ListState,
@@ -120,11 +121,15 @@ export function resolveHighlightedKey(
     return focusedKey;
   }
 
-  if (selectedKey != null && collection.getItem(selectedKey) != null) {
+  if (
+    selectedKey != null &&
+    collection.getItem(selectedKey) != null &&
+    !isItemDisabled(listState, selectedKey)
+  ) {
     return selectedKey;
   }
 
-  return getEdgeVisibleKey(listState, 'first');
+  return getFirstSelectableKey(listState);
 }
 
 /**

@@ -120,7 +120,7 @@ These properties allow direct style application without using the `styles` prop:
 ### Keyboard Navigation
 
 - `Tab` — Moves focus into / out of the textarea.
-- `ArrowUp` / `ArrowDown` — Move the highlighted option (only while the popover is open; otherwise moves the caret).
+- `ArrowUp` / `ArrowDown` — Move the highlighted option (only while the popover is open; otherwise moves the caret). A disabled option is reached too, as WAI-ARIA keeps it focusable, so a screen reader says why it is unavailable; Enter ignores it, and the list never highlights one on its own.
 - `Home` / `End` — Jump to the first / last option while open.
 - `Enter` / `Tab` — Insert the highlighted option while open; otherwise insert a newline / submit. A `Tab` that inserts an option keeps focus in the textarea, inside a `Dialog` too.
 - `Escape` — Close the popover without changing the text. With the popover closed, `Escape` goes on to a surrounding `Dialog` and closes it, unless your `onKeyDown` prevents it.

@@ -785,17 +785,54 @@ describe('<TagInput />', () => {
       expect(getAllByRole('row')[0]).toHaveFocus();
     });
 
-    it('skips a locked last chip on the way to the text', async () => {
+    // WAI-ARIA keeps a disabled item of a grid focusable, so a keyboard user
+    // reaches a locked chip and hears that it is locked.
+    it('reaches a locked last chip on the way to the text', async () => {
       const { getByRole, getAllByRole } = render(
         <Inside tagProps={(value) => ({ isDisabled: value === 'three' })} />,
       );
 
       await userEvent.click(getByRole('textbox'));
       await userEvent.keyboard('{ArrowLeft}');
-      expect(getAllByRole('row')[1]).toHaveFocus();
+      expect(getAllByRole('row')[2]).toHaveFocus();
+      expect(getAllByRole('row')[2]).toHaveAttribute('aria-disabled', 'true');
 
       await userEvent.keyboard('{ArrowRight}');
       expect(getByRole('textbox')).toHaveFocus();
+    });
+
+    it('stops on a locked chip with the arrow keys and never removes it', async () => {
+      const onChange = vi.fn();
+      const { getAllByRole } = render(
+        <Inside
+          tagProps={(value) => ({ isDisabled: value === 'two' })}
+          onChange={onChange}
+        />,
+      );
+      const [one, two, three] = getAllByRole('row');
+      const reader = await startScreenReader();
+
+      await act(async () => one.focus());
+      await userEvent.keyboard('{ArrowRight}');
+      expect(two).toHaveFocus();
+      expect(two).toHaveAttribute('aria-disabled', 'true');
+      await waitFor(async () =>
+        expect(await reader.lastSpokenPhrase()).toMatch(
+          /^row, two\b.*disabled/,
+        ),
+      );
+      // React Aria tells every chip how to remove it; a locked one can't be.
+      expect(await reader.lastSpokenPhrase()).not.toMatch(/remove/i);
+
+      await userEvent.keyboard('{Delete}');
+      await userEvent.keyboard('{Backspace}');
+      expect(onChange).not.toHaveBeenCalled();
+      expect(getAllByRole('row')).toHaveLength(3);
+
+      await userEvent.keyboard('{ArrowRight}');
+      expect(three).toHaveFocus();
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(two).toHaveFocus();
     });
 
     it('leaves the arrows to the text below the box', async () => {
@@ -2179,6 +2216,88 @@ describe('<TagInput />', () => {
 
       expect(option).toHaveAttribute('aria-disabled', 'true');
     });
+  });
+
+  // WAI-ARIA keeps a disabled option reachable, so a keyboard or screen reader
+  // user hears it and why it is unavailable. Enter neither picks it nor
+  // reports it: typing still highlights the first option the user can pick.
+  it('highlights a disabled option with the arrow keys and never picks it', async () => {
+    const onChange = vi.fn();
+    const { getByRole, queryByRole } = renderWithRoot(
+      <Actions disabledKeys={['read']} onChange={onChange} />,
+    );
+    const input = getByRole('combobox');
+    const active = () => getActiveDescendant(input)?.textContent;
+
+    await userEvent.type(input, 're');
+    await waitFor(() => expect(active()).toBe('refresh'));
+
+    await userEvent.keyboard('{ArrowUp}');
+    await waitFor(() => expect(active()).toBe('read'));
+    expect(getActiveDescendant(input)).toHaveAttribute('aria-disabled', 'true');
+
+    await userEvent.keyboard('{Enter}');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(input).toHaveValue('re');
+    expect(queryByRole('alert')).toBeNull();
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(active()).toBe('refresh'));
+  });
+
+  // An option disabled with its own `isDisabled` is the same as one in
+  // `disabledKeys`: listed, reached, and never picked.
+  it('never picks an option disabled with its own isDisabled', async () => {
+    const onChange = vi.fn();
+    const { getByRole, getByText } = renderWithRoot(
+      <TagInput label="Fruits" onChange={onChange}>
+        <TagInput.Item key="apple">apple</TagInput.Item>
+        <TagInput.Item key="banana" isDisabled>
+          banana
+        </TagInput.Item>
+      </TagInput>,
+    );
+    const input = getByRole('combobox');
+
+    // The only match is disabled: it is listed, and nothing is highlighted.
+    await userEvent.type(input, 'ban');
+    const banana = await waitFor(() => getByRole('option', { name: 'banana' }));
+    expect(banana).toHaveAttribute('aria-disabled', 'true');
+    expect(getActiveDescendant(input)).toBeNull();
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(getActiveDescendant(input)).toBe(banana));
+    await userEvent.keyboard('{Enter}');
+    expect(onChange).not.toHaveBeenCalled();
+
+    await userEvent.clear(input);
+    await userEvent.type(input, 'banana{Enter}');
+    expect(getByText('"banana" is not available')).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  // React Stately would move a highlight the text filters out onto the next
+  // option, disabled or not. The list never highlights a disabled one itself.
+  it('highlights nothing once the text leaves only disabled options', async () => {
+    const { getByRole } = renderWithRoot(
+      <TagInput label="Colors" disabledKeys={['blue']}>
+        <TagInput.Item key="black">black</TagInput.Item>
+        <TagInput.Item key="blue">blue</TagInput.Item>
+      </TagInput>,
+    );
+    const input = getByRole('combobox');
+
+    await userEvent.type(input, 'bl');
+    await waitFor(() =>
+      expect(getActiveDescendant(input)).toHaveTextContent('black'),
+    );
+    await userEvent.type(input, 'u');
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+
+    expect(getByRole('option', { name: 'blue' })).not.toHaveAttribute(
+      'data-focused',
+    );
+    expect(getActiveDescendant(input)).toBeNull();
   });
 
   it('focuses the first match not added yet while typing', async () => {

@@ -71,6 +71,9 @@ function isComponentElement<T>(
   );
 }
 
+/** The tab list's navigation sees no disabled keys: it stops on every tab. */
+const NO_DISABLED_KEYS: Set<Key> = new Set();
+
 /** Checks if a child is a Tab component. */
 const isTabElement = (child: ReactNode): child is ReactElement<CubeTabProps> =>
   isComponentElement<CubeTabProps>(child, 'CubeTab');
@@ -440,8 +443,12 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
     ],
   );
 
-  // Create state using useTabListState
-  const state = useTabListState(ariaProps);
+  // Create state using useTabListState. A disabled tab stays focusable, as
+  // WAI-ARIA tabs do; `TabButton` keeps it disabled and never activates it.
+  const state = useTabListState({
+    ...ariaProps,
+    disabledBehavior: 'selection',
+  } as AriaTabListProps<object>);
 
   // Track initial selected key for visited tabs
   useEffect(() => {
@@ -451,10 +458,28 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   }, [state.selectedKey]);
 
   // Get tablist props from react-aria
-  const { tabListProps } = useTabList(ariaProps, state, listRef);
+  // React Aria's keyboard delegate skips the state's disabled keys, so the tab
+  // list navigates a view of the state that has none. Activating a disabled
+  // tab, as the arrow keys and a click do, would clear the selection, so the
+  // view's selection manager leaves it as it is there. React Aria names tabs
+  // and panels after the state object `useTabList` gets, so they take this
+  // view too, and its identity follows `state`'s. `TabButton` reads disabled
+  // keys from the real state.
+  const listState = useMemo(() => {
+    const selectionManager = Object.create(state.selectionManager);
+    selectionManager.replaceSelection = (key: Key) => {
+      if (!state.disabledKeys.has(key)) {
+        state.selectionManager.replaceSelection(key);
+      }
+    };
+
+    return { ...state, disabledKeys: NO_DISABLED_KEYS, selectionManager };
+  }, [state]);
+  const { tabListProps } = useTabList(ariaProps, listState, listRef);
 
   // Handle selection from TabPicker (needs to update internal state in uncontrolled mode)
   const handleTabPickerSelect = useEvent((key: string) => {
+    if (disabledKeys.has(key)) return;
     // Update internal state (for uncontrolled mode)
     state.setSelectedKey(key);
     // Also call the external onChange handler
@@ -571,6 +596,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   const baseContextValue = useMemo(
     () => ({
       state,
+      listState,
       type: effectiveType,
       size,
       placement,
@@ -589,6 +615,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
     }),
     [
       state,
+      listState,
       effectiveType,
       size,
       placement,
@@ -810,7 +837,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
           <CachedPanelRenderer
             parsedTabs={parsedTabs}
             explicitPanels={explicitPanels}
-            state={state}
+            state={listState}
             renderPanel={renderPanel}
             panelCacheKeys={panelCacheKeys}
             prerender={prerender}
@@ -832,7 +859,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
               <TabPanelRenderer
                 key={tab.key}
                 tabKey={tab.key}
-                state={state}
+                state={listState}
                 content={content}
                 prerender={prerender}
                 keepMounted={effectiveKeepMounted}

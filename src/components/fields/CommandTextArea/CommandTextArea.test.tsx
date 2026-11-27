@@ -184,6 +184,71 @@ describe('<CommandTextArea />', () => {
     });
   });
 
+  // WAI-ARIA keeps a disabled option reachable, so a keyboard or screen reader
+  // user hears it and why it is unavailable. It inserts nothing, and the list
+  // still opens on the first command the user can insert.
+  it('highlights a disabled command with the arrow keys and never inserts it', async () => {
+    const onCommand = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <CommandTextArea
+        label="Message"
+        disabledKeys={['/clear']}
+        onCommand={onCommand}
+      >
+        {commandItems}
+      </CommandTextArea>,
+    );
+
+    const input = getByRole('combobox') as HTMLTextAreaElement;
+    const activeKey = () =>
+      getActiveDescendant(input)?.getAttribute('data-key');
+
+    await userEvent.type(input, '/');
+    await waitFor(() => expect(activeKey()).toBe('/help'));
+
+    await userEvent.keyboard('{ArrowUp}');
+    await waitFor(() => expect(activeKey()).toBe('/clear'));
+    expect(getActiveDescendant(input)).toHaveAttribute('aria-disabled', 'true');
+
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('{Tab}');
+    expect(onCommand).not.toHaveBeenCalled();
+    expect(input.value).toBe('/');
+    expect(activeKey()).toBe('/clear');
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(activeKey()).toBe('/help'));
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(input.value).toBe('/help '));
+  });
+
+  // A token that matches only a disabled command still opens the list, so the
+  // user hears that it exists and is unavailable. Nothing is highlighted.
+  it('lists a token that matches only a disabled command', async () => {
+    const onCommand = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <CommandTextArea
+        label="Message"
+        disabledKeys={['/clear']}
+        onCommand={onCommand}
+      >
+        {commandItems}
+      </CommandTextArea>,
+    );
+    const input = getByRole('combobox') as HTMLTextAreaElement;
+
+    await userEvent.type(input, '/cl');
+    const option = await waitFor(() => getByRole('option', { name: '/clear' }));
+    expect(option).toHaveAttribute('aria-disabled', 'true');
+    expect(getActiveDescendant(input)).toBeNull();
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(getActiveDescendant(input)).toBe(option));
+    await userEvent.keyboard('{Enter}');
+    expect(onCommand).not.toHaveBeenCalled();
+    expect(input.value).toBe('/cl');
+  });
+
   it('inserts the full command on Enter', async () => {
     const onCommand = vi.fn();
     const { getByRole, queryByRole } = renderWithRoot(

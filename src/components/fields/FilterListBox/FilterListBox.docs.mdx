@@ -503,7 +503,7 @@ Pass the pages loaded so far as `items` and load the next one in `onLoadMore`, a
 ### Keyboard Navigation
 
 - `Tab` - Moves focus to the search input
-- `Arrow Down/Up` - Navigate through filtered options
+- `Arrow Down/Up` - Navigate through filtered options. A disabled option is reached too, as WAI-ARIA keeps it focusable, so a screen reader says why it is unavailable; Enter ignores it, and the list never highlights one on its own
 - `Enter` - Select the focused option (toggle it in multiple selection mode)
 - `Space` - In multiple selection mode, toggle selection (when search is empty)
 - `Escape` - Clear search input or close (if empty)

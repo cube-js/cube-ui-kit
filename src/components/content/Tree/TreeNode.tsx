@@ -344,6 +344,10 @@ function TreeNodeInner(props: TreeNodeProps) {
     // The row's checkbox carries checked and mixed; the row has `checked` and
     // `indeterminate` mods.
     ...mergeProps(rowProps, hoverProps),
+    // The tree keeps a disabled row focusable (`disabledBehavior:
+    // 'selection'`), so React Aria no longer marks it disabled. `Tree` keeps
+    // it from toggling.
+    'aria-disabled': isDisabled || undefined,
     onKeyDown: composedKeyDown,
     // Under an outside control (`isActive` set) no row is a tab stop, not
     // even one a click focused.

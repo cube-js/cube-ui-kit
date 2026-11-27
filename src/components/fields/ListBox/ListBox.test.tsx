@@ -13,6 +13,7 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
+import { startScreenReader } from '../../../test/screen-reader';
 import { FilterListBox } from '../FilterListBox/FilterListBox';
 
 import { getListBoxOptionId } from './optionId';
@@ -1480,6 +1481,170 @@ describe('<ListBox />', () => {
         expect(screen.getByText('Out of season')).toBeInTheDocument();
       });
     });
+
+    // WAI-ARIA keeps a disabled option focusable, so a keyboard user reaches
+    // it and hears why it is unavailable. It stays inert.
+    it.each([
+      ['disabledKeys', { disabledKeys: ['banana'] }, {}],
+      ['its own isDisabled', {}, { isDisabled: true }],
+    ])(
+      'stops on an option disabled by %s with the arrow keys and never selects it',
+      async (_, listProps, itemProps) => {
+        const onSelectionChange = vi.fn();
+        renderWithRoot(
+          <ListBox
+            label="Fruits"
+            selectionMode="single"
+            defaultSelectedKey="cherry"
+            onSelectionChange={onSelectionChange}
+            {...listProps}
+          >
+            <ListBox.Item key="apple">Apple</ListBox.Item>
+            <ListBox.Item
+              key="banana"
+              description="Out of stock"
+              {...itemProps}
+            >
+              Banana
+            </ListBox.Item>
+            <ListBox.Item key="cherry">Cherry</ListBox.Item>
+          </ListBox>,
+        );
+        const apple = screen.getByRole('option', { name: 'Apple' });
+        const banana = screen.getByRole('option', { name: 'Banana' });
+        const cherry = screen.getByRole('option', { name: 'Cherry' });
+
+        await act(async () => apple.focus());
+        await userEvent.keyboard('{ArrowDown}');
+        expect(banana).toHaveFocus();
+        expect(banana).toHaveAttribute('aria-disabled', 'true');
+
+        await userEvent.keyboard('{Enter}');
+        await userEvent.keyboard(' ');
+        await userEvent.click(banana);
+        expect(onSelectionChange).not.toHaveBeenCalled();
+        expect(cherry).toHaveAttribute('aria-selected', 'true');
+        expect(banana).toHaveAttribute('aria-selected', 'false');
+
+        await act(async () => banana.focus());
+        await userEvent.keyboard('{ArrowDown}');
+        expect(cherry).toHaveFocus();
+        await userEvent.keyboard('{ArrowUp}');
+        expect(banana).toHaveFocus();
+      },
+    );
+
+    it('never toggles a disabled option in multiple selection', async () => {
+      const onSelectionChange = vi.fn();
+      renderWithRoot(
+        <ListBox
+          label="Fruits"
+          selectionMode="multiple"
+          disabledKeys={['banana']}
+          onSelectionChange={onSelectionChange}
+        >
+          <ListBox.Item key="apple">Apple</ListBox.Item>
+          <ListBox.Item key="banana">Banana</ListBox.Item>
+        </ListBox>,
+      );
+      const banana = screen.getByRole('option', { name: 'Banana' });
+
+      await act(async () =>
+        screen.getByRole('option', { name: 'Apple' }).focus(),
+      );
+      await userEvent.keyboard('{ArrowDown}');
+      expect(banana).toHaveFocus();
+      await userEvent.keyboard(' ');
+      await userEvent.keyboard('{Enter}');
+      await userEvent.click(banana);
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    // When the focused option goes away, React Stately moves focus to the next
+    // one, disabled or not. The list moves on to the next option the user can
+    // pick, or clears focus when none is left.
+    it.each([
+      ['moves focus past a disabled option', ['banana', 'cherry'], 'cherry'],
+      ['clears focus when only disabled options are left', ['banana'], null],
+    ])(
+      '%s when the focused option goes away',
+      async (_, keysAfter, focusedAfter) => {
+        const fruits = (keys: string[]) => (
+          <ListBox label="Fruits" disabledKeys={['banana']}>
+            {keys.map((key) => (
+              <ListBox.Item key={key}>{key}</ListBox.Item>
+            ))}
+          </ListBox>
+        );
+        const { rerender } = renderWithRoot(
+          fruits(['apple', 'banana', 'cherry']),
+        );
+
+        await act(async () =>
+          screen.getByRole('option', { name: 'apple' }).focus(),
+        );
+        rerender(fruits(keysAfter));
+
+        await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+        expect(
+          screen.getByRole('option', { name: 'banana' }),
+        ).not.toHaveFocus();
+        if (focusedAfter) {
+          expect(
+            screen.getByRole('option', { name: focusedAfter }),
+          ).toHaveFocus();
+        }
+      },
+    );
+
+    // With `selectionBehavior="replace"` focus selects, and a disabled option
+    // would clear the selection, so the arrow keys skip it there.
+    it('skips a disabled option when focus selects', async () => {
+      const onSelectionChange = vi.fn();
+      renderWithRoot(
+        <ListBox
+          label="Fruits"
+          selectionBehavior="replace"
+          defaultSelectedKey="apple"
+          disabledKeys={['banana']}
+          onSelectionChange={onSelectionChange}
+        >
+          <ListBox.Item key="apple">Apple</ListBox.Item>
+          <ListBox.Item key="banana">Banana</ListBox.Item>
+          <ListBox.Item key="cherry">Cherry</ListBox.Item>
+        </ListBox>,
+      );
+
+      await act(async () =>
+        screen.getByRole('option', { name: 'Apple' }).focus(),
+      );
+      await userEvent.keyboard('{ArrowDown}');
+      expect(screen.getByRole('option', { name: 'Cherry' })).toHaveFocus();
+      expect(onSelectionChange).not.toHaveBeenCalledWith(null);
+    });
+
+    it('announces a disabled option and its description when the arrow keys reach it', async () => {
+      renderWithRoot(
+        <ListBox label="Fruits" disabledKeys={['banana']}>
+          <ListBox.Item key="apple">Apple</ListBox.Item>
+          <ListBox.Item key="banana" description="Out of stock">
+            Banana
+          </ListBox.Item>
+          <ListBox.Item key="cherry">Cherry</ListBox.Item>
+        </ListBox>,
+      );
+      const reader = await startScreenReader();
+
+      await act(async () =>
+        screen.getByRole('option', { name: 'Apple' }).focus(),
+      );
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(async () =>
+        expect(await reader.lastSpokenPhrase()).toMatch(
+          /^option, Banana, Out of stock\b.*disabled/,
+        ),
+      );
+    });
   });
 
   describe('option size', () => {
@@ -1544,6 +1709,41 @@ describe('ListBox id and description', () => {
     );
 
     expect(getByRole('listbox')).toHaveAccessibleDescription('Pick one');
+  });
+});
+
+// The keyboard reaches a disabled option, which still can't be dragged or
+// moved: React Aria gives it no drag props, and Alt with an arrow does nothing.
+describe('ListBox reordering', () => {
+  it('never drags or moves a disabled option', async () => {
+    const onReorder = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <ListBox
+        isReorderable
+        aria-label="Fruits"
+        disabledKeys={['banana']}
+        onReorder={onReorder}
+      >
+        <ListBox.Item key="apple">Apple</ListBox.Item>
+        <ListBox.Item key="banana">Banana</ListBox.Item>
+        <ListBox.Item key="cherry">Cherry</ListBox.Item>
+      </ListBox>,
+    );
+    const banana = getByRole('option', { name: 'Banana' });
+
+    expect(getByRole('option', { name: 'Apple' })).toHaveAttribute(
+      'draggable',
+      'true',
+    );
+    expect(banana).not.toHaveAttribute('draggable');
+
+    await userEvent.tab();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(banana).toHaveFocus();
+
+    await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    await userEvent.keyboard('{Enter}{ArrowDown}{ArrowDown}{Enter}');
+    expect(onReorder).not.toHaveBeenCalled();
   });
 });
 

@@ -82,6 +82,8 @@ import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransi
 import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { Portal } from '../../portal/Portal';
+import { isItemDisabled } from '../../shared/disabled-behavior';
+import { useDisabledFocusReset } from '../ListBox/use-disabled-focus-reset';
 import { useOptionOriginPress } from '../option-origin-press';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
@@ -427,8 +429,13 @@ function Select<T extends object>(
     form,
   } = props;
   const { t } = useI18n();
-  // `useSelectState` reports `onOpenChange` itself, once per transition.
-  let state = getValueSelectionState(useSelectState(props));
+  // `useSelectState` reports `onOpenChange` itself, once per transition. A
+  // disabled option stays focusable in the open list, as WAI-ARIA keeps a
+  // disabled option reachable; `Option` keeps it inert.
+  let state = getValueSelectionState(
+    useSelectState({ ...props, disabledBehavior: 'selection' } as typeof props),
+  );
+  useDisabledFocusReset(state);
   // Read-only and loading keep the trigger focusable, but its value is fixed.
   const isLocked = !!props.isReadOnly || !!isLoading;
 
@@ -904,6 +911,8 @@ function getEdgeOptionKey(
 
   if (edge === 'last') keys.reverse();
 
+  // The list opens on an option the user can pick; the arrow keys still reach
+  // a disabled one from there.
   return (
     keys.find(
       (key) =>
@@ -1087,17 +1096,21 @@ function SelectListBox({
 
 function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let ref = useRef<HTMLLIElement>(null);
-  let isDisabled = state.disabledKeys.has(item.key);
+  // The list keeps a disabled option focusable, so the selection manager no
+  // longer reports it as disabled.
+  let isDisabled = isItemDisabled(state, item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
 
+  // Not disabled for React Aria, which would drop focus from the option. The
+  // state refuses to select a disabled option, `useOptionOriginPress` ignores
+  // its press, and a pointer does not focus it.
   let { optionProps, isPressed, labelProps, descriptionProps } = useOption(
     {
       key: item.key,
-      isDisabled,
       isSelected,
       shouldSelectOnPressUp: true,
-      shouldFocusOnHover: true,
+      shouldFocusOnHover: !isDisabled,
       shouldUseVirtualFocus,
     },
     state,
@@ -1150,6 +1163,10 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         focusProps,
         filteredItemProps,
         keyboardProps,
+        // React Aria no longer marks a disabled option, which the list keeps
+        // focusable. Only the attribute: controls inside the option, such as a
+        // form or an action, keep working as they did.
+        { 'aria-disabled': isDisabled || undefined },
       )}
       ref={ref}
       mods={{

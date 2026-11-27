@@ -16,6 +16,12 @@ import type { TabContextMenu, TabPlacement, TabSize, TabType } from './types';
 export interface TabsContextValue {
   /** Tab list state from React Stately */
   state: TabListState<object>;
+  /**
+   * The view of `state` the tab list navigates: it has no disabled keys.
+   * React Aria names tabs and panels after it, so `useTab` and `useTabPanel`
+   * take it. Read disabled keys from `state`.
+   */
+  listState: TabListState<object>;
   /** Parent-level type default */
   type: TabType;
   /** Parent-level size default */

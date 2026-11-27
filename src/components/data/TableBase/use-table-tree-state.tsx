@@ -139,7 +139,10 @@ export function useTableTreeState<T>(
     expandedKeys: effectiveExpandedKeys,
     onExpandedChange: handleExpandedChange,
     disabledKeys,
-    disabledBehavior: 'all' as const,
+    // A disabled row stays focusable, as WAI-ARIA keeps a disabled row
+    // reachable; the table keeps it inert. Under `'all'` React Aria gave it no
+    // tab stop, so the arrow keys focused the treegrid in its place.
+    disabledBehavior: 'selection' as const,
     // Prevent `useTreeItem` from treating a row press as an implicit toggle.
     // Tables keep row activation and expansion as separate interactions.
     onAction: () => {},
@@ -147,7 +150,14 @@ export function useTableTreeState<T>(
   };
 
   const baseState = useTreeState<TableTreeNode<T>>(ariaProps);
-  const state = withGetChildren(baseState);
+  const state = {
+    ...withGetChildren(baseState),
+    // The chevron and the arrow keys toggle a row through here. A disabled
+    // row stays focusable, so this is where it stays inert.
+    toggleKey: (key: Key) => {
+      if (!baseState.disabledKeys.has(key)) baseState.toggleKey(key);
+    },
+  };
 
   const visibleNodes = Array.from(state.collection.getKeys(), (key) =>
     state.collection.getItem(key),

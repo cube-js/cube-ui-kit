@@ -50,6 +50,7 @@ import {
 } from '../../form/field-layout';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { rendersFieldChrome, wrapWithField } from '../../form/wrapper';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
@@ -1139,7 +1140,17 @@ function TagInput<T extends object>(
   // A locked chip stays put: no remove button, Delete or unpick.
   const isTagLocked = (key: string) => !!tagProps?.(key)?.isDisabled;
 
-  const disabledKeySet = new Set([...(disabledKeys ?? [])].map(String));
+  // The options `disabledKeys` lists, and the ones marked with their own
+  // `isDisabled`: never picked, however they are entered.
+  const optionKeys: Key[] = [];
+  collectVisibleKeys(collection, optionKeys);
+  const disabledKeySet = new Set([
+    ...[...(disabledKeys ?? [])].map(String),
+    ...optionKeys
+      .filter((key) => isItemDisabled({ collection }, key))
+      .map(String),
+  ]);
+  const isOptionDisabled = (key: Key) => disabledKeySet.has(String(key));
 
   // Called before the text changes (and the options with it) and when values
   // are added, while the options still hold the labels.
@@ -1217,14 +1228,12 @@ function TagInput<T extends object>(
     });
   };
 
+  // A disabled option is listed, and the arrow keys reach it: WAI-ARIA keeps
+  // it reachable, so a screen reader user hears why it is unavailable.
   const visibleOptionKeys: Key[] = [];
 
   if (hasOptions) {
-    collectVisibleKeys(
-      optionFilterFn(collection),
-      visibleOptionKeys,
-      disabledKeys ? new Set(disabledKeys) : undefined,
-    );
+    collectVisibleKeys(optionFilterFn(collection), visibleOptionKeys);
   }
 
   // Custom values unpicked in the list during this visit. They stay listed,
@@ -1297,8 +1306,10 @@ function TagInput<T extends object>(
 
   if (customTerm) visibleTargetKeys.push(customTerm);
 
+  // The row the list highlights on its own, so that Enter picks it: never a
+  // disabled option.
   const preferredOptionKey = getPreferredRowKey(
-    visibleTargetKeys,
+    visibleTargetKeys.filter((key) => !isOptionDisabled(key)),
     getExactRowKey(collection, {
       term,
       termOptionKey,
@@ -1448,10 +1459,13 @@ function TagInput<T extends object>(
   });
 
   // Focusing the row itself tells the tag group which chip is focused, as a
-  // click would.
-  const focusLastTag = useEvent(() => {
+  // click would. Backspace goes to the last chip it can remove; the arrow,
+  // which only navigates, to the last chip, a locked one included.
+  const focusLastTag = useEvent((includeLocked: boolean) => {
     const rows = tagListRef.current?.querySelectorAll<HTMLElement>(
-      '[role="row"]:not([aria-disabled="true"])',
+      includeLocked
+        ? '[role="row"]'
+        : '[role="row"]:not([aria-disabled="true"])',
     );
 
     rows?.[rows.length - 1]?.focus();
@@ -1465,8 +1479,9 @@ function TagInput<T extends object>(
     const removed = new Set(keys);
     const next = uniqueValues.filter((value) => !removed.has(value));
 
-    // Focus leaves the list before the last chip it can land on unmounts under
-    // it; locked chips take no focus.
+    // Once no chip that can be removed is left, focus goes back to the input
+    // before the last one unmounts under it: the locked chips that remain take
+    // focus, but there is nothing left for Delete or Backspace to do there.
     if (!next.some((value) => !isTagLocked(value))) {
       inputRef.current?.focus();
     }
@@ -1608,7 +1623,7 @@ function TagInput<T extends object>(
     if (e.repeat) return;
 
     setIsPopoverOpen(false);
-    focusLastTag();
+    focusLastTag(e.key !== 'Backspace');
   });
 
   const handleEnterKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
@@ -1627,6 +1642,10 @@ function TagInput<T extends object>(
       e.preventDefault();
 
       const key = String(targetKey);
+
+      // A disabled option, or a locked value's, that the arrow keys reached:
+      // Enter neither picks nor unpicks it.
+      if (isOptionDisabled(key) || isTagLocked(key)) return;
 
       // Typed text means "add". An option that is already a chip is refused
       // as a duplicate and the text cleared, as a comma or blur would;
@@ -1708,10 +1727,11 @@ function TagInput<T extends object>(
       } else if ((e.key === 'Home' || e.key === 'End') && shouldShowPopover) {
         handleEdgeKey(e);
       } else if (
-        (e.key === 'Backspace'
-          ? !draft
-          : tagPlacement === 'inside' && isArrowPastStart(e, textDirection)) &&
-        uniqueValues.some((value) => !isTagLocked(value))
+        e.key === 'Backspace'
+          ? !draft && uniqueValues.some((value) => !isTagLocked(value))
+          : tagPlacement === 'inside' &&
+            isArrowPastStart(e, textDirection) &&
+            uniqueValues.length > 0
       ) {
         handleToTagsKey(e);
       } else if (e.key === 'Enter') {

@@ -1811,9 +1811,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       'data-disabled': isDisabled ? '' : undefined,
       role: 'row',
       // Only the resting row takes a tab stop; the rest are reached with the
-      // arrow keys. Off entirely when nothing on the row is operable.
+      // arrow keys, a disabled one included. Off entirely when nothing on the
+      // row is operable.
       tabIndex: hasFlatRowNavigation
-        ? !isDisabled && rowKey === tabStopRow?.key
+        ? rowKey === tabStopRow?.key
           ? 0
           : -1
         : undefined,
@@ -2153,11 +2154,12 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     isContextMenu: boolean;
   } | null>(null);
 
+  // A disabled row is focusable, as WAI-ARIA keeps a disabled row reachable;
+  // the row action, link and menu guards keep it inert.
   function focusableRowFrom(index: number, direction: number) {
     for (; index >= 0 && index < rows.length; index += direction) {
       const row = rows[index];
       const key = bodyRowKey(row, index);
-      if (selection?.isRowDisabled(key)) continue;
       if (
         isReorderable ||
         onRowAction != null ||
@@ -2441,8 +2443,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     )
       return;
 
-    if (origin.target?.isConnected && !selection?.isRowDisabled(origin.key))
-      origin.target.focus();
+    if (origin.target?.isConnected) origin.target.focus();
     else {
       const currentIndex = rowIndexForKey(origin.key);
       const index =
@@ -2954,11 +2955,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         onFocusCapture={(event) => {
           if (!hasFlatRowNavigation) return;
           const found = rowFromEvent(event.target);
-          if (
-            !found ||
-            selection?.isRowDisabled(found.key) ||
-            focusableRowFrom(found.index, 1)?.key !== found.key
-          ) {
+          if (!found || focusableRowFrom(found.index, 1)?.key !== found.key) {
             pendingRowFocus.current = null;
             ownedRow.current = null;
             return;

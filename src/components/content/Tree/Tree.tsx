@@ -10,6 +10,7 @@ import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { extractStyles } from '../../../utils/styles';
+import { getDisabledBehavior } from '../../shared/disabled-behavior';
 import { getLongestRows, rangeWithRows } from '../../shared/virtual-width';
 
 import { TreeElement, TreeScrollContainer, TreeSizer } from './styled';
@@ -294,7 +295,8 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       defaultExpandedKeys: effectiveDefaultExpandedKeys,
       onExpandedChange: handleExpandedChange,
       disabledKeys,
-      disabledBehavior: 'all' as const,
+      // `TreeNode` keeps a disabled row inert.
+      disabledBehavior: getDisabledBehavior(isDisabled),
       items: treeData,
       children: renderItem as any,
       'aria-label': treeLabel,
@@ -302,7 +304,9 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       // outside the tree point at a row with `aria-activedescendant`.
       id,
       onAction: onRowAction
-        ? (key: Key) => onRowAction(String(key))
+        ? (key: Key) => {
+            if (!disabledKeys.includes(String(key))) onRowAction(String(key));
+          }
         : undefined,
     }),
     [
@@ -315,6 +319,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       effectiveDefaultExpandedKeys,
       handleExpandedChange,
       disabledKeys,
+      isDisabled,
       treeData,
       treeLabel,
       id,
@@ -324,21 +329,27 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
 
   const baseState = useTreeState<CubeTreeNodeData>(ariaProps);
 
-  // The legacy `TreeCollection` from `useTreeState` lacks `getChildren`,
-  // but `useTree` calls it for nested rows. Derive a patched state.
-  // TODO: Remove this patch when upgrading to a react-stately version
-  // that ships `getChildren` on TreeCollection natively.
   const state = useMemo(() => {
+    // React Aria toggles a row from its expand keys, its chevron and, with no
+    // row action or selection, a press. A disabled row stays focusable
+    // (`disabledBehavior: 'selection'`), so this is where it stays inert.
+    const toggleKey = (key: Key) => {
+      if (!baseState.disabledKeys.has(key)) baseState.toggleKey(key);
+    };
     const collection = baseState.collection;
     if (typeof (collection as any).getChildren === 'function') {
-      return baseState;
+      return { ...baseState, toggleKey };
     }
+    // The legacy `TreeCollection` from `useTreeState` lacks `getChildren`,
+    // but `useTree` calls it for nested rows.
+    // TODO: Remove this patch when upgrading to a react-stately version
+    // that ships `getChildren` on TreeCollection natively.
     const patched = Object.create(collection);
     patched.getChildren = (key: Key): Iterable<Node<CubeTreeNodeData>> => {
       const node = collection.getItem(key);
       return node ? Array.from(node.childNodes) : [];
     };
-    return { ...baseState, collection: patched };
+    return { ...baseState, collection: patched, toggleKey };
   }, [baseState]);
 
   const { gridProps } = useTree(ariaProps, state, treeRef);

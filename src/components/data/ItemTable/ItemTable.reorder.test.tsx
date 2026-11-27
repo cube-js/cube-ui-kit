@@ -1,6 +1,6 @@
 import { fireEvent } from '@testing-library/react';
 
-import { renderWithRoot, screen, waitFor } from '../../../test';
+import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 
 import { ItemTable } from './ItemTable';
 
@@ -143,6 +143,39 @@ describe('ItemTable row reordering', () => {
 
       expect(rows().filter((row) => row.tabIndex === 0)).toHaveLength(0);
     });
+  });
+
+  // The keyboard reaches a disabled row, which is inert: it is neither dragged
+  // nor moved with Alt and an arrow.
+  it('never drags or moves a disabled row', async () => {
+    const onReorder = vi.fn();
+
+    renderWithRoot(
+      <ItemTable
+        isReorderable
+        data={ROWS}
+        columns={COLUMNS}
+        disabledKeys={['r1']}
+        onReorder={onReorder}
+      />,
+    );
+
+    expect(rows()[0]).toHaveAttribute('draggable', 'true');
+    expect(rows()[1]).not.toHaveAttribute('draggable');
+
+    rows()[0].focus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(rows()[1]).toHaveFocus();
+    await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    expect(onReorder).not.toHaveBeenCalled();
+
+    // The same keys move a row you can use.
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    expect(onReorder).toHaveBeenCalledExactlyOnceWith(
+      ['r0', 'r1', 'r3', 'r2'],
+      expect.anything(),
+    );
   });
 
   it('reports the whole order, not just the moved row', () => {

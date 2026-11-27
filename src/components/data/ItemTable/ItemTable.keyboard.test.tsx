@@ -8,6 +8,7 @@ import {
   waitFor,
   within,
 } from '../../../test';
+import { startScreenReader } from '../../../test/screen-reader';
 import { Menu } from '../../actions/Menu/Menu';
 
 import { ItemTable } from './ItemTable';
@@ -45,20 +46,43 @@ function Fixture(props: Partial<CubeItemTableProps<Row>>) {
 }
 
 describe('ItemTable flat row keyboard interaction', () => {
-  it('enters actionable rows with Tab and traverses enabled logical rows', async () => {
-    renderWithRoot(<Fixture onRowAction={() => {}} disabledKeys={['r1']} />);
+  // WAI-ARIA keeps a disabled row reachable, so a keyboard or screen reader
+  // user hears it and that it is disabled. It stays inert.
+  it('enters actionable rows with Tab and traverses logical rows, a disabled one included', async () => {
+    const onRowAction = vi.fn();
+    renderWithRoot(<Fixture onRowAction={onRowAction} disabledKeys={['r1']} />);
     await userEvent.tab();
     expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
     await userEvent.tab();
     expect(row('r0')).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
+    expect(row('r1')).toHaveFocus();
+    expect(row('r1')).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.keyboard('{Enter}');
+    expect(onRowAction).not.toHaveBeenCalled();
+    await userEvent.keyboard('{ArrowDown}');
     expect(row('r2')).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    expect(row('r1')).toHaveFocus();
     await userEvent.keyboard('{End}');
     expect(row('r3')).toHaveFocus();
     await userEvent.keyboard('{Home}');
     expect(row('r0')).toHaveFocus();
     await userEvent.tab();
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+
+  it('announces a disabled row when the arrow keys reach it', async () => {
+    renderWithRoot(<Fixture onRowAction={() => {}} disabledKeys={['r1']} />);
+    const reader = await startScreenReader();
+
+    await act(async () => row('r0').focus());
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(async () =>
+      expect(await reader.lastSpokenPhrase()).toMatch(
+        /^row\b.*Row 1.*disabled/,
+      ),
+    );
   });
 
   it('enters the body from a sortable header without sorting it', async () => {
@@ -183,11 +207,13 @@ describe('ItemTable flat row keyboard interaction', () => {
     await userEvent.keyboard('{ArrowDown}{Enter}');
     expect(row('r1')).toHaveFocus();
     expect(onRowAction).toHaveBeenCalledWith(ROWS[1], 'r1');
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    expect(row('r2')).toHaveFocus();
+    expect(onRowAction).toHaveBeenCalledTimes(1);
     await userEvent.keyboard('{ArrowDown}');
     expect(row('r3')).toHaveFocus();
     await userEvent.click(within(row('r2')).getByText('Row 2'));
     expect(onRowAction).toHaveBeenCalledTimes(1);
-    expect(row('r2').tabIndex).toBe(-1);
   });
 
   it('keeps focus by key when rows move and chooses a neighbor when that row disappears', async () => {

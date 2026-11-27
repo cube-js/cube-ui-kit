@@ -153,14 +153,18 @@ function filterTreeData(
   return { nodes: kept, expandKeys };
 }
 
-/** The rows a keyboard can reach, top to bottom. */
+/**
+ * The rows a keyboard can reach, top to bottom. A disabled row is one of
+ * them: WAI-ARIA keeps a disabled tree item reachable, so a keyboard or
+ * screen reader user hears it and why it is unavailable. It stays inert.
+ */
 function getNavigableRows(
   nodes: CubeTreeNodeData[],
   expanded: Set<string>,
   out: CubeTreeNodeData[] = [],
 ): CubeTreeNodeData[] {
   for (const node of nodes) {
-    if (!node.isDisabled) out.push(node);
+    out.push(node);
     if (node.children && expanded.has(node.key)) {
       getNavigableRows(node.children, expanded, out);
     }
@@ -280,13 +284,18 @@ export function FilterTree(props: FilterTreeProps) {
   // hid falls back to the value's first row in view, then the first row. In
   // single mode a search falls back to its first leaf before the first row,
   // so Enter picks a match rather than closing the folder above it.
+  // Every fallback is a row the user can use, or none: the arrow keys still
+  // reach a disabled one.
   const [storedActiveKey, setActiveKey] = useState<string | null>(null);
+  const usableRows = rows.filter((row) => !row.isDisabled);
   const activeKey =
     storedActiveKey != null && rowKeys.includes(storedActiveKey)
       ? storedActiveKey
-      : (rowKeys.find(isValue) ??
-        (isSingle && isSearching ? rows.find(isTreeLeaf)?.key : undefined) ??
-        rowKeys[0] ??
+      : (usableRows.find((row) => isValue(row.key))?.key ??
+        (isSingle && isSearching
+          ? usableRows.find(isTreeLeaf)?.key
+          : undefined) ??
+        usableRows[0]?.key ??
         null);
 
   // Whether the node could be toggled: one with its checkbox disabled or
@@ -363,25 +372,29 @@ export function FilterTree(props: FilterTreeProps) {
     if (!atEdge) return false;
 
     // The same rule a press follows in single mode: an empty folder opens too.
+    // A disabled row neither opens nor closes, as in `Tree`.
     const hasChildren = !isTreeLeaf(row);
     const isExpanded = expandedSet.has(row.key);
 
     if (direction === 'open') {
       if (!hasChildren) return false;
+      if (row.isDisabled && !isExpanded) return true;
       if (!isExpanded) {
         setExpanded([...expanded, row.key]);
       } else {
-        moveActive(row.children?.find((child) => !child.isDisabled)?.key);
+        moveActive(row.children?.[0]?.key);
       }
       return true;
     }
 
     if (hasChildren && isExpanded) {
-      setExpanded(expanded.filter((key) => key !== row.key));
+      if (!row.isDisabled) {
+        setExpanded(expanded.filter((key) => key !== row.key));
+      }
       return true;
     }
 
-    // The nearest ancestor the keyboard can reach; a disabled one is skipped.
+    // The nearest ancestor in view.
     let parentKey = index.parentOf.get(row.key);
     while (parentKey != null && !rowKeys.includes(parentKey)) {
       parentKey = index.parentOf.get(parentKey);
@@ -424,6 +437,9 @@ export function FilterTree(props: FilterTreeProps) {
         case 'Enter':
           if (activeKey == null) break;
           e.preventDefault();
+          // A disabled row the arrow keys reached is neither picked nor
+          // checked, and the popover stays open.
+          if (getActiveRow()?.isDisabled) break;
           if (isSingle) {
             pick(activeKey);
           } else if (toggleActive(activeKey)) {
@@ -433,6 +449,7 @@ export function FilterTree(props: FilterTreeProps) {
         case ' ':
           if (activeKey == null || searchValue) break;
           e.preventDefault();
+          if (getActiveRow()?.isDisabled) break;
           if (isSingle) {
             pick(activeKey);
           } else {

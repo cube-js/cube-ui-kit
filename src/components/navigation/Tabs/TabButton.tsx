@@ -224,6 +224,7 @@ export function TabButton({
   // Get shared context
   const {
     state,
+    listState,
     type,
     size,
     placement,
@@ -246,7 +247,7 @@ export function TabButton({
   const ref = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inlineInputRef = useRef<CubeInlineInputRef>(null);
-  const { tabProps: ariaTabProps } = useTab({ key: item.key }, state, ref);
+  const { tabProps: ariaTabProps } = useTab({ key: item.key }, listState, ref);
   // React Aria points the selected tab at `<id>-tabpanel-<key>` whether or not
   // a panel renders. Navigation-only tabs have none, so the link would dangle.
   const { 'aria-controls': _ariaControls, ...tabPropsWithoutControls } =
@@ -701,6 +702,8 @@ export function TabButton({
             mods={mods}
             isSelected={isActive}
             isDisabled={isDisabled}
+            // The arrow keys reach a disabled tab, so it keeps its focus.
+            keepFocusWhenDisabled
             size={itemSize}
             type={itemType}
             shape={itemShape}

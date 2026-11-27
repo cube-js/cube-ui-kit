@@ -82,6 +82,10 @@ import {
   getValidationTheme,
 } from '../../form/validation/resolve-validation-props';
 import { wrapWithField } from '../../form/wrapper';
+import {
+  getDisabledBehavior,
+  isItemDisabled,
+} from '../../shared/disabled-behavior';
 import { createMockDragState } from '../../shared/DraggableCollection';
 import {
   getLongestRows,
@@ -92,6 +96,7 @@ import { useOptionOriginPress } from '../option-origin-press';
 
 import { DraggableListBox } from './DraggableListBox';
 import { EMPTY_ROW_STYLES } from './empty-row';
+import { useDisabledFocusReset } from './use-disabled-focus-reset';
 
 import type { SelectionManager } from '@react-stately/selection';
 import type {
@@ -1032,7 +1037,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const listStateProps: ListProps<T> = {
     ...props,
     onSelectionChange: wrappedOnSelectionChange,
-    disabledBehavior: 'all',
+    // The option keeps a disabled option inert.
+    disabledBehavior: getDisabledBehavior(isDisabled, props.selectionBehavior),
     filter,
     selectionMode: props.selectionMode || 'single',
     allowDuplicateSelectionEvents,
@@ -1058,6 +1064,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   }
 
   const listState = getValueSelectionState(useListState(listStateProps));
+  useDisabledFocusReset(listState);
 
   const hasSelectAll = !!showSelectAll && props.selectionMode === 'multiple';
 
@@ -1846,7 +1853,9 @@ function Option({
     virtualRef?.(localRef.current);
   });
 
-  const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
+  // The list keeps a disabled option focusable, so the selection manager no
+  // longer reports it as disabled.
+  const isDisabled = isParentDisabled || isItemDisabled(state, item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
 
   // Drag-and-drop support — only enable when both states are provided
@@ -1868,20 +1877,23 @@ function Option({
 
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
+  // Only a disabled list is disabled for React Aria, which would drop focus
+  // from the option. `Item` keeps a disabled option inert, and a pointer does
+  // not focus it.
   const { optionProps, isPressed, labelProps, descriptionProps } = useOption(
     {
       key: item.key,
-      isDisabled,
+      isDisabled: isParentDisabled,
       isSelected,
       shouldSelectOnPressUp: true,
-      shouldFocusOnHover: focusOnHover,
+      shouldFocusOnHover: focusOnHover && !isDisabled,
     },
     state,
     localRef,
   );
 
   const isFocused =
-    !isDisabled &&
+    !isParentDisabled &&
     isListFocused &&
     state.selectionManager.focusedKey === item.key;
 
@@ -2017,7 +2029,7 @@ function Option({
           onPointerUp: originPress.wrapPointerUp(onPointerUp),
           tabIndex,
           'aria-selected': ariaSelected,
-          'aria-disabled': ariaDisabled,
+          'aria-disabled': isDisabled || ariaDisabled,
           role,
         },
         effectiveDragProps,

@@ -645,7 +645,7 @@ The Picker component is built with React Aria hooks and provides comprehensive a
 
 - **`Tab`** — Moves focus to/from the trigger button
 - **`Space`** or **`Enter`** — Opens the dropdown popover when focused on trigger
-- **`Arrow Up`** or **`Arrow Down`** — Opens the popover when closed; navigates through items when open
+- **`Arrow Up`** or **`Arrow Down`** — Opens the popover when closed; navigates through items when open. A disabled option is reached too, as WAI-ARIA keeps it focusable, so a screen reader says why it is unavailable; Enter ignores it, and the list never highlights one on its own
 - **`Escape`** — Closes the popover and returns focus to trigger
 - **`Space`** or **`Enter`** — Selects the focused item (single mode closes popover automatically)
 

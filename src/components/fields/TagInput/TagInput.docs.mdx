@@ -79,7 +79,7 @@ A multi-value field. The user types a value into a single-line input and commits
 
 **maxTags** - A hard limit on the number of values. Past it, typed, pasted and picked values are refused with a message and stay in the input, while values up to the limit are still added. For a limit that only flags the field, use a `rules` entry instead.
 
-**tagProps** - Called per value. Return a theme, an icon or `qa` for the chip. A string `children` replaces the chip's text and also names the value in the input's description and in the "Added"/"Removed" announcements, for values whose label does not come from the options. `isDisabled: true` locks the chip: it has no remove button, the keyboard skips it, and its option cannot be unpicked. An invalid chip stays in the danger theme whatever theme it asks for.
+**tagProps** - Called per value. Return a theme, an icon or `qa` for the chip. A string `children` replaces the chip's text and also names the value in the input's description and in the "Added"/"Removed" announcements, for values whose label does not come from the options. `isDisabled: true` locks the chip: it has no remove button, Delete and Backspace leave it, and its option cannot be unpicked. The arrow keys still reach it, so a screen reader says it is disabled. An invalid chip stays in the danger theme whatever theme it asks for.
 
 **tagPlacement** - `below` is the default and the preferred layout: the input is a fixed single line that never moves, stays level with a side label, and keeps the arrow keys for the suggestions. `inside` puts the chips in the input box for a field that has no room below it. The chips and the text share one wrapping row and the box grows a row at a time; one row is exactly the input's height. The text is as wide as what is typed, never under 6x: text that does not fit after the chips moves to a row of its own, and is cut only past the full width. The placeholder does not size the text, so a long one ends in an ellipsis instead of taking a row (`hidePlaceholderWithTags` hides it once there is a value). The suffix (validation icon, clear button, popover trigger) rides on the end of the text, so the two always wrap together. A long value shrinks to the box's width and ends in an ellipsis. Inside, the arrow keys cross between the text and the chips (see [Keyboard Navigation](#keyboard-navigation)). Moving to the chips closes the popover in either placement, by keyboard or with a press on a chip or its remove button, and a press keeps the typed text. Typed text sizes itself with `field-sizing`; a browser without it keeps a fixed share of the row for the text, which scrolls. Right-to-left layouts are not supported yet, as in the rest of UI Kit.
 
@@ -360,7 +360,7 @@ Tab goes from the input to the chips. Backspace in the empty input does too, lan
 
 <Story of={TagInputStories.LockedAndClearable} />
 
-A locked chip has no remove button and the keyboard skips it. The clear button inside the input clears the whole field: the typed text and every chip but the locked ones. It shows while there is something to clear, and calls `onChange` once with what is left. `Escape` clears only the typed text, so a stray key press never loses the values.
+A locked chip has no remove button. The arrow keys stop on it, so a screen reader announces it as disabled, but `Backspace` and `Delete` never remove it. The clear button inside the input clears the whole field: the typed text and every chip but the locked ones. It shows while there is something to clear, and calls `onChange` once with what is left. `Escape` clears only the typed text, so a stray key press never loses the values.
 
 ```jsx
 <TagInput
@@ -458,12 +458,12 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 - `Enter` - Commits the typed text. With the popover open, toggles the focused option, the one `aria-activedescendant` announces; with text typed, an option that is already a chip is refused as a duplicate rather than removed, and the text is cleared. Never submits a surrounding form, even with nothing typed, so one Enter too many after the last value does not send a half-filled dialog
 - `,` (or another delimiter) - Commits the text before the caret and keeps the rest typed
 - `Escape` - Closes the popover, or clears the typed text when it is closed. Either way it clears a message about the text, even once the input is empty
-- `Backspace` in the empty input - Moves focus to the last chip without removing it, and closes the popover. A Backspace held down to clear the text stops at the empty input
+- `Backspace` in the empty input - Moves focus to the last chip you can remove, without removing it, and closes the popover. A Backspace held down to clear the text stops at the empty input
 - `ArrowDown` / `ArrowUp` - Opens the popover or moves through the options. On typed text that matches no option, opens it with every option
 - `Home` / `End` - Moves to the first or last option while the popover is open
-- `ArrowLeft` / `ArrowRight` - Moves between chips. Locked chips are skipped
+- `ArrowLeft` / `ArrowRight` - Moves between chips, locked ones included. A locked chip is announced as disabled and is never removed
 - `ArrowLeft` at the start of the text, with `tagPlacement="inside"` - Moves focus to the last chip, as Backspace in the empty input does. `ArrowRight` on the last chip moves back to the text, with the caret at its start, and `ArrowLeft` on the first chip stays there instead of wrapping round. A modified arrow (Shift, Alt, Ctrl, Cmd) stays text editing. Below the box, the arrows in the input move the caret only
-- `Delete` / `Backspace` on a chip - Removes it and focuses its neighbour, or the input when no chip is left. Holding the key down removes one chip, not the whole row
+- `Delete` / `Backspace` on a chip - Removes it and focuses its neighbour, or the input when no chip that can be removed is left. Holding the key down removes one chip, not the whole row
 - `Escape` on a chip - Moves focus back to the input
 - Typing on a chip - Moves focus back to the input, where the typed character lands
 
@@ -476,7 +476,7 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 - The chips, the popover trigger, the clear button and the options listbox are named after the field, however the field is named. With a visible label or `aria-labelledby`, they point at the same elements: the grid reads "Selected values" followed by the field's name, the trigger "Show options" followed by it, and the listbox the field's name alone. An `aria-label` has no element to point at, so its text is joined in: "Selected values, …", "Show options, …", "Clear all, …", and the listbox takes the `aria-label`. Next to a visible label or `aria-labelledby` it comes first, as it does on the input itself: with `aria-label="Values"` and `aria-labelledby` pointing at "Primary key", the input reads "Values Primary key" and the grid "Selected values, Values Primary key". Each row of a table whose fields are labelled by a header and a row cell so gets its own names
 - Each chip is a row, and its remove button reads "Remove" followed by the chip's label. An invalid chip is described by its validation message, not only by its color
 - A rejected value marks the input invalid. With a visible label its message is shown under the field and announced as an alert, again for each new attempt. Without one, the message is announced through the live region
-- A disabled field's chips are out of the Tab order, and so are locked chips. A read-only field's chips stay focusable, without remove buttons
+- A disabled field's chips are out of the Tab order. A locked chip is reached by the arrow keys like any other and announced as disabled. A read-only field's chips stay focusable, without remove buttons
 - The clear button is named "Clear all" followed by the field's name. It announces the removed values as "Removed …", as a chip's remove button does
 
 ### ARIA Properties

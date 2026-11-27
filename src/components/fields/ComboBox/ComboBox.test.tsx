@@ -345,7 +345,7 @@ describe('<ComboBox />', () => {
       expect(queryByRole('listbox')).not.toBeInTheDocument();
     });
 
-    // Test that disabled items are skipped
+    // A disabled option is listed, marked disabled
     await userEvent.clear(combobox);
     await userEvent.type(combobox, 'o');
 
@@ -354,6 +354,138 @@ describe('<ComboBox />', () => {
       // Orange should be disabled
       expect(options[0]).toHaveAttribute('aria-disabled', 'true');
     });
+  });
+
+  // WAI-ARIA keeps a disabled option reachable, so a keyboard or screen reader
+  // user hears it and why it is unavailable. It stays inert.
+  it('highlights a disabled option with the arrow keys and never picks it', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole, getAllByRole } = renderWithRoot(
+      <ComboBox
+        label="Fruit"
+        disabledKeys={['banana']}
+        onSelectionChange={onSelectionChange}
+      >
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+    const active = () => getActiveDescendant(combobox)?.textContent;
+
+    await act(async () => combobox.focus());
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(getByRole('listbox')).toBeInTheDocument());
+    await waitFor(() => expect(active()).toBe('Apple'));
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(active()).toBe('Banana'));
+    expect(getActiveDescendant(combobox)).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+
+    await userEvent.keyboard('{Enter}');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(combobox).toHaveValue('');
+    expect(getByRole('listbox')).toBeInTheDocument();
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(active()).toBe('Cherry'));
+    await userEvent.keyboard('{ArrowUp}');
+    await waitFor(() => expect(active()).toBe('Banana'));
+    expect(getAllByRole('option')).toHaveLength(3);
+  });
+
+  it('keeps highlighting the first option it can pick as the text changes', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        label="Fruit"
+        disabledKeys={['banana']}
+        onSelectionChange={onSelectionChange}
+      >
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="blueberry">Blueberry</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await userEvent.type(combobox, 'b');
+    await userEvent.keyboard('{Enter}');
+    expect(onSelectionChange).toHaveBeenCalledWith('blueberry');
+  });
+
+  // React Stately moves a highlight the text filters out onto the next option,
+  // disabled or not. The list never highlights a disabled option on its own.
+  it('highlights nothing once the text leaves only disabled options', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="Color" disabledKeys={['black']}>
+        <ComboBox.Item key="blue">Blue</ComboBox.Item>
+        <ComboBox.Item key="black">Black</ComboBox.Item>
+        <ComboBox.Item key="green">Green</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await userEvent.type(combobox, 'bl');
+    await waitFor(() =>
+      expect(getActiveDescendant(combobox)).toHaveTextContent('Blue'),
+    );
+
+    await userEvent.type(combobox, 'a');
+    await waitFor(() =>
+      expect(
+        getByRole('listbox').querySelectorAll('[role="option"]'),
+      ).toHaveLength(1),
+    );
+    // The list highlights a couple of frames after the text changes.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+    expect(getActiveDescendant(combobox)).toBeNull();
+  });
+
+  // The list highlights a couple of frames after the text changes. A disabled
+  // option the arrow keys reach in the meantime stays highlighted, and the
+  // input keeps pointing at it.
+  it('keeps a disabled option the arrow keys reach while the list settles', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="Color" disabledKeys={['black']}>
+        <ComboBox.Item key="blue">Blue</ComboBox.Item>
+        <ComboBox.Item key="black">Black</ComboBox.Item>
+        <ComboBox.Item key="green">Green</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await userEvent.type(combobox, 'bla');
+    await userEvent.keyboard('{ArrowDown}');
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+    const black = getByRole('option', { name: 'Black' });
+    expect(black).toHaveAttribute('data-focused');
+    expect(getActiveDescendant(combobox)).toBe(black);
+  });
+
+  // A selection that became disabled is not where the list opens.
+  it('opens past a disabled selected option', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        label="Color"
+        defaultSelectedKey="black"
+        disabledKeys={['black']}
+      >
+        <ComboBox.Item key="black">Black</ComboBox.Item>
+        <ComboBox.Item key="blue">Blue</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await act(async () => combobox.focus());
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(getActiveDescendant(combobox)).toHaveTextContent('Blue'),
+    );
   });
 
   it('should handle clear functionality', async () => {
@@ -1155,6 +1287,37 @@ describe('<ComboBox />', () => {
 
       expect(onSelectionChange).not.toHaveBeenCalled();
       await waitFor(() => expect(combobox).toHaveValue('Rita Added'));
+    });
+
+    // An item disabled with its own `isDisabled` is the same as one in
+    // `disabledKeys`: typing its label and leaving selects nothing.
+    it('restores the selected label after typing the label of an item with its own isDisabled', async () => {
+      const onSelectionChange = vi.fn();
+      const onBlur = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          label="Person"
+          defaultSelectedKey="mark"
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        >
+          <ComboBox.Item key="mark">Mark</ComboBox.Item>
+          <ComboBox.Item key="rita" isDisabled>
+            Rita
+          </ComboBox.Item>
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.clear(combobox);
+      await userEvent.type(combobox, 'Rita');
+      await act(async () => {
+        combobox.blur();
+      });
+      await waitFor(() => expect(onBlur).toHaveBeenCalled());
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      await waitFor(() => expect(combobox).toHaveValue('Mark'));
     });
   });
 

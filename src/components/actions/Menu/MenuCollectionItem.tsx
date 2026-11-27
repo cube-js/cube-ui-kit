@@ -11,7 +11,6 @@ import {
 import { parseTo } from '../use-action';
 
 import type { Key, LinkDOMProps } from '@react-types/shared';
-import type { TreeState } from 'react-stately';
 
 export interface CubeMenuItemProps<T>
   extends CubeCollectionItemBaseProps<T>, LinkDOMProps {
@@ -26,19 +25,6 @@ export const CURRENT_DOCUMENT_LINK = Symbol('Menu.Item current document');
 
 export function getMenuItemReactKey(key: Key): string {
   return `${typeof key}:${String(key)}`;
-}
-
-/**
- * Whether a menu item is disabled. Menus build their state with
- * `disabledBehavior: 'selection'`, which keeps a disabled item focusable — as
- * WAI-ARIA menus do, so a keyboard user reaches it and hears why it is
- * unavailable — and so the selection manager no longer reports it as disabled.
- */
-export function isMenuItemDisabled<T>(state: TreeState<T>, key: Key): boolean {
-  return (
-    state.disabledKeys.has(key) ||
-    !!state.collection.getItem(key)?.props?.isDisabled
-  );
 }
 
 function MenuCollectionItem<T>(

@@ -7,6 +7,7 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
+import { startScreenReader } from '../../../test/screen-reader';
 import { Menu } from '../../actions/Menu';
 
 import { Tab, Tabs } from './Tabs';
@@ -322,34 +323,140 @@ describe('<Tabs />', () => {
       );
     });
 
-    it('should skip disabled tabs during keyboard navigation', async () => {
+    // WAI-ARIA keeps a disabled tab focusable, so a keyboard user reaches it
+    // and hears why it is unavailable. Focusing it must not activate it.
+    it.each([
+      ['without a tooltip', undefined],
+      ['with a tooltip', 'Locked'],
+    ])(
+      'stops on a disabled tab %s without activating it',
+      async (_, tooltip) => {
+        const onChange = vi.fn();
+        const { getByRole, getByText, queryByText } = renderWithRoot(
+          <Tabs defaultActiveKey="tab1" onChange={onChange}>
+            <Tab key="tab1" title="Tab 1">
+              Content 1
+            </Tab>
+            <Tab key="tab2" isDisabled tooltip={tooltip} title="Tab 2">
+              Content 2
+            </Tab>
+            <Tab key="tab3" title="Tab 3">
+              Content 3
+            </Tab>
+          </Tabs>,
+        );
+
+        const tab1 = getByRole('tab', { name: 'Tab 1' });
+        const tab2 = getByRole('tab', { name: 'Tab 2' });
+        const tab3 = getByRole('tab', { name: 'Tab 3' });
+
+        await act(async () => {
+          tab1.focus();
+        });
+
+        await userEvent.keyboard('{ArrowRight}');
+        await waitFor(() => expect(tab2).toHaveFocus());
+        expect(tab2).toHaveAttribute('aria-disabled', 'true');
+        expect(tab1).toHaveAttribute('aria-selected', 'true');
+        expect(getByText('Content 1')).toBeInTheDocument();
+
+        await userEvent.keyboard('{Enter}');
+        await userEvent.keyboard(' ');
+        expect(tab1).toHaveAttribute('aria-selected', 'true');
+        expect(queryByText('Content 2')).not.toBeInTheDocument();
+
+        await userEvent.keyboard('{ArrowRight}');
+        await waitFor(() => expect(tab3).toHaveFocus());
+        expect(tab3).toHaveAttribute('aria-selected', 'true');
+
+        await userEvent.keyboard('{ArrowLeft}');
+        await waitFor(() => expect(tab2).toHaveFocus());
+        expect(tab3).toHaveAttribute('aria-selected', 'true');
+        expect(onChange.mock.calls).toEqual([['tab3']]);
+      },
+    );
+
+    // Focus moved to a tab by code, as when a menu or an inline edit hands it
+    // back, is not the arrow keys choosing it: the tab stays inactive.
+    it('keeps a tab inactive when code moves focus to it', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1" onChange={onChange}>
+          <Tab key="tab1" title="Tab 1" />
+          <Tab key="tab2" title="Tab 2" />
+        </Tabs>,
+      );
+      const tab2 = getByRole('tab', { name: 'Tab 2' });
+
+      await userEvent.tab();
+      await act(async () => tab2.focus());
+      expect(tab2).toHaveAttribute('aria-selected', 'false');
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('announces a disabled tab when the arrow keys reach it', async () => {
       const { getByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1">
-          <Tab key="tab1" title="Tab 1">
-            Content 1
-          </Tab>
-          <Tab key="tab2" isDisabled title="Tab 2">
-            Content 2
-          </Tab>
-          <Tab key="tab3" title="Tab 3">
-            Content 3
-          </Tab>
+          <Tab key="tab1" title="Tab 1" />
+          <Tab key="tab2" isDisabled title="Tab 2" />
+          <Tab key="tab3" title="Tab 3" />
+        </Tabs>,
+      );
+      const reader = await startScreenReader();
+
+      await act(async () => getByRole('tab', { name: 'Tab 1' }).focus());
+      await userEvent.keyboard('{ArrowRight}');
+      await waitFor(async () =>
+        expect(await reader.lastSpokenPhrase()).toMatch(
+          /^tab, Tab 2, .*disabled/,
+        ),
+      );
+    });
+
+    it('never drags or moves a disabled tab', async () => {
+      const onReorder = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Tabs isReorderable defaultActiveKey="tab1" onReorder={onReorder}>
+          <Tab key="tab1" title="Tab 1" />
+          <Tab key="tab2" title="Tab 2" isDisabled />
+          <Tab key="tab3" title="Tab 3" />
+        </Tabs>,
+      );
+      const tab2 = getByRole('tab', { name: 'Tab 2' });
+
+      expect(
+        getByRole('tab', { name: 'Tab 1' }).closest('[draggable="true"]'),
+      ).not.toBeNull();
+      expect(tab2.closest('[draggable="true"]')).toBeNull();
+
+      await act(async () => getByRole('tab', { name: 'Tab 1' }).focus());
+      await userEvent.keyboard('{ArrowRight}');
+      expect(tab2).toHaveFocus();
+
+      await userEvent.keyboard('{Alt>}{ArrowRight}{/Alt}');
+      expect(onReorder).not.toHaveBeenCalled();
+    });
+
+    it('lists a disabled tab as a disabled option in the tab picker', async () => {
+      const onChange = vi.fn();
+      const { getByRole, findByRole } = renderWithRoot(
+        <Tabs showTabPicker defaultActiveKey="tab1" onChange={onChange}>
+          <Tab key="tab1" title="Tab 1" />
+          <Tab key="tab2" isDisabled title="Tab 2" />
+          <Tab key="tab3" title="Tab 3" />
         </Tabs>,
       );
 
-      const tab1 = getByRole('tab', { name: 'Tab 1' });
+      await userEvent.click(getByRole('button', { name: 'Select tab' }));
+      const option = await findByRole('option', { name: 'Tab 2' });
+      expect(option).toHaveAttribute('aria-disabled', 'true');
 
-      await act(async () => {
-        tab1.focus();
-      });
-
-      await userEvent.keyboard('{ArrowRight}');
-
-      // Should skip disabled tab2 and select tab3
-      expect(getByRole('tab', { name: 'Tab 3' })).toHaveAttribute(
+      await userEvent.click(option);
+      expect(getByRole('tab', { name: 'Tab 1' })).toHaveAttribute(
         'aria-selected',
         'true',
       );
+      expect(onChange).not.toHaveBeenCalled();
     });
   });
 
@@ -803,6 +910,34 @@ describe('<Tabs />', () => {
 
       expect(tab).toHaveAttribute('aria-controls', panel.id);
       expect(panel).toHaveAttribute('aria-labelledby', tab.id);
+    });
+
+    // React Aria names a tab and its panel after the state object the tab list
+    // registered; a different object gave both Tabs the same `undefined-` ids.
+    it('gives tabs and panels of two Tabs with the same keys their own ids', () => {
+      const { getAllByRole } = renderWithRoot(
+        <>
+          <Tabs label="First" defaultActiveKey="tab1">
+            <Tab key="tab1" title="Tab 1">
+              First content
+            </Tab>
+          </Tabs>
+          <Tabs label="Second" defaultActiveKey="tab1">
+            <Tab key="tab1" title="Tab 1">
+              Second content
+            </Tab>
+          </Tabs>
+        </>,
+      );
+
+      const [firstTab, secondTab] = getAllByRole('tab');
+      const [firstPanel, secondPanel] = getAllByRole('tabpanel');
+
+      expect(firstTab.id).not.toBe(secondTab.id);
+      expect(firstTab.id).not.toMatch(/^undefined/);
+      expect(firstPanel).toHaveAttribute('aria-labelledby', firstTab.id);
+      expect(secondPanel).toHaveAttribute('aria-labelledby', secondTab.id);
+      expect(document.getElementById(firstTab.id)).toBe(firstTab);
     });
 
     it('should link tabs to panels rendered by renderPanel', () => {

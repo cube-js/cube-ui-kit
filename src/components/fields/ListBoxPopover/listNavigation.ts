@@ -1,5 +1,7 @@
 import { Key } from '@react-types/shared';
 
+import { isItemDisabled } from '../../shared/disabled-behavior';
+
 /**
  * Minimal view of a React Stately list state. Kept structural (no imports from
  * `react-stately`) so the helpers can be used from any collection-backed
@@ -20,34 +22,40 @@ export type NavigationEdge = 'first' | 'last';
 
 /**
  * Walks a collection (possibly nested under sections) and collects the keys of
- * selectable items, skipping disabled ones. Mirrors the inline walker that
- * used to live in `useComboBoxKeyboard`.
+ * its items, disabled ones included. Mirrors the inline walker that used to
+ * live in `useComboBoxKeyboard`.
  */
-export function collectVisibleKeys(
-  nodes: Iterable<any>,
-  out: Key[],
-  disabledKeys?: Set<Key>,
-): void {
+export function collectVisibleKeys(nodes: Iterable<any>, out: Key[]): void {
   for (const node of nodes) {
     if (node.type === 'item') {
-      if (!disabledKeys?.has(node.key)) {
-        out.push(node.key);
-      }
+      out.push(node.key);
     } else if (node.childNodes) {
-      collectVisibleKeys(node.childNodes, out, disabledKeys);
+      collectVisibleKeys(node.childNodes, out);
     }
   }
 }
 
-/** Convenience: returns the flat list of selectable keys for a list state. */
+/**
+ * The flat list of the keys the arrow keys move through. A disabled option is
+ * one of them: WAI-ARIA keeps it reachable, so a keyboard or screen reader
+ * user hears it and why it is unavailable. The list keeps it inert.
+ */
 export function getVisibleKeys(listState: ListStateLike): Key[] {
   const keys: Key[] = [];
-  collectVisibleKeys(
-    listState.collection,
-    keys,
-    listState.disabledKeys as Set<Key> | undefined,
-  );
+  collectVisibleKeys(listState.collection, keys);
   return keys;
+}
+
+/**
+ * The first option the user can pick: the one a list highlights on its own
+ * (on opening, or as the search changes) so that Enter picks it. The arrow
+ * keys still reach a disabled option before it.
+ */
+export function getFirstSelectableKey(listState: ListStateLike): Key | null {
+  return (
+    getVisibleKeys(listState).find((key) => !isItemDisabled(listState, key)) ??
+    null
+  );
 }
 
 /**
@@ -93,7 +101,7 @@ export function getNextVisibleKey(
   return null;
 }
 
-/** Returns the first or last selectable key. */
+/** Returns the first or last key, disabled or not (Home and End). */
 export function getEdgeVisibleKey(
   listState: ListStateLike,
   edge: NavigationEdge,

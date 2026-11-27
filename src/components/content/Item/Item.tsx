@@ -231,6 +231,15 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   defaultTooltipPlacement?: PositionProps['placement'];
   /**
    * @private
+   * Keeps the item focusable while it is disabled. A composite widget whose
+   * arrow keys reach a disabled item, as WAI-ARIA tabs and toolbars do, sets it
+   * on its items: the item is then marked `aria-disabled` and kept inert, as it
+   * is while it shows a tooltip, instead of taking the native `disabled`
+   * attribute, which would drop it from focus.
+   */
+  keepFocusWhenDisabled?: boolean;
+  /**
+   * @private
    * The native `disabled` attribute, which `useAction` forwards through
    * `ItemButton`. Treated as an alias of `isDisabled` so that the item stays
    * the only place deciding how the disabled state reaches the DOM.
@@ -962,6 +971,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     disableActionsFocus = false,
     shape,
     defaultTooltipPlacement = 'top',
+    keepFocusWhenDisabled = false,
     level = 3,
     highlight,
     highlightCaseSensitive = false,
@@ -1142,7 +1152,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   // instead.
   const { isNativelyDisabled, inertProps } = getDisabledElementProps({
     isDisabled: finalIsDisabled,
-    keepEvents: isTooltipActive,
+    keepEvents: isTooltipActive || keepFocusWhenDisabled,
     as: (rest as { as?: string }).as,
   });
 

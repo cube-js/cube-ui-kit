@@ -32,12 +32,14 @@ import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
   collectVisibleKeys,
   filterCollectionNodes,
   getEdgeVisibleKey,
+  getFirstSelectableKey,
   getNextVisibleKey,
   ListStateLike,
   markKeyboardFocus,
@@ -411,19 +413,33 @@ function CommandTextArea<T extends object>(
   // ListBox's `stateRef.collection` can momentarily lag by a render right after
   // the token narrows, which would otherwise leave virtual focus on (and commit)
   // an option that is no longer visible.
+  // A disabled option is visible too: the list opens on it, and the arrow keys
+  // reach it. `selectableKeys` are the ones a commit or the list's own
+  // highlight can land on.
+  const disabledKeySet = useMemo(
+    () => new Set<Key>(disabledKeys ?? []),
+    [disabledKeys],
+  );
   const visibleFilteredKeys = useMemo<Key[]>(() => {
     if (!activeToken) return [];
     const keys: Key[] = [];
-    const disabled = disabledKeys ? new Set<Key>(disabledKeys) : undefined;
-    collectVisibleKeys(
-      filterFn(localCollectionState.collection),
-      keys,
-      disabled,
-    );
+    collectVisibleKeys(filterFn(localCollectionState.collection), keys);
     return keys;
-  }, [activeToken, filterFn, localCollectionState.collection, disabledKeys]);
-
-  const filteredCount = visibleFilteredKeys.length;
+  }, [activeToken, filterFn, localCollectionState.collection]);
+  const selectableKeys = useMemo<Key[]>(
+    () =>
+      visibleFilteredKeys.filter(
+        (key) =>
+          !isItemDisabled(
+            {
+              collection: localCollectionState.collection,
+              disabledKeys: disabledKeySet,
+            },
+            key,
+          ),
+      ),
+    [visibleFilteredKeys, localCollectionState.collection, disabledKeySet],
+  );
 
   // ---- dismiss handling (Escape keeps the text but hides the popover) ---
   const [dismissedToken, setDismissedToken] = useState<string | null>(null);
@@ -440,7 +456,7 @@ function CommandTextArea<T extends object>(
   }, [activeToken?.token]);
 
   const isCommandMode = !!activeToken && activeToken.token !== dismissedToken;
-  const shouldShowPopover = isCommandMode && filteredCount > 0;
+  const shouldShowPopover = isCommandMode && visibleFilteredKeys.length > 0;
 
   // ---- reporting open state / active token to the consumer --------------
   // Both are already computed here; without these a consumer with its own
@@ -553,12 +569,16 @@ function CommandTextArea<T extends object>(
   // ---- commit (insert the chosen option's literal value) ---------------
   const commit = useEvent((key: Key) => {
     const listState = listStateRef.current;
+    // A disabled option the arrow keys reached inserts nothing.
+    if (visibleFilteredKeys.includes(key) && !selectableKeys.includes(key)) {
+      return;
+    }
     // Guard against committing a stale key that has been filtered out of the
     // visible list (e.g. the token was narrowed after focus landed on it).
     // Fall back to the first still-visible option so the inserted command
     // always matches what the user can see.
-    if (visibleFilteredKeys.length > 0 && !visibleFilteredKeys.includes(key)) {
-      key = visibleFilteredKeys[0];
+    if (selectableKeys.length > 0 && !selectableKeys.includes(key)) {
+      key = selectableKeys[0];
     }
     const textValue = getItemTextValue(key);
     const token = activeToken;
@@ -693,7 +713,7 @@ function CommandTextArea<T extends object>(
         return;
       }
       if (listState.selectionManager.focusedKey == null) {
-        const first = getEdgeVisibleKey(listState, 'first');
+        const first = getFirstSelectableKey(listState);
         if (first != null) {
           markKeyboardFocus(listState);
           listState.selectionManager.setFocusedKey(first);
@@ -714,15 +734,14 @@ function CommandTextArea<T extends object>(
     const listState = listStateRef.current;
     if (!listState) return;
 
-    if (visibleFilteredKeys.length === 0) return;
-
+    // With no option to insert, nothing is highlighted.
     const focused = listState.selectionManager.focusedKey;
     if (focused == null || !visibleFilteredKeys.includes(focused)) {
       markKeyboardFocus(listState);
-      listState.selectionManager.setFocusedKey(visibleFilteredKeys[0]);
+      listState.selectionManager.setFocusedKey(selectableKeys[0] ?? null);
       bumpFocus();
     }
-  }, [visibleFilteredKeys, shouldShowPopover]);
+  }, [visibleFilteredKeys, selectableKeys, shouldShowPopover]);
 
   // ---- composite focus (wrapper + portaled popover) ---------------------
   const { compositeFocusProps } = useCompositeFocus({

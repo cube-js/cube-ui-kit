@@ -285,6 +285,46 @@ describe('ItemTable tree rows', () => {
     });
   });
 
+  // The arrow keys used to move focus onto the treegrid itself when the next
+  // row was disabled. WAI-ARIA keeps a disabled row reachable; it stays inert.
+  it('moves the arrow keys onto a disabled row and never expands or acts on it', async () => {
+    const onRowAction = vi.fn();
+    renderWithRoot(
+      <ItemTable
+        {...treeProps}
+        defaultExpandedKeys={['root']}
+        disabledKeys={['branch']}
+        onRowAction={onRowAction}
+      />,
+    );
+
+    row('root').focus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(row('branch')).toHaveFocus();
+    expect(row('branch')).toHaveAttribute('aria-disabled', 'true');
+
+    await userEvent.keyboard('{ArrowRight}');
+    await userEvent.keyboard('{Enter}');
+    expect(row('branch')).not.toHaveAttribute('aria-expanded', 'true');
+    expect(grid().querySelector('tbody tr[data-key="leaf"]')).toBeNull();
+    expect(onRowAction).not.toHaveBeenCalled();
+    expect(row('branch')).toHaveFocus();
+
+    await userEvent.keyboard('{ArrowDown}');
+    expect(row('sibling')).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    expect(row('branch')).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    expect(row('root')).toHaveFocus();
+    expect(document.activeElement).not.toBe(grid());
+
+    await userEvent.click(
+      within(row('branch')).getByRole('button', { name: /^Expand/ }),
+    );
+    expect(row('branch')).toHaveAttribute('aria-expanded', 'false');
+    expect(onRowAction).not.toHaveBeenCalled();
+  });
+
   it('keeps single and independent multiple selection non-cascading', async () => {
     const { rerender } = renderWithRoot(
       <ItemTable

@@ -125,7 +125,7 @@ const mergedChildren = useMemo(() => {
 ### Virtual Focus System
 - **Search Input Focus**: DOM focus remains in the search input
 - **Visual Focus**: ListBox marks the focused option while focus is within FilterListBox (`isFocusWithin`), in virtual focus mode and in reorderable mode alike
-- **Keyboard Navigation**: Custom keyboard handlers bridge input and list navigation, skipping disabled options
+- **Keyboard Navigation**: Custom keyboard handlers bridge input and list navigation; they reach disabled options too, which stay inert and are never highlighted on their own
 - **ARIA Integration**: Proper aria-activedescendant management
 
 ### Loading States

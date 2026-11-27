@@ -831,7 +831,8 @@ export const LoadingBehavior: Story = {
  * The three ways a row can be special are deliberately distinct, and the last
  * table shows all of them at once:
  *
- * - **`disabledKeys`** — inert. Not focusable, not interactive.
+ * - **`disabledKeys`** — inert: not selectable, no row action, link or menu.
+ *   The arrow keys still reach it, so a screen reader says it is disabled.
  * - **`isRowSelectable`** — fully interactive, only the checkbox is inert.
  *   `selectionTooltip` says why.
  * - **`getRowProps().isDimmed`** — purely visual, still selectable.

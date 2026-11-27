@@ -108,6 +108,52 @@ describe('<SearchComboBox />', () => {
     });
   });
 
+  // WAI-ARIA keeps a disabled option reachable, so a keyboard or screen reader
+  // user hears it and why it is unavailable. It stays inert, and the first
+  // match the user can pick is still the one typing highlights.
+  it('highlights a disabled option with the arrow keys and never picks or submits it', async () => {
+    const onSelect = vi.fn();
+    const onSubmit = vi.fn();
+
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox
+        label="Colors"
+        disabledKeys={['red']}
+        onSelect={onSelect}
+        onSubmit={onSubmit}
+      >
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+    const active = () => getActiveDescendant(input)?.textContent;
+
+    // "re" matches "Red" (disabled) and "Green": typing highlights Green.
+    await userEvent.type(input, 're');
+    await waitFor(() => expect(active()).toBe('Green'));
+
+    await userEvent.keyboard('{ArrowUp}');
+    await waitFor(() => expect(active()).toBe('Red'));
+    expect(getActiveDescendant(input)).toHaveAttribute('aria-disabled', 'true');
+
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(input).toHaveValue('re');
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(active()).toBe('Green'));
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() =>
+      expect(onSelect).toHaveBeenCalledWith('green', 'Green'),
+    );
+  });
+
   it('keeps aria-activedescendant in sync with virtual focus', async () => {
     const { getByRole } = renderWithRoot(
       <SearchComboBox label="Colors">
@@ -138,6 +184,110 @@ describe('<SearchComboBox />', () => {
 
     await waitFor(() => {
       expect(getActiveDescendant(input)).toHaveAttribute('data-key', 'red');
+    });
+  });
+
+  // Typing never highlights a disabled option, so with only disabled matches
+  // Enter submits the text, as it does with no match.
+  it('submits the text when every match is disabled', async () => {
+    const onSelect = vi.fn();
+    const onSubmit = vi.fn();
+
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox
+        label="Colors"
+        disabledKeys={['blue']}
+        onSelect={onSelect}
+        onSubmit={onSubmit}
+      >
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+
+    await userEvent.type(input, 'blu');
+    const blue = await waitFor(() => getByRole('option', { name: 'Blue' }));
+    expect(blue).toHaveAttribute('aria-disabled', 'true');
+    expect(getActiveDescendant(input)).toBeNull();
+
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onSubmit).toHaveBeenCalled();
+  });
+
+  // Typing that filters out the highlighted option moves the highlight to the
+  // next one the user can pick, never onto a disabled one.
+  describe('when typing filters out the highlighted option', () => {
+    const renderColors = (keys: string[]) => {
+      const onSelect = vi.fn();
+      const onSubmit = vi.fn();
+      const utils = renderWithRoot(
+        <SearchComboBox
+          label="Colors"
+          disabledKeys={['blue']}
+          onSelect={onSelect}
+          onSubmit={onSubmit}
+        >
+          {keys.map((key) => (
+            <SearchComboBox.Item key={key}>
+              {key[0].toUpperCase() + key.slice(1)}
+            </SearchComboBox.Item>
+          ))}
+        </SearchComboBox>,
+      );
+
+      return { ...utils, onSelect, onSubmit };
+    };
+
+    it('moves the highlight past a disabled option', async () => {
+      const { getByRole, onSelect, onSubmit } = renderColors([
+        'black',
+        'blue',
+        'blur',
+      ]);
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'bl');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('Black'),
+      );
+      await userEvent.type(input, 'u');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('Blur'),
+      );
+      expect(getByRole('option', { name: 'Blue' })).not.toHaveAttribute(
+        'data-focused',
+      );
+
+      await userEvent.keyboard('{Enter}');
+      await waitFor(() =>
+        expect(onSelect).toHaveBeenCalledWith('blur', 'Blur'),
+      );
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('submits the text once only disabled options are left', async () => {
+      const { getByRole, onSelect, onSubmit } = renderColors(['black', 'blue']);
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'bl');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('Black'),
+      );
+      await userEvent.type(input, 'u');
+      await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+      expect(getByRole('option', { name: 'Blue' })).not.toHaveAttribute(
+        'data-focused',
+      );
+
+      await userEvent.keyboard('{Enter}');
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(onSubmit).toHaveBeenCalled();
     });
   });
 

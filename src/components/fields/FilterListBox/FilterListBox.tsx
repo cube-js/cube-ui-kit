@@ -33,6 +33,7 @@ import { splitFieldLayout } from '../../form/field-layout';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { getValidationMods } from '../../form/validation/resolve-validation-props';
 import { wrapWithField } from '../../form/wrapper';
+import { isItemDisabled } from '../../shared/disabled-behavior';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import {
@@ -705,14 +706,18 @@ export const FilterListBox = forwardRef(function FilterListBox<
     let newCustomValueKey: Key | null = null;
     let customValueHasMatches = false;
 
-    const collectFocusableKeys = (
+    // A disabled option is not a focus target this effect picks, but the arrow
+    // keys reach it, so focus already on it stays.
+    const visibleKeys: Key[] = [];
+    const collectOptionKeys = (
       nodes: Iterable<any>,
       out: Key[],
       inCustomSection = false,
     ) => {
       for (const node of nodes) {
         if (node.type === 'item') {
-          if (!listState.disabledKeys.has(node.key)) out.push(node.key);
+          visibleKeys.push(node.key);
+          if (!isItemDisabled(listState, node.key)) out.push(node.key);
           if (inCustomSection) {
             newCustomValueKey = node.key;
             customValueHasMatches = true;
@@ -720,13 +725,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
         } else if (node.childNodes) {
           const isCustomSection =
             inCustomSection || node.key === '__custom_value__';
-          collectFocusableKeys(node.childNodes, out, isCustomSection);
+          collectOptionKeys(node.childNodes, out, isCustomSection);
         }
       }
     };
 
-    const visibleKeys: Key[] = [];
-    collectFocusableKeys(collection, visibleKeys);
+    const selectableKeys: Key[] = [];
+    collectOptionKeys(collection, selectableKeys);
 
     // Detect the appended-at-top-level case (no items text-match). The custom
     // option is added with key === trimmed search term and lives directly in
@@ -741,8 +746,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
       }
     }
 
-    // If there are no visible items, reset the focused key so Enter won't select anything
-    if (visibleKeys.length === 0) {
+    // With no option to pick, reset the focused key so Enter won't select anything
+    if (selectableKeys.length === 0) {
       setVirtualFocus(null);
       return;
     }
@@ -782,7 +787,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         // Single selection: check if selectedKey is visible
         if (selectedKey != null) {
           const selectedKeyStr = String(selectedKey);
-          if (visibleKeys.some((k) => String(k) === selectedKeyStr)) {
+          if (selectableKeys.some((k) => String(k) === selectedKeyStr)) {
             return selectedKey;
           }
         }
@@ -791,7 +796,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         if (selectedKeys && selectedKeys !== 'all') {
           for (const key of selectedKeys) {
             const keyStr = String(key);
-            if (visibleKeys.some((k) => String(k) === keyStr)) {
+            if (selectableKeys.some((k) => String(k) === keyStr)) {
               return key;
             }
           }
@@ -814,7 +819,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       const namedKey =
         defaultFocusedKey == null
           ? undefined
-          : visibleKeys.find((k) => String(k) === String(defaultFocusedKey));
+          : selectableKeys.find((k) => String(k) === String(defaultFocusedKey));
 
       keyToFocus = namedKey ?? findFirstVisibleSelectedKey();
 
@@ -822,8 +827,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
       // first real (non-custom-value) item so focus doesn't land on the
       // bottom-of-list custom-value suggestion when real items are available.
       if (keyToFocus == null) {
-        const firstRealKey = visibleKeys.find((k) => k !== newCustomValueKey);
-        keyToFocus = firstRealKey ?? visibleKeys[0];
+        const firstRealKey = selectableKeys.find(
+          (k) => k !== newCustomValueKey,
+        );
+        keyToFocus = firstRealKey ?? selectableKeys[0];
       }
     }
 
@@ -855,7 +862,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         if (!listState) return;
 
         // The collection is already filtered by React Stately via filterFn;
-        // disabled options are skipped.
+        // the arrow keys reach a disabled option too.
         // Wrapping from the last loaded option to the first would skip the
         // options still to load.
         const nextKey = getNextVisibleKey(
@@ -895,7 +902,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
         const keyToSelect = listState.selectionManager.focusedKey;
 
-        if (keyToSelect != null) {
+        if (keyToSelect != null && isItemDisabled(listState, keyToSelect)) {
+          // A disabled option the arrow keys reached picks nothing, and the
+          // list stays open.
+          e.preventDefault();
+        } else if (keyToSelect != null) {
           e.preventDefault();
           listState.selectionManager.select(keyToSelect, e);
 
