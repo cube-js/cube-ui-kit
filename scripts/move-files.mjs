@@ -5,11 +5,12 @@
  * get their references rewritten the same way.
  *
  * The ledger, `scripts/move-files.json`, maps each path from the repository
- * root to where it goes, in the order the moves were made. A later entry may
- * move a file an earlier one already moved. For every tracked or untracked
- * (not ignored) file, the script:
+ * root to where it goes. An entry may move a file another entry already moved
+ * (`a → b`, then `b → c`), in any order. For every tracked or untracked (not
+ * ignored) file, the script:
  *
- * 1. Moves each `from` that exists to its `to`, with `git mv` when tracked.
+ * 1. Moves each file the ledger names straight to where it finally goes, with
+ *    `git mv` when tracked.
  * 2. Rewrites relative module specifiers in code and MDX (`import`, `export …
  *    from`, `import()`, `require()`, `vi.mock()` and friends) that lead to a
  *    moved file, and those of a moved file that lead to a file that stayed.
@@ -336,26 +337,25 @@ export async function main({ root, dryRun = false, log = console.log }) {
     JSON.parse(fs.readFileSync(abs('scripts/move-files.json'), 'utf8')),
   );
   const moves = finalMoves(ledger);
-  const origins = new Map(ledger.map(([from, to]) => [to, from]));
+  // Where a file's relative imports were written from, if not where it is.
+  const origins = new Map(ledger.map(([from]) => [moves.get(from), from]));
   const tracked = new Set(git('ls-files', '-z').split('\0').filter(Boolean));
 
-  // 1. Moves, one entry at a time, so a chain of entries moves a file along it.
+  // 1. Moves, each file straight to where the ledger finally puts it, so the
+  // order of the entries doesn't matter.
   let moved = 0;
 
-  for (const [from, to] of ledger) {
+  for (const [from, to] of moves) {
     if (!exists(from)) continue;
     if (exists(to) && from.toLowerCase() !== to.toLowerCase())
       throw new Error(`Both ${from} and ${to} exist: resolve it by hand.`);
 
     moved += 1;
+    origins.set(to, from);
     if (dryRun) continue;
     fs.mkdirSync(path.dirname(abs(to)), { recursive: true });
-    if (tracked.has(from)) {
-      git('mv', from, to);
-      // A later entry of a chain moves it on, and must find it tracked.
-      tracked.delete(from);
-      tracked.add(to);
-    } else fs.renameSync(abs(from), abs(to));
+    if (tracked.has(from)) git('mv', from, to);
+    else fs.renameSync(abs(from), abs(to));
   }
 
   const files = [
@@ -401,12 +401,15 @@ export async function main({ root, dryRun = false, log = console.log }) {
 
       if (next && next !== specifier)
         edits.push([start, end, bare ? next.replace(/^\.\//, '') : next]);
-      else if (
-        !next &&
-        specifier.startsWith('.') &&
-        !resolves(file, specifier, exists, exact)
+      // A rewritten one leads to a moved file, which a dry run hasn't moved.
+      const target = next ?? specifier;
+
+      if (
+        target.startsWith('.') &&
+        !(next && dryRun) &&
+        !resolves(file, target, exists, exact)
       )
-        unresolved.push(`${file}: ${specifier}`);
+        unresolved.push(`${file}: ${target}`);
     }
     text = replaceRanges(text, edits);
 
