@@ -46,7 +46,7 @@ export interface WithColorSchemeOptions {
  * so flipping `data-scheme` is enough to repaint the whole story canvas — no
  * extra wrappers needed.
  *
- * `data-scheme` writes go through `colorSchemeBridge` so the per-story
+ * `data-scheme` writes go through `color-scheme-bridge` so the per-story
  * override always wins over the `storybook-dark-mode` toolbar (which writes
  * the same attribute via the channel listener in `.storybook/preview.jsx`).
  * `data-contrast` is unmanaged by the addon and stays a direct DOM write.

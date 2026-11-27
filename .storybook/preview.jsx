@@ -138,7 +138,7 @@ export const parameters = {
   // `storybook-dark-mode` configuration. No `current` so the addon resolves
   // OS `prefers-color-scheme` on first load. `stylePreview: false` keeps the
   // addon from also injecting dark/light classes on the preview body — the
-  // `data-scheme` attribute set by `colorSchemeBridge` is the only signal
+  // `data-scheme` attribute set by `color-scheme-bridge` is the only signal
   // we care about (see `src/components/Root.tsx` and `src/tokens/palette.ts`).
   darkMode: {
     dark: darkTheme,

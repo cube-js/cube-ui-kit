@@ -19,7 +19,7 @@ export interface UseControlledFocusVisibleResult {
 }
 
 /**
- * A hook that shares its state using sharedStore and works like useFocusVisible from react-aria,
+ * A hook that shares its state using `shared-store` and works like useFocusVisible from react-aria,
  * but also returns activateFocusVisible function that manually switches the state to true
  * until the original flag is switched to false.
  */

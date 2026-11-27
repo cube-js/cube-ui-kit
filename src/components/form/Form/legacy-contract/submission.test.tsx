@@ -24,7 +24,7 @@ vi.mock('../../../../_internal/hooks/use-warn');
  * double submission), 25 (`Error` vs non-`Error` rejections), 26 (`onSubmitFailed`
  * timing), 27 (submit error clearing), 29 (native `action`/`method`, hidden
  * controls) and 32 (`SubmitButton`, `ResetButton`, `SubmitError`). The
- * `submit.test.tsx` and `submit-error.test.tsx` suites already cover the visible
+ * `submit.test.tsx` and `SubmitError.test.tsx` suites already cover the visible
  * behaviour; this file pins the instance-level contract.
  */
 

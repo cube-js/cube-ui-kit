@@ -323,7 +323,7 @@ export function useTooltipTriggerBinding(
   // decides to show inside it, so this never starts and nothing flashes.
   //
   // Covers both restore paths — ours and a `FocusScope`'s — see
-  // `programmaticFocus`.
+  // `programmatic-focus`.
   const onFocus = useEvent((event: FocusEvent<HTMLElement>) => {
     if (isFocusRestoration()) return;
 
