@@ -1084,6 +1084,53 @@ describe('<Tree />', () => {
       expect(treeOnAction).toHaveBeenCalledWith('delete', 'fruits');
       expect(menuOnAction).toHaveBeenCalledWith('delete');
     });
+
+    // A disabled row is inert, as an ItemTable row is: it has no menu. A
+    // right-click falls through to the browser's own, Shift+F10 opens nothing,
+    // and its `⋮` trigger stays, disabled.
+    it.each([
+      ['"context-only"', 'context-only' as const],
+      ['`true`', true as const],
+    ])(
+      'opens no menu on a disabled row with contextMenu %s',
+      async (_, contextMenu) => {
+        const data: CubeTreeNodeData[] = [
+          { key: 'a', title: 'Alpha' },
+          { key: 'b', title: 'Beta', isDisabled: true },
+        ];
+        const { getAllByRole, getByRole, queryByRole } = renderWithRoot(
+          <Tree
+            aria-label="Files"
+            contextMenu={contextMenu}
+            treeData={data}
+            menu={TREE_MENU}
+          />,
+        );
+        const [alpha, beta] = getAllByRole('row');
+
+        if (contextMenu === true) {
+          expect(
+            beta.querySelector('button[aria-label="Actions"]'),
+          ).toBeDisabled();
+        }
+
+        await act(async () => {
+          await userEvent.pointer({ keys: '[MouseRight>]', target: beta });
+        });
+        expect(queryByRole('menu')).toBeNull();
+
+        await act(async () => alpha.focus());
+        await userEvent.keyboard('{ArrowDown}');
+        expect(beta).toHaveFocus();
+        await userEvent.keyboard('{Shift>}{F10}{/Shift}');
+        expect(queryByRole('menu')).toBeNull();
+
+        // The same keys open the menu of a row you can use.
+        await userEvent.keyboard('{ArrowUp}');
+        await userEvent.keyboard('{Shift>}{F10}{/Shift}');
+        await waitFor(() => expect(getByRole('menu')).toBeInTheDocument());
+      },
+    );
   });
 
   describe('scroll-into-view via virtualizer', () => {
