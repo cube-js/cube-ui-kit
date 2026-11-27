@@ -15,9 +15,11 @@
  * export is a component, class or provider, kebab-case otherwise, kebab-case
  * for each dotted part after the name, and `index.ts` for a barrel. Lint can't
  * tell which export is the main one, so it checks the half it can: a
- * PascalCase file exports a PascalCase value. See docs/rules/coding.md#files.
+ * PascalCase file exports a PascalCase value, and a kebab-case spec, story or
+ * fixture isn't named after the component beside it. See
+ * docs/rules/coding.md#files.
  */
-import { statSync } from 'node:fs';
+import { readdirSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 
 const DIRECTIVE =
@@ -177,17 +179,19 @@ const toKebab = (name) =>
     .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
     .replace(/_/g, '-')
     .toLowerCase();
+const toPascal = (name) =>
+  name.replace(/(?:^|-)([a-z0-9])/g, (_, letter) => letter.toUpperCase());
 
 /** Whether a module exports a PascalCase value, or one lint can't name (`export *`, a default). */
 function exportsPascalValue(program) {
   for (const node of program.body) {
+    if (node.exportKind === 'type') continue;
     if (
       node.type === 'ExportAllDeclaration' ||
       node.type === 'ExportDefaultDeclaration'
     )
-      return node.exportKind !== 'type';
-    if (node.type !== 'ExportNamedDeclaration' || node.exportKind === 'type')
-      continue;
+      return true;
+    if (node.type !== 'ExportNamedDeclaration') continue;
 
     const { declaration } = node;
     const names = [
@@ -219,7 +223,8 @@ const filenameCase = {
     schema: [],
   },
   create(context) {
-    const file = basename(context.filename);
+    const path = resolve(context.cwd, context.filename);
+    const file = basename(path);
     const [name, ...rest] = file.split('.');
     const parts = rest.slice(0, -1);
     const extension = rest.at(-1);
@@ -247,6 +252,20 @@ const filenameCase = {
         if (PASCAL.test(name) && !parts.length && !exportsPascalValue(node))
           report(
             `\`${file}\` exports no component, class or provider, so it is named in kebab-case: \`${toKebab(name)}.${extension}\`.`,
+          );
+
+        // A spec, story or fixture of the component beside it takes its name.
+        // Names are compared exactly: on a case-insensitive disk `Store.ts`
+        // would find `store.ts`.
+        const subject = KEBAB.test(name) && parts.length && toPascal(name);
+        const siblings = subject ? readdirSync(dirname(path)) : [];
+        const sibling = SOURCE_EXTENSIONS.map((ext) => subject + ext).find(
+          (candidate) => siblings.includes(candidate),
+        );
+
+        if (sibling)
+          report(
+            `\`${file}\` covers \`${sibling}\`, so it takes its name: \`${[subject, ...rest].join('.')}\`.`,
           );
       },
     };

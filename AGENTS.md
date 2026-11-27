@@ -115,7 +115,7 @@ src/
 └── index.ts           # Public barrel export
 ```
 
-Each component lives in `src/components/{category}/{ComponentName}/` and ships `ComponentName.tsx`, `.stories.tsx`, `.docs.mdx`, `.test.tsx`, and `index.ts`. A file is named in PascalCase when its main export is a component, class or provider (a context included), and in kebab-case otherwise (`use-toast.tsx`, `parse-date.ts`); `repo/filename-case` enforces it ([coding.md](docs/rules/coding.md#files)).
+Each component lives in `src/components/{category}/{ComponentName}/` and ships `ComponentName.tsx`, `.stories.tsx`, `.docs.mdx`, `.test.tsx`, and `index.ts`. A file is named in PascalCase when its main export is a component, class or provider (a context included), and in kebab-case otherwise (`use-toast.tsx`, `parse-date.ts`). `repo/filename-case` checks the case; see [coding.md](docs/rules/coding.md#files) for the rest.
 
 ## Commands
 
