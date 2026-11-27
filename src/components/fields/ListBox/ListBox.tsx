@@ -1337,12 +1337,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   // The focused key and the options this effect last saw, to tell a move of
   // focus, and a page appended, from another change of the items. A list
-  // that has had `onLoadMore` loads pages for good: a consumer may drop it
-  // with `hasMore` as the last page arrives.
+  // that could load more once loads pages for good: a consumer may drop
+  // `onLoadMore` with `hasMore` as the last page arrives.
   const lastFocusedKeyRef = useRef<Key | null>(null);
   const lastItemsRef = useRef<typeof itemsArray>([]);
   const loadsPagesRef = useRef(false);
-  const hasLoadMore = onLoadMore != null;
 
   // Keep the focused option visible. One the virtualizer hasn't rendered is
   // scrolled to by index, which renders it, when focus moves to it (End,
@@ -1358,7 +1357,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     const focusedKey = listState.selectionManager.focusedKey;
     const hasFocusMoved = focusedKey !== lastFocusedKeyRef.current;
 
-    if (hasLoadMore) loadsPagesRef.current = true;
+    if (canLoadMore) loadsPagesRef.current = true;
 
     const isPageAppended =
       loadsPagesRef.current && isAppendedTo(itemsArray, lastItemsRef.current);
@@ -1416,7 +1415,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     itemsArray,
     shouldVirtualize,
     rowVirtualizer,
-    hasLoadMore,
+    canLoadMore,
   ]);
 
   // ----- Load more -----
