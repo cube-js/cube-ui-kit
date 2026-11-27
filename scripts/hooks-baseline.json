@@ -164,7 +164,7 @@
     "src/components/overlays/Notifications/use-toast-state.ts": {
       "react-hooks/refs": 1
     },
-    "src/components/overlays/Toast/index.ts": {
+    "src/components/overlays/Toast/Toast.tsx": {
       "react-hooks/exhaustive-deps": 2
     },
     "src/components/overlays/Toast/useProgressToast.tsx": {

@@ -225,11 +225,7 @@ export type {
 export * from '@tenphi/tasty';
 export * from '@tenphi/glaze';
 
-export const Typography = {
-  Text: Text,
-  Title,
-  Paragraph,
-};
+export { Typography } from './components/content/Typography';
 
 export { Text, TextItem, Title, Paragraph };
 export type {
