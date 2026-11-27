@@ -2,7 +2,7 @@ import { act } from 'react';
 import { page, userEvent as realInput } from 'vitest/browser';
 
 import { cleanup, renderWithRoot, screen } from '../../../test';
-import { SlotProvider } from '../../../utils/react/Slots';
+import { SlotProvider } from '../../../utils/react/SlotProvider';
 import { Menu } from '../../actions/Menu/Menu';
 import { Root } from '../../Root';
 import { DataTable } from '../DataTable/DataTable';

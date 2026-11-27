@@ -1,7 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { useSlotProps } from '../../../utils/react/Slots';
+import { useSlotProps } from '../../../utils/react/SlotProvider';
 import { CubeSpaceProps, Space } from '../../layout/Space';
 
 const ButtonGroupElement = tasty(Space, {

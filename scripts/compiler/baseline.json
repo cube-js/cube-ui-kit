@@ -1617,7 +1617,7 @@
     },
     "optOuts": 0
   },
-  "src/utils/react/Slots.tsx": {
+  "src/utils/react/SlotProvider.tsx": {
     "compiled": 3,
     "diagnostics": {},
     "optOuts": 0

@@ -36,7 +36,7 @@ import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { mergeProps } from '../../../utils/react/merge-props';
 import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
-import { SlotProvider } from '../../../utils/react/Slots';
+import { SlotProvider } from '../../../utils/react/SlotProvider';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';

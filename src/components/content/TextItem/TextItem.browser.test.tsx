@@ -1,7 +1,7 @@
 import { createRef } from 'react';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
-import { SlotProvider } from '../../../utils/react/Slots';
+import { SlotProvider } from '../../../utils/react/SlotProvider';
 import { Text } from '../Text';
 
 import { TextItem, TextItemWithNativeLink } from './TextItem';

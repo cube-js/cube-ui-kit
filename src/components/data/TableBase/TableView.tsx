@@ -21,7 +21,7 @@ import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
-import { useSlotProps } from '../../../utils/react/Slots';
+import { useSlotProps } from '../../../utils/react/SlotProvider';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu } from '../../actions/Menu/Menu';
 import { MenuTrigger } from '../../actions/Menu/MenuTrigger';

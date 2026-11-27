@@ -65,6 +65,7 @@
   "src/stories/decorators/withColorScheme.tsx": "src/stories/decorators/with-color-scheme.tsx",
   "src/stories/lists/baseProps.ts": "src/stories/lists/base-props.ts",
   "src/test/utils/activeDescendant.ts": "src/test/utils/active-descendant.ts",
+  "src/utils/react/Slots.tsx": "src/utils/react/SlotProvider.tsx",
   "src/utils/react/componentBaseProps.ts": "src/utils/react/component-base-props.ts",
   "src/utils/react/disabledProps.ts": "src/utils/react/disabled-props.ts",
   "src/utils/react/forwardRefWithGenerics.tsx": "src/utils/react/forward-ref-with-generics.tsx",

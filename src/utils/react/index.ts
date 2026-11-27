@@ -11,7 +11,7 @@ export { forwardRefWithGenerics } from './forward-ref-with-generics';
 export { isTextOnly } from './is-text-only';
 export { mergeProps } from './merge-props';
 export { modAttrs } from '@tenphi/tasty';
-export { useSlotProps, SlotProvider, ClearSlots } from './Slots';
+export { useSlotProps, SlotProvider, ClearSlots } from './SlotProvider';
 export { useLayoutEffect } from './use-layout-effect';
 export { useCombinedRefs, mergeRefs } from './use-combined-refs';
 export { wrapNodeIfPlain } from './wrap-node-if-plain';
