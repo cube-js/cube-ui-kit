@@ -13,13 +13,14 @@
  * 2. Rewrites relative module specifiers in code and MDX (`import`, `export …
  *    from`, `import()`, `require()`, `vi.mock()` and friends) that lead to a
  *    moved file, and those of a moved file that lead to a file that stayed.
- * 3. Rewrites relative links in Markdown the same way.
+ * 3. Rewrites relative links in Markdown the same way, with or without `./`.
  * 4. Rewrites paths from the root (`src/utils/react/useId.tsx`, with or without
  *    the extension) in every text file, including the path-keyed baselines. A
  *    JSON object whose keys were sorted stays sorted, in the same order and
  *    format its tool writes.
- * 5. Prints the relative specifiers that lead nowhere, and the old file names
- *    still mentioned somewhere, for a person to check.
+ * 5. Prints the relative specifiers that lead nowhere, and the old names still
+ *    written some other way (a bare file name, a module path from `src/` in a
+ *    config, an import in a Markdown code block), for a person to fix.
  *
  * Usage: node scripts/move-files.mjs [--dry-run]
  */
@@ -279,19 +280,30 @@ async function codeSpecifiers(file, text) {
   return found;
 }
 
-/** `](./x)` links in Markdown, which name their file exactly, and `import … from './x'` in MDX. */
+/**
+ * Relative `](x)` links in Markdown, which name their file exactly, and
+ * `import … from './x'` in MDX. A link without `./` gets one to resolve, and
+ * `bare` says to drop it again.
+ */
 function markdownSpecifiers(file, text) {
   const found = [];
-  const patterns = [[/\]\((\.{1,2}\/[^)\s#?]+)/g, true]];
-
-  if (MDX.test(file))
-    patterns.push([/\bfrom\s+['"](\.{1,2}\/[^'"]+)['"]/g, false]);
+  const patterns = [
+    [/\]\(((?![a-z][\w+.-]*:|[/#<])[^)\s#?]+)/gi, true],
+    ...(MDX.test(file) ? [[/\bfrom\s+['"](\.{1,2}\/[^'"]+)['"]/g, false]] : []),
+  ];
 
   for (const [pattern, exact] of patterns) {
     for (const match of text.matchAll(pattern)) {
       const start = match.index + match[0].indexOf(match[1]);
+      const bare = !match[1].startsWith('.');
 
-      found.push([start, start + match[1].length, match[1], exact]);
+      found.push([
+        start,
+        start + match[1].length,
+        bare ? `./${match[1]}` : match[1],
+        exact,
+        bare,
+      ]);
     }
   }
 
@@ -338,8 +350,12 @@ export async function main({ root, dryRun = false, log = console.log }) {
     moved += 1;
     if (dryRun) continue;
     fs.mkdirSync(path.dirname(abs(to)), { recursive: true });
-    if (tracked.has(from)) git('mv', from, to);
-    else fs.renameSync(abs(from), abs(to));
+    if (tracked.has(from)) {
+      git('mv', from, to);
+      // A later entry of a chain moves it on, and must find it tracked.
+      tracked.delete(from);
+      tracked.add(to);
+    } else fs.renameSync(abs(from), abs(to));
   }
 
   const files = [
@@ -373,7 +389,7 @@ export async function main({ root, dryRun = false, log = console.log }) {
         : [];
     const edits = [];
 
-    for (const [start, end, specifier, exact] of specifiers) {
+    for (const [start, end, specifier, exact, bare] of specifiers) {
       const next = rewriteSpecifier({
         file,
         origin,
@@ -383,7 +399,8 @@ export async function main({ root, dryRun = false, log = console.log }) {
         exact,
       });
 
-      if (next && next !== specifier) edits.push([start, end, next]);
+      if (next && next !== specifier)
+        edits.push([start, end, bare ? next.replace(/^\.\//, '') : next]);
       else if (
         !next &&
         specifier.startsWith('.') &&
@@ -424,17 +441,22 @@ export async function main({ root, dryRun = false, log = console.log }) {
     if (!dryRun) fs.writeFileSync(abs(file), text);
   }
 
-  // 5. What a person should check: a moved file's old name, or its path from
-  // `src/` without the extension (a module path in a config), written some other way.
+  // 5. What a person should check: a renamed file's old name, or a moved
+  // file's old path from `src/` without the extension (a module path in a
+  // config), written some other way.
   const leftovers = [];
-  const oldNames = [...moves]
-    .filter(([from, to]) => posix.basename(from) !== posix.basename(to))
-    .flatMap(([from]) => [
-      posix.basename(from),
-      ...[stripExt(from).replace(/^src\//, '')].filter((name) =>
-        name.includes('/'),
-      ),
-    ]);
+  const oldNames = [...moves].flatMap(([from, to]) => {
+    const fromSrc = stripExt(from).replace(/^src\//, '');
+
+    return [
+      ...(stripExt(posix.basename(from)) !== stripExt(posix.basename(to))
+        ? [posix.basename(from)]
+        : []),
+      ...(fromSrc.includes('/') && stripExt(from) !== stripExt(to)
+        ? [fromSrc]
+        : []),
+    ];
+  });
   const oldName = new RegExp(
     `(?<![\\w-])(?:${[...new Set(oldNames)].map(escape).join('|')})(?![\\w-])`,
     'g',
@@ -460,7 +482,7 @@ export async function main({ root, dryRun = false, log = console.log }) {
   return { moved, rewritten, unresolved, leftovers };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.main) {
   await main({
     root: path.resolve(import.meta.dirname, '..'),
     dryRun: process.argv.includes('--dry-run'),

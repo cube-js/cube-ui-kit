@@ -1,6 +1,18 @@
+import { execFileSync } from 'node:child_process';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+
 import {
   finalMoves,
   keepSorted,
+  main,
   rewritePaths,
   rewriteSpecifier,
 } from './move-files.mjs';
@@ -142,5 +154,68 @@ describe('keepSorted', () => {
 
   it('leaves an unsorted object as it was', () => {
     expect(keepSorted({ b: 1, a: 2 }, { c: 1, a: 2 })).toBeNull();
+  });
+});
+
+describe('main', () => {
+  let dir;
+  const git = (...args) =>
+    execFileSync('git', args, { cwd: dir, encoding: 'utf8' });
+  const write = (file, text) => {
+    mkdirSync(dirname(join(dir, file)), { recursive: true });
+    writeFileSync(join(dir, file), text);
+  };
+  const read = (file) => readFileSync(join(dir, file), 'utf8');
+
+  beforeEach(() => {
+    // A git hook exports GIT_DIR and GIT_INDEX_FILE, which would point every
+    // git command here at the repository being committed instead of `dir`.
+    for (const name of Object.keys(process.env)) {
+      if (name.startsWith('GIT_')) vi.stubEnv(name, undefined);
+    }
+
+    dir = mkdtempSync(join(tmpdir(), 'move-files-'));
+    git('init', '-q');
+    git('config', 'user.email', 'test@example.com');
+    git('config', 'user.name', 'Test');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('moves a file along a chain of entries with git, once', async () => {
+    write('src/a/useFoo.ts', 'export const useFoo = 1;\n');
+    write('src/a/Button.tsx', "import { useFoo } from './useFoo';\n");
+    write('docs/notes.md', 'See `src/a/useFoo.ts`.\n');
+    write(
+      'scripts/move-files.json',
+      JSON.stringify({
+        'src/a/useFoo.ts': 'src/a/use-foo.ts',
+        'src/a/use-foo.ts': 'src/hooks/use-foo.ts',
+      }),
+    );
+    git('add', '-A');
+    git('commit', '-q', '-m', 'start');
+
+    const log = vi.fn();
+
+    expect(await main({ root: dir, log })).toMatchObject({
+      moved: 2,
+      rewritten: 2,
+    });
+    expect(git('status', '--porcelain').split('\n').sort()).toEqual([
+      '',
+      ' M docs/notes.md',
+      ' M src/a/Button.tsx',
+      'R  src/a/useFoo.ts -> src/hooks/use-foo.ts',
+    ]);
+    expect(read('src/a/Button.tsx')).toContain("from '../hooks/use-foo'");
+    expect(read('docs/notes.md')).toBe('See `src/hooks/use-foo.ts`.\n');
+    expect(await main({ root: dir, log })).toMatchObject({
+      moved: 0,
+      rewritten: 0,
+    });
   });
 });
