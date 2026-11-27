@@ -53,7 +53,7 @@ Choose a different component when the interaction has another outcome:
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
 - **`onFocus`** `() => void` — Fired when focus enters the component
 - **`onBlur`** `() => void` — Fired when focus leaves the component
-- **`onKeyDown`** `(e: KeyboardEvent) => void` — Fired when a key is pressed on the input, before the component's own key handling. Call `e.preventDefault()` to skip that handling for the key: a prevented `Enter` selects nothing and does not call `onSubmit`, a prevented `ArrowDown` does not open the popover. The event is React Aria's keyboard event. `Escape` and `Tab` go on to ancestors, so a surrounding `Dialog` still closes on `Escape` and moves focus on `Tab`, unless SearchComboBox acts on them or the handler prevents them. It acts on `Escape` while the list is open or the input has text: it closes the list, or clears the text, or, when `isClearable` is off, keeps the browser from clearing it, so the `Escape` that closes the dialog is the one pressed with the input empty. Other keys stop at the input unless the handler calls `e.continuePropagation()`
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Fired when a key is pressed on the input, before the component's own key handling. Call `e.preventDefault()` to skip that handling for the key: a prevented `Enter` selects nothing and does not call `onSubmit`, a prevented `ArrowDown` does not open the popover. The event is React Aria's keyboard event. `Escape` and `Tab` go on to ancestors, so a surrounding `Dialog` still closes on `Escape` and moves focus on `Tab`, unless SearchComboBox acts on them or the handler prevents them. It acts on `Escape` while the list is on screen or the input has text: it closes the list, or clears the text, or, when `isClearable` is off, keeps the browser from clearing it, so the `Escape` that closes the dialog is the one pressed with the input empty. Other keys stop at the input unless the handler calls `e.continuePropagation()`
 - **`prefix`** `ReactNode` — Content rendered before the input
 - **`suffix`** `ReactNode` — Content rendered after the input
 - **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of suffix relative to status icons
@@ -251,7 +251,7 @@ useEffect(() => {
 - `ArrowDown` - Opens the popover (if closed) or moves focus to the next suggestion. A disabled option is reached too, as WAI-ARIA keeps it focusable, so a screen reader says why it is unavailable; Enter ignores it, and the list never highlights one on its own
 - `ArrowUp` - Opens the popover (if closed) or moves focus to the previous suggestion
 - `Enter` - Selects the highlighted suggestion, falling back to the first suggestion the user can pick; when there is none, submits the raw text via `onSubmit`. On a disabled suggestion the arrow keys reached, it does nothing
-- `Escape` - Closes the popover (if open) or clears the input (if clearable and popover closed)
+- `Escape` - Closes the popover (if open) or clears the input (if clearable and popover closed). A popover a load still holds back, before `loadingDelay` has passed, counts as closed: `Escape` cancels it and clears the input, or goes on to a surrounding dialog when the input is empty
 - `Home` / `End` - Moves focus to the first / last suggestion (when the popover is open)
 - Typing - Filters suggestions based on the input value
 

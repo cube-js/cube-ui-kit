@@ -1,4 +1,4 @@
-import { act, waitFor } from '@testing-library/react';
+import { act, fireEvent, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 
 import {
@@ -630,6 +630,86 @@ describe('<SearchComboBox />', () => {
       },
       { timeout: 2000 },
     );
+  });
+
+  describe('Escape while a load holds the list back', () => {
+    // The list is open but waits `loadingDelay` before it shows: to the user
+    // it is closed, so Escape cancels it and acts as on a closed list.
+    const renderLoading = (
+      props: { popoverTrigger?: 'focus' | 'input' } = {},
+      onParentKeyDown = vi.fn(),
+    ) => {
+      // The parent's onKeyDown stands in for a dialog that closes on an
+      // Escape the field lets through.
+      const view = renderWithRoot(
+        <div onKeyDown={onParentKeyDown}>
+          <SearchComboBox
+            isLoading
+            filter={false}
+            label="Colors"
+            loadingDelay={1000}
+            items={[] as typeof items}
+            {...props}
+          >
+            {(item: (typeof items)[number]) => (
+              <SearchComboBox.Item key={item.key}>
+                {item.children}
+              </SearchComboBox.Item>
+            )}
+          </SearchComboBox>
+        </div>,
+      );
+
+      return { ...view, input: view.getByRole('combobox'), onParentKeyDown };
+    };
+
+    it('lets Escape reach a surrounding dialog, and the list never shows', () => {
+      vi.useFakeTimers();
+
+      try {
+        const { input, onParentKeyDown, queryByRole } = renderLoading({
+          popoverTrigger: 'focus',
+        });
+
+        act(() => input.focus());
+        fireEvent.keyDown(input, { key: 'Escape' });
+
+        expect(onParentKeyDown).toHaveBeenCalledWith(
+          expect.objectContaining({ key: 'Escape' }),
+        );
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
+        expect(input).toHaveAttribute('aria-expanded', 'false');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('clears typed text, as on a closed list, and the list never shows', () => {
+      vi.useFakeTimers();
+
+      try {
+        const { input, queryByRole } = renderLoading();
+
+        act(() => input.focus());
+        fireEvent.change(input, { target: { value: 're' } });
+        fireEvent.keyDown(input, { key: 'Escape' });
+
+        expect(input).toHaveValue('');
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   it('clears the input on Escape when clearable and the popover is closed', async () => {

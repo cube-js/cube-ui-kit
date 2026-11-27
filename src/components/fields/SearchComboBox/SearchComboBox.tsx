@@ -802,11 +802,19 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   };
 
   const handleEscapeKey = (e: AriaKeyboardEvent) => {
-    if (isPopoverOpen) {
+    if (shouldShowPopover) {
       e.preventDefault();
       setIsPopoverOpen(false);
       inputRef.current?.focus();
-    } else if (effectiveInputValue) {
+
+      return;
+    }
+
+    // A list a load holds back would show later: Escape cancels it too, and
+    // goes on as it does with the list closed. A closed list stays closed.
+    setIsPopoverOpen(false);
+
+    if (effectiveInputValue) {
       // Always preventDefault: type="search" clears natively on Escape
       // unless cancelled, which would bypass isClearable={false}.
       e.preventDefault();
