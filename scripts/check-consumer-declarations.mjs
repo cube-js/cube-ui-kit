@@ -148,7 +148,9 @@ function compile(declaration) {
 // The bundle re-exports some types without a `type` marker (TS2693 when used as
 // a value). Any other name `tasty()` rejects must be listed here, so that a
 // component which stops working as a base fails instead of dropping out.
-const knownNotBases = new Set(['ResizeSensor']);
+// `Typography` is an object that groups `Text`, `Title` and `Paragraph`, which
+// are checked on their own.
+const knownNotBases = new Set(['ResizeSensor', 'Typography']);
 const compoundComponents = [
   'Layout',
   'GridLayout',
