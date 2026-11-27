@@ -661,6 +661,33 @@ function getOptionTextLength(item: CollectionNode<unknown>): number {
     : label + descriptionLength;
 }
 
+/**
+ * Whether `items` are the `previous` options with any new ones after them, at
+ * the end of the list or of a section: a page appended, or the same options
+ * again. A section is compared by its options, as a search changes those and
+ * leaves the sections.
+ */
+function isAppendedTo(
+  items: readonly CollectionNode<unknown>[],
+  previous: readonly CollectionNode<unknown>[],
+): boolean {
+  if (items === previous) return true;
+
+  return (
+    items.length >= previous.length &&
+    previous.every((item, index) => {
+      const next = items[index];
+
+      if (next.key !== item.key) return false;
+
+      return (
+        item.type !== 'section' ||
+        isAppendedTo([...next.childNodes], [...item.childNodes])
+      );
+    })
+  );
+}
+
 /** The loading row's key, for the virtualizer and React. */
 const LOADING_ROW_KEY = '__ListBoxLoadingMore__';
 
@@ -1308,21 +1335,35 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // out, nor when a filter leaves only short options.
   const heldWidth = useHeldWidth(scrollRef);
 
-  // The focused key this effect last saw, to tell a move of focus from a
-  // change of the items.
+  // The focused key and the options this effect last saw, to tell a move of
+  // focus, and a page appended, from another change of the items. A list
+  // that could load more once loads pages for good: a consumer may drop
+  // `onLoadMore` with `hasMore` as the last page arrives.
   const lastFocusedKeyRef = useRef<Key | null>(null);
+  const lastItemsRef = useRef<typeof itemsArray>([]);
+  const loadsPagesRef = useRef(false);
 
   // Keep the focused option visible. One the virtualizer hasn't rendered is
   // scrolled to by index, which renders it, when focus moves to it (End,
   // typeahead, the selected option on autofocus or Tab); new items alone
   // leave a list the user scrolled away from where it is. One already
   // rendered is scrolled to only for keyboard navigation, so a click never
-  // moves the list.
+  // moves the list, and, in a list that loads pages, not for a page appended
+  // to the options. It is often still rendered when the viewer scrolls away
+  // (a list with sections renders every option, a virtualized one its
+  // longest rows), so every page would scroll back to it. A search that only
+  // adds options after it looks like a page there too.
   useLayoutEffect(() => {
     const focusedKey = listState.selectionManager.focusedKey;
     const hasFocusMoved = focusedKey !== lastFocusedKeyRef.current;
 
+    if (canLoadMore) loadsPagesRef.current = true;
+
+    const isPageAppended =
+      loadsPagesRef.current && isAppendedTo(itemsArray, lastItemsRef.current);
+
     lastFocusedKeyRef.current = focusedKey;
+    lastItemsRef.current = itemsArray;
 
     if (focusedKey == null) return;
 
@@ -1344,6 +1385,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
       return;
     }
+
+    if (!hasFocusMoved && isPageAppended) return;
 
     // Only scroll on keyboard navigation
     if (lastFocusSourceRef.current !== 'keyboard') return;
@@ -1372,6 +1415,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     itemsArray,
     shouldVirtualize,
     rowVirtualizer,
+    canLoadMore,
   ]);
 
   // ----- Load more -----

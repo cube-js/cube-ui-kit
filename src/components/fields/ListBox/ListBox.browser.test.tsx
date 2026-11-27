@@ -6,7 +6,17 @@ import { Select } from '../Select/Select';
 
 import { ListBox } from './ListBox';
 
+import type { CubeFilterListBoxProps } from '../FilterListBox/FilterListBox';
 import type { CubeListBoxProps } from './ListBox';
+
+/** Whether the option lies wholly inside its list's scroll viewport. */
+function isInView(option: HTMLElement) {
+  const scroller = option.closest('[role="listbox"]')!.parentElement!;
+  const box = option.getBoundingClientRect();
+  const viewport = scroller.getBoundingClientRect();
+
+  return box.top >= viewport.top - 1 && box.bottom <= viewport.bottom + 1;
+}
 
 /**
  * What the list lets out, and what it keeps (CUB-4839).
@@ -716,15 +726,6 @@ describe('ListBox focus outside the rendered window', () => {
     );
   }
 
-  /** Whether the option lies wholly inside its list's scroll viewport. */
-  function isInView(option: HTMLElement) {
-    const scroller = option.closest('[role="listbox"]')!.parentElement!;
-    const box = option.getBoundingClientRect();
-    const viewport = scroller.getBoundingClientRect();
-
-    return box.top >= viewport.top - 1 && box.bottom <= viewport.bottom + 1;
-  }
-
   async function expectFocusedInView(name: string) {
     await waitFor(
       () => {
@@ -1092,6 +1093,33 @@ describe('ListBox load more', () => {
       label: `Value ${index}`,
     }));
 
+  /** Labels all as long, so the list keeps its first rows rendered. */
+  const clients = (count: number): Value[] =>
+    Array.from({ length: count }, (_, index) => ({
+      key: `c${index + 1}`,
+      label: `Client ${String(index + 1).padStart(4, '0')}`,
+    }));
+
+  type ClientsProps = Partial<CubeFilterListBoxProps<Value>>;
+
+  /** A list with a search input, which focuses its first option on open. */
+  function Clients({ count, ...props }: { count: number } & ClientsProps) {
+    return (
+      <FilterListBox
+        aria-label="Clients"
+        height="25x"
+        items={clients(count)}
+        hasMore
+        onLoadMore={() => {}}
+        {...props}
+      >
+        {(item: Value) => (
+          <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+        )}
+      </FilterListBox>
+    );
+  }
+
   /** A list about six rows tall that can load more. */
   function List(props: Partial<CubeListBoxProps<Value>>) {
     return (
@@ -1293,5 +1321,133 @@ describe('ListBox load more', () => {
 
     expect(scroller().scrollTop).toBe(scrollTop);
     expect(screen.getByRole('option', { name: 'Value 33' })).toHaveFocus();
+  });
+
+  /**
+   * A page arriving leaves a focused option the viewer scrolled away from
+   * where it is, even one the list keeps rendered (CUB-9403).
+   *
+   * FilterListBox, as in FilterPicker, focuses the first option when it opens,
+   * as keyboard focus. Its labels are all as long, so the list keeps the first
+   * rows rendered, for its width, wherever it is scrolled. The list scrolled
+   * that option into view on every new page, back to the top. Cloud's search
+   * adds a custom value, in a section of its own after the options, so there
+   * the page lands in the options' section; and Cloud drops `onLoadMore` with
+   * `hasMore` as the last page arrives.
+   */
+  it.each<[string, ClientsProps, ClientsProps?]>([
+    ['single selection', { selectionMode: 'single' }],
+    ['multiple selection', { selectionMode: 'multiple' }],
+    [
+      'a server search with a custom value, as the last page',
+      {
+        selectionMode: 'multiple',
+        filter: false,
+        allowsCustomValue: true,
+        searchValue: 'Client',
+        onSearchChange: () => {},
+      },
+      { hasMore: false, onLoadMore: undefined },
+    ],
+  ])(
+    'stays where the viewer scrolled when a page arrives, in %s',
+    async (_, props, lastPage = {}) => {
+      const { rerender } = renderWithRoot(<Clients count={100} {...props} />);
+
+      await scrollToEnd(300);
+
+      const scrollTop = scroller().scrollTop;
+      const first = screen.getByRole('option', { name: 'Client 0001' });
+
+      // Scrolled away from the focused option, which is still rendered.
+      expect(scrollTop).toBeGreaterThan(1000);
+      expect(screen.getByRole('combobox')).toHaveAttribute(
+        'aria-activedescendant',
+        first.id,
+      );
+
+      rerender(<Clients count={200} {...props} {...lastPage} />);
+      await settle();
+
+      expect(scroller().scrollTop).toBe(scrollTop);
+    },
+  );
+
+  // Only a page appended leaves the list where it is. A narrower search that
+  // keeps the focused option still shows it, as `Enter` picks it: first again,
+  // or further up. With a custom value the options are in a section, and the
+  // search changes what is in it.
+  it.each<[string, ClientsProps]>([
+    ['a flat list', {}],
+    ['a list with a custom value', { allowsCustomValue: true }],
+  ])(
+    'scrolls back to the focused option a search keeps first, in %s',
+    async (_, props) => {
+      renderWithRoot(<Clients count={100} {...props} />);
+
+      const input = screen.getByRole('combobox');
+
+      // Every option matches "00", so focus stays on the first.
+      await userEvent.click(input);
+      await userEvent.keyboard('00');
+      await scrollToEnd(300);
+
+      expect(
+        isInView(screen.getByRole('option', { name: 'Client 0001' })),
+      ).toBe(false);
+
+      // "000" keeps the first nine, the focused one first.
+      await userEvent.keyboard('0');
+      await settle();
+
+      const first = screen.getByRole('option', { name: 'Client 0001' });
+
+      expect(input).toHaveAttribute('aria-activedescendant', first.id);
+      expect(isInView(first)).toBe(true);
+    },
+  );
+
+  // A list that loads no pages gets none, so any search that keeps the
+  // focused option shows it, even one every option matches.
+  it('scrolls back to the focused option any search keeps, in a list that loads no pages', async () => {
+    renderWithRoot(
+      <Clients count={100} hasMore={false} onLoadMore={undefined} />,
+    );
+
+    const input = screen.getByRole('combobox');
+
+    await userEvent.click(input);
+    await scrollToEnd(300);
+    await userEvent.keyboard('c');
+    await settle();
+
+    const first = screen.getByRole('option', { name: 'Client 0001' });
+
+    expect(input).toHaveAttribute('aria-activedescendant', first.id);
+    expect(isInView(first)).toBe(true);
+  });
+
+  it('keeps the focused option in view when a search moves it', async () => {
+    renderWithRoot(
+      <FilterListBox aria-label="Values" height="25x" items={values(100)}>
+        {(item: Value) => (
+          <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+        )}
+      </FilterListBox>,
+    );
+
+    await userEvent.click(screen.getByRole('combobox'));
+    await userEvent.keyboard('{ArrowDown>35/}');
+    await settle();
+    await userEvent.keyboard('3');
+    await settle();
+
+    const option = screen.getByRole('option', { name: 'Value 35' });
+
+    expect(screen.getByRole('combobox')).toHaveAttribute(
+      'aria-activedescendant',
+      option.id,
+    );
+    expect(isInView(option)).toBe(true);
   });
 });
