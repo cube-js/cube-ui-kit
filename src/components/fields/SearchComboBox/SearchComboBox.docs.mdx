@@ -36,7 +36,7 @@ Choose a different component when the interaction has another outcome:
 - **`icon`** `ReactElement | null` — Icon rendered before the input. Defaults to a search icon; pass `null` to remove it
 - **`inputValue`** `string` — The current input value in controlled mode
 - **`defaultInputValue`** `string` — The default input value in uncontrolled mode
-- **`emptyLabel`** `ReactNode` (default: context-aware `No results found` / `Loading…`) — Label shown when the list is empty. Once the list settles on a text label, not while `isLoading`, a polite status announces it to screen readers (an element label is shown but not announced), so its text is on the page twice: a test finds it through the listbox's description (`toHaveAccessibleDescription`) rather than `getByText`
+- **`emptyLabel`** `ReactNode` (default: context-aware `No results found` / `Loading…`) — Label shown when the list is empty. Once the list settles on a text label, not while `isLoading`, a polite status announces it to screen readers (an element label is shown but not announced), so a text label is on the page twice: a test finds it through the listbox's description (`toHaveAccessibleDescription`) rather than `getByText`
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function, or `false` to disable internal filtering for external/server-side filtering
 - **`isClearable`** `boolean` (default: `true`) — Whether the input is clearable via the clear button or Escape key
 - **`hideTrigger`** `boolean` (default: `true`) — Whether the dropdown trigger button is hidden (search-field look)
