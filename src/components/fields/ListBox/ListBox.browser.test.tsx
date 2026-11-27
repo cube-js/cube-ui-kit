@@ -1294,4 +1294,62 @@ describe('ListBox load more', () => {
     expect(scroller().scrollTop).toBe(scrollTop);
     expect(screen.getByRole('option', { name: 'Value 33' })).toHaveFocus();
   });
+
+  /**
+   * A page arriving leaves a focused option the viewer scrolled away from
+   * where it is, even one the list keeps rendered (CUB-9403).
+   *
+   * FilterListBox, as in FilterPicker, focuses the first option when it opens,
+   * as keyboard focus. Its labels are all as long, so the list keeps the first
+   * rows rendered, for its width, wherever it is scrolled. The list scrolled
+   * that option into view on every new page, back to the top.
+   */
+  it.each(['single', 'multiple'] as const)(
+    'stays where the viewer scrolled when a page arrives, in %s selection',
+    async (selectionMode) => {
+      const clients = (count: number): Value[] =>
+        Array.from({ length: count }, (_, index) => ({
+          key: `c${index + 1}`,
+          label: `Client ${String(index + 1).padStart(4, '0')}`,
+        }));
+
+      function Clients({ count }: { count: number }) {
+        return (
+          <FilterListBox
+            aria-label="Clients"
+            height="25x"
+            items={clients(count)}
+            selectionMode={selectionMode}
+            hasMore
+            onLoadMore={() => {}}
+          >
+            {(item: Value) => (
+              <FilterListBox.Item key={item.key}>
+                {item.label}
+              </FilterListBox.Item>
+            )}
+          </FilterListBox>
+        );
+      }
+
+      const { rerender } = renderWithRoot(<Clients count={100} />);
+
+      await scrollToEnd(300);
+
+      const scrollTop = scroller().scrollTop;
+      const first = screen.getByRole('option', { name: 'Client 0001' });
+
+      // Scrolled away from the focused option, which is still rendered.
+      expect(scrollTop).toBeGreaterThan(1000);
+      expect(screen.getByRole('combobox')).toHaveAttribute(
+        'aria-activedescendant',
+        first.id,
+      );
+
+      rerender(<Clients count={200} />);
+      await settle();
+
+      expect(scroller().scrollTop).toBe(scrollTop);
+    },
+  );
 });

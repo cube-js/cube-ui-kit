@@ -1312,19 +1312,20 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // change of the items.
   const lastFocusedKeyRef = useRef<Key | null>(null);
 
-  // Keep the focused option visible. One the virtualizer hasn't rendered is
-  // scrolled to by index, which renders it, when focus moves to it (End,
-  // typeahead, the selected option on autofocus or Tab); new items alone
-  // leave a list the user scrolled away from where it is. One already
-  // rendered is scrolled to only for keyboard navigation, so a click never
-  // moves the list.
+  // Keep the focused option visible when focus moves to it (End, typeahead,
+  // the selected option on autofocus or Tab). New items alone leave a list the
+  // user scrolled away from where it is, even when the option is still
+  // rendered, as the longest rows are wherever the list is scrolled. One the
+  // virtualizer hasn't rendered is scrolled to by index, which renders it. One
+  // already rendered is scrolled to only for keyboard navigation, so a click
+  // never moves the list.
   useLayoutEffect(() => {
     const focusedKey = listState.selectionManager.focusedKey;
     const hasFocusMoved = focusedKey !== lastFocusedKeyRef.current;
 
     lastFocusedKeyRef.current = focusedKey;
 
-    if (focusedKey == null) return;
+    if (focusedKey == null || !hasFocusMoved) return;
 
     const scrollElement = scrollRef.current;
     if (!scrollElement) return;
@@ -1338,7 +1339,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         ? itemsArray.findIndex((item) => item.key === focusedKey)
         : -1;
 
-      if (index !== -1 && hasFocusMoved) {
+      if (index !== -1) {
         rowVirtualizer.scrollToIndex(index, { align: 'auto' });
       }
 
