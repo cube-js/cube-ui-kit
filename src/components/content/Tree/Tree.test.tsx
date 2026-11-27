@@ -2,7 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 
-import { act, renderWithRoot, screen, waitFor } from '../../../test';
+import { act, fireEvent, renderWithRoot, screen, waitFor } from '../../../test';
 import { startScreenReader } from '../../../test/screen-reader';
 import { Menu } from '../../actions/Menu';
 
@@ -1083,6 +1083,88 @@ describe('<Tree />', () => {
 
       expect(treeOnAction).toHaveBeenCalledWith('delete', 'fruits');
       expect(menuOnAction).toHaveBeenCalledWith('delete');
+    });
+
+    // A disabled row is inert, as an ItemTable row is: it has no menu. A
+    // right-click falls through to the browser's own, Shift+F10 opens nothing,
+    // and its `⋮` trigger stays, disabled.
+    it.each([
+      ['"context-only"', 'context-only' as const],
+      ['`true`', true as const],
+    ])(
+      'opens no menu on a disabled row with contextMenu %s',
+      async (_, contextMenu) => {
+        const data: CubeTreeNodeData[] = [
+          { key: 'a', title: 'Alpha' },
+          { key: 'b', title: 'Beta', isDisabled: true },
+        ];
+        const { getAllByRole, getByRole, queryByRole } = renderWithRoot(
+          <Tree
+            aria-label="Files"
+            contextMenu={contextMenu}
+            treeData={data}
+            menu={TREE_MENU}
+            // A row's own disabled state wins over the trigger's props.
+            menuTriggerProps={{ isDisabled: false }}
+          />,
+        );
+        const [alpha, beta] = getAllByRole('row');
+
+        if (contextMenu === true) {
+          expect(
+            beta.querySelector('button[aria-label="Actions"]'),
+          ).toBeDisabled();
+        }
+
+        await act(async () => {
+          await userEvent.pointer({ keys: '[MouseRight>]', target: beta });
+        });
+        expect(queryByRole('menu')).toBeNull();
+
+        await act(async () => alpha.focus());
+        await userEvent.keyboard('{ArrowDown}');
+        expect(beta).toHaveFocus();
+        await userEvent.keyboard('{Shift>}{F10}{/Shift}');
+        expect(queryByRole('menu')).toBeNull();
+
+        // The same keys open the menu of a row you can use.
+        await userEvent.keyboard('{ArrowUp}');
+        await userEvent.keyboard('{Shift>}{F10}{/Shift}');
+        await waitFor(() => expect(getByRole('menu')).toBeInTheDocument());
+      },
+    );
+
+    // Rows keep their element when `isDisabled` changes, so the right-click
+    // menu has to follow the change rather than what the row was at mount.
+    it('follows a row that becomes disabled or enabled', async () => {
+      const tree = (isDisabled: boolean) => (
+        <Tree
+          aria-label="Files"
+          contextMenu="context-only"
+          menu={TREE_MENU}
+          treeData={[{ key: 'a', title: 'Alpha', isDisabled }]}
+        />
+      );
+      const { getByRole, queryByRole, rerender } = renderWithRoot(tree(true));
+
+      rerender(tree(false));
+      await act(async () => {
+        await userEvent.pointer({
+          keys: '[MouseRight>]',
+          target: getByRole('row'),
+        });
+      });
+      await waitFor(() => expect(getByRole('menu')).toBeInTheDocument());
+
+      // A menu open when its row becomes disabled stays until dismissed.
+      rerender(tree(true));
+      expect(getByRole('menu')).toBeInTheDocument();
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(queryByRole('menu')).toBeNull());
+
+      // Not prevented: the browser shows its own menu.
+      expect(fireEvent.contextMenu(getByRole('row'))).toBe(true);
+      expect(queryByRole('menu')).toBeNull();
     });
   });
 

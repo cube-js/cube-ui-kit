@@ -197,7 +197,7 @@ The hook calculates menu position differently based on whether an event is provi
 
 ### Event Handling
 
-- **Automatic binding** occurs via `useEffect` on the `targetRef`, for both `contextmenu` and the touch long press
+- **Automatic binding** occurs via `useEffect` on the `targetRef`, for both `contextmenu` and the touch long press. It follows the element `targetRef` holds after each render of the component that calls the hook, so a target attached, swapped or detached on a later render is followed. A target attached by a child's own state update is not seen until the calling component renders again
 - **Event listeners** are properly cleaned up on unmount
 - **`preventDefault()`** is called automatically for context menu events
 - **Manual `open()` calls** can still prevent default if an event is provided

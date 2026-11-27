@@ -194,6 +194,11 @@ function TreeNodeInner(props: TreeNodeProps) {
     hasMenu &&
     (effectiveContextMenu === true || effectiveContextMenu === 'context-only');
   const contextMenuOnly = effectiveContextMenu === 'context-only';
+  // A disabled row is inert, as an ItemTable row is: no right-click or long
+  // press menu (the browser's own shows instead) and no Shift+F10. Its `⋮`
+  // trigger stays, disabled, so the row keeps its layout, and a menu open when
+  // the row becomes disabled stays until it is dismissed.
+  const canOpenMenu = menuExposed && !isDisabled;
 
   // Controlled state for menu trigger (enables keyboard opening with Shift+F10)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -263,7 +268,7 @@ function TreeNodeInner(props: TreeNodeProps) {
     }
 
     // Shift+F10 opens the row menu (standard accessibility shortcut).
-    if (e.key === 'F10' && e.shiftKey && menuExposed) {
+    if (e.key === 'F10' && e.shiftKey && canOpenMenu) {
       e.preventDefault();
       e.stopPropagation();
       if (contextMenuOnly) {
@@ -426,6 +431,8 @@ function TreeNodeInner(props: TreeNodeProps) {
           icon={<MoreIcon />}
           aria-label={t('tree.actions', 'Actions')}
           {...menuTriggerProps}
+          // A disabled row's trigger stays disabled, whatever the props say.
+          isDisabled={isDisabled || menuTriggerProps?.isDisabled}
         />
         <Menu {...menuProps} onAction={handleMenuAction}>
           {effectiveMenuChildren}
@@ -449,9 +456,9 @@ function TreeNodeInner(props: TreeNodeProps) {
   const refs = useMemo(() => {
     const list: Ref<HTMLDivElement>[] = [rowRef];
     if (virtualRef) list.push(virtualRef);
-    if (menuExposed) list.push(rowContextMenu.targetRef);
+    if (canOpenMenu) list.push(rowContextMenu.targetRef);
     return mergeRefs(...list);
-  }, [virtualRef, menuExposed, rowContextMenu.targetRef]);
+  }, [virtualRef, canOpenMenu, rowContextMenu.targetRef]);
 
   return (
     <TreeNodeRow
