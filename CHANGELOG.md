@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.224.0
+
+### Minor Changes
+
+- [#1734](https://github.com/cube-js/cube-ui-kit/pull/1734) [`0def7123b`](https://github.com/cube-js/cube-ui-kit/commit/0def7123b3ea8214db16876b0ebc66cbd87e7c78) Thanks [@tenphi](https://github.com/tenphi)! - `ComboBox` takes an `emptyLabel` for a status that isn't an option, such as "No matches" or "Searching…". With it set, a list with no options stays open and shows the label instead of closing: typed text that matches nothing, no items, or a load with none yet. The label is not an option, so the arrow keys skip it and `Enter` never picks it. It describes the empty listbox, and a polite status announces a text label to screen readers once the list settles on it, not while loading; an element label is shown but not announced. A text label is therefore on the page twice: find it in tests through the listbox's description rather than by text. While `isLoading`, a list that opens empty shows the label after a second, and a list already on screen stays through the load. Switch the label's text on `isLoading` to say the list is loading. Without `emptyLabel`, `ComboBox` behaves as before. Use it instead of a disabled option that stands in for a status, which the arrow keys now reach and screen readers announce as an unavailable choice.
+
+### Patch Changes
+
+- [#1734](https://github.com/cube-js/cube-ui-kit/pull/1734) [`0def7123b`](https://github.com/cube-js/cube-ui-kit/commit/0def7123b3ea8214db16876b0ebc66cbd87e7c78) Thanks [@tenphi](https://github.com/tenphi)! - `ComboBox` highlights the first option when options land in a list that is already open, as a search's results do, the way it does when the list opens. Before, nothing was highlighted, yet `Enter` still picked the first option.
+
+- [#1736](https://github.com/cube-js/cube-ui-kit/pull/1736) [`0dd893ef9`](https://github.com/cube-js/cube-ui-kit/commit/0dd893ef9afaa3b9086ffe5f22076a6446bfa865) Thanks [@tenphi](https://github.com/tenphi)! - The agent harness names harnesspm by its new package, `@harnesspm/cli`: the `uikit:colors` usage line now prints `npx -y @harnesspm/cli run uikit:colors`, which also works outside the project folder.
+
+- [#1737](https://github.com/cube-js/cube-ui-kit/pull/1737) [`935eec7ff`](https://github.com/cube-js/cube-ui-kit/commit/935eec7ff44645e06159649d7fbe9e688f7f2bec) Thanks [@tenphi](https://github.com/tenphi)! - `SearchComboBox`: `Escape` on a list that a load still holds back (open, but waiting for `loadingDelay` before it shows) now cancels it and acts as on a closed list: it clears the text when clearable, or goes on to a surrounding dialog when the input is empty. Before, it only cancelled the hidden list and kept the key, so the first `Escape` in a dialog did nothing visible.
+
+- [#1734](https://github.com/cube-js/cube-ui-kit/pull/1734) [`0def7123b`](https://github.com/cube-js/cube-ui-kit/commit/0def7123b3ea8214db16876b0ebc66cbd87e7c78) Thanks [@tenphi](https://github.com/tenphi)! - `SearchComboBox` no longer hides its list when a new load empties it: a list already on screen stays and shows `Loading…` (or your `emptyLabel`) until the results land, so a server search doesn't make it blink out between keystrokes. A list that opens with no results while loading still waits `loadingDelay` before it shows. Screen readers now hear the empty state ("No results found" or your text `emptyLabel`) through a polite status once the list settles on it, not while loading; an element label is shown but not announced. A text label is therefore on the page twice: a test that finds it with `getByText` should check the listbox's description instead.
+
 ## 0.223.0
 
 ### Minor Changes

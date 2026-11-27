@@ -36,7 +36,7 @@ Choose a different component when the interaction has another outcome:
 - **`icon`** `ReactElement | null` — Icon rendered before the input. Defaults to a search icon; pass `null` to remove it
 - **`inputValue`** `string` — The current input value in controlled mode
 - **`defaultInputValue`** `string` — The default input value in uncontrolled mode
-- **`emptyLabel`** `ReactNode` (default: context-aware `No results found` / `Loading…`) — Label shown when the list is empty
+- **`emptyLabel`** `ReactNode` (default: context-aware `No results found` / `Loading…`) — Label shown when the list is empty. Once the list settles on a text label, not while `isLoading`, a polite status announces it to screen readers (an element label is shown but not announced), so a text label is on the page twice: a test finds it through the listbox's description (`toHaveAccessibleDescription`) rather than `getByText`
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function, or `false` to disable internal filtering for external/server-side filtering
 - **`isClearable`** `boolean` (default: `true`) — Whether the input is clearable via the clear button or Escape key
 - **`hideTrigger`** `boolean` (default: `true`) — Whether the dropdown trigger button is hidden (search-field look)
@@ -53,7 +53,7 @@ Choose a different component when the interaction has another outcome:
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
 - **`onFocus`** `() => void` — Fired when focus enters the component
 - **`onBlur`** `() => void` — Fired when focus leaves the component
-- **`onKeyDown`** `(e: KeyboardEvent) => void` — Fired when a key is pressed on the input, before the component's own key handling. Call `e.preventDefault()` to skip that handling for the key: a prevented `Enter` selects nothing and does not call `onSubmit`, a prevented `ArrowDown` does not open the popover. The event is React Aria's keyboard event. `Escape` and `Tab` go on to ancestors, so a surrounding `Dialog` still closes on `Escape` and moves focus on `Tab`, unless SearchComboBox acts on them or the handler prevents them. It acts on `Escape` while the list is open or the input has text: it closes the list, or clears the text, or, when `isClearable` is off, keeps the browser from clearing it, so the `Escape` that closes the dialog is the one pressed with the input empty. Other keys stop at the input unless the handler calls `e.continuePropagation()`
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Fired when a key is pressed on the input, before the component's own key handling. Call `e.preventDefault()` to skip that handling for the key: a prevented `Enter` selects nothing and does not call `onSubmit`, a prevented `ArrowDown` does not open the popover. The event is React Aria's keyboard event. `Escape` and `Tab` go on to ancestors, so a surrounding `Dialog` still closes on `Escape` and moves focus on `Tab`, unless SearchComboBox acts on them or the handler prevents them. It acts on `Escape` while the list is on screen or the input has text: it closes the list, or clears the text, or, when `isClearable` is off, keeps the browser from clearing it, so the `Escape` that closes the dialog is the one pressed with the input empty. Other keys stop at the input unless the handler calls `e.continuePropagation()`
 - **`prefix`** `ReactNode` — Content rendered before the input
 - **`suffix`** `ReactNode` — Content rendered after the input
 - **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of suffix relative to status icons
@@ -69,7 +69,7 @@ Choose a different component when the interaction has another outcome:
 
 **filter** — By default the list is filtered client-side with a contains match. Pass a custom `(textValue, inputValue) => boolean`, or set `filter={false}` to disable internal filtering entirely and provide already-filtered `items` yourself (server-side filtering).
 
-**isLoading + loadingDelay** — While `isLoading` is `true`, the previous results stay visible. The loading indicator (and the `Loading…` empty label) only appear after `loadingDelay` has elapsed, so fast responses never flash a loading state.
+**isLoading + loadingDelay** — While `isLoading` is `true`, the previous results stay visible, and a list already on screen stays even when the load empties it, showing `Loading…` (or your `emptyLabel`), so a search doesn't make it blink out between keystrokes. The loading indicator, and a list that opens with no results while loading, only appear after `loadingDelay` has elapsed, so fast responses never flash a loading state.
 
 ### Base Properties
 
@@ -229,7 +229,13 @@ useEffect(() => {
   inputValue={value}
   isLoading={isLoading}
   items={results}
-  emptyLabel={value.trim() ? 'No countries found' : 'Type to search'}
+  emptyLabel={
+    !value.trim()
+      ? 'Type to search'
+      : isLoading
+        ? 'Searching…'
+        : 'No countries found'
+  }
   onInputChange={setValue}
   onSelect={(key) => selectCountry(key)}
 >
@@ -245,7 +251,7 @@ useEffect(() => {
 - `ArrowDown` - Opens the popover (if closed) or moves focus to the next suggestion. A disabled option is reached too, as WAI-ARIA keeps it focusable, so a screen reader says why it is unavailable; Enter ignores it, and the list never highlights one on its own
 - `ArrowUp` - Opens the popover (if closed) or moves focus to the previous suggestion
 - `Enter` - Selects the highlighted suggestion, falling back to the first suggestion the user can pick; when there is none, submits the raw text via `onSubmit`. On a disabled suggestion the arrow keys reached, it does nothing
-- `Escape` - Closes the popover (if open) or clears the input (if clearable and popover closed)
+- `Escape` - Closes the popover (if open) or clears the input (if clearable and popover closed). A popover a load still holds back, before `loadingDelay` has passed, counts as closed: `Escape` cancels it and clears the input, or goes on to a surrounding dialog when the input is empty
 - `Home` / `End` - Moves focus to the first / last suggestion (when the popover is open)
 - Typing - Filters suggestions based on the input value
 

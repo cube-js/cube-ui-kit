@@ -1,4 +1,4 @@
-import { act, waitFor } from '@testing-library/react';
+import { act, fireEvent, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 
 import {
@@ -6,6 +6,7 @@ import {
   renderWithRoot,
   userEvent,
 } from '../../../test/index';
+import { startScreenReader } from '../../../test/screen-reader';
 
 import { SearchComboBox } from './SearchComboBox';
 
@@ -407,8 +408,29 @@ describe('<SearchComboBox />', () => {
     expect(input).toHaveValue('zzz');
   });
 
+  it('announces the empty state to screen readers once the query matches nothing', async () => {
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox label="Colors">
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+    const reader = await startScreenReader();
+
+    await userEvent.type(getByRole('combobox'), 'zzz');
+
+    await waitFor(async () =>
+      expect(await reader.spokenPhraseLog()).toContain(
+        'polite: No results found',
+      ),
+    );
+  });
+
   it('shows a custom emptyLabel when no results match', async () => {
-    const { getByRole, getByText } = renderWithRoot(
+    const { getByRole } = renderWithRoot(
       <SearchComboBox label="Colors" emptyLabel="Nothing here">
         {items.map((item) => (
           <SearchComboBox.Item key={item.key}>
@@ -422,9 +444,11 @@ describe('<SearchComboBox />', () => {
 
     await userEvent.type(input, 'zzz');
 
-    // The popover stays open on a non-empty query and shows the empty state.
+    // The popover stays open on a non-empty query and shows the empty state,
+    // which describes the listbox. The text is also in the status region that
+    // announces it, so it is not unique on the page.
     await waitFor(() => {
-      expect(getByText('Nothing here')).toBeInTheDocument();
+      expect(getByRole('listbox')).toHaveAccessibleDescription('Nothing here');
     });
   });
 
@@ -606,6 +630,86 @@ describe('<SearchComboBox />', () => {
       },
       { timeout: 2000 },
     );
+  });
+
+  describe('Escape while a load holds the list back', () => {
+    // The list is open but waits `loadingDelay` before it shows: to the user
+    // it is closed, so Escape cancels it and acts as on a closed list.
+    const renderLoading = (
+      props: { popoverTrigger?: 'focus' | 'input' } = {},
+      onParentKeyDown = vi.fn(),
+    ) => {
+      // The parent's onKeyDown stands in for a dialog that closes on an
+      // Escape the field lets through.
+      const view = renderWithRoot(
+        <div onKeyDown={onParentKeyDown}>
+          <SearchComboBox
+            isLoading
+            filter={false}
+            label="Colors"
+            loadingDelay={1000}
+            items={[] as typeof items}
+            {...props}
+          >
+            {(item: (typeof items)[number]) => (
+              <SearchComboBox.Item key={item.key}>
+                {item.children}
+              </SearchComboBox.Item>
+            )}
+          </SearchComboBox>
+        </div>,
+      );
+
+      return { ...view, input: view.getByRole('combobox'), onParentKeyDown };
+    };
+
+    it('lets Escape reach a surrounding dialog, and the list never shows', () => {
+      vi.useFakeTimers();
+
+      try {
+        const { input, onParentKeyDown, queryByRole } = renderLoading({
+          popoverTrigger: 'focus',
+        });
+
+        act(() => input.focus());
+        fireEvent.keyDown(input, { key: 'Escape' });
+
+        expect(onParentKeyDown).toHaveBeenCalledWith(
+          expect.objectContaining({ key: 'Escape' }),
+        );
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
+        expect(input).toHaveAttribute('aria-expanded', 'false');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('clears typed text, as on a closed list, and the list never shows', () => {
+      vi.useFakeTimers();
+
+      try {
+        const { input, queryByRole } = renderLoading();
+
+        act(() => input.focus());
+        fireEvent.change(input, { target: { value: 're' } });
+        fireEvent.keyDown(input, { key: 'Escape' });
+
+        expect(input).toHaveValue('');
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   it('clears the input on Escape when clearable and the popover is closed', async () => {
@@ -791,7 +895,7 @@ describe('<SearchComboBox />', () => {
     expect(input).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('does not commit a stale option on Enter while the overlay is suppressed during loading', async () => {
+  it('keeps the shown overlay through a load that empties it, and Enter submits the text instead of a stale option', async () => {
     const onSelect = vi.fn();
     const onSubmit = vi.fn();
 
@@ -821,7 +925,7 @@ describe('<SearchComboBox />', () => {
       );
     }
 
-    const { getByRole, queryByRole, rerender } = renderWithRoot(
+    const { getByRole, queryByRole, queryAllByRole, rerender } = renderWithRoot(
       <Harness results={items} isLoading={false} />,
     );
 
@@ -832,13 +936,12 @@ describe('<SearchComboBox />', () => {
       expect(queryByRole('listbox')).toBeInTheDocument();
     });
 
-    // Drop results and start loading — overlay hides during the delay, but
-    // open intent (and a stale listStateRef) can remain.
+    // Drop results and start loading: the shown overlay stays, saying it is
+    // loading rather than that nothing matched, and holds no option.
     rerender(<Harness results={[]} isLoading />);
 
-    await waitFor(() => {
-      expect(queryByRole('listbox')).not.toBeInTheDocument();
-    });
+    expect(getByRole('listbox')).toHaveAccessibleDescription('Loading…');
+    expect(queryAllByRole('option')).toHaveLength(0);
 
     await userEvent.keyboard('{Enter}');
 

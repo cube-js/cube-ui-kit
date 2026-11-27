@@ -47,6 +47,7 @@ import { getValidationIcon } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
 import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/option-id';
+import { EmptyLabelStatus } from '../ListBoxPopover/EmptyLabelStatus';
 import {
   filterCollectionNodes,
   getEdgeVisibleKey,
@@ -56,6 +57,7 @@ import {
 } from '../ListBoxPopover/list-navigation';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import { useCompositeFocus } from '../ListBoxPopover/use-composite-focus';
+import { useDelayedLoading } from '../ListBoxPopover/use-delayed-loading';
 import { getIdentifierTextServices } from '../TextInput/identifier-text-services';
 import {
   CubeIdentifierInputProps,
@@ -207,8 +209,25 @@ export interface CubeComboBoxProps<T>
 
   /** Whether the combobox is disabled */
   isDisabled?: boolean;
-  /** Whether the combobox is in loading state */
+  /**
+   * Whether the options are loading: the input shows a spinner. With
+   * `emptyLabel`, a load also keeps an empty list open (see `emptyLabel`).
+   */
   isLoading?: boolean;
+  /**
+   * The status the list shows when it has no options: typed text that
+   * matches none, no items, or a load with none yet. With it set, the list
+   * stays open and shows the label, which is not an option, instead of
+   * closing. While `isLoading`, an empty list shows it once the load has run
+   * for a second, so a fast load never flashes it, and a list already shown
+   * stays through the load. Switch the text on `isLoading` to say the list is
+   * loading. `null`, `false` or `''` keep the list closing when it is empty;
+   * switch the label off with one of them rather than `undefined`, which also
+   * removes the status that announces it, so its next text may not be
+   * announced. Only a text label is announced: an element is shown but not
+   * copied into that status.
+   */
+  emptyLabel?: ReactNode;
   /** Keys of disabled items */
   disabledKeys?: Iterable<Key>;
   /** Whether to flip the popover placement */
@@ -235,7 +254,8 @@ export interface CubeComboBoxProps<T>
   sortSelectedToTop?: boolean;
   /**
    * Callback called when the list shows or hides. Not called on mount, nor
-   * while typed text that matches nothing keeps it hidden.
+   * while a list with no options to show stays hidden, as it does without
+   * `emptyLabel`.
    */
   onOpenChange?: (isOpen: boolean) => void;
 }
@@ -424,7 +444,7 @@ function useComboBoxFiltering({
 // Hook: useComboBoxKeyboard
 // ============================================================================
 interface UseComboBoxKeyboardProps {
-  /** Whether the list is shown: open, with options to show. */
+  /** Whether the list is on screen, with options or its empty label. */
   isListShown: boolean;
   isReadOnly?: boolean;
   listStateRef: RefObject<any>;
@@ -562,6 +582,10 @@ function useComboBoxKeyboard({
       return true;
     }
 
+    // A list a load holds back would show later: Escape cancels it too, and
+    // goes on as it does with the list closed. A closed list stays closed.
+    onCloseList();
+
     if (effectiveInputValue && isClearable) {
       e.preventDefault();
       onClearValue();
@@ -672,7 +696,7 @@ interface ComboBoxInputProps {
   onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
   onPointerDown: () => void;
   onClick: () => void;
-  /** Whether the list is shown: open, with options to show. */
+  /** Whether the list is on screen, with options or its empty label. */
   isListShown: boolean;
   comboBoxId: string;
   /** The id of the option under virtual focus, while the popover is open. */
@@ -809,6 +833,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     popoverRef,
     listBoxRef,
     isLoading,
+    emptyLabel,
     inputStyles,
     optionStyles,
     triggerStyles,
@@ -973,7 +998,28 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const getTypedOptions = () =>
     collectOptions(matchTypedText(localCollectionState.collection));
   const hasResults = filteredOptions.length > 0;
-  const shouldShowPopover = isPopoverOpen && hasResults;
+  // A label that renders nothing leaves the list closing when it is empty, so
+  // `emptyLabel={query && 'No matches'}` works.
+  const hasEmptyLabel =
+    emptyLabel != null && emptyLabel !== false && emptyLabel !== '';
+  const hasLongLoad = useDelayedLoading(!!isLoading);
+  // Whether the list showed on the last render.
+  const [wasListShown, setWasListShown] = useState(false);
+  // With `emptyLabel`, a list with no options shows the label instead of
+  // closing. While loading, an empty list waits for the load to run a while
+  // before it appears, so a fast load never flashes the label, and one already
+  // shown stays, so a search that empties it doesn't hide it between
+  // keystrokes.
+  const shouldShowPopover =
+    isPopoverOpen &&
+    (hasResults ||
+      (hasEmptyLabel && (!isLoading || hasLongLoad || wasListShown)));
+
+  if (wasListShown !== shouldShowPopover) setWasListShown(shouldShowPopover);
+
+  // Screen readers hear the label once the list settles on it, not while a
+  // load is still running.
+  const announcesEmptyLabel = shouldShowPopover && !hasResults && !isLoading;
 
   // Report the list showing or hiding, as the user sees it: not on mount, and
   // not for text that reopens an empty list keystroke after keystroke.
@@ -1325,16 +1371,24 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // The list is at least as wide as the field, measured as it shows.
   const [comboBoxWidth, setComboBoxWidth] = useState<number>();
 
-  // Close popover if no results
+  // Without `emptyLabel`, a list with no options closes. With it, the list
+  // stays open, hidden only while a load holds back its label.
   useEffect(() => {
-    if (isPopoverOpen && !hasResults) {
+    if (isPopoverOpen && !hasResults && !hasEmptyLabel) {
       setIsPopoverOpen(false);
     }
-  }, [isPopoverOpen, hasResults, setIsPopoverOpen]);
+  }, [isPopoverOpen, hasResults, hasEmptyLabel, setIsPopoverOpen]);
+
+  // The options on screen, so options that land in an open list, as a search
+  // that ran with the list open does, are highlighted too.
+  const shownOptionKeys = filteredOptions
+    .map((option) => String(option.key))
+    .join('\0');
 
   // Highlight an option once the list shows, and again whenever the typed
-  // text filters the list, so the input's active descendant follows it. The
-  // list mounts its collection over the next few frames.
+  // text filters the list or its options change, so the input's active
+  // descendant follows the option Enter picks. The list mounts its collection
+  // over the next few frames.
   useLayoutEffect(() => {
     if (!shouldShowPopover) return;
 
@@ -1362,6 +1416,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     shouldShowPopover,
     effectiveSelectedKey,
     effectiveInputValue,
+    shownOptionKeys,
     wrapperRef,
   ]);
 
@@ -1426,6 +1481,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           value={effectiveSelectedKey ?? ''}
           disabled={isDisabled}
         />
+      ) : null}
+      {emptyLabel !== undefined ? (
+        <EmptyLabelStatus>
+          {announcesEmptyLabel ? emptyLabel : null}
+        </EmptyLabelStatus>
       ) : null}
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
@@ -1499,8 +1559,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         label={label}
         ariaLabel={(props as any)['aria-label']}
         compositeFocusProps={compositeFocusProps}
-        filter={filterFn}
+        // A list with no options shows only its empty label, not the headings
+        // of sections that have none.
+        filter={hasResults ? filterFn : () => []}
         size={size}
+        emptyLabel={emptyLabel}
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >

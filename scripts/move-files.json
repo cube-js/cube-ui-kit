@@ -28,6 +28,7 @@
   "src/components/fields/ListBox/optionId.ts": "src/components/fields/ListBox/option-id.ts",
   "src/components/fields/ListBoxPopover/listNavigation.ts": "src/components/fields/ListBoxPopover/list-navigation.ts",
   "src/components/fields/ListBoxPopover/useCompositeFocus.ts": "src/components/fields/ListBoxPopover/use-composite-focus.ts",
+  "src/components/fields/ListBoxPopover/useDelayedLoading.ts": "src/components/fields/ListBoxPopover/use-delayed-loading.ts",
   "src/components/fields/PasswordInput/password-input.test.tsx": "src/components/fields/PasswordInput/PasswordInput.test.tsx",
   "src/components/fields/Picker/index.tsx": "src/components/fields/Picker/index.ts",
   "src/components/fields/RadioGroup/context.ts": "src/components/fields/RadioGroup/RadioContext.ts",
