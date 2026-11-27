@@ -661,6 +661,22 @@ function getOptionTextLength(item: CollectionNode<unknown>): number {
     : label + descriptionLength;
 }
 
+/**
+ * Whether `items` are the `previous` options with any new ones after them: a
+ * page appended, or the same options again.
+ */
+function isAppendedTo(
+  items: readonly { key: Key }[],
+  previous: readonly { key: Key }[],
+): boolean {
+  if (items === previous) return true;
+
+  return (
+    items.length >= previous.length &&
+    previous.every((item, index) => items[index].key === item.key)
+  );
+}
+
 /** The loading row's key, for the virtualizer and React. */
 const LOADING_ROW_KEY = '__ListBoxLoadingMore__';
 
@@ -1308,24 +1324,28 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // out, nor when a filter leaves only short options.
   const heldWidth = useHeldWidth(scrollRef);
 
-  // The focused key this effect last saw, to tell a move of focus from a
-  // change of the items.
+  // The focused key and the options this effect last saw, to tell a move of
+  // focus, and a page appended, from another change of the items.
   const lastFocusedKeyRef = useRef<Key | null>(null);
+  const lastItemsRef = useRef<typeof itemsArray>([]);
 
-  // Keep the focused option visible when focus moves to it (End, typeahead,
-  // the selected option on autofocus or Tab). New items alone leave a list the
-  // user scrolled away from where it is, even when the option is still
-  // rendered, as the longest rows are wherever the list is scrolled. One the
-  // virtualizer hasn't rendered is scrolled to by index, which renders it. One
-  // already rendered is scrolled to only for keyboard navigation, so a click
-  // never moves the list.
+  // Keep the focused option visible. One the virtualizer hasn't rendered is
+  // scrolled to by index, which renders it, when focus moves to it (End,
+  // typeahead, the selected option on autofocus or Tab); new items alone
+  // leave a list the user scrolled away from where it is. One already
+  // rendered is scrolled to only for keyboard navigation, so a click never
+  // moves the list. A search that keeps it still scrolls to it, but a page
+  // appended to the options doesn't: the longest rows stay rendered wherever
+  // the list is scrolled, so every page would scroll back to one of them.
   useLayoutEffect(() => {
     const focusedKey = listState.selectionManager.focusedKey;
     const hasFocusMoved = focusedKey !== lastFocusedKeyRef.current;
+    const isPageAppended = isAppendedTo(itemsArray, lastItemsRef.current);
 
     lastFocusedKeyRef.current = focusedKey;
+    lastItemsRef.current = itemsArray;
 
-    if (focusedKey == null || !hasFocusMoved) return;
+    if (focusedKey == null) return;
 
     const scrollElement = scrollRef.current;
     if (!scrollElement) return;
@@ -1339,12 +1359,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         ? itemsArray.findIndex((item) => item.key === focusedKey)
         : -1;
 
-      if (index !== -1) {
+      if (index !== -1 && hasFocusMoved) {
         rowVirtualizer.scrollToIndex(index, { align: 'auto' });
       }
 
       return;
     }
+
+    if (!hasFocusMoved && isPageAppended) return;
 
     // Only scroll on keyboard navigation
     if (lastFocusSourceRef.current !== 'keyboard') return;

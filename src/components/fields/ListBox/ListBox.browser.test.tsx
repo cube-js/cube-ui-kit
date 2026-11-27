@@ -8,6 +8,15 @@ import { ListBox } from './ListBox';
 
 import type { CubeListBoxProps } from './ListBox';
 
+/** Whether the option lies wholly inside its list's scroll viewport. */
+function isInView(option: HTMLElement) {
+  const scroller = option.closest('[role="listbox"]')!.parentElement!;
+  const box = option.getBoundingClientRect();
+  const viewport = scroller.getBoundingClientRect();
+
+  return box.top >= viewport.top - 1 && box.bottom <= viewport.bottom + 1;
+}
+
 /**
  * What the list lets out, and what it keeps (CUB-4839).
  *
@@ -716,15 +725,6 @@ describe('ListBox focus outside the rendered window', () => {
     );
   }
 
-  /** Whether the option lies wholly inside its list's scroll viewport. */
-  function isInView(option: HTMLElement) {
-    const scroller = option.closest('[role="listbox"]')!.parentElement!;
-    const box = option.getBoundingClientRect();
-    const viewport = scroller.getBoundingClientRect();
-
-    return box.top >= viewport.top - 1 && box.bottom <= viewport.bottom + 1;
-  }
-
   async function expectFocusedInView(name: string) {
     await waitFor(
       () => {
@@ -1092,6 +1092,37 @@ describe('ListBox load more', () => {
       label: `Value ${index}`,
     }));
 
+  /** Labels all as long, so the list keeps its first rows rendered. */
+  const clients = (count: number): Value[] =>
+    Array.from({ length: count }, (_, index) => ({
+      key: `c${index + 1}`,
+      label: `Client ${String(index + 1).padStart(4, '0')}`,
+    }));
+
+  /** A list with a search input, which focuses its first option on open. */
+  function Clients({
+    count,
+    selectionMode,
+  }: {
+    count: number;
+    selectionMode?: 'single' | 'multiple';
+  }) {
+    return (
+      <FilterListBox
+        aria-label="Clients"
+        height="25x"
+        items={clients(count)}
+        selectionMode={selectionMode}
+        hasMore
+        onLoadMore={() => {}}
+      >
+        {(item: Value) => (
+          <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+        )}
+      </FilterListBox>
+    );
+  }
+
   /** A list about six rows tall that can load more. */
   function List(props: Partial<CubeListBoxProps<Value>>) {
     return (
@@ -1307,32 +1338,9 @@ describe('ListBox load more', () => {
   it.each(['single', 'multiple'] as const)(
     'stays where the viewer scrolled when a page arrives, in %s selection',
     async (selectionMode) => {
-      const clients = (count: number): Value[] =>
-        Array.from({ length: count }, (_, index) => ({
-          key: `c${index + 1}`,
-          label: `Client ${String(index + 1).padStart(4, '0')}`,
-        }));
-
-      function Clients({ count }: { count: number }) {
-        return (
-          <FilterListBox
-            aria-label="Clients"
-            height="25x"
-            items={clients(count)}
-            selectionMode={selectionMode}
-            hasMore
-            onLoadMore={() => {}}
-          >
-            {(item: Value) => (
-              <FilterListBox.Item key={item.key}>
-                {item.label}
-              </FilterListBox.Item>
-            )}
-          </FilterListBox>
-        );
-      }
-
-      const { rerender } = renderWithRoot(<Clients count={100} />);
+      const { rerender } = renderWithRoot(
+        <Clients count={100} selectionMode={selectionMode} />,
+      );
 
       await scrollToEnd(300);
 
@@ -1346,10 +1354,50 @@ describe('ListBox load more', () => {
         first.id,
       );
 
-      rerender(<Clients count={200} />);
+      rerender(<Clients count={200} selectionMode={selectionMode} />);
       await settle();
 
       expect(scroller().scrollTop).toBe(scrollTop);
     },
   );
+
+  // Only a page appended leaves the list where it is. A search that keeps the
+  // focused option still shows it, as `Enter` picks it, wherever the search
+  // leaves it: first again, or further up.
+  it('scrolls back to the focused option a search keeps first', async () => {
+    renderWithRoot(<Clients count={100} />);
+
+    await userEvent.click(screen.getByRole('combobox'));
+    await scrollToEnd(300);
+    await userEvent.keyboard('1');
+    await settle();
+
+    expect(isInView(screen.getByRole('option', { name: 'Client 0001' }))).toBe(
+      true,
+    );
+  });
+
+  it('keeps the focused option in view when a search moves it', async () => {
+    renderWithRoot(
+      <FilterListBox aria-label="Values" height="25x" items={values(100)}>
+        {(item: Value) => (
+          <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+        )}
+      </FilterListBox>,
+    );
+
+    await userEvent.click(screen.getByRole('combobox'));
+    await userEvent.keyboard('{ArrowDown>35/}');
+    await settle();
+    await userEvent.keyboard('3');
+    await settle();
+
+    const option = screen.getByRole('option', { name: 'Value 35' });
+
+    expect(screen.getByRole('combobox')).toHaveAttribute(
+      'aria-activedescendant',
+      option.id,
+    );
+    expect(isInView(option)).toBe(true);
+  });
 });
