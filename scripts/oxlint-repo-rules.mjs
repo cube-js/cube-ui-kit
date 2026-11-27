@@ -15,8 +15,8 @@
  * export is a component, class or provider, kebab-case otherwise, kebab-case
  * for each dotted part after the name, and `index.ts` for a barrel. Lint can't
  * tell which export is the main one, so it checks what it can: a PascalCase
- * file exports a PascalCase value, a kebab-case one defines no context or
- * provider, and a kebab-case spec, story or fixture isn't named after the
+ * file exports a PascalCase value, a kebab-case one exports no context or
+ * provider of its own, and a kebab-case spec, story or fixture isn't named after the
  * component beside it. See docs/rules/coding.md#files.
  */
 import { readdirSync, statSync } from 'node:fs';
@@ -182,13 +182,13 @@ const toKebab = (name) =>
 
 /**
  * The names of a module's value exports, or `null` when one can't be named
- * (`export *`, a default export).
+ * (`export *`, a default export). `own` leaves out what it re-exports.
  */
-function exportedValues(program) {
+function exportedValues(program, { own = false } = {}) {
   const names = [];
 
   for (const node of program.body) {
-    if (node.exportKind === 'type') continue;
+    if (node.exportKind === 'type' || (own && node.source)) continue;
     if (
       node.type === 'ExportAllDeclaration' ||
       node.type === 'ExportDefaultDeclaration'
@@ -262,19 +262,20 @@ const filenameCase = {
             `\`${file}\` exports no component, class or provider, so it is named in kebab-case: \`${toKebab(name)}.${extension}\`.`,
           );
 
-        // A file that defines a context or provider is named after it. A
-        // barrel only re-exports one.
+        // A file that exports a context or provider of its own is named after
+        // it, not after the hooks that read it. A barrel only re-exports one.
         const provider =
           KEBAB.test(name) &&
           name !== 'index' &&
-          values?.find(
+          !parts.length &&
+          exportedValues(node, { own: true })?.find(
             (value) =>
               PASCAL_VALUE.test(value) && /(?:Context|Provider)$/.test(value),
           );
 
         if (provider)
           report(
-            `\`${file}\` defines \`${provider}\`, so it is named after it: \`${provider}.${extension}\`.`,
+            `\`${file}\` exports \`${provider}\`, so it is named after it: \`${provider}.${extension}\`.`,
           );
 
         // A spec, story or fixture of the component beside it takes its

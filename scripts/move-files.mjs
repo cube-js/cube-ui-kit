@@ -24,6 +24,9 @@
  *    config, an import in a Markdown code block), for a person to fix.
  *
  * Usage: node scripts/move-files.mjs [--dry-run]
+ *
+ * A dry run moves nothing, so it reads a file it would move at its old path:
+ * its count leaves out the rewrites inside a file that moves to another folder.
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
