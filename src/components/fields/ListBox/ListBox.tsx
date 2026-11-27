@@ -661,19 +661,37 @@ function getOptionTextLength(item: CollectionNode<unknown>): number {
     : label + descriptionLength;
 }
 
+/** A collection node, as far as `isAppendedTo` reads it. */
+interface AppendNode {
+  key: Key;
+  type?: string;
+  childNodes?: Iterable<AppendNode>;
+}
+
 /**
- * Whether `items` are the `previous` options with any new ones after them: a
- * page appended, or the same options again.
+ * Whether `items` are the `previous` options with any new ones after them, at
+ * the end of the list or of a section: a page appended, or the same options
+ * again. A section is compared by its options, as a search changes those and
+ * leaves the sections.
  */
 function isAppendedTo(
-  items: readonly { key: Key }[],
-  previous: readonly { key: Key }[],
+  items: readonly AppendNode[],
+  previous: readonly AppendNode[],
 ): boolean {
   if (items === previous) return true;
 
   return (
     items.length >= previous.length &&
-    previous.every((item, index) => items[index].key === item.key)
+    previous.every((item, index) => {
+      const next = items[index];
+
+      if (next.key !== item.key) return false;
+
+      return (
+        item.type !== 'section' ||
+        isAppendedTo([...(next.childNodes ?? [])], [...(item.childNodes ?? [])])
+      );
+    })
   );
 }
 
@@ -1335,8 +1353,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // leave a list the user scrolled away from where it is. One already
   // rendered is scrolled to only for keyboard navigation, so a click never
   // moves the list. A search that keeps it still scrolls to it, but a page
-  // appended to the options doesn't: the longest rows stay rendered wherever
-  // the list is scrolled, so every page would scroll back to one of them.
+  // appended to the options doesn't. The focused option is often still
+  // rendered when the viewer scrolls away (a list with sections renders every
+  // option, a virtualized one its longest rows), so every page would scroll
+  // back to it.
   useLayoutEffect(() => {
     const focusedKey = listState.selectionManager.focusedKey;
     const hasFocusMoved = focusedKey !== lastFocusedKeyRef.current;

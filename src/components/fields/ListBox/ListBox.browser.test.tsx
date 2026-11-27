@@ -6,6 +6,7 @@ import { Select } from '../Select/Select';
 
 import { ListBox } from './ListBox';
 
+import type { CubeFilterListBoxProps } from '../FilterListBox/FilterListBox';
 import type { CubeListBoxProps } from './ListBox';
 
 /** Whether the option lies wholly inside its list's scroll viewport. */
@@ -1099,22 +1100,18 @@ describe('ListBox load more', () => {
       label: `Client ${String(index + 1).padStart(4, '0')}`,
     }));
 
+  type ClientsProps = Partial<CubeFilterListBoxProps<Value>>;
+
   /** A list with a search input, which focuses its first option on open. */
-  function Clients({
-    count,
-    selectionMode,
-  }: {
-    count: number;
-    selectionMode?: 'single' | 'multiple';
-  }) {
+  function Clients({ count, ...props }: { count: number } & ClientsProps) {
     return (
       <FilterListBox
         aria-label="Clients"
         height="25x"
         items={clients(count)}
-        selectionMode={selectionMode}
         hasMore
         onLoadMore={() => {}}
+        {...props}
       >
         {(item: Value) => (
           <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
@@ -1333,14 +1330,27 @@ describe('ListBox load more', () => {
    * FilterListBox, as in FilterPicker, focuses the first option when it opens,
    * as keyboard focus. Its labels are all as long, so the list keeps the first
    * rows rendered, for its width, wherever it is scrolled. The list scrolled
-   * that option into view on every new page, back to the top.
+   * that option into view on every new page, back to the top. Cloud's search
+   * adds a custom value, in a section of its own after the options, so there
+   * the page lands in the options' section.
    */
-  it.each(['single', 'multiple'] as const)(
-    'stays where the viewer scrolled when a page arrives, in %s selection',
-    async (selectionMode) => {
-      const { rerender } = renderWithRoot(
-        <Clients count={100} selectionMode={selectionMode} />,
-      );
+  it.each<[string, ClientsProps]>([
+    ['single selection', { selectionMode: 'single' }],
+    ['multiple selection', { selectionMode: 'multiple' }],
+    [
+      'a server search with a custom value',
+      {
+        selectionMode: 'multiple',
+        filter: false,
+        allowsCustomValue: true,
+        searchValue: 'Client',
+        onSearchChange: () => {},
+      },
+    ],
+  ])(
+    'stays where the viewer scrolled when a page arrives, in %s',
+    async (_, props) => {
+      const { rerender } = renderWithRoot(<Clients count={100} {...props} />);
 
       await scrollToEnd(300);
 
@@ -1354,7 +1364,7 @@ describe('ListBox load more', () => {
         first.id,
       );
 
-      rerender(<Clients count={200} selectionMode={selectionMode} />);
+      rerender(<Clients count={200} {...props} />);
       await settle();
 
       expect(scroller().scrollTop).toBe(scrollTop);
@@ -1363,19 +1373,37 @@ describe('ListBox load more', () => {
 
   // Only a page appended leaves the list where it is. A search that keeps the
   // focused option still shows it, as `Enter` picks it, wherever the search
-  // leaves it: first again, or further up.
-  it('scrolls back to the focused option a search keeps first', async () => {
-    renderWithRoot(<Clients count={100} />);
+  // leaves it: first again, or further up. With a custom value the options
+  // are in a section, and the search changes what is in it.
+  it.each<[string, ClientsProps]>([
+    ['a flat list', {}],
+    ['a list with a custom value', { allowsCustomValue: true }],
+  ])(
+    'scrolls back to the focused option a search keeps first, in %s',
+    async (_, props) => {
+      renderWithRoot(<Clients count={100} {...props} />);
 
-    await userEvent.click(screen.getByRole('combobox'));
-    await scrollToEnd(300);
-    await userEvent.keyboard('1');
-    await settle();
+      const input = screen.getByRole('combobox');
 
-    expect(isInView(screen.getByRole('option', { name: 'Client 0001' }))).toBe(
-      true,
-    );
-  });
+      // Every option matches "00", so focus stays on the first.
+      await userEvent.click(input);
+      await userEvent.keyboard('00');
+      await scrollToEnd(300);
+
+      expect(
+        isInView(screen.getByRole('option', { name: 'Client 0001' })),
+      ).toBe(false);
+
+      // "000" keeps the first nine, the focused one first.
+      await userEvent.keyboard('0');
+      await settle();
+
+      const first = screen.getByRole('option', { name: 'Client 0001' });
+
+      expect(input).toHaveAttribute('aria-activedescendant', first.id);
+      expect(isInView(first)).toBe(true);
+    },
+  );
 
   it('keeps the focused option in view when a search moves it', async () => {
     renderWithRoot(
