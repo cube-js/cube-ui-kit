@@ -661,13 +661,6 @@ function getOptionTextLength(item: CollectionNode<unknown>): number {
     : label + descriptionLength;
 }
 
-/** A collection node, as far as `isAppendedTo` reads it. */
-interface AppendNode {
-  key: Key;
-  type?: string;
-  childNodes?: Iterable<AppendNode>;
-}
-
 /**
  * Whether `items` are the `previous` options with any new ones after them, at
  * the end of the list or of a section: a page appended, or the same options
@@ -675,8 +668,8 @@ interface AppendNode {
  * leaves the sections.
  */
 function isAppendedTo(
-  items: readonly AppendNode[],
-  previous: readonly AppendNode[],
+  items: readonly CollectionNode<unknown>[],
+  previous: readonly CollectionNode<unknown>[],
 ): boolean {
   if (items === previous) return true;
 
@@ -689,7 +682,7 @@ function isAppendedTo(
 
       return (
         item.type !== 'section' ||
-        isAppendedTo([...(next.childNodes ?? [])], [...(item.childNodes ?? [])])
+        isAppendedTo([...next.childNodes], [...item.childNodes])
       );
     })
   );
