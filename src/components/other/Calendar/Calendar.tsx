@@ -14,7 +14,7 @@ import {
 } from 'react-aria';
 import { useCalendarState } from 'react-stately';
 
-import { useProviderProps } from '../../../provider';
+import { useProviderProps } from '../../../Provider';
 
 import { CalendarPanel } from './CalendarPanel';
 import { CalendarCoreProps, CalendarValueProps } from './types';

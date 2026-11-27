@@ -12,9 +12,9 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-import { Provider, useProviderProps } from '../../../provider';
-import { markFocusRestoreWindow } from '../../../utils/react/programmaticFocus';
-import { ButtonSplitContext } from '../../actions/ButtonSplit/context';
+import { Provider, useProviderProps } from '../../../Provider';
+import { markFocusRestoreWindow } from '../../../utils/react/programmatic-focus';
+import { ButtonSplitContext } from '../../actions/ButtonSplit/ButtonSplitContext';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 
 import { OpenTransitionContext } from './OpenTransitionContext';

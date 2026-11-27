@@ -3,8 +3,8 @@ export type { ToastProps, ToastProgressProps, ToastComponent } from './Toast';
 export { useToastContext } from '../Notifications/NotificationContext';
 export { ToastItem } from './ToastItem';
 export type { ToastItemProps } from './ToastItem';
-export { useToast, getThemeIcon } from './useToast';
-export { useProgressToast } from './useProgressToast';
+export { useToast, getThemeIcon } from './use-toast';
+export { useProgressToast } from './use-progress-toast';
 export type {
   ToastData,
   ToastType,

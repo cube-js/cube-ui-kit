@@ -3,9 +3,9 @@ import { IconCoin } from '@tabler/icons-react';
 import { useState } from 'react';
 import { within } from 'storybook/test';
 
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { VALIDATION_ARGS } from '../../../stories/form-field-args';
 import { openTooltip } from '../../../stories/interactions';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Button } from '../../actions/Button/Button';
 import { Space } from '../../layout/Space';
 

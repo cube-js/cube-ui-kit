@@ -35,24 +35,24 @@ import {
   useSelectState,
 } from 'react-stately';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { FieldBaseProps } from '../../../shared/form';
 import { generateRandomId } from '../../../utils/random';
 import { useFocus } from '../../../utils/react/interactions';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { focusProgrammatically } from '../../../utils/react/programmatic-focus';
 import {
   mergeRefs,
   useCombinedRefs,
-} from '../../../utils/react/useCombinedRefs';
-import { useOpenKey } from '../../../utils/react/useOpenKey';
-import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
-import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
-import { usePopoverSync } from '../../../utils/react/usePopoverSync';
+} from '../../../utils/react/use-combined-refs';
+import { useOpenKey } from '../../../utils/react/use-open-key';
+import { useOverlayEscapeGuard } from '../../../utils/react/use-overlay-escape-guard';
+import { useOverlayPosition } from '../../../utils/react/use-overlay-position';
+import { usePopoverSync } from '../../../utils/react/use-popover-sync';
 import { mergeStyleLayers } from '../../../utils/styles';
 import { isOwnActionsPress } from '../../actions/actions-run';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
@@ -89,7 +89,7 @@ import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { Placement } from 'react-aria';
 import type { Props } from '../../../props';
-import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/component-base-props';
 
 const SelectWrapperElement = tasty({
   qa: 'SelectWrapper',

@@ -7,9 +7,9 @@ import {
   useMemo,
 } from 'react';
 
+import { defaultNavigationAdapter } from './providers/navigation-adapter.default';
 import { NavigationAdapter } from './providers/navigation.types';
-import { defaultNavigationAdapter } from './providers/navigationAdapter.default';
-import { EventBusProvider } from './utils/react/useEventBus';
+import { EventBusProvider } from './utils/react/use-event-bus';
 
 import type { Props } from './props';
 

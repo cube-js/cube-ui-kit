@@ -11,10 +11,10 @@ import {
 } from 'react-aria';
 import { useDatePickerState } from 'react-stately';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { FieldBaseProps } from '../../../shared/form';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import { mergeStyleLayers } from '../../../utils/styles';
 import {
   FieldLayoutStyleProps,
@@ -32,7 +32,7 @@ import { DatePickerButton } from './DatePickerButton';
 import { formatPeriod, PickerType, snapToPeriod } from './period';
 import { useFocusManagerRef } from './utils';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 const PeriodValueElement = tasty({
   qa: 'PeriodPickerValue',

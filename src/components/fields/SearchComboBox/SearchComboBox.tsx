@@ -22,20 +22,20 @@ import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { SearchIcon } from '../../../icons/SearchIcon';
-import { useProviderProps } from '../../../provider';
+import { useProviderProps } from '../../../Provider';
 import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared/form';
 import { generateRandomId } from '../../../utils/random';
 import { useFocus } from '../../../utils/react/interactions';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
-import { usePopoverSync } from '../../../utils/react/usePopoverSync';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { settleOverlayKey } from '../../../utils/react/overlay-key-propagation';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
+import { usePopoverSync } from '../../../utils/react/use-popover-sync';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { asksForFieldChrome, withFieldChrome } from '../../form/field-chrome';
 import {
@@ -47,8 +47,7 @@ import { useValidationProps } from '../../form/validation/use-validation-props';
 import { getValidationIcon } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
 import { isItemDisabled } from '../../shared/disabled-behavior';
-import { getListBoxOptionId } from '../ListBox/optionId';
-import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
+import { getListBoxOptionId } from '../ListBox/option-id';
 import {
   collectVisibleKeys,
   filterCollectionNodes,
@@ -57,8 +56,9 @@ import {
   getVisibleKeys,
   ListStateLike,
   markKeyboardFocus,
-} from '../ListBoxPopover/listNavigation';
-import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
+} from '../ListBoxPopover/list-navigation';
+import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
+import { useCompositeFocus } from '../ListBoxPopover/use-composite-focus';
 import {
   CubeSearchInputAttributes,
   SEARCH_TEXT_SERVICES,
@@ -68,7 +68,7 @@ import {
   INPUT_WRAPPER_STYLES,
 } from '../TextInput/TextInputBase';
 
-import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/component-base-props';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 

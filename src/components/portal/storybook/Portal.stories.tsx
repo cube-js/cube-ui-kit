@@ -6,7 +6,7 @@ import { Block } from '../../Block';
 import { Portal } from '../Portal';
 import { PortalProps } from '../types';
 
-import { Basic } from './templates/basic';
+import { Basic } from './templates/Basic';
 import { PortalOrderTemplate } from './templates/PortalOrder';
 
 export default {

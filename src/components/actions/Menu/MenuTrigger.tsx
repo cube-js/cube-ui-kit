@@ -25,14 +25,14 @@ import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
 import { SlotProvider } from '../../../utils/react/Slots';
-import { useOpenKey } from '../../../utils/react/useOpenKey';
-import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
-import { usePopoverSync } from '../../../utils/react/usePopoverSync';
+import { useOpenKey } from '../../../utils/react/use-open-key';
+import { useOverlayPosition } from '../../../utils/react/use-overlay-position';
+import { usePopoverSync } from '../../../utils/react/use-popover-sync';
 import { Popover } from '../../overlays/Modal/Popover';
 import { Tray } from '../../overlays/Modal/Tray';
 import { isOwnActionsPress } from '../actions-run';
 
-import { MenuContext, MenuContextValue } from './context';
+import { MenuContext, MenuContextValue } from './MenuContext';
 
 export type { AriaMenuTriggerProps };
 

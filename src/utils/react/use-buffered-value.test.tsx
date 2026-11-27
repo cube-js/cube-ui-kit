@@ -2,7 +2,10 @@ import { StrictMode, useEffect, useState } from 'react';
 
 import { act, render, renderHook } from '../../test';
 
-import { useBufferedValue, UseBufferedValueOptions } from './useBufferedValue';
+import {
+  useBufferedValue,
+  UseBufferedValueOptions,
+} from './use-buffered-value';
 
 interface Props<T> {
   value: T | undefined;

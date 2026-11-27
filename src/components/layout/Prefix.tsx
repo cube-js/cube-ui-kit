@@ -1,12 +1,12 @@
 import { CONTAINER_STYLES, ContainerStyleProps, tasty } from '@tenphi/tasty';
 import { CSSProperties, forwardRef } from 'react';
 
-import { filterComponentBaseProps } from '../../utils/react/componentBaseProps';
-import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
-import { useLayoutEffect } from '../../utils/react/useLayoutEffect';
+import { filterComponentBaseProps } from '../../utils/react/component-base-props';
+import { useCombinedRefs } from '../../utils/react/use-combined-refs';
+import { useLayoutEffect } from '../../utils/react/use-layout-effect';
 import { extractStyles } from '../../utils/styles';
 
-import type { ComponentBaseProps } from '../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../utils/react/component-base-props';
 
 const PrefixElement = tasty({
   element: 'Prefix',

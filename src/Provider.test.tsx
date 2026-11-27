@@ -1,6 +1,6 @@
 import { cloneElement, ReactElement } from 'react';
 
-import { Provider, useProviderProps } from './provider';
+import { Provider, useProviderProps } from './Provider';
 import { FIELD_INPUTS } from './test/form-attachable-inputs';
 import { renderHook, renderWithForm, renderWithRoot } from './test/index';
 

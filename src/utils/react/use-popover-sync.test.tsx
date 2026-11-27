@@ -2,8 +2,12 @@ import { ReactNode, useEffect, useRef } from 'react';
 
 import { act, renderHook } from '../../test';
 
-import { EventBusContext, EventBusProvider, useEventBus } from './useEventBus';
-import { useDismissParentPopover, usePopoverSync } from './usePopoverSync';
+import {
+  EventBusContext,
+  EventBusProvider,
+  useEventBus,
+} from './use-event-bus';
+import { useDismissParentPopover, usePopoverSync } from './use-popover-sync';
 
 const HookWrapper = ({ children }: { children: ReactNode }) => (
   <EventBusProvider>{children}</EventBusProvider>

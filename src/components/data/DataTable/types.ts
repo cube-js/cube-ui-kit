@@ -2,7 +2,7 @@ import type { Key } from '@react-types/shared';
 import type { ContainerStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type { SizeName } from '../../../tokens';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 import type { CubeTablePageInfo } from '../../navigation/Pagination';
 import type {
   CubeTableCellRange,

@@ -1,8 +1,8 @@
 import { StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { VALIDATION_ARGS } from '../../../stories/form-field-args';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Block } from '../../Block';
 import { Flow } from '../../layout/Flow';
 import { ColorPicker } from '../ColorPicker/ColorPicker';

@@ -60,10 +60,10 @@ import {
   WARNING_PRIMARY_STYLES,
 } from '../../../data/item-themes';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { getDisabledElementProps } from '../../../utils/react/disabledProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { DynamicIcon, resolveIcon } from '../../../utils/react/resolveIcon';
-import { useDismissParentPopover } from '../../../utils/react/usePopoverSync';
+import { getDisabledElementProps } from '../../../utils/react/disabled-props';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { DynamicIcon, resolveIcon } from '../../../utils/react/resolve-icon';
+import { useDismissParentPopover } from '../../../utils/react/use-popover-sync';
 import { extractStyles } from '../../../utils/styles';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
@@ -71,7 +71,7 @@ import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import { mergeTooltipFocusProps } from '../../overlays/Tooltip/split-trigger-props';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { CubeActionProps } from '../Action/Action';
-import { useButtonSplitContext } from '../ButtonSplit/context';
+import { useButtonSplitContext } from '../ButtonSplit/ButtonSplitContext';
 import { useAction } from '../use-action';
 
 import { AutoCollapseObserver } from './AutoCollapseObserver';

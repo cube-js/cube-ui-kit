@@ -23,18 +23,17 @@ import { Section as BaseSection, useListState } from 'react-stately';
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
 import { chain } from '../../../utils/react/chain';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   castNullableStringValue,
   WithNullableValue,
-} from '../../../utils/react/nullableValue';
-import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+} from '../../../utils/react/nullable-value';
+import { withOverlayKeys } from '../../../utils/react/overlay-key-propagation';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { isItemDisabled } from '../../shared/disabled-behavior';
-import { getListBoxOptionId } from '../ListBox/optionId';
-import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
+import { getListBoxOptionId } from '../ListBox/option-id';
 import {
   collectVisibleKeys,
   filterCollectionNodes,
@@ -44,15 +43,16 @@ import {
   ListStateLike,
   markKeyboardFocus,
   TextFilterFn,
-} from '../ListBoxPopover/listNavigation';
-import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
+} from '../ListBoxPopover/list-navigation';
+import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
+import { useCompositeFocus } from '../ListBoxPopover/use-composite-focus';
 import {
   CubeTextInputBaseProps,
   TextInputBase,
 } from '../TextInput/TextInputBase';
-import { useAutoSizeTextArea } from '../TextInput/useAutoSizeTextArea';
+import { useAutoSizeTextArea } from '../TextInput/use-auto-size-text-area';
 
-import { useCaretAnchor } from './useCaretAnchor';
+import { useCaretAnchor } from './use-caret-anchor';
 
 // ---------------------------------------------------------------------------
 // Types

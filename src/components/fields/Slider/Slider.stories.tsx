@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { VALIDATION_ARGS } from '../../../stories/form-field-args';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Space } from '../../layout/Space';
 
 import { CubeSliderProps, Slider } from './Slider';

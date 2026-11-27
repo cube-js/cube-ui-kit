@@ -9,11 +9,11 @@ import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
 import { TextDropItem, useClipboard } from 'react-aria';
 
 import { useTimer } from '../../../_internal/hooks/use-timer/use-timer';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CopyIcon } from '../../../icons/CopyIcon';
 import { extractStyles } from '../../../utils/styles';
 import { Button } from '../../actions/Button/Button';
-import { useToast } from '../../overlays/Toast/useToast';
+import { useToast } from '../../overlays/Toast/use-toast';
 import { Card, CubeCardProps } from '../Card/Card';
 
 const StyledBlock = tasty({

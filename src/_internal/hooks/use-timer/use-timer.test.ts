@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 
-import { Timer } from './timer';
+import { Timer } from './Timer';
 import { useTimer } from './use-timer';
 
 describe('useTimer', () => {

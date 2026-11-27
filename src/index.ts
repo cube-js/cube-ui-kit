@@ -70,7 +70,7 @@ export type {
   NavigateOptions,
   RelativeRoutingType,
 } from './providers/navigation.types';
-export { defaultNavigationAdapter } from './providers/navigationAdapter.default';
+export { defaultNavigationAdapter } from './providers/navigation-adapter.default';
 export { PrismCode } from './components/content/PrismCode/PrismCode';
 export type { CubePrismCodeProps } from './components/content/PrismCode/PrismCode';
 export { PrismDiffCode } from './components/content/PrismDiffCode/PrismDiffCode';
@@ -236,8 +236,8 @@ export type {
 };
 export type { TextComponent } from './components/content/Text';
 
-export { Provider, useProviderProps } from './provider';
-export type { ProviderProps } from './provider';
+export { Provider, useProviderProps } from './Provider';
+export type { ProviderProps } from './Provider';
 export { Portal } from './components/portal';
 export type { PortalProps } from './components/portal';
 export * from './components/fields';

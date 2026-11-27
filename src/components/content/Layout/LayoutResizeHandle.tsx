@@ -3,7 +3,7 @@ import { KeyboardEvent, useEffect, useEffectEvent } from 'react';
 import { useFocusRing, useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 
 import type { Side } from './LayoutContext';
 

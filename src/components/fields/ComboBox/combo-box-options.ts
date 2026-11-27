@@ -5,7 +5,7 @@ import {
   getFirstSelectableKey,
   ListStateLike,
   markKeyboardFocus,
-} from '../ListBoxPopover/listNavigation';
+} from '../ListBoxPopover/list-navigation';
 
 /** An option the typed text can name. */
 export interface ComboBoxOption {

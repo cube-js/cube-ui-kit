@@ -2,7 +2,7 @@ import { mergeStyles } from '@tenphi/tasty';
 import clsx from 'clsx';
 
 import { chain } from './chain';
-import { mergeIds } from './useId';
+import { mergeIds } from './use-id';
 
 import type { Props } from '../../props';
 

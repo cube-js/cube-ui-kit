@@ -3,9 +3,9 @@ import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, HTMLAttributes, ReactNode, useMemo, useRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
-import { useDismissParentPopover } from '../../../utils/react/usePopoverSync';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
+import { useDismissParentPopover } from '../../../utils/react/use-popover-sync';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { ItemBadge } from '../../content/ItemBadge/ItemBadge';
 import { CubeItemActionProps, ItemAction } from '../ItemAction/ItemAction';

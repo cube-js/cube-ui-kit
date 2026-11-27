@@ -1,11 +1,11 @@
 import { FocusableRef } from '@react-types/shared';
 import { forwardRef } from 'react';
 
-import { useProviderProps } from '../../../../provider';
+import { useProviderProps } from '../../../../Provider';
 import { Button, CubeButtonProps } from '../../../actions/Button/Button';
 import { isModernFormController } from '../backend';
 import { useFormProps } from '../FormContext';
-import { ModernSubmitButton } from '../modern/actions';
+import { ModernSubmitButton } from '../modern/ModernActions';
 import { FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';
 

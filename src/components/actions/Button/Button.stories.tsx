@@ -9,7 +9,7 @@ import { tasty } from '@tenphi/tasty';
 import { ReactNode, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
 

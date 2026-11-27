@@ -19,11 +19,11 @@ import { useMenuTriggerState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
-import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
-import { usePopoverSync } from '../../../utils/react/usePopoverSync';
+import { useOverlayPosition } from '../../../utils/react/use-overlay-position';
+import { usePopoverSync } from '../../../utils/react/use-popover-sync';
 import { Popover } from '../../overlays/Modal/Popover';
 
-import { MenuContext, MenuContextValue, useMenuContext } from './context';
+import { MenuContext, MenuContextValue, useMenuContext } from './MenuContext';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
 // Default placement & offset for sub-menus (matches Spectrum / Aria)

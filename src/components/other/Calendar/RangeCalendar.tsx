@@ -10,7 +10,7 @@ import {
 } from 'react-aria';
 import { useRangeCalendarState } from 'react-stately';
 
-import { useProviderProps } from '../../../provider';
+import { useProviderProps } from '../../../Provider';
 
 import { CalendarPanel } from './CalendarPanel';
 import { CalendarCoreProps, RangeCalendarValueProps } from './types';

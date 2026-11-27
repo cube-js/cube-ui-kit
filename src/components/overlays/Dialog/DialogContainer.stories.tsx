@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import { waitForOverlay } from '../../../stories/interactions';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Button } from '../../actions/Button/Button';
 import { Block } from '../../Block';
 import { Content } from '../../content/Content';

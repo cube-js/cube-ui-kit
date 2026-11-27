@@ -2,7 +2,7 @@ import { StoryFn } from '@storybook/react-vite';
 import { userEvent, within } from 'storybook/test';
 
 import { waitForOverlay } from '../../../stories/interactions';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Button } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
 import { Header } from '../../content/Header';

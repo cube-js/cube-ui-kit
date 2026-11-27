@@ -2,9 +2,9 @@ import { StoryFn } from '@storybook/react-vite';
 import { expect, waitFor, within } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { VALIDATION_ARGS } from '../../../stories/form-field-args';
 import { openTooltip } from '../../../stories/interactions';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 

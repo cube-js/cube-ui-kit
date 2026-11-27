@@ -2,7 +2,7 @@ import { CalendarDate, parseDate } from '@internationalized/date';
 import { StoryFn } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Space } from '../../layout/Space';
 
 import { Calendar, CubeCalendarProps } from './Calendar';

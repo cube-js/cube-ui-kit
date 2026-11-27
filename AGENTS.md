@@ -115,7 +115,7 @@ src/
 └── index.ts           # Public barrel export
 ```
 
-Each component lives in `src/components/{category}/{ComponentName}/` and ships `ComponentName.tsx`, `.stories.tsx`, `.docs.mdx`, `.test.tsx`, and `index.tsx`.
+Each component lives in `src/components/{category}/{ComponentName}/` and ships `ComponentName.tsx`, `.stories.tsx`, `.docs.mdx`, `.test.tsx`, and `index.ts`.
 
 ## Commands
 

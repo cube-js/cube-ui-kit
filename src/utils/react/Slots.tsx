@@ -6,7 +6,7 @@ import {
   useMemo,
 } from 'react';
 
-import { mergeProps } from './mergeProps';
+import { mergeProps } from './merge-props';
 
 const INITIAL_VALUE = {};
 

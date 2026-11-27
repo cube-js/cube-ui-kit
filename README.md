@@ -178,7 +178,7 @@ ComponentName/
 ├── ComponentName.stories.tsx  # Storybook stories
 ├── ComponentName.docs.mdx     # Documentation
 ├── ComponentName.test.tsx     # Tests
-└── index.tsx                  # Re-exports
+└── index.ts                   # Re-exports
 ```
 
 ## Contributing

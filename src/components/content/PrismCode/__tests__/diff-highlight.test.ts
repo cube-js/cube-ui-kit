@@ -1,6 +1,6 @@
 import { diffLines } from 'diff';
 
-import { ensureYamlSqlExtensions, Prism } from '../prismSetup';
+import { ensureYamlSqlExtensions, Prism } from '../prism-setup';
 
 describe('Prism diff-highlight plugin', () => {
   const code = `+console.log('hi');\n-const a = 1;`;

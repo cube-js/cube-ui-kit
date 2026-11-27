@@ -1,4 +1,4 @@
-import { baseProps } from './lists/baseProps';
+import { baseProps } from './lists/base-props';
 
 export const DISABLE_BASE_ARGS = baseProps.reduce((map, prop) => {
   map[prop] = { table: { disable: true } };

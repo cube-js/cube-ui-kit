@@ -20,19 +20,19 @@ import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { generateRandomId } from '../../../utils/random';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
-import { useOpenKey } from '../../../utils/react/useOpenKey';
-import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
-import { usePopoverSync } from '../../../utils/react/usePopoverSync';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
+import { useOpenKey } from '../../../utils/react/use-open-key';
+import { useOverlayPosition } from '../../../utils/react/use-overlay-position';
+import { usePopoverSync } from '../../../utils/react/use-popover-sync';
 import { isOwnActionsPress } from '../../actions/actions-run';
 import { Modal } from '../Modal/Modal';
 import { Popover } from '../Modal/Popover';
 import { Tray } from '../Modal/Tray';
 import { WithCloseBehavior } from '../Modal/types';
 
-import { DialogContext } from './context';
 import { DialogContainer } from './DialogContainer';
+import { DialogContext } from './DialogContext';
 import { useDialogOpenSync } from './use-dialog-open-sync';
 import {
   DiscardChangesDialog,

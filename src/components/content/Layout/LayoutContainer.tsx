@@ -7,13 +7,13 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, HTMLAttributes, ReactNode } from 'react';
 
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import { extractStyles } from '../../../utils/styles';
 
 import { LayoutContextReset } from './LayoutContext';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 const ContainerElement = tasty({
   as: 'div',

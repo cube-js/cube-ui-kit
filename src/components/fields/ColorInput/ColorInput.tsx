@@ -13,11 +13,11 @@ import {
 import { Placement, useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { PipetteIcon } from '../../../icons/PipetteIcon';
 import { FieldBaseProps } from '../../../shared/form';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { settleOverlayKey } from '../../../utils/react/overlay-key-propagation';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { FieldLayoutStyleProps } from '../../form/field-layout';
@@ -33,11 +33,11 @@ import {
   parseColor,
 } from '../color/color';
 import { ColorPanel } from '../color/ColorPanel';
-import { useIsInsideColorPopover } from '../color/context';
+import { useIsInsideColorPopover } from '../color/ColorPopoverContext';
 import { ColorSwatch } from '../ColorSwatch/ColorSwatch';
 import { TextInputBase } from '../TextInput/TextInputBase';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 /**
  * How the text in the input relates to the committed value.

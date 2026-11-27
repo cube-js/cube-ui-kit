@@ -10,11 +10,11 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
 import { FieldBaseProps } from '../../../shared/form';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import { Button } from '../../actions/Button/Button';
 import { Block } from '../../Block';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';

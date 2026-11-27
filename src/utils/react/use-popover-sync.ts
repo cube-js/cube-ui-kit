@@ -6,7 +6,7 @@ import {
   useRef,
 } from 'react';
 
-import { EventBusContext, useEventBus } from './useEventBus';
+import { EventBusContext, useEventBus } from './use-event-bus';
 
 export interface UsePopoverSyncOptions {
   /** Stable identifier for this popover instance (typically a generateRandomId() memo). */

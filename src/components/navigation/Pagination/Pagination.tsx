@@ -3,8 +3,8 @@ import { filterBaseProps, OUTER_STYLES, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useFormatter } from '../../../i18n/useFormatter';
-import { useI18n } from '../../../i18n/useI18n';
+import { useFormatter } from '../../../i18n/use-formatter';
+import { useI18n } from '../../../i18n/use-i18n';
 import { BackwardIcon } from '../../../icons/BackwardIcon';
 import { ForwardIcon } from '../../../icons/ForwardIcon';
 import { LeftIcon } from '../../../icons/LeftIcon';

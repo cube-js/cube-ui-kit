@@ -14,7 +14,7 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
-import { EventBusProvider } from '../../../utils/react/useEventBus';
+import { EventBusProvider } from '../../../utils/react/use-event-bus';
 import { Select } from '../../fields';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { Root } from '../../Root';
@@ -24,8 +24,8 @@ import { ItemButton } from '../ItemButton/ItemButton';
 import { useAnchoredMenu } from '../use-anchored-menu';
 import { useContextMenu } from '../use-context-menu';
 
-import { MenuContext } from './context';
 import { Menu } from './Menu';
+import { MenuContext } from './MenuContext';
 import { MenuTrigger } from './MenuTrigger';
 
 vi.mock('../../../_internal/hooks/use-warn');
@@ -3055,4 +3055,4 @@ describe('MenuTrigger with an actions row as the trigger', () => {
 // 4. The event bus uses setTimeout(0) to ensure async emission after render cycles
 // 5. This prevents race conditions where components close themselves immediately after opening
 //
-// The synchronization is handled by the EventBusProvider in useEventBus.ts
+// The synchronization is handled by the EventBusProvider in use-event-bus.ts

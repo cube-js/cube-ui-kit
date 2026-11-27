@@ -18,11 +18,11 @@ import {
 } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
-import { omitComponentOwnedProps } from '../../../utils/react/componentBaseProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { omitComponentOwnedProps } from '../../../utils/react/component-base-props';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   CubeItemActionProps,
   ItemAction,

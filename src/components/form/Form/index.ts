@@ -1,7 +1,7 @@
 import { Field } from './Field';
 import { Form as _Form } from './Form';
 import { FormContext, FormScopeMask, useFormProps } from './FormContext';
-import { useFormControllerContext } from './modern/context';
+import { useFormControllerContext } from './modern/ModernControllerContext';
 import {
   FormSubscribe,
   useFormController,

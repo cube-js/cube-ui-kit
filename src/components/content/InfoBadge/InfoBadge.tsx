@@ -17,9 +17,9 @@ import {
 import { useInteractOutside } from 'react-aria';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { InfoCircleIcon } from '../../../icons/InfoCircleIcon';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   CubeItemActionProps,
   ItemAction,

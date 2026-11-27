@@ -1,5 +1,5 @@
 import { useEvent } from '../../../../_internal/hooks/use-event';
-import { useProviderProps } from '../../../../provider';
+import { useProviderProps } from '../../../../Provider';
 import { Button } from '../../../actions/Button/Button';
 
 import { getControllerInternals } from './controller';

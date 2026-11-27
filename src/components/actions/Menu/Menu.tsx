@@ -16,11 +16,11 @@ import React, { KeyboardEvent, ReactElement, ReactNode, Ref } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import { Section as BaseSection, useTreeState } from 'react-stately';
 
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import { extractStyles } from '../../../utils/styles';
 
-import { useMenuContext } from './context';
 import { getMenuItemReactKey, MenuCollectionItem } from './MenuCollectionItem';
+import { useMenuContext } from './MenuContext';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuTrigger } from './MenuTrigger';

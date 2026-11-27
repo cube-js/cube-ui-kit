@@ -1,8 +1,8 @@
 import { useLocale } from 'react-aria';
 
-import { createFormatter } from './createFormatter';
+import { createFormatter } from './create-formatter';
 
-import type { Formatter } from './createFormatter';
+import type { Formatter } from './create-formatter';
 
 /**
  * Returns locale-aware formatting helpers bound to the current UI language.

@@ -2,9 +2,9 @@ import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/form-field-args';
 import { openTooltip, timeout } from '../../../stories/interactions';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
 

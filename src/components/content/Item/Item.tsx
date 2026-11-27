@@ -38,13 +38,13 @@ import { LoadingIcon } from '../../../icons/LoadingIcon';
 import {
   getDisabledElementProps,
   omitActivationEventProps,
-} from '../../../utils/react/disabledProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
+} from '../../../utils/react/disabled-props';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   DynamicIcon,
   ResolvedIcon,
   resolveIcon,
-} from '../../../utils/react/resolveIcon';
+} from '../../../utils/react/resolve-icon';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
@@ -54,7 +54,7 @@ import {
   TooltipFocusProps,
 } from '../../overlays/Tooltip/split-trigger-props';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
-import { highlightText } from '../highlightText';
+import { highlightText } from '../highlight-text';
 import { CubeHotKeysProps, HotKeys } from '../HotKeys/HotKeys';
 import { ItemBadge } from '../ItemBadge/ItemBadge';
 import { useAutoTooltip } from '../use-auto-tooltip';

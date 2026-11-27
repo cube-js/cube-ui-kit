@@ -12,9 +12,9 @@ import { Placement } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { FieldBaseProps } from '../../../shared/form';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { CubeItemProps } from '../../content/Item/Item';
 import { Text } from '../../content/Text';
@@ -37,7 +37,7 @@ import {
   parseColor,
 } from '../color/color';
 import { ColorPanel } from '../color/ColorPanel';
-import { ColorPopoverContext } from '../color/context';
+import { ColorPopoverContext } from '../color/ColorPopoverContext';
 import { ColorInput } from '../ColorInput/ColorInput';
 import { ColorSwatch } from '../ColorSwatch/ColorSwatch';
 // ColorPicker shows a ColorSwatchGroup palette, and a ColorSwatchGroup can
@@ -46,7 +46,7 @@ import { ColorSwatch } from '../ColorSwatch/ColorSwatch';
 // oxlint-disable-next-line import/no-cycle -- mutual composition used only at render time; see above
 import { ColorSwatchGroup } from '../ColorSwatchGroup/ColorSwatchGroup';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 import type { CubeColorSwatchItem } from '../ColorSwatchGroup/ColorSwatchGroup';
 
 /**

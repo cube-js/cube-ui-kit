@@ -401,14 +401,20 @@ export async function main({ root, dryRun = false, log = console.log }) {
     if (file.endsWith('.json')) {
       try {
         const previous = JSON.parse(original);
-        const sorted = keepSorted(previous, JSON.parse(text));
+        const next = JSON.parse(text);
+        const sorted = keepSorted(previous, next);
+        // Written again as its tool writes it: a longer path can change how
+        // Prettier wraps a line.
+        const formatted = await formatJson(
+          file,
+          original,
+          previous,
+          sorted ?? next,
+        );
 
-        if (sorted) {
-          const formatted = await formatJson(file, original, previous, sorted);
-
-          if (formatted) text = formatted;
-          else log(`! ${file}: renamed keys, but could not keep them sorted`);
-        }
+        if (formatted) text = formatted;
+        else if (sorted)
+          log(`! ${file}: renamed keys, but could not keep them sorted`);
       } catch {
         // JSON with comments: the rewritten text stands.
       }
@@ -418,11 +424,17 @@ export async function main({ root, dryRun = false, log = console.log }) {
     if (!dryRun) fs.writeFileSync(abs(file), text);
   }
 
-  // 5. What a person should check: a moved file's old name, written some other way.
+  // 5. What a person should check: a moved file's old name, or its path from
+  // `src/` without the extension (a module path in a config), written some other way.
   const leftovers = [];
   const oldNames = [...moves]
     .filter(([from, to]) => posix.basename(from) !== posix.basename(to))
-    .map(([from]) => posix.basename(from));
+    .flatMap(([from]) => [
+      posix.basename(from),
+      ...[stripExt(from).replace(/^src\//, '')].filter((name) =>
+        name.includes('/'),
+      ),
+    ]);
   const oldName = new RegExp(
     `(?<![\\w-])(?:${[...new Set(oldNames)].map(escape).join('|')})(?![\\w-])`,
     'g',

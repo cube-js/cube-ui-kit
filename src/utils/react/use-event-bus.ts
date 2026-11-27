@@ -42,7 +42,7 @@ export function EventBusProvider({ children }: EventBusProviderProps) {
   // one), DO NOT create a fresh bus — that would isolate listeners and
   // emitters across the boundary. This matters because overlays (Popover,
   // Modal, Tray) re-wrap their content with our `Provider` from
-  // `provider.tsx`, which transparently nests an EventBusProvider. Cross-
+  // `Provider.tsx`, which transparently nests an EventBusProvider. Cross-
   // overlay events such as `popover:dismiss-ancestor` (a Button inside a
   // popover footer dismissing the popover host) only work when both sides
   // share the same bus.

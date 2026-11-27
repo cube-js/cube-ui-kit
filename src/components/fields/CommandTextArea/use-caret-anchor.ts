@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useLayoutEffect, useRef } from 'react';
 
-import { CaretRect, getCaretRect } from './caretPosition';
+import { CaretRect, getCaretRect } from './caret-position';
 
 export interface CaretAnchorApi {
   updatePosition: () => void;

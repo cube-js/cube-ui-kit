@@ -16,8 +16,8 @@ import {
 } from 'react';
 import { DismissButton, FocusScope, Placement } from 'react-aria';
 
-import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
-import { usePopoverSync } from '../../../utils/react/usePopoverSync';
+import { useOverlayPosition } from '../../../utils/react/use-overlay-position';
+import { usePopoverSync } from '../../../utils/react/use-popover-sync';
 import { Popover } from '../../overlays/Modal/Popover';
 
 // Keys that change a segment's value: typing goes through any one-character

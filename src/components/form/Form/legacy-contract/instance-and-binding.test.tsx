@@ -395,7 +395,7 @@ describe('legacy contract: field ids (§7.1 #31)', () => {
 
   it('[bug-eligible] two TextInputs sharing a base id both render the deduplicated id, orphaning the first label', async () => {
     // The allocator hands out `contract_dup` and `contract_dup_1` (see the
-    // probe test above). The inputs still collide: `utils/react/useId` keeps a
+    // probe test above). The inputs still collide: `utils/react/use-id` keeps a
     // module-global updater map keyed by id string, both inputs start from the
     // same base id, and merging `contract_dup_1` back through `mergeIds` renames
     // the wrong element. The first label keeps pointing at an id no element has.

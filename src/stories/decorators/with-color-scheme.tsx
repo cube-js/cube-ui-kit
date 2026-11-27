@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 
-import { setSchemeOverride } from './colorSchemeBridge';
+import { setSchemeOverride } from './color-scheme-bridge';
 
 import type { ReactElement } from 'react';
 

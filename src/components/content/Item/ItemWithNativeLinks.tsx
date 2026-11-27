@@ -1,7 +1,7 @@
 import { Ref, useCallback, useId, useLayoutEffect, useRef } from 'react';
 
 import { getLayoutScale } from '../../../utils/layout-scale';
-import { subscribeScheme } from '../../../utils/react/useScheme';
+import { subscribeScheme } from '../../../utils/react/use-scheme';
 
 import { ItemWithNativeLinksProps, ItemWithNativeSlots } from './Item';
 

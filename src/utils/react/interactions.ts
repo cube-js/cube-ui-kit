@@ -6,7 +6,7 @@ import { getActiveElement, getOwnerDocument } from '@react-aria/utils';
 import { useRef, useState } from 'react';
 import { useFocus as reactAriaUseFocus } from 'react-aria';
 
-import { useLayoutEffect } from './useLayoutEffect';
+import { useLayoutEffect } from './use-layout-effect';
 
 /**
  * Whether the element holds focus, disabled or not: a control that keeps

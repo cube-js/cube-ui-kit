@@ -4,7 +4,7 @@ import { userEvent } from 'vitest/browser';
 
 import { render, screen, waitFor } from '../../../test';
 import { Root } from '../../Root';
-import { MenuContext } from '../Menu/context';
+import { MenuContext } from '../Menu/MenuContext';
 
 import { CommandMenu } from './CommandMenu';
 

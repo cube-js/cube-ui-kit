@@ -14,13 +14,13 @@ import {
 import { useTreeItem, VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import { useSlotProps } from '../../../utils/react/Slots';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu } from '../../actions/Menu/Menu';
@@ -37,7 +37,7 @@ import {
 import { Skeleton } from '../../content/Skeleton/Skeleton';
 import { TextItemWithNativeLink } from '../../content/TextItem/TextItem';
 import { Checkbox } from '../../fields/Checkbox/Checkbox';
-import { useToast } from '../../overlays/Toast/useToast';
+import { useToast } from '../../overlays/Toast/use-toast';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
 import { renderColumnHeaderContent, resolveColumnSort } from './column-header';

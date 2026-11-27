@@ -7,7 +7,7 @@ import {
   VisuallyHidden,
 } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import { getValidationMods } from '../../form/validation/resolve-validation-props';
 
 import { SliderThumbElement } from './elements';

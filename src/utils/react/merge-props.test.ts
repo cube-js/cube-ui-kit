@@ -1,4 +1,4 @@
-import { mergeProps } from './mergeProps';
+import { mergeProps } from './merge-props';
 
 describe('mergeProps', () => {
   describe('styles and *Styles keys', () => {

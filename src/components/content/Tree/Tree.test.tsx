@@ -6,7 +6,7 @@ import { act, fireEvent, renderWithRoot, screen, waitFor } from '../../../test';
 import { startScreenReader } from '../../../test/screen-reader';
 import { Menu } from '../../actions/Menu';
 
-import { getTreeRowId } from './rowId';
+import { getTreeRowId } from './row-id';
 import { Tree } from './Tree';
 
 import type { CubeTreeNodeData, TreeLoadDataNode } from './types';

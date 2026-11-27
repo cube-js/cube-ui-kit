@@ -5,12 +5,12 @@ import {
   ICON_ARG,
   TIME_VALUE_ARG,
   VALIDATION_ARGS,
-} from '../../../stories/FormFieldArgs';
-import { baseProps } from '../../../stories/lists/baseProps';
+} from '../../../stories/form-field-args';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Space } from '../../layout/Space';
 
 import { CubeDateInputProps, DateInput } from './DateInput';
-import { parseAbsoluteDate } from './parseDate';
+import { parseAbsoluteDate } from './parse-date';
 
 export default {
   title: 'Forms/DateInput',

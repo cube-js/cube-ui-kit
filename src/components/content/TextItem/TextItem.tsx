@@ -21,7 +21,7 @@ import {
 import { PositionProps } from 'react-aria';
 
 import { extractStyles } from '../../../utils/styles';
-import { highlightText } from '../highlightText';
+import { highlightText } from '../highlight-text';
 import {
   CubeTextProps,
   TEXT_DEFAULT_STYLES,

@@ -3,7 +3,7 @@ import type { ContainerStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type { NavigateArg } from '../../../providers/navigation.types';
 import type { SizeName } from '../../../tokens';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 import type { CubeItemActionProps } from '../../actions/ItemAction/ItemAction';
 import type { CubeTablePageInfo } from '../../navigation/Pagination';
 import type { CubeTableRowRenderProps } from '../TableBase/TableView';

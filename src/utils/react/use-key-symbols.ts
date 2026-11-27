@@ -1,4 +1,4 @@
-import { useIsDarwin } from './useIsDarwin';
+import { useIsDarwin } from './use-is-darwin';
 
 /* symbols that are identical on every OS */
 const COMMON: Record<string, string> = {

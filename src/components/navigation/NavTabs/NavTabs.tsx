@@ -11,12 +11,12 @@ import {
 import { useFocusVisible } from 'react-aria';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
-import { useMergeStyles } from '../../../utils/react/useMergeStyles';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
+import { useMergeStyles } from '../../../utils/react/use-merge-styles';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
-import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
+import { useTinyScrollbar } from '../../content/Layout/hooks/use-tiny-scrollbar';
 import {
   followTabInStrip,
   scrollTabIntoStrip,
@@ -31,7 +31,7 @@ import { findTabItem, useTabIndicator } from '../Tabs/use-tab-indicator';
 
 import type { OuterStyleProps, Styles } from '@tenphi/tasty';
 import type { To } from '../../../providers/navigation.types';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 import type { CubeItemProps } from '../../content/Item/Item';
 import type { TabPlacement } from '../Tabs/types';
 

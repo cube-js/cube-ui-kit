@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useFocusVisible } from 'react-aria';
 
-import { createSharedStore } from './sharedStore';
+import { createSharedStore } from './shared-store';
 
 interface ControlledFocusVisibleState {
   isManuallyActivated: boolean;

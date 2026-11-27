@@ -140,8 +140,8 @@ Every input component renders **both** states. When you add a new one, copy the 
 Every input component ships:
 
 - `ComponentName.tsx` — implementation following the rules above
-- `index.tsx` — re-export, wired into the category barrel and `src/index.ts`
-- `ComponentName.stories.tsx` — shared argTypes from `src/stories/FormFieldArgs.ts` (use `VALIDATION_ARGS` rather than re-declaring `isInvalid` / `isValid`); size the whole field with style props (`width`) in meta args, and the control alone with `controlWidth`; existing `fieldStyles` sizing still works; export a single `Validation` story rendering the valid and invalid case together (see [storybook.md](storybook.md))
+- `index.ts` — re-export, wired into the category barrel and `src/index.ts`
+- `ComponentName.stories.tsx` — shared argTypes from `src/stories/form-field-args.ts` (use `VALIDATION_ARGS` rather than re-declaring `isInvalid` / `isValid`); size the whole field with style props (`width`) in meta args, and the control alone with `controlWidth`; existing `fieldStyles` sizing still works; export a single `Validation` story rendering the valid and invalid case together (see [storybook.md](storybook.md))
 - `ComponentName.docs.mdx` — links `Supports all [Field properties](/docs/getting-started-field-properties--docs)` instead of duplicating field props (see [documentation.md](documentation.md))
 - `ComponentName.test.tsx` — uses `renderWithForm` for form integration and `renderWithRoot` otherwise (see [tests.md](tests.md))
 

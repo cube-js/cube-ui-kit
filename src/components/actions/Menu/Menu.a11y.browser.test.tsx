@@ -7,8 +7,8 @@ import { readWithScreenReader } from '../../../test/screen-reader';
 import { Root } from '../../Root';
 import { Button } from '../Button/Button';
 
-import { MenuContext } from './context';
 import { Menu } from './Menu';
+import { MenuContext } from './MenuContext';
 import { MenuTrigger } from './MenuTrigger';
 
 describe('Mixed menu accessibility', () => {

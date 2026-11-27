@@ -9,8 +9,8 @@ import {
 import { KeyboardEvent, ReactElement, useState } from 'react';
 import { DateValue, useDateFormatter } from 'react-aria';
 
-import { useI18n } from '../../../i18n/useI18n';
-import { useProviderProps } from '../../../provider';
+import { useI18n } from '../../../i18n/use-i18n';
+import { useProviderProps } from '../../../Provider';
 import { getQuarter } from '../../fields/DatePicker/period';
 
 import { CalendarHeader } from './CalendarHeader';

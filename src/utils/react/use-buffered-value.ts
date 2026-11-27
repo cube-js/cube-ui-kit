@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
-import { useLayoutEffect } from './useLayoutEffect';
+import { useLayoutEffect } from './use-layout-effect';
 
 const NOTHING_PENDING: unknown[] = [];
 

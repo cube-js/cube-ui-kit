@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import { ReloadIcon } from '../../../icons/ReloadIcon';
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { VALIDATION_ARGS } from '../../../stories/form-field-args';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
 

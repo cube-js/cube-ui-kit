@@ -2,7 +2,7 @@ import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { TextInput } from '../../fields/TextInput/TextInput';
 import { Form } from '../../form/Form/index';
 
-import { DialogContext } from './context';
+import { DialogContext } from './DialogContext';
 import { DialogForm } from './DialogForm';
 
 function LegacyFixture({

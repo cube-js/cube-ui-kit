@@ -14,10 +14,10 @@ import { FieldBaseProps } from '../../../shared/form';
 import {
   getDisabledElementProps,
   getInertInputProps,
-} from '../../../utils/react/disabledProps';
+} from '../../../utils/react/disabled-props';
 import { useFocus } from '../../../utils/react/interactions';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
@@ -35,14 +35,14 @@ import {
   splitTooltipTriggerProps,
 } from '../../overlays/Tooltip/split-trigger-props';
 
-import { useRadioProvider } from './context';
 import { JOINED_ITEM_STYLES } from './joined-styles';
+import { useRadioProvider } from './RadioContext';
 import { RadioGroup } from './RadioGroup';
 
 import type { KeyboardEvent } from 'react';
 import type { AriaRadioProps } from 'react-aria';
 import type { RadioGroupState } from 'react-stately';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 export { AriaRadioProps };
 export { useRadio };

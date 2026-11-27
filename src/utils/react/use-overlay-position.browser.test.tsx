@@ -13,7 +13,7 @@ import { Dialog } from '../../components/overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../components/overlays/Dialog/DialogTrigger';
 import { renderWithRoot, screen, userEvent, waitFor } from '../../test';
 
-import { useOverlayPosition } from './useOverlayPosition';
+import { useOverlayPosition } from './use-overlay-position';
 
 import type { CSSProperties, ReactElement } from 'react';
 import type { Placement } from 'react-aria';

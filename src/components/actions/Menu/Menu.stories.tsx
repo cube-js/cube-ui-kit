@@ -28,7 +28,7 @@ import {
   waitForOverlay,
   waitForTransitions,
 } from '../../../stories/interactions';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Block } from '../../Block';
 import { Alert } from '../../content/Alert/Alert';
 import { Card } from '../../content/Card/Card';

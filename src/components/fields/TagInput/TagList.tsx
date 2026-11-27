@@ -10,9 +10,9 @@ import {
 } from 'react-aria';
 import { Item, ListState, useListState } from 'react-stately';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import {
   CubeTagProps,

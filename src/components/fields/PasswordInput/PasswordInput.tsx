@@ -1,17 +1,17 @@
 import { ForwardedRef, forwardRef, RefObject, useRef, useState } from 'react';
 import { AriaTextFieldProps, useTextField } from 'react-aria';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { EyeIcon } from '../../../icons/EyeIcon';
 import { EyeInvisibleIcon } from '../../../icons/EyeInvisibleIcon';
 import { chain } from '../../../utils/react/chain';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   castNullableStringValue,
   WithNullableValue,
-} from '../../../utils/react/nullableValue';
-import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
-import { useBufferedValue } from '../../../utils/react/useBufferedValue';
+} from '../../../utils/react/nullable-value';
+import { withOverlayKeys } from '../../../utils/react/overlay-key-propagation';
+import { useBufferedValue } from '../../../utils/react/use-buffered-value';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';

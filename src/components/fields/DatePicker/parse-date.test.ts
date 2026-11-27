@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { parseAbsoluteDate } from './parseDate';
+import { parseAbsoluteDate } from './parse-date';
 
 const ZONELESS = {
   '2024-01-05': '2024-01-05T00:00:00+00:00[UTC]',
@@ -24,7 +24,7 @@ const ZONELESS = {
  * machine or CI runner in UTC reads local and UTC wall time the same way.
  */
 function parseInZone(timeZone: string, values: string[]): string[] {
-  const source = pathToFileURL(join(__dirname, 'parseDate.ts')).href;
+  const source = pathToFileURL(join(__dirname, 'parse-date.ts')).href;
 
   return JSON.parse(
     execFileSync(

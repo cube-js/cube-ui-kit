@@ -21,7 +21,7 @@ import { useCollator, useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
@@ -31,11 +31,11 @@ import { useFocus } from '../../../utils/react/interactions';
 import {
   OVERLAY_KEYS,
   settleOverlayKey,
-} from '../../../utils/react/overlayKeyPropagation';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
-import { usePopoverSync } from '../../../utils/react/usePopoverSync';
+} from '../../../utils/react/overlay-key-propagation';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
+import { usePopoverSync } from '../../../utils/react/use-popover-sync';
 import { CollectionItem as Item } from '../../CollectionItem';
 import {
   FieldLayoutStyleProps,
@@ -46,16 +46,16 @@ import { getValidationMods } from '../../form/validation/resolve-validation-prop
 import { getValidationIcon } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
 import { isItemDisabled } from '../../shared/disabled-behavior';
-import { getListBoxOptionId } from '../ListBox/optionId';
-import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
+import { getListBoxOptionId } from '../ListBox/option-id';
 import {
   filterCollectionNodes,
   getEdgeVisibleKey,
   getNextVisibleKey,
   ListStateLike,
   markKeyboardFocus,
-} from '../ListBoxPopover/listNavigation';
-import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
+} from '../ListBoxPopover/list-navigation';
+import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
+import { useCompositeFocus } from '../ListBoxPopover/use-composite-focus';
 import { getIdentifierTextServices } from '../TextInput/identifier-text-services';
 import {
   CubeIdentifierInputProps,
@@ -71,9 +71,9 @@ import {
   highlightOption,
   resolveHighlightedKey,
   sortSelectedFirst,
-} from './comboBoxOptions';
+} from './combo-box-options';
 
-import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/component-base-props';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 

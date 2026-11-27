@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useEvent } from '../use-event';
 
-import { Timer } from './timer';
+import { Timer } from './Timer';
 
 export type UseTimerProps = {
   callback?: () => void;

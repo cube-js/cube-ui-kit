@@ -1,13 +1,13 @@
 import { tasty } from '@tenphi/tasty';
 import { isValidElement, Key, ReactNode } from 'react';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { Block } from '../../Block';
 import { Item } from '../../content/Item/Item';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
-import { getThemeIcon } from '../Toast/useToast';
+import { getThemeIcon } from '../Toast/use-toast';
 
 import {
   NotificationAction,

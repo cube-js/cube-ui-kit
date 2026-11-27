@@ -1,4 +1,4 @@
-import { mergeProps } from './mergeProps';
+import { mergeProps } from './merge-props';
 
 import type { ChangeEvent, KeyboardEvent, SyntheticEvent } from 'react';
 import type { Props } from '../../props';

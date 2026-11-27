@@ -12,7 +12,7 @@ import {
   ensureSqlDateUnitKeywords,
   ensureYamlSqlExtensions,
   Prism,
-} from './prismSetup';
+} from './prism-setup';
 
 import 'prismjs/components/prism-markup.js';
 import 'prismjs/components/prism-javascript.js';

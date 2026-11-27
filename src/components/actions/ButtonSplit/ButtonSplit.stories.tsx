@@ -8,7 +8,7 @@ import {
 import { useState } from 'react';
 
 import { DirectionIcon } from '../../../icons/DirectionIcon';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
 import { Button } from '../Button';

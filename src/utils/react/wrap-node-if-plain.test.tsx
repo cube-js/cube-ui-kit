@@ -1,4 +1,4 @@
-import { wrapNodeIfPlain } from './wrapNodeIfPlain';
+import { wrapNodeIfPlain } from './wrap-node-if-plain';
 
 const wrap = () => 'wrapped';
 

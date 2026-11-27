@@ -15,14 +15,14 @@ import {
 } from 'react';
 import { useHover } from 'react-aria';
 
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import { extractStyles } from '../../../utils/styles';
 
-import { useTinyScrollbar } from './hooks/useTinyScrollbar';
+import { useTinyScrollbar } from './hooks/use-tiny-scrollbar';
 import { LayoutContextReset } from './LayoutContext';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 const ContentElement = tasty({
   as: 'div',

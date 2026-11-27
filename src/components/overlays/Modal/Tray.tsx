@@ -8,9 +8,9 @@ import {
   usePreventScroll,
 } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
-import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
+import { useOverlayEscapeGuard } from '../../../utils/react/use-overlay-escape-guard';
 
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import {

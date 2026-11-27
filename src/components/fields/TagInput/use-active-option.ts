@@ -2,9 +2,9 @@ import { Key } from '@react-types/shared';
 import { RefObject, useLayoutEffect, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { markKeyboardFocus } from '../ListBoxPopover/listNavigation';
+import { markKeyboardFocus } from '../ListBoxPopover/list-navigation';
 
-import type { ListStateLike } from '../ListBoxPopover/listNavigation';
+import type { ListStateLike } from '../ListBoxPopover/list-navigation';
 
 export interface ActiveOption {
   key: Key;

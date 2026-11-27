@@ -1,5 +1,5 @@
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 

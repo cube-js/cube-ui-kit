@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { expect, within } from 'storybook/test';
 
-import { Provider } from '../../../provider';
+import { Provider } from '../../../Provider';
 
 import { NavTabs } from './NavTabs';
 

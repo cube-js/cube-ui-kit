@@ -16,7 +16,7 @@ import {
 import { startScreenReader } from '../../../test/screen-reader';
 import { FilterListBox } from '../FilterListBox/FilterListBox';
 
-import { getListBoxOptionId } from './optionId';
+import { getListBoxOptionId } from './option-id';
 
 import type { CubeListBoxProps } from './ListBox';
 

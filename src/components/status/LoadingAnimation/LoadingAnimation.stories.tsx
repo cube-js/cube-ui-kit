@@ -5,8 +5,8 @@ import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import {
   withDarkScheme,
   withHighContrast,
-} from '../../../stories/decorators/withColorScheme';
-import { baseProps } from '../../../stories/lists/baseProps';
+} from '../../../stories/decorators/with-color-scheme';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Button } from '../../actions/Button/Button';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';

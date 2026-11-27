@@ -11,9 +11,9 @@ import {
 } from '../../providers/navigation-url';
 import { useTracking } from '../../providers/TrackingProvider';
 import { useNavigation } from '../../providers/use-navigation';
-import { omitActivationEventProps } from '../../utils/react/disabledProps';
+import { omitActivationEventProps } from '../../utils/react/disabled-props';
 import { useFocus } from '../../utils/react/interactions';
-import { mergeProps } from '../../utils/react/mergeProps';
+import { mergeProps } from '../../utils/react/merge-props';
 
 // Import specific types for internal usage
 import type {

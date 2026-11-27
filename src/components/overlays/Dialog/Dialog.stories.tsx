@@ -5,7 +5,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { timeout } from '../../../utils/promise';
 import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu/Menu';

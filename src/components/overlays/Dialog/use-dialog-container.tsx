@@ -7,7 +7,7 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 
 import { DialogContainer } from './DialogContainer';
 

@@ -1,6 +1,6 @@
 import { RefObject, useState } from 'react';
 
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
 
 // Same slack as `useTinyScrollbar`: sub-pixel rounding can leave a body that
 // fits reporting a `scrollHeight` a pixel or two over its `clientHeight`.

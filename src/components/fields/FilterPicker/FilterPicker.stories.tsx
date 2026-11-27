@@ -14,7 +14,7 @@ import { SearchIcon } from '../../../icons/SearchIcon';
 import { SettingsIcon } from '../../../icons/SettingsIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { VALIDATION_ARGS } from '../../../stories/form-field-args';
 import {
   waitForOverlay,
   waitForTransitions,

@@ -11,8 +11,8 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
-import { useViewportSize } from '../../../utils/react/useViewportSize';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
+import { useViewportSize } from '../../../utils/react/use-viewport-size';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Portal } from '../../portal/Portal';
 import { ToastItem } from '../Toast/ToastItem';

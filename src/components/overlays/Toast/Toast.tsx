@@ -4,7 +4,7 @@ import { Key, ReactNode, useEffect, useRef } from 'react';
 import { useToastContext } from '../Notifications/NotificationContext';
 
 import { ProgressToastOptions, ToastData } from './types';
-import { useProgressToast } from './useProgressToast';
+import { useProgressToast } from './use-progress-toast';
 
 export interface ToastProps extends Omit<ToastData, 'duration'> {
   /** Primary content */

@@ -2,7 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { Fragment, Key, useContext, useEffect, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { Divider } from '../../content/Divider/Divider';
 import { Text } from '../../content/Text';
 

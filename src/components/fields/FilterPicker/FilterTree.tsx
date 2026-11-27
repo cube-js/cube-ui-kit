@@ -2,10 +2,10 @@ import { tasty } from '@tenphi/tasty';
 import { useRef, useState } from 'react';
 import { useFilter, useId, useKeyboard } from 'react-aria';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
 import { StyledFooter } from '../../actions/Menu/styled';
 import { Item } from '../../content/Item/Item';
 import {
@@ -13,7 +13,7 @@ import {
   toggleCheckedKey,
   toOrderedKeys,
 } from '../../content/Tree/checked-keys';
-import { getTreeRowId } from '../../content/Tree/rowId';
+import { getTreeRowId } from '../../content/Tree/row-id';
 import { Tree } from '../../content/Tree/Tree';
 import {
   buildTreeIndex,

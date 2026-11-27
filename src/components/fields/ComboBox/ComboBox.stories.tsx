@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { VALIDATION_ARGS } from '../../../stories/form-field-args';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';

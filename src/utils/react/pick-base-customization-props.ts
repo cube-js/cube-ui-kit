@@ -1,4 +1,4 @@
-import type { ComponentBaseProps } from './componentBaseProps';
+import type { ComponentBaseProps } from './component-base-props';
 
 type BaseCustomizationProps = Pick<
   ComponentBaseProps,

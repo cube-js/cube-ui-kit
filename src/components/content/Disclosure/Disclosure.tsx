@@ -26,7 +26,7 @@ import {
 } from 'react-stately';
 
 import { RightIcon } from '../../../icons/RightIcon';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import {
   CubeItemButtonProps,

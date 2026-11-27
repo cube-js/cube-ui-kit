@@ -5,7 +5,7 @@ import { Modal } from '../Modal/Modal';
 import { Tray } from '../Modal/Tray';
 import { WithCloseBehavior } from '../Modal/types';
 
-import { DialogContext } from './context';
+import { DialogContext } from './DialogContext';
 import {
   DiscardChangesDialog,
   useDismissConfirmation,

@@ -1,7 +1,7 @@
 import { useEffectEvent, useState } from 'react';
 
 import { getLayoutScale } from '../../../utils/layout-scale';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
 
 import type { Key } from '@react-types/shared';
 

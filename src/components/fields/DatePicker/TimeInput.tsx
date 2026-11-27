@@ -10,8 +10,8 @@ import {
 import { useTimeFieldState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared/form';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -25,7 +25,7 @@ import { DEFAULT_TIME_PROPS } from './props';
 import { Granularity } from './types';
 import { useFocusManagerRef } from './utils';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
   extends

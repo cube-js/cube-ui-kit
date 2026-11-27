@@ -23,8 +23,8 @@ import {
   normalizeNavigationUrl,
 } from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
-import { getDisabledElementProps } from '../../../utils/react/disabledProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { getDisabledElementProps } from '../../../utils/react/disabled-props';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   COLLECTION_ITEM_CLICK,
   filterCollectionItemProps,
@@ -33,8 +33,8 @@ import { ItemWithNativeLinks } from '../../content/Item/ItemWithNativeLinks';
 import { isItemDisabled } from '../../shared/disabled-behavior';
 import { parseTo } from '../use-action';
 
-import { useMenuContext } from './context';
 import { CURRENT_DOCUMENT_LINK } from './MenuCollectionItem';
+import { useMenuContext } from './MenuContext';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
 export type MenuSelectionType = 'checkbox' | 'radio' | 'checkmark';

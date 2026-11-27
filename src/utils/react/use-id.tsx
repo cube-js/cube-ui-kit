@@ -1,7 +1,7 @@
 import { useSSRSafeId } from '@react-aria/ssr';
 import { useEffect, useRef, useState } from 'react';
 
-import { useLayoutEffect } from './useLayoutEffect';
+import { useLayoutEffect } from './use-layout-effect';
 
 let idsUpdaterMap = new Map();
 

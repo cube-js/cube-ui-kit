@@ -28,19 +28,19 @@ import {
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useFormatter } from '../../../i18n/useFormatter';
-import { useI18n } from '../../../i18n/useI18n';
+import { useFormatter } from '../../../i18n/use-formatter';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { generateRandomId } from '../../../utils/random';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   castNullableArrayValue,
   WithNullableValue,
-} from '../../../utils/react/nullableValue';
-import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+} from '../../../utils/react/nullable-value';
+import { settleOverlayKey } from '../../../utils/react/overlay-key-propagation';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { withFieldChrome } from '../../form/field-chrome';
@@ -51,16 +51,16 @@ import {
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { rendersFieldChrome, wrapWithField } from '../../form/wrapper';
 import { isItemDisabled } from '../../shared/disabled-behavior';
-import { getListBoxOptionId } from '../ListBox/optionId';
-import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
+import { getListBoxOptionId } from '../ListBox/option-id';
 import {
   collectVisibleKeys,
   filterCollectionNodes,
   getEdgeVisibleKey,
   getNextVisibleKey,
   ListStateLike,
-} from '../ListBoxPopover/listNavigation';
-import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
+} from '../ListBoxPopover/list-navigation';
+import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
+import { useCompositeFocus } from '../ListBoxPopover/use-composite-focus';
 import { getIdentifierTextServices } from '../TextInput/identifier-text-services';
 import {
   CubeIdentifierInputProps,
@@ -68,12 +68,12 @@ import {
 } from '../TextInput/TextInputBase';
 
 import { TagList, TagListEntry } from './TagList';
-import { useActiveOption } from './useActiveOption';
-import { useSuffixSpace } from './useSuffixSpace';
-import { useTagError } from './useTagError';
+import { useActiveOption } from './use-active-option';
+import { useSuffixSpace } from './use-suffix-space';
+import { useTagError } from './use-tag-error';
 
 import type { FieldBaseProps } from '../../../shared';
-import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/component-base-props';
 import type { CubeTagProps } from '../../content/Tag/Tag';
 import type { CompositeBlurInfo } from '../ListBoxPopover';
 

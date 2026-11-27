@@ -1,2 +1,2 @@
 export * from './ButtonSplit';
-export * from './context';
+export * from './ButtonSplitContext';

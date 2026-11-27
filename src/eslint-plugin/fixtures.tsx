@@ -1,5 +1,5 @@
 import { ItemActionProvider } from '../components/actions/ItemActionContext';
-import { DialogContext } from '../components/overlays/Dialog/context';
+import { DialogContext } from '../components/overlays/Dialog/DialogContext';
 import {
   Alert,
   AlertDialog,

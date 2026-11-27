@@ -4,16 +4,16 @@ import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { SearchIcon } from '../../../icons/SearchIcon';
-import { useProviderProps } from '../../../provider';
+import { useProviderProps } from '../../../Provider';
 import { chain } from '../../../utils/react/chain';
-import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { ariaToCubeButtonProps } from '../../../utils/react/map-props';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   castNullableStringValue,
   WithNullableValue,
-} from '../../../utils/react/nullableValue';
-import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
-import { useBufferedValue } from '../../../utils/react/useBufferedValue';
+} from '../../../utils/react/nullable-value';
+import { withOverlayKeys } from '../../../utils/react/overlay-key-propagation';
+import { useBufferedValue } from '../../../utils/react/use-buffered-value';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { asksForFieldChrome, withFieldChrome } from '../../form/field-chrome';

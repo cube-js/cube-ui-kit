@@ -2,7 +2,7 @@ import { TastyBatchProvider } from '@tenphi/tasty';
 import { createPortal } from 'react-dom';
 
 import { PortalProps } from './types';
-import { usePortal } from './usePortal';
+import { usePortal } from './use-portal';
 
 /**
  * This component renders its children outside the current DOM hierarchy.

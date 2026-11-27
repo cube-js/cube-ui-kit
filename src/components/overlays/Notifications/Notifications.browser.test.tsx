@@ -7,8 +7,8 @@ import { Button } from '../../actions/Button';
 import { ItemAction } from '../../actions/ItemAction';
 import { Dialog } from '../Dialog/Dialog';
 import { DialogTrigger } from '../Dialog/DialogTrigger';
-import { useProgressToast } from '../Toast/useProgressToast';
-import { useToast } from '../Toast/useToast';
+import { useProgressToast } from '../Toast/use-progress-toast';
+import { useToast } from '../Toast/use-toast';
 
 import { NotificationAction } from './NotificationAction';
 import { OverlayContainer } from './OverlayContainer';

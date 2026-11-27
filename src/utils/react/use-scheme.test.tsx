@@ -7,7 +7,7 @@ import {
   resolveScheme,
   useHighContrast,
   useScheme,
-} from './useScheme';
+} from './use-scheme';
 
 const DARK = '(prefers-color-scheme: dark)';
 const MORE_CONTRAST = '(prefers-contrast: more)';

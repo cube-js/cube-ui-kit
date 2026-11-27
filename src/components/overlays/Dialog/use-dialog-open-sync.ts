@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useEffectEvent } from 'react';
 import { OverlayTriggerState } from 'react-stately';
 
-import { useEventBus } from '../../../utils/react/useEventBus';
+import { useEventBus } from '../../../utils/react/use-event-bus';
 
 /**
  * Emitted, besides `popover:open`, when a modal, tray, fullscreen or panel
