@@ -6,7 +6,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 This guide covers the design system foundations — tokens, presets, colors, units, and patterns — needed to build and maintain components in Cube UI Kit.
 
-For styling engine internals see the [Tasty documentation](https://github.com/tenphi/tasty/tree/main/docs). Agents in projects that use [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm) get these pages for the installed Tasty through UI Kit's harness.
+For styling engine internals see the [Tasty documentation](https://github.com/tenphi/tasty/tree/main/docs). Agents in projects that use [harnesspm](https://www.npmjs.com/package/@harnesspm/cli) get these pages for the installed Tasty through UI Kit's harness.
 
 - [React API](https://github.com/tenphi/tasty/blob/main/docs/react-api.md) — `tasty()` component creation, state mappings, sub-elements, variants, extending components, style functions.
 - [Configuration](https://github.com/tenphi/tasty/blob/main/docs/configuration.md) — `configure()` options: tokens, recipes, custom units, style handlers, TypeScript module augmentation.
@@ -471,7 +471,7 @@ An intended override takes a disable comment with its reason on the line before 
 
 With this rule on, `tasty/no-styles-prop` can stay off, so the primitives keep their `styles`.
 
-In a project that uses [harnesspm](https://www.npmjs.com/package/@tenphi/harnesspm), installing the plugin also gives agents its harness through UI Kit's: a rule to lint the styles they change, a page for every `tasty/*` rule, `tasty-lint:check`, and a hook that lints each file they edit. Trust `@tenphi/eslint-plugin-tasty` in `harnesspm.json` to turn on the tool and the hook. They run the plugin through ESLint's API, so they need `eslint` installed, also in a project that lints with Oxlint.
+In a project that uses [harnesspm](https://www.npmjs.com/package/@harnesspm/cli), installing the plugin also gives agents its harness through UI Kit's: a rule to lint the styles they change, a page for every `tasty/*` rule, `tasty-lint:check`, and a hook that lints each file they edit. Trust `@tenphi/eslint-plugin-tasty` in `harnesspm.json` to turn on the tool and the hook. They run the plugin through ESLint's API, so they need `eslint` installed, also in a project that lints with Oxlint.
 
 The same `extends` gives the plugin's other rules the names UI Kit defines: its tokens, presets and recipes, and the `@dark`, `@hc`, `@mobile` and `@reduced-motion` state aliases. `tasty/valid-color-token`, `tasty/valid-custom-property`, `tasty/valid-preset`, `tasty/valid-recipe`, `tasty/valid-state-key` and `tasty/no-unknown-state-alias` then report only names that don't exist. The tokens include the ones a component's docs offer you, to read inside that component or set on it, such as a dialog's `$dialog-padding-h` or a layout's `$content-padding`. A component's other custom properties are internal and can change, so the rules report them too. List what your app defines itself, in its own `configure()` or `tokens`, in its own config, which adds to the lists it extends:
 

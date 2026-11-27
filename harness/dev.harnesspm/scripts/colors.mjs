@@ -10,7 +10,7 @@
 import { existsSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const USAGE = `Usage: npx harnesspm run uikit:colors [<part of a name>...] [--on <token>] [--format <format>] [--json]
+const USAGE = `Usage: npx -y @harnesspm/cli run uikit:colors [<part of a name>...] [--on <token>] [--format <format>] [--json]
 
 Lists UI Kit's color tokens by the names Tasty styles use, such as #surface or
 #danger-accent-text, with their values in light, dark and both high-contrast
