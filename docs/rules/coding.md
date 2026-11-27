@@ -13,6 +13,19 @@
 - Use named imports from react (like `useState`) instead of using the `React` instance. Avoid: `React.useState`.
 - Follow [React Compiler and callback rules](react-compiler.md): plain handlers and derived values by default; local Effect Events for effect-owned notifications; `useEvent` only for verified retention contracts. Keep resource dependencies reactive, manual memo dependencies complete, and per-mount lifetime in state/ref ownership. Run both diagnostics ratchets after runtime edits.
 
+# Files
+
+Name a file in `src/` by its main export:
+
+- **PascalCase** for a component, a class or a provider: `Button.tsx`, `ResizeSensor.ts`, `I18nProvider.tsx`. A context counts as a provider, since React 19 renders a context as its own provider: `MenuContext.ts`, `TabsContext.tsx`.
+- **kebab-case** for everything else: hooks (`use-toast.tsx`), helpers (`parse-date.ts`), types (`types.ts`), styles and styled elements (`styled.ts`), and specs of a behaviour rather than of one file (`disabled-press.test.tsx`). A file of hooks and the provider they read is named after the hooks (`use-event-bus.ts`).
+- **Specs, stories and docs** take the name of what they cover, and every dotted part after the name is kebab-case: `Menu.screen-reader.test.tsx`, `ListBox.load-more.test.tsx`, `use-scheme.test.tsx`.
+- **A barrel is `index.ts`**, never `index.tsx`: it only re-exports (see [Imports](#imports)).
+
+`repo/filename-case` (`scripts/oxlint-repo-rules.mjs`) checks the case of every part of a name, `index.ts`, and that a PascalCase file exports a PascalCase value. Lint can't tell which export is a file's main one, so whether a kebab-case file should be PascalCase is for review.
+
+`scripts/move-files.json` lists the files renamed to follow these rules. A branch that started before a rename rebases and runs `node scripts/move-files.mjs`, which makes the same renames in the branch and rewrites what its own files import.
+
 # Imports
 
 **Inside `src/`, import the file that defines the thing, not the barrel that re-exports it.** `import { ItemButton } from '../../actions'` and `import { ItemButton } from '../../actions/ItemButton/ItemButton'` compile to the same component, but the first one also puts `Menu`, `CommandMenu`, `ButtonSplit`, `Banner` and everything _they_ import into the importer's dependency graph. Barrels are the public API for consumers; within the library they are a way to accidentally depend on everything.

@@ -31,7 +31,7 @@ pnpm list @tenphi/tasty @tenphi/glaze
 Project-specific working rules for AI agents. Not published with the package.
 
 - [react-compiler.md](docs/rules/react-compiler.md) — React 19, callbacks, Effect Events, memoization and lifecycle ownership
-- [coding.md](docs/rules/coding.md) — development flow, code style, **import rules**, styling that keeps components customizable, inline `style` and Tasty lint rules, Markdown formatting, knowledge maintenance
+- [coding.md](docs/rules/coding.md) — development flow, code style, **file names**, **import rules**, styling that keeps components customizable, inline `style` and Tasty lint rules, Markdown formatting, knowledge maintenance
 - [entropy.md](docs/rules/entropy.md) — proportional complexity in code, public APIs, consumer usage and UX; Entropy review and developer exceptions
 - [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
 - [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring. Read it before you add or change a story: an interaction-only state needs a `play` function, a story must earn its Chromatic snapshot, and a new story must pass axe-core
@@ -115,7 +115,7 @@ src/
 └── index.ts           # Public barrel export
 ```
 
-Each component lives in `src/components/{category}/{ComponentName}/` and ships `ComponentName.tsx`, `.stories.tsx`, `.docs.mdx`, `.test.tsx`, and `index.ts`.
+Each component lives in `src/components/{category}/{ComponentName}/` and ships `ComponentName.tsx`, `.stories.tsx`, `.docs.mdx`, `.test.tsx`, and `index.ts`. A file is named in PascalCase when its main export is a component, class or provider (a context included), and in kebab-case otherwise (`use-toast.tsx`, `parse-date.ts`); `repo/filename-case` enforces it ([coding.md](docs/rules/coding.md#files)).
 
 ## Commands
 
