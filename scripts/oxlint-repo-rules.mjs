@@ -14,10 +14,10 @@
  * `filename-case` gives every file one naming rule: PascalCase when its main
  * export is a component, class or provider, kebab-case otherwise, kebab-case
  * for each dotted part after the name, and `index.ts` for a barrel. Lint can't
- * tell which export is the main one, so it checks the half it can: a
- * PascalCase file exports a PascalCase value, and a kebab-case spec, story or
- * fixture isn't named after the component beside it. See
- * docs/rules/coding.md#files.
+ * tell which export is the main one, so it checks what it can: a PascalCase
+ * file exports a PascalCase value, a kebab-case one defines no context or
+ * provider, and a kebab-case spec, story or fixture isn't named after the
+ * component beside it. See docs/rules/coding.md#files.
  */
 import { readdirSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
@@ -179,22 +179,26 @@ const toKebab = (name) =>
     .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
     .replace(/_/g, '-')
     .toLowerCase();
-const toPascal = (name) =>
-  name.replace(/(?:^|-)([a-z0-9])/g, (_, letter) => letter.toUpperCase());
 
-/** Whether a module exports a PascalCase value, or one lint can't name (`export *`, a default). */
-function exportsPascalValue(program) {
+/**
+ * The names of a module's value exports, or `null` when one can't be named
+ * (`export *`, a default export).
+ */
+function exportedValues(program) {
+  const names = [];
+
   for (const node of program.body) {
     if (node.exportKind === 'type') continue;
     if (
       node.type === 'ExportAllDeclaration' ||
       node.type === 'ExportDefaultDeclaration'
     )
-      return true;
+      return null;
     if (node.type !== 'ExportNamedDeclaration') continue;
 
     const { declaration } = node;
-    const names = [
+
+    names.push(
       ...(node.specifiers ?? [])
         .filter(({ exportKind }) => exportKind !== 'type')
         .map(({ exported }) => exported.name ?? exported.value),
@@ -205,12 +209,10 @@ function exportsPascalValue(program) {
       declaration?.type === 'ClassDeclaration'
         ? [declaration.id?.name]
         : []),
-    ];
-
-    if (names.some((name) => PASCAL_VALUE.test(name ?? ''))) return true;
+    );
   }
 
-  return false;
+  return names.filter(Boolean);
 }
 
 const filenameCase = {
@@ -236,6 +238,7 @@ const filenameCase = {
             node,
             message: `${message} See docs/rules/coding.md#files.`,
           });
+        const values = parts.length ? [] : exportedValues(node);
 
         if (file === 'index.tsx')
           report(
@@ -249,23 +252,47 @@ const filenameCase = {
           report(
             `\`.${part}\` is not kebab-case: every part after the name is (\`.${toKebab(part)}\`).`,
           );
-        if (PASCAL.test(name) && !parts.length && !exportsPascalValue(node))
+        if (
+          PASCAL.test(name) &&
+          !parts.length &&
+          values &&
+          !values.some((value) => PASCAL_VALUE.test(value))
+        )
           report(
             `\`${file}\` exports no component, class or provider, so it is named in kebab-case: \`${toKebab(name)}.${extension}\`.`,
           );
 
-        // A spec, story or fixture of the component beside it takes its name.
-        // Names are compared exactly: on a case-insensitive disk `Store.ts`
-        // would find `store.ts`.
-        const subject = KEBAB.test(name) && parts.length && toPascal(name);
-        const siblings = subject ? readdirSync(dirname(path)) : [];
-        const sibling = SOURCE_EXTENSIONS.map((ext) => subject + ext).find(
-          (candidate) => siblings.includes(candidate),
-        );
+        // A file that defines a context or provider is named after it. A
+        // barrel only re-exports one.
+        const provider =
+          KEBAB.test(name) &&
+          name !== 'index' &&
+          values?.find(
+            (value) =>
+              PASCAL_VALUE.test(value) && /(?:Context|Provider)$/.test(value),
+          );
 
-        if (sibling)
+        if (provider)
           report(
-            `\`${file}\` covers \`${sibling}\`, so it takes its name: \`${[subject, ...rest].join('.')}\`.`,
+            `\`${file}\` defines \`${provider}\`, so it is named after it: \`${provider}.${extension}\`.`,
+          );
+
+        // A spec, story or fixture of the component beside it takes its
+        // name. Only a PascalCase file counts, so that `store.test.ts` beside
+        // `store.ts` passes, and `textarea` finds `TextArea.tsx`.
+        const key =
+          KEBAB.test(name) && parts.length && name.replaceAll('-', '');
+        const subject =
+          key &&
+          readdirSync(dirname(path))
+            .map((entry) => /^([A-Za-z0-9]+)\.tsx?$/.exec(entry)?.[1])
+            .find(
+              (stem) => stem && PASCAL.test(stem) && stem.toLowerCase() === key,
+            );
+
+        if (subject)
+          report(
+            `\`${file}\` covers \`${subject}\`, so it takes its name: \`${[subject, ...rest].join('.')}\`.`,
           );
       },
     };

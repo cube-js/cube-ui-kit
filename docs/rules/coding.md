@@ -19,11 +19,11 @@ Name a file in `src/` by its main export:
 
 - **PascalCase** for a component, a class or a provider: `Button.tsx`, `ResizeSensor.ts`, `I18nProvider.tsx`. A context counts as a provider, since React 19 renders a context as its own provider: `MenuContext.ts`, `TabsContext.tsx`.
 - **kebab-case** for everything else: hooks (`use-toast.tsx`), helpers (`parse-date.ts`), types (`types.ts`), styles and styled elements (`styled.ts`), and specs of a behaviour rather than of one file (`disabled-press.test.tsx`).
-- **A file that mixes kinds** is named after what callers come to it for: a component's context, with its provider and the hooks that read it, after the context (`TabsContext.tsx`); a shared hook, with the provider it reads, after the hook (`use-event-bus.ts`).
-- **Specs, stories and docs** take the name of what they cover, so a spec of one component is `Button.test.tsx`, never `button.test.tsx`. Every dotted part after the name is kebab-case: `Menu.screen-reader.test.tsx`, `ListBox.load-more.test.tsx`, `use-scheme.test.tsx`.
+- **A file that defines a context or a provider** is named after it, even when it also exports the hooks that read it: `TabsContext.tsx`, `EventBusProvider.ts`, `Provider.tsx`.
+- **Specs, stories and docs** take the name of what they cover, so a spec of one component is `Menu.test.tsx`, never `menu.test.tsx`. Every dotted part after the name is kebab-case: `Menu.screen-reader.test.tsx`, `ListBox.load-more.test.tsx`, `use-scheme.test.tsx`.
 - **A barrel is `index.ts`**, never `index.tsx`: it only re-exports (see [Imports](#imports)).
 
-`repo/filename-case` (`scripts/oxlint-repo-rules.mjs`) checks the case of every part of a name, that a barrel is `index.ts`, that a PascalCase `Name.ts(x)` exports a PascalCase value, and that a kebab-case spec, story or fixture isn't named after the component file beside it. Lint can't tell which export is a file's main one, so whether a kebab-case file should be PascalCase is for review.
+`repo/filename-case` (`scripts/oxlint-repo-rules.mjs`) checks the files Oxlint reads (`.ts`, `.tsx`, `.jsx`): the case of every part of the name, that a barrel is `index.ts`, that a PascalCase `Name.ts(x)` exports a PascalCase value, that a kebab-case one defines no context or provider, and that a kebab-case spec, story or fixture isn't named after the component beside it. Lint can't tell which export is a file's main one, or read a doc's or a data file's name, so those are for review.
 
 `scripts/move-files.json` lists the files renamed to follow these rules. A branch that started before a rename rebases and runs `node scripts/move-files.mjs`, which makes the same renames in the branch and rewrites what its own files import. The script and its ledger are temporary: they go once the open branches have caught up with the restructure.
 
