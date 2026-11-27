@@ -60,6 +60,10 @@ import {
 } from '../ListBoxPopover/listNavigation';
 import { useCompositeFocus } from '../ListBoxPopover/useCompositeFocus';
 import {
+  LOADING_DELAY,
+  useDelayedLoading,
+} from '../ListBoxPopover/useDelayedLoading';
+import {
   CubeSearchInputAttributes,
   SEARCH_TEXT_SERVICES,
 } from '../search-text-services';
@@ -241,34 +245,6 @@ export interface CubeSearchComboBoxProps<T>
 }
 
 // ============================================================================
-// Hook: useDelayedFlag
-// ----------------------------------------------------------------------------
-// Turns `true` only after `delay` ms of `active` staying true, and back to
-// `false` immediately when `active` becomes false. Used to defer the loading
-// indicator so fast responses never flash a loading state.
-// ============================================================================
-function useDelayedFlag(active: boolean, delay: number): boolean {
-  const [flag, setFlag] = useState(false);
-
-  useEffect(() => {
-    if (!active) {
-      setFlag(false);
-      return;
-    }
-
-    if (delay <= 0) {
-      setFlag(true);
-      return;
-    }
-
-    const id = setTimeout(() => setFlag(true), delay);
-    return () => clearTimeout(id);
-  }, [active, delay]);
-
-  return flag;
-}
-
-// ============================================================================
 // Component: SearchComboBoxInput
 // ============================================================================
 interface SearchComboBoxInputProps {
@@ -402,7 +378,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     popoverRef,
     listBoxRef,
     isLoading,
-    loadingDelay = 1000,
+    loadingDelay = LOADING_DELAY,
     inputProps,
     inputStyles,
     optionStyles,
@@ -524,7 +500,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   );
 
   // Delayed loading indicator
-  const showLoading = useDelayedFlag(!!isLoading, loadingDelay);
+  const showLoading = useDelayedLoading(!!isLoading, loadingDelay);
 
   // Check if there are any results after filtering
   const hasResults = useMemo(() => {

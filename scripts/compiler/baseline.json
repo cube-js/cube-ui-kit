@@ -826,6 +826,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/fields/ListBoxPopover/useDelayedLoading.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/fields/NumberInput/NumberInput.tsx": {
     "compiled": 1,
     "diagnostics": {},
@@ -864,7 +869,7 @@
     "optOuts": 0
   },
   "src/components/fields/SearchComboBox/SearchComboBox.tsx": {
-    "compiled": 1,
+    "compiled": 0,
     "diagnostics": {
       "Refs": 6
     },
