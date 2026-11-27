@@ -221,7 +221,9 @@ export interface CubeComboBoxProps<T>
    * closing. While `isLoading`, an empty list shows it once the load has run
    * for a second, so a fast load never flashes it, and a list already shown
    * stays through the load. Switch the text on `isLoading` to say the list is
-   * loading. `null`, `false` or `''` keep the list closing when it is empty.
+   * loading. `null`, `false` or `''` keep the list closing when it is empty;
+   * switch the label off with one of them rather than `undefined`, which also
+   * removes the status that announces it, so its next text would be missed.
    */
   emptyLabel?: ReactNode;
   /** Keys of disabled items */
@@ -442,11 +444,6 @@ function useComboBoxFiltering({
 interface UseComboBoxKeyboardProps {
   /** Whether the list is on screen, with options or its empty label. */
   isListShown: boolean;
-  /**
-   * Whether the list is open, also while a load holds back its empty label
-   * and it is not on screen yet.
-   */
-  isListOpen: boolean;
   isReadOnly?: boolean;
   listStateRef: RefObject<any>;
   /**
@@ -480,7 +477,6 @@ function isComposing(e: AriaKeyboardEvent) {
 
 function useComboBoxKeyboard({
   isListShown,
-  isListOpen,
   isReadOnly,
   listStateRef,
   hasTypedMatch,
@@ -585,8 +581,8 @@ function useComboBoxKeyboard({
     }
 
     // A list a load holds back would show later: Escape cancels it too, and
-    // goes on as it does with the list closed.
-    if (isListOpen) onCloseList();
+    // goes on as it does with the list closed. A closed list stays closed.
+    onCloseList();
 
     if (effectiveInputValue && isClearable) {
       e.preventDefault();
@@ -1317,7 +1313,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Keyboard navigation hook
   const { keyboardProps } = useComboBoxKeyboard({
     isListShown: shouldShowPopover,
-    isListOpen: isPopoverOpen,
     isReadOnly,
     listStateRef,
     hasTypedMatch: () =>
@@ -1562,7 +1557,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         label={label}
         ariaLabel={(props as any)['aria-label']}
         compositeFocusProps={compositeFocusProps}
-        filter={filterFn}
+        // A list with no options shows only its empty label, not the headings
+        // of sections that have none.
+        filter={hasResults ? filterFn : () => []}
         size={size}
         emptyLabel={emptyLabel}
         onSelectionChange={handleSelectionChange}

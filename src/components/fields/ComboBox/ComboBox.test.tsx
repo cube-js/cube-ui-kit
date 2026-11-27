@@ -2924,6 +2924,22 @@ describe('<ComboBox />', () => {
       expect(onOpenChange.mock.calls).toEqual([[true]]);
     });
 
+    it('shows only the label, not the headings, when its sections have no options', async () => {
+      const { getByRole, getByTestId, queryAllByRole } = renderWithRoot(
+        <ComboBox label="User" emptyLabel="No users">
+          <ComboBox.Section title="People">{[]}</ComboBox.Section>
+          <ComboBox.Section title="Groups">{[]}</ComboBox.Section>
+        </ComboBox>,
+      );
+
+      await userEvent.click(getByTestId('ComboBoxTrigger'));
+
+      const listbox = await waitFor(() => getByRole('listbox'));
+
+      expect(listbox).toHaveAccessibleDescription('No users');
+      expect(queryAllByRole('group')).toHaveLength(0);
+    });
+
     it('reads the empty list by its label, with no option in it', async () => {
       const { getByRole } = renderWithRoot(
         <ComboBox label="Color" emptyLabel="No matches">
