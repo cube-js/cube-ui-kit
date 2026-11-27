@@ -16,14 +16,14 @@
       "integrity": "sha512-Euak2FqbV75xW8eh0U7SD+LmlOGjyehFTNNC/CXZP97N3/yW645LwKq8+ce7C4hvRxMr/F9jH5h43QYTjQ0ARw=="
     },
     "@tenphi/glaze": {
-      "version": "3.2.0",
+      "version": "3.2.1",
       "plugin": "glaze",
-      "integrity": "sha512-KcI9hpEeBQtf5Yy93KwQ+APrPPO3a8/HHXSVeRmuqCLhAo1SSjVBpZX5HGzDFPczAwqCbu9/fWYjxVVLY658dQ=="
+      "integrity": "sha512-8M0IVtvzKJxS3hAj1/X0DRm8LJLOI2XkCz2/r15LtS3KufpqlzxBtktXN8/G16ww3VJmdBrMrhBq2w63eDSbWw=="
     },
     "@tenphi/tasty": {
-      "version": "3.19.2",
+      "version": "3.19.3",
       "plugin": "tasty",
-      "integrity": "sha512-/ZYcAgC955SXmXvz7qkWA8KqQ7NOaclonvZzFrlKvlZbyUpXW7nqgCaaV6ejSe+tH8jdYxlkBsdtLmrxsSa92w=="
+      "integrity": "sha512-KVZWKAMcSj3jr4f0AYxbiTBZRpfsfjt9PhQuS6HuU0cpf8eMo5H7AkpZncSaAfcZkCrfH31fW7enuZLHHUss8g=="
     }
   },
   "units": {
@@ -37,19 +37,19 @@
     },
     "glaze:scripts/color": {
       "kind": "scripts",
-      "hash": "83a0a05025c783ae"
+      "hash": "5a5647161596b49d"
     },
     "glaze:scripts/contrast": {
       "kind": "scripts",
-      "hash": "0f19c41b5b03c811"
+      "hash": "69eeb42b1f80d1ee"
     },
     "glaze:scripts/inspect": {
       "kind": "scripts",
-      "hash": "b01aa78b18b19580"
+      "hash": "e3de51c647c2eb7b"
     },
     "glaze:skills/glaze-theme": {
       "kind": "skills",
-      "hash": "89dbcdc39af57d9c"
+      "hash": "709d99d7903fae57"
     },
     "harnesspm:docs": {
       "kind": "docs",
@@ -105,7 +105,7 @@
     },
     "tasty:scripts/styles": {
       "kind": "scripts",
-      "hash": "81cc5cdaf184d3e4"
+      "hash": "4780c61c4f3fa5d5"
     },
     "uikit:rules/usage": {
       "kind": "rules",
