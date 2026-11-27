@@ -1336,24 +1336,32 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const heldWidth = useHeldWidth(scrollRef);
 
   // The focused key and the options this effect last saw, to tell a move of
-  // focus, and a page appended, from another change of the items.
+  // focus, and a page appended, from another change of the items. A list
+  // that has had `onLoadMore` loads pages for good: a consumer may drop it
+  // with `hasMore` as the last page arrives.
   const lastFocusedKeyRef = useRef<Key | null>(null);
   const lastItemsRef = useRef<typeof itemsArray>([]);
+  const loadsPagesRef = useRef(false);
+  const hasLoadMore = onLoadMore != null;
 
   // Keep the focused option visible. One the virtualizer hasn't rendered is
   // scrolled to by index, which renders it, when focus moves to it (End,
   // typeahead, the selected option on autofocus or Tab); new items alone
   // leave a list the user scrolled away from where it is. One already
   // rendered is scrolled to only for keyboard navigation, so a click never
-  // moves the list. A search that keeps it still scrolls to it, but a page
-  // appended to the options doesn't. The focused option is often still
-  // rendered when the viewer scrolls away (a list with sections renders every
-  // option, a virtualized one its longest rows), so every page would scroll
-  // back to it.
+  // moves the list, and, in a list that loads pages, not for a page appended
+  // to the options. It is often still rendered when the viewer scrolls away
+  // (a list with sections renders every option, a virtualized one its
+  // longest rows), so every page would scroll back to it. A search that only
+  // adds options after it looks like a page there too.
   useLayoutEffect(() => {
     const focusedKey = listState.selectionManager.focusedKey;
     const hasFocusMoved = focusedKey !== lastFocusedKeyRef.current;
-    const isPageAppended = isAppendedTo(itemsArray, lastItemsRef.current);
+
+    if (hasLoadMore) loadsPagesRef.current = true;
+
+    const isPageAppended =
+      loadsPagesRef.current && isAppendedTo(itemsArray, lastItemsRef.current);
 
     lastFocusedKeyRef.current = focusedKey;
     lastItemsRef.current = itemsArray;
@@ -1408,6 +1416,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     itemsArray,
     shouldVirtualize,
     rowVirtualizer,
+    hasLoadMore,
   ]);
 
   // ----- Load more -----

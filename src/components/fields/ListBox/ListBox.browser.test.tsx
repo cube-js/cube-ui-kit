@@ -1332,13 +1332,14 @@ describe('ListBox load more', () => {
    * rows rendered, for its width, wherever it is scrolled. The list scrolled
    * that option into view on every new page, back to the top. Cloud's search
    * adds a custom value, in a section of its own after the options, so there
-   * the page lands in the options' section.
+   * the page lands in the options' section; and Cloud drops `onLoadMore` with
+   * `hasMore` as the last page arrives.
    */
-  it.each<[string, ClientsProps]>([
+  it.each<[string, ClientsProps, ClientsProps?]>([
     ['single selection', { selectionMode: 'single' }],
     ['multiple selection', { selectionMode: 'multiple' }],
     [
-      'a server search with a custom value',
+      'a server search with a custom value, as the last page',
       {
         selectionMode: 'multiple',
         filter: false,
@@ -1346,10 +1347,11 @@ describe('ListBox load more', () => {
         searchValue: 'Client',
         onSearchChange: () => {},
       },
+      { hasMore: false, onLoadMore: undefined },
     ],
   ])(
     'stays where the viewer scrolled when a page arrives, in %s',
-    async (_, props) => {
+    async (_, props, lastPage = {}) => {
       const { rerender } = renderWithRoot(<Clients count={100} {...props} />);
 
       await scrollToEnd(300);
@@ -1364,17 +1366,17 @@ describe('ListBox load more', () => {
         first.id,
       );
 
-      rerender(<Clients count={200} {...props} />);
+      rerender(<Clients count={200} {...props} {...lastPage} />);
       await settle();
 
       expect(scroller().scrollTop).toBe(scrollTop);
     },
   );
 
-  // Only a page appended leaves the list where it is. A search that keeps the
-  // focused option still shows it, as `Enter` picks it, wherever the search
-  // leaves it: first again, or further up. With a custom value the options
-  // are in a section, and the search changes what is in it.
+  // Only a page appended leaves the list where it is. A narrower search that
+  // keeps the focused option still shows it, as `Enter` picks it: first again,
+  // or further up. With a custom value the options are in a section, and the
+  // search changes what is in it.
   it.each<[string, ClientsProps]>([
     ['a flat list', {}],
     ['a list with a custom value', { allowsCustomValue: true }],
@@ -1404,6 +1406,26 @@ describe('ListBox load more', () => {
       expect(isInView(first)).toBe(true);
     },
   );
+
+  // A list that loads no pages gets none, so any search that keeps the
+  // focused option shows it, even one every option matches.
+  it('scrolls back to the focused option any search keeps, in a list that loads no pages', async () => {
+    renderWithRoot(
+      <Clients count={100} hasMore={false} onLoadMore={undefined} />,
+    );
+
+    const input = screen.getByRole('combobox');
+
+    await userEvent.click(input);
+    await scrollToEnd(300);
+    await userEvent.keyboard('c');
+    await settle();
+
+    const first = screen.getByRole('option', { name: 'Client 0001' });
+
+    expect(input).toHaveAttribute('aria-activedescendant', first.id);
+    expect(isInView(first)).toBe(true);
+  });
 
   it('keeps the focused option in view when a search moves it', async () => {
     renderWithRoot(
