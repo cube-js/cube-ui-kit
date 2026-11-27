@@ -3182,6 +3182,23 @@ describe('<ComboBox />', () => {
       );
     });
 
+    it('announces only a text label, so an element label is not copied into the status', async () => {
+      const { getByRole, getAllByTestId } = renderWithRoot(
+        <ComboBox
+          label="Color"
+          emptyLabel={<span data-qa="EmptyMessage">No matches</span>}
+        >
+          {colorItems}
+        </ComboBox>,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'zzz');
+      await waitFor(() => getByRole('listbox'));
+
+      expect(getAllByTestId('EmptyMessage')).toHaveLength(1);
+      expect(getByRole('status')).toBeEmptyDOMElement();
+    });
+
     it('renders no status region without emptyLabel', async () => {
       const { getByRole, getByTestId, queryByRole } = renderWithRoot(
         <ComboBox label="Color">{colorItems}</ComboBox>,

@@ -11,11 +11,19 @@ import { VisuallyHidden } from 'react-aria';
  * not announced. Pass the label only once the list has settled on it, never
  * while loading: a loading label is a passing state, and announcing it is
  * noise.
+ *
+ * Only a text label (a string or a number) is announced. A copy of an element
+ * would repeat its ids, test ids and controls in the page.
  */
 export function EmptyLabelStatus({ children }: { children?: ReactNode }) {
+  const text =
+    typeof children === 'string' || typeof children === 'number'
+      ? children
+      : null;
+
   return (
     <VisuallyHidden role="status" aria-live="polite" aria-atomic="true">
-      {children}
+      {text}
     </VisuallyHidden>
   );
 }

@@ -223,7 +223,9 @@ export interface CubeComboBoxProps<T>
    * stays through the load. Switch the text on `isLoading` to say the list is
    * loading. `null`, `false` or `''` keep the list closing when it is empty;
    * switch the label off with one of them rather than `undefined`, which also
-   * removes the status that announces it, so its next text would be missed.
+   * removes the status that announces it, so its next text may not be
+   * announced. Only a text label is announced: an element is shown but not
+   * copied into that status.
    */
   emptyLabel?: ReactNode;
   /** Keys of disabled items */
