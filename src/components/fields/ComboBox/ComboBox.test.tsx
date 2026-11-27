@@ -7,7 +7,10 @@ import {
   renderWithRoot,
   userEvent,
 } from '../../../test/index';
-import { readWithScreenReader } from '../../../test/screen-reader';
+import {
+  readWithScreenReader,
+  startScreenReader,
+} from '../../../test/screen-reader';
 import { Button } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
 import { Dialog } from '../../overlays/Dialog/Dialog';
@@ -3093,6 +3096,85 @@ describe('<ComboBox />', () => {
 
       await waitFor(() => expect(getAllByRole('option')).toHaveLength(2));
       expect(onOpenChange.mock.calls).toEqual([[true]]);
+    });
+
+    it('highlights results that land in the open list, so Enter picks the option the input names', async () => {
+      const onSelectionChange = vi.fn();
+      const view = (results: typeof items, isLoading: boolean) => (
+        <ComboBox
+          label="Color"
+          filter={false}
+          isLoading={isLoading}
+          emptyLabel={isLoading ? 'Searching…' : 'No matches'}
+          items={results}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item: (typeof items)[number]) => (
+            <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          )}
+        </ComboBox>
+      );
+      const { getByRole, rerender } = renderWithRoot(view(items, false));
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'r');
+      await waitFor(() => getByRole('option', { name: 'Red' }));
+
+      rerender(view([], true));
+      expect(getByRole('listbox')).toHaveAccessibleDescription('Searching…');
+
+      // Long enough for the highlight to stop looking for an option.
+      await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+      rerender(view(items.slice(1, 3), false));
+
+      await waitFor(() =>
+        expect(combobox).toHaveAttribute(
+          'aria-activedescendant',
+          getByRole('option', { name: 'Orange' }).id,
+        ),
+      );
+
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith('orange');
+    });
+
+    it('announces the label once the list settles on it, and not while a load runs', async () => {
+      const { getByRole, rerender } = renderWithRoot(
+        <ServerSearch results={items} isLoading={false} />,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'r');
+      await waitFor(() => getByRole('option', { name: 'Red' }));
+
+      const reader = await startScreenReader();
+
+      rerender(<ServerSearch results={[]} isLoading />);
+      await waitFor(() =>
+        expect(getByRole('listbox')).toHaveAccessibleDescription('Searching…'),
+      );
+
+      expect(await reader.spokenPhraseLog()).not.toContain(
+        'polite: Searching…',
+      );
+
+      rerender(<ServerSearch results={[]} isLoading={false} />);
+
+      await waitFor(async () =>
+        expect(await reader.spokenPhraseLog()).toContain('polite: No matches'),
+      );
+    });
+
+    it('renders no status region without emptyLabel', async () => {
+      const { getByRole, getByTestId, queryByRole } = renderWithRoot(
+        <ComboBox label="Color">{colorItems}</ComboBox>,
+      );
+
+      await userEvent.click(getByTestId('ComboBoxTrigger'));
+      await waitFor(() => getByRole('listbox'));
+
+      expect(queryByRole('status')).not.toBeInTheDocument();
     });
 
     it('drops the open list on blur while a load holds back its label', async () => {

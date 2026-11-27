@@ -6,6 +6,7 @@ import {
   renderWithRoot,
   userEvent,
 } from '../../../test/index';
+import { startScreenReader } from '../../../test/screen-reader';
 
 import { SearchComboBox } from './SearchComboBox';
 
@@ -407,8 +408,29 @@ describe('<SearchComboBox />', () => {
     expect(input).toHaveValue('zzz');
   });
 
+  it('announces the empty state to screen readers once the query matches nothing', async () => {
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox label="Colors">
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+    const reader = await startScreenReader();
+
+    await userEvent.type(getByRole('combobox'), 'zzz');
+
+    await waitFor(async () =>
+      expect(await reader.spokenPhraseLog()).toContain(
+        'polite: No results found',
+      ),
+    );
+  });
+
   it('shows a custom emptyLabel when no results match', async () => {
-    const { getByRole, getByText } = renderWithRoot(
+    const { getByRole } = renderWithRoot(
       <SearchComboBox label="Colors" emptyLabel="Nothing here">
         {items.map((item) => (
           <SearchComboBox.Item key={item.key}>
@@ -422,9 +444,11 @@ describe('<SearchComboBox />', () => {
 
     await userEvent.type(input, 'zzz');
 
-    // The popover stays open on a non-empty query and shows the empty state.
+    // The popover stays open on a non-empty query and shows the empty state,
+    // which describes the listbox. The text is also in the status region that
+    // announces it, so it is not unique on the page.
     await waitFor(() => {
-      expect(getByText('Nothing here')).toBeInTheDocument();
+      expect(getByRole('listbox')).toHaveAccessibleDescription('Nothing here');
     });
   });
 

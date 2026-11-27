@@ -47,6 +47,7 @@ import { getValidationIcon } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
 import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/optionId';
+import { EmptyLabelStatus } from '../ListBoxPopover/EmptyLabelStatus';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
   filterCollectionNodes,
@@ -1018,6 +1019,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   if (wasListShown !== shouldShowPopover) setWasListShown(shouldShowPopover);
 
+  // Screen readers hear the label once the list settles on it, not while a
+  // load is still running.
+  const announcesEmptyLabel = shouldShowPopover && !hasResults && !isLoading;
+
   // Report the list showing or hiding, as the user sees it: not on mount, and
   // not for text that reopens an empty list keystroke after keystroke.
   const reportedOpenRef = useRef(shouldShowPopover);
@@ -1377,9 +1382,16 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   }, [isPopoverOpen, hasResults, hasEmptyLabel, setIsPopoverOpen]);
 
+  // The options on screen, so options that land in an open list, as a search
+  // that ran with the list open does, are highlighted too.
+  const shownOptionKeys = filteredOptions
+    .map((option) => String(option.key))
+    .join('\0');
+
   // Highlight an option once the list shows, and again whenever the typed
-  // text filters the list, so the input's active descendant follows it. The
-  // list mounts its collection over the next few frames.
+  // text filters the list or its options change, so the input's active
+  // descendant follows the option Enter picks. The list mounts its collection
+  // over the next few frames.
   useLayoutEffect(() => {
     if (!shouldShowPopover) return;
 
@@ -1407,6 +1419,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     shouldShowPopover,
     effectiveSelectedKey,
     effectiveInputValue,
+    shownOptionKeys,
     wrapperRef,
   ]);
 
@@ -1471,6 +1484,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           value={effectiveSelectedKey ?? ''}
           disabled={isDisabled}
         />
+      ) : null}
+      {emptyLabel !== undefined ? (
+        <EmptyLabelStatus>
+          {announcesEmptyLabel ? emptyLabel : null}
+        </EmptyLabelStatus>
       ) : null}
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}

@@ -48,6 +48,7 @@ import { getValidationIcon } from '../../form/validation/ValidationIndicator';
 import { wrapWithField } from '../../form/wrapper';
 import { isItemDisabled } from '../../shared/disabled-behavior';
 import { getListBoxOptionId } from '../ListBox/optionId';
+import { EmptyLabelStatus } from '../ListBoxPopover/EmptyLabelStatus';
 import { ListBoxPopover } from '../ListBoxPopover/ListBoxPopover';
 import {
   collectVisibleKeys,
@@ -992,6 +993,13 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
         onChange={handleInputChange}
         onFocus={handleInputFocus}
       />
+      {/* Screen readers hear the empty state once the list settles on it, not
+      while a load is still running. */}
+      <EmptyLabelStatus>
+        {shouldShowPopover && !hasResults && !isLoading
+          ? resolvedEmptyLabel
+          : null}
+      </EmptyLabelStatus>
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
         {showLoading ? (
