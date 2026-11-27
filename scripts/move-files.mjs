@@ -287,9 +287,14 @@ async function codeSpecifiers(file, text) {
 /**
  * Relative `](x)` links in Markdown, which name their file exactly, and
  * `import … from './x'` in MDX. A link without `./` gets one to resolve, and
- * `bare` says to drop it again.
+ * `bare` says to drop it again. Fenced code is an example, not a link or an
+ * import, so it is blanked out first, keeping every offset.
  */
-function markdownSpecifiers(file, text) {
+function markdownSpecifiers(file, markdown) {
+  const text = markdown.replace(
+    /^[ \t]*(`{3,}|~{3,})[^\n]*\n[\s\S]*?^[ \t]*\1[ \t]*$/gm,
+    (block) => block.replace(/[^\n]/g, ' '),
+  );
   const found = [];
   const patterns = [
     [/\]\(((?![a-z][\w+.-]*:|[/#<])[^)\s#?]+)/gi, true],
@@ -374,6 +379,8 @@ export async function main({ root, dryRun = false, log = console.log }) {
   );
 
   let rewritten = 0;
+  // What a dry run would write, for step 5 to read in place of the disk.
+  const written = new Map();
   const unresolved = [];
 
   for (const file of new Set(files)) {
@@ -444,6 +451,7 @@ export async function main({ root, dryRun = false, log = console.log }) {
     }
 
     rewritten += 1;
+    written.set(file, text);
     if (!dryRun) fs.writeFileSync(abs(file), text);
   }
 
@@ -471,7 +479,9 @@ export async function main({ root, dryRun = false, log = console.log }) {
   for (const file of new Set(files)) {
     if (!oldNames.length || !fs.existsSync(abs(file))) continue;
 
-    for (const [name] of fs.readFileSync(abs(file), 'utf8').matchAll(oldName))
+    const text = written.get(file) ?? fs.readFileSync(abs(file), 'utf8');
+
+    for (const [name] of text.matchAll(oldName))
       leftovers.push(`${file}: ${name}`);
   }
 

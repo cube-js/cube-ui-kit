@@ -198,7 +198,10 @@ describe('main', () => {
 
       write('src/a/useFoo.ts', 'export const useFoo = 1;\n');
       write('src/a/Button.tsx', "import { useFoo } from './useFoo';\n");
-      write('src/a/notes.md', 'See [the hook](useFoo.ts).\n');
+      write(
+        'src/a/notes.md',
+        'See [the hook](useFoo.ts).\n\n```md\n[example](./missing.ts)\n```\n',
+      );
       write('docs/notes.md', 'See `src/a/useFoo.ts`.\n');
       write(
         'scripts/move-files.json',
@@ -211,6 +214,11 @@ describe('main', () => {
 
       const log = vi.fn();
 
+      expect(await main({ root: dir, dryRun: true, log })).toMatchObject({
+        moved: 1,
+        rewritten: 3,
+        leftovers: [],
+      });
       expect(await main({ root: dir, log })).toMatchObject({
         moved: 1,
         rewritten: 3,
@@ -225,7 +233,7 @@ describe('main', () => {
       ]);
       expect(read('src/a/Button.tsx')).toContain("from '../hooks/use-foo'");
       expect(read('src/a/notes.md')).toBe(
-        'See [the hook](../hooks/use-foo.ts).\n',
+        'See [the hook](../hooks/use-foo.ts).\n\n```md\n[example](./missing.ts)\n```\n',
       );
       expect(read('docs/notes.md')).toBe('See `src/hooks/use-foo.ts`.\n');
       expect(await main({ root: dir, log })).toMatchObject({
