@@ -65,7 +65,7 @@ The component's data shape (`treeData`) and the public callback shape are design
 - **`textValue`** `string` — Plain-text label, for a `title` that is not a string. It names the row's checkbox and is what `FilterPicker`'s tree mode searches and summarises.
 - **`children`** `CubeTreeNodeData[]` — Children. Pass `undefined` together with `isLeaf={false}` for lazy nodes.
 - **`isLeaf`** `boolean` — Force leaf rendering (no expand toggle, no `loadData` call).
-- **`isDisabled`** `boolean` — Disable this row: it can't be selected, expanded or checked, and its row action doesn't run. The arrow keys still reach it, so a screen reader says it is disabled. It has no menu, as a disabled `ItemTable` row has none: its menu button is disabled, a right-click shows the browser's own menu, and `Shift+F10` opens nothing.
+- **`isDisabled`** `boolean` — Disable this row: it can't be selected, expanded or checked, and its row action doesn't run. The arrow keys still reach it, so a screen reader says it is disabled. It has no menu, as a disabled `ItemTable` row has none: its menu button is disabled, a right-click or long press shows the browser's own menu, and `Shift+F10` opens nothing.
 - **`isCheckboxDisabled`** `boolean` — Disable only the checkbox of this row.
 - **`isCheckable`** `boolean` — Per-node override; `false` hides the checkbox for this row even when the tree is `isCheckable`.
 - **`menu`** `ReactNode | null` — Per-node menu override. Wins over the tree-level `menu`. Pass `null` to hide the menu for this row when the tree provides a default.

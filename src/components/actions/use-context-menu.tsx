@@ -158,21 +158,6 @@ export function useContextMenu<
   const popoverRef = useRef<HTMLDivElement>(null);
   const setupRef = useRef(false);
 
-  // Mark the container as a popover trigger so that other open menus' close-on-
-  // outside predicates treat clicks inside it (including programmatic
-  // open buttons rendered alongside a context-menu target) as a legitimate
-  // trigger interaction instead of a generic outside click. This mirrors the
-  // pattern in `useAnchoredMenu`.
-  useEffect(() => {
-    const el = targetRef.current;
-    if (el) {
-      el.dataset.popoverTrigger = '';
-      return () => {
-        delete el.dataset.popoverTrigger;
-      };
-    }
-  }, []);
-
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 
@@ -299,23 +284,54 @@ export function useContextMenu<
     },
   );
 
-  // Bind the onContextMenu event to targetRef. A touch long press fires it
-  // too, on iOS as well, so the menu opens at the touch point.
+  // Bind to the element `targetRef` holds after each commit, so a target
+  // attached, swapped or detached later is followed: a `Tree` row attaches it
+  // only while enabled, and a tab only while its menu is on. The element:
+  // - opens the menu on `contextmenu`, which a touch long press fires too, on
+  //   iOS as well, so the menu opens at the touch point;
+  // - is marked as a popover trigger, so that other open menus' close-on-
+  //   outside predicates treat clicks inside it (including programmatic open
+  //   buttons rendered alongside a context-menu target) as a legitimate
+  //   trigger interaction instead of a generic outside click. This mirrors
+  //   the pattern in `useAnchoredMenu`.
+  const boundTargetRef = useRef<{ element: E; unbind: () => void } | null>(
+    null,
+  );
+
   useEffect(() => {
     const element = targetRef.current;
+
+    if (boundTargetRef.current?.element === element) return;
+
+    boundTargetRef.current?.unbind();
+    boundTargetRef.current = null;
+
     if (!element) return;
 
+    element.dataset.popoverTrigger = '';
     element.addEventListener('contextmenu', onContextMenu as any);
     element.setAttribute(TOUCH_CONTEXT_MENU_ATTRIBUTE, '');
 
     const unbindTouch = bindTouchContextMenu(element);
 
-    return () => {
-      element.removeEventListener('contextmenu', onContextMenu as any);
-      element.removeAttribute(TOUCH_CONTEXT_MENU_ATTRIBUTE);
-      unbindTouch();
+    boundTargetRef.current = {
+      element,
+      unbind: () => {
+        delete element.dataset.popoverTrigger;
+        element.removeEventListener('contextmenu', onContextMenu as any);
+        element.removeAttribute(TOUCH_CONTEXT_MENU_ATTRIBUTE);
+        unbindTouch();
+      },
     };
-  }, [onContextMenu]);
+  });
+
+  useEffect(
+    () => () => {
+      boundTargetRef.current?.unbind();
+      boundTargetRef.current = null;
+    },
+    [],
+  );
 
   // Render the menu only when it has been opened at least once
   const renderedMenu = useMemo(() => {

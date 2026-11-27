@@ -194,9 +194,10 @@ function TreeNodeInner(props: TreeNodeProps) {
     hasMenu &&
     (effectiveContextMenu === true || effectiveContextMenu === 'context-only');
   const contextMenuOnly = effectiveContextMenu === 'context-only';
-  // A disabled row is inert, as an ItemTable row is: no right-click menu (the
-  // browser's own shows instead) and no Shift+F10. Its `⋮` trigger stays,
-  // disabled, so the row keeps its layout.
+  // A disabled row is inert, as an ItemTable row is: no right-click or long
+  // press menu (the browser's own shows instead) and no Shift+F10. Its `⋮`
+  // trigger stays, disabled, so the row keeps its layout, and a menu open when
+  // the row becomes disabled stays until it is dismissed.
   const canOpenMenu = menuExposed && !isDisabled;
 
   // Controlled state for menu trigger (enables keyboard opening with Shift+F10)
@@ -430,6 +431,8 @@ function TreeNodeInner(props: TreeNodeProps) {
           icon={<MoreIcon />}
           aria-label={t('tree.actions', 'Actions')}
           {...menuTriggerProps}
+          // A disabled row's trigger stays disabled, whatever the props say.
+          isDisabled={isDisabled || menuTriggerProps?.isDisabled}
         />
         <Menu {...menuProps} onAction={handleMenuAction}>
           {effectiveMenuChildren}
@@ -481,7 +484,7 @@ function TreeNodeInner(props: TreeNodeProps) {
       >
         {data.title}
       </TreeRowItem>
-      {canOpenMenu && rowContextMenu.rendered}
+      {menuExposed && rowContextMenu.rendered}
     </TreeNodeRow>
   );
 }
