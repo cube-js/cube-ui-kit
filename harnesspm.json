@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/@tenphi/harnesspm/schema/harnesspm.schema.json",
+  "$schema": "https://unpkg.com/@harnesspm/cli/schema/harnesspm.schema.json",
   "exclude": ["uikit:docs"],
   "patch": {
     "glaze:rules/colors": "./harnesspm/patches/glaze-colors.patch.md",
