@@ -229,7 +229,13 @@ useEffect(() => {
   inputValue={value}
   isLoading={isLoading}
   items={results}
-  emptyLabel={value.trim() ? 'No countries found' : 'Type to search'}
+  emptyLabel={
+    !value.trim()
+      ? 'Type to search'
+      : isLoading
+        ? 'Searching…'
+        : 'No countries found'
+  }
   onInputChange={setValue}
   onSelect={(key) => selectCountry(key)}
 >

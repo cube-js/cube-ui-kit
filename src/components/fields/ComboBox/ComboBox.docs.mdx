@@ -456,6 +456,47 @@ With `emptyLabel`, text that matches no option keeps the list open and shows the
 </ComboBox>
 ```
 
+#### While Loading
+
+<Story of={ComboBoxStories.EmptyLabelWhileLoading} />
+
+A load with no options yet keeps the list open too. Once the load has run for a second, the list shows the label, so a fast load never flashes it.
+
+```jsx
+<ComboBox
+  isLoading
+  label="User"
+  popoverTrigger="focus"
+  emptyLabel="Searching…"
+  items={[]}
+>
+  {(user) => <ComboBox.Item key={user.key}>{user.name}</ComboBox.Item>}
+</ComboBox>
+```
+
+#### Server Search
+
+<Story of={ComboBoxStories.ServerSearchWithEmptyLabel} />
+
+A search that empties the list while it runs: the label says "Searching…" during the load and "No matches" after it. A list already open stays open through the next search, and the results that land are highlighted, so `Enter` picks the first one.
+
+```jsx
+const [query, setQuery] = useState('');
+const { results, isSearching } = useUserSearch(query);
+
+<ComboBox
+  label="User"
+  filter={false}
+  inputValue={query}
+  onInputChange={setQuery}
+  isLoading={isSearching}
+  emptyLabel={query && (isSearching ? 'Searching…' : 'No matches')}
+  items={results}
+>
+  {(user) => <ComboBox.Item key={user.key}>{user.name}</ComboBox.Item>}
+</ComboBox>;
+```
+
 ### Disabled State
 
 <Story of={ComboBoxStories.Disabled} />

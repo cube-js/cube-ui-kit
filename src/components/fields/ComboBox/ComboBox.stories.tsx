@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
@@ -660,6 +660,98 @@ export const EmptyLabel: StoryObj<typeof ComboBox> = {
     await waitForTransitions();
   },
 };
+
+export const EmptyLabelWhileLoading: StoryObj<typeof ComboBox> = {
+  render: (args) => (
+    <ComboBox
+      {...args}
+      isLoading
+      label="User"
+      placeholder="Search people..."
+      popoverTrigger="focus"
+      emptyLabel="Searching…"
+      items={[]}
+    >
+      {(item: { key: string; name: string }) => (
+        <ComboBox.Item key={item.key}>{item.name}</ComboBox.Item>
+      )}
+    </ComboBox>
+  ),
+  // The list opens on focus, and a load with no options yet shows the label
+  // once it has run for a second.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('combobox'));
+    await waitForOverlay('listbox');
+    await waitForTransitions();
+  },
+};
+
+const PEOPLE = [
+  { key: 'ada', name: 'Ada Lovelace' },
+  { key: 'alan', name: 'Alan Turing' },
+  { key: 'barbara', name: 'Barbara Liskov' },
+  { key: 'donald', name: 'Donald Knuth' },
+  { key: 'edsger', name: 'Edsger Dijkstra' },
+  { key: 'grace', name: 'Grace Hopper' },
+];
+
+export const ServerSearchWithEmptyLabel = () => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState(PEOPLE);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // A fake server search that takes 1.5 seconds and empties the list while
+  // it runs.
+  const search = (text: string) => {
+    setQuery(text);
+    setIsSearching(true);
+    setResults([]);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      const term = text.trim().toLowerCase();
+
+      setResults(
+        PEOPLE.filter((person) => person.name.toLowerCase().includes(term)),
+      );
+      setIsSearching(false);
+    }, 1500);
+  };
+
+  return (
+    <Flow gap="2x">
+      <ComboBox
+        fieldStyles={{ width: '0 30x 100%' }}
+        label="User"
+        placeholder="Search people..."
+        filter={false}
+        inputValue={query}
+        isLoading={isSearching}
+        emptyLabel={query && (isSearching ? 'Searching…' : 'No matches')}
+        items={results}
+        selectedKey={selectedKey}
+        onInputChange={search}
+        onSelectionChange={setSelectedKey}
+      >
+        {(person) => (
+          <ComboBox.Item key={person.key}>{person.name}</ComboBox.Item>
+        )}
+      </ComboBox>
+      <Paragraph preset="t4" color="#dark-03">
+        Type &quot;a&quot;: the list waits a second, then says
+        &quot;Searching…&quot; until the results land. Type more while it is
+        open: it stays open through the next search. Type &quot;zz&quot; for
+        &quot;No matches&quot;.
+      </Paragraph>
+    </Flow>
+  );
+};
+// A closed field at rest, the same as `Default`; the story is about what
+// happens while the user types and the search runs.
+ServerSearchWithEmptyLabel.parameters = NO_SNAPSHOT;
 
 export const Disabled = () => (
   <ComboBox
