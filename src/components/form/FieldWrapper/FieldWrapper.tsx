@@ -2,10 +2,10 @@ import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 import { VisuallyHidden } from 'react-aria';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { isDevEnv } from '../../../utils/is-dev-env';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { wrapNodeIfPlain } from '../../../utils/react/wrapNodeIfPlain';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { wrapNodeIfPlain } from '../../../utils/react/wrap-node-if-plain';
 import { InfoBadge } from '../../content/InfoBadge/InfoBadge';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';

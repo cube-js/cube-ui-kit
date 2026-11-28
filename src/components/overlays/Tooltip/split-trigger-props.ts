@@ -1,4 +1,4 @@
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 
 import type { HTMLAttributes } from 'react';
 

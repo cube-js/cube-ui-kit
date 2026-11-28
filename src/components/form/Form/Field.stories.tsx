@@ -1,6 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Block } from '../../Block';
 
 import { CubeFieldProps, Field } from './Field';

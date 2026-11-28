@@ -12,8 +12,8 @@ import { useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue } from '../../_internal/hooks/use-debounced-value';
 import { useEvent } from '../../_internal/hooks/use-event';
-import { mergeProps } from '../../utils/react/mergeProps';
-import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
+import { mergeProps } from '../../utils/react/merge-props';
+import { useCombinedRefs } from '../../utils/react/use-combined-refs';
 
 import { CubePanelProps, Panel } from './Panel';
 

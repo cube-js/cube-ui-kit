@@ -9,7 +9,7 @@ import {
 } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Button } from '../../actions/Button/Button';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';

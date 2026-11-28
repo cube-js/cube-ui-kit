@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector.js';
 
 import { useEvent } from '../../../../_internal/hooks/use-event';
-import { useLayoutEffect } from '../../../../utils/react/useLayoutEffect';
+import { useLayoutEffect } from '../../../../utils/react/use-layout-effect';
 import { isModernFormController } from '../backend';
 import {
   createModernFieldBackend,

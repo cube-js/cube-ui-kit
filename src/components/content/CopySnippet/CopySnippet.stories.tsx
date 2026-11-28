@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { IconSettings } from '@tabler/icons-react';
 
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 
 import { CopySnippet, CubeCopySnippetProps } from './CopySnippet';
 

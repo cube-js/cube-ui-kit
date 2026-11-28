@@ -25,8 +25,8 @@ import { useTooltipTriggerState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { isDevEnv } from '../../../utils/is-dev-env';
-import { isFocusRestoration } from '../../../utils/react/programmaticFocus';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { isFocusRestoration } from '../../../utils/react/programmatic-focus';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
 import { Block } from '../../Block';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
 import {
@@ -35,8 +35,8 @@ import {
 } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Portal } from '../../portal/Portal';
 
-import { TooltipContext } from './context';
 import { CubeTooltipProps, Tooltip } from './Tooltip';
+import { TooltipContext } from './TooltipContext';
 
 type TooltipPositionOptions = Pick<
   Parameters<typeof useOverlayPosition>[0],
@@ -323,7 +323,7 @@ export function useTooltipTriggerBinding(
   // decides to show inside it, so this never starts and nothing flashes.
   //
   // Covers both restore paths — ours and a `FocusScope`'s — see
-  // `programmaticFocus`.
+  // `programmatic-focus`.
   const onFocus = useEvent((event: FocusEvent<HTMLElement>) => {
     if (isFocusRestoration()) return;
 

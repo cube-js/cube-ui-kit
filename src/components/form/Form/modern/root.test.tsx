@@ -11,8 +11,8 @@ import {
 import { Form } from '../index';
 import { RenderErrorBoundary } from '../legacy-contract/helpers';
 
-import { ModernControllerContext } from './context';
 import { createFormController, getControllerInternals } from './controller';
+import { ModernControllerContext } from './ModernControllerContext';
 
 import type { FormController } from './controller';
 

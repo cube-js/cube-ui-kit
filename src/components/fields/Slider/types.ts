@@ -4,7 +4,7 @@ import { AriaSliderProps } from 'react-aria';
 import { FieldBaseProps } from '../../../shared/form';
 import { FieldLayoutStyleProps } from '../../form/field-layout';
 
-import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/component-base-props';
 
 export interface CubeSliderBaseProps<T>
   extends

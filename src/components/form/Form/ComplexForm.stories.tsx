@@ -1,7 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { timeout } from '../../../utils/promise';
 import { Block } from '../../Block';
 import { Text } from '../../content/Text';
@@ -9,7 +9,7 @@ import { Checkbox } from '../../fields/Checkbox/Checkbox';
 import { CheckboxGroup } from '../../fields/Checkbox/CheckboxGroup';
 import { ComboBox } from '../../fields/ComboBox/ComboBox';
 import { DateInput } from '../../fields/DatePicker/DateInput';
-import { parseAbsoluteDate } from '../../fields/DatePicker/parseDate';
+import { parseAbsoluteDate } from '../../fields/DatePicker/parse-date';
 import { FileInput } from '../../fields/FileInput/FileInput';
 import { NumberInput } from '../../fields/NumberInput/NumberInput';
 import { PasswordInput } from '../../fields/PasswordInput/PasswordInput';

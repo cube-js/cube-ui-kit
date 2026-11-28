@@ -16,14 +16,14 @@ import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared/form';
 import {
   getDisabledElementProps,
   getInertInputProps,
-} from '../../../utils/react/disabledProps';
+} from '../../../utils/react/disabled-props';
 import { useFocus } from '../../../utils/react/interactions';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import {
   mergeRefs,
   useCombinedRefs,
-} from '../../../utils/react/useCombinedRefs';
+} from '../../../utils/react/use-combined-refs';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import {
   FieldLayoutStyleProps,
@@ -41,7 +41,7 @@ import {
 } from '../../overlays/Tooltip/split-trigger-props';
 
 import type { Props } from '../../../props';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 const ADD_STYLES = {

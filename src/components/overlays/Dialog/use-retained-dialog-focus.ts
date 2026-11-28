@@ -2,10 +2,10 @@ import { getFocusableTreeWalker } from '@react-aria/focus';
 import { focusSafely } from '@react-aria/interactions';
 import { RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
+import { focusProgrammatically } from '../../../utils/react/programmatic-focus';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
-import { trapsFocus, useDialogContext } from './context';
+import { trapsFocus, useDialogContext } from './DialogContext';
 
 /**
  * The event `FocusScope` dispatches on the element it is about to restore

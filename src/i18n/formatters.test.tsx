@@ -7,12 +7,12 @@ import { renderToPipeableStream, renderToString } from 'react-dom/server.node';
 import { useFormatter } from '../index';
 import { renderWithRoot, screen, waitFor } from '../test';
 
-import { createFormatter } from './createFormatter';
+import { createFormatter } from './create-formatter';
 import { I18nProvider } from './I18nProvider';
 
 import { getI18n } from './index';
 
-import type { Formatter } from './createFormatter';
+import type { Formatter } from './create-formatter';
 
 // A fixed instant so relative-time math is deterministic.
 const NOW = new Date('2024-01-15T12:00:00Z').getTime();

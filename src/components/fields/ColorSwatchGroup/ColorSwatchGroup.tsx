@@ -5,10 +5,10 @@ import { useRadio, useRadioGroup } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { FieldBaseProps } from '../../../shared/form';
 import { useFocus } from '../../../utils/react/interactions';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -18,12 +18,12 @@ import { getValidationMods } from '../../form/validation/resolve-validation-prop
 import { wrapWithField } from '../../form/wrapper';
 import { HiddenInput } from '../../HiddenInput';
 import { ColorFormat, formatColor, parseColor, toHex } from '../color/color';
-import { useIsInsideColorPopover } from '../color/context';
+import { useIsInsideColorPopover } from '../color/ColorPopoverContext';
 // oxlint-disable-next-line import/no-cycle -- ColorPicker renders this group as its palette; each uses the other only at render time (see ColorPicker.tsx)
 import { ColorPicker } from '../ColorPicker/ColorPicker';
 
 import type { RadioGroupState } from 'react-stately';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 /** A swatch: a color, and optionally a name to announce instead of the color. */
 export type CubeColorSwatchItem = string | { color: string; label?: string };

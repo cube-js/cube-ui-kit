@@ -3,7 +3,7 @@ import { forwardRef, ReactNode } from 'react';
 
 import { CubeItemProps, Item } from '../../content/Item/Item';
 
-import { getThemeIcon } from './useToast';
+import { getThemeIcon } from './use-toast';
 
 import type { ToastType } from './types';
 

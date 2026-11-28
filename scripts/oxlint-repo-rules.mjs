@@ -10,8 +10,16 @@
  * `no-barrel-import` keeps barrels out of the library's own dependency graph:
  * a relative import that resolves to an `index.ts` puts everything that barrel
  * re-exports into the importer's graph. See docs/rules/coding.md#imports.
+ *
+ * `filename-case` gives every file one naming rule: PascalCase when its main
+ * export is a component, class or provider, kebab-case otherwise, kebab-case
+ * for each dotted part after the name, and `index.ts` for a barrel. Lint can't
+ * tell which export is the main one, so it checks what it can: a PascalCase
+ * file exports a PascalCase value, a kebab-case one exports no context or
+ * provider of its own, and a kebab-case spec, story or fixture isn't named after the
+ * component beside it. See docs/rules/coding.md#files.
  */
-import { statSync } from 'node:fs';
+import { readdirSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 
 const DIRECTIVE =
@@ -160,10 +168,143 @@ const noBarrelImport = {
   },
 };
 
+const PASCAL = /^[A-Z][A-Za-z0-9]*$/;
+const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/** A component, class, provider or context: PascalCase, unlike an `UPPER_CASE` constant. */
+const PASCAL_VALUE = /^[A-Z][A-Z0-9]*[a-z][A-Za-z0-9]*$/;
+
+const toKebab = (name) =>
+  name
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+    .replace(/_/g, '-')
+    .toLowerCase();
+
+/**
+ * The names of a module's value exports, or `null` when one can't be named
+ * (`export *`, a default export). `own` leaves out what it re-exports.
+ */
+function exportedValues(program, { own = false } = {}) {
+  const names = [];
+
+  for (const node of program.body) {
+    if (node.exportKind === 'type' || (own && node.source)) continue;
+    if (
+      node.type === 'ExportAllDeclaration' ||
+      node.type === 'ExportDefaultDeclaration'
+    )
+      return null;
+    if (node.type !== 'ExportNamedDeclaration') continue;
+
+    const { declaration } = node;
+
+    names.push(
+      ...(node.specifiers ?? [])
+        .filter(({ exportKind }) => exportKind !== 'type')
+        .map(({ exported }) => exported.name ?? exported.value),
+      ...(declaration?.type === 'VariableDeclaration'
+        ? declaration.declarations.map(({ id }) => id.name)
+        : []),
+      ...(declaration?.type === 'FunctionDeclaration' ||
+      declaration?.type === 'ClassDeclaration'
+        ? [declaration.id?.name]
+        : []),
+    );
+  }
+
+  return names.filter(Boolean);
+}
+
+const filenameCase = {
+  meta: {
+    type: 'suggestion',
+    docs: {
+      description:
+        'Name a file in PascalCase for a component, class or provider, in kebab-case otherwise',
+    },
+    schema: [],
+  },
+  create(context) {
+    const path = resolve(context.cwd, context.filename);
+    const file = basename(path);
+    const [name, ...rest] = file.split('.');
+    const parts = rest.slice(0, -1);
+    const extension = rest.at(-1);
+
+    return {
+      Program(node) {
+        const report = (message) =>
+          context.report({
+            node,
+            message: `${message} See docs/rules/coding.md#files.`,
+          });
+        const values = parts.length ? [] : exportedValues(node);
+
+        if (file === 'index.tsx')
+          report(
+            'A barrel is `index.ts`: it only re-exports, so it has no JSX.',
+          );
+        if (!PASCAL.test(name) && !KEBAB.test(name))
+          report(
+            `\`${name}\` is neither PascalCase nor kebab-case. Name a component, class or provider in PascalCase and anything else in kebab-case: \`${toKebab(name)}\`.`,
+          );
+        for (const part of parts.filter((part) => !KEBAB.test(part)))
+          report(
+            `\`.${part}\` is not kebab-case: every part after the name is (\`.${toKebab(part)}\`).`,
+          );
+        if (
+          PASCAL.test(name) &&
+          !parts.length &&
+          values &&
+          !values.some((value) => PASCAL_VALUE.test(value))
+        )
+          report(
+            `\`${file}\` exports no component, class or provider, so it is named in kebab-case: \`${toKebab(name)}.${extension}\`.`,
+          );
+
+        // A file that exports a context or provider of its own is named after
+        // it, not after the hooks that read it. A barrel only re-exports one.
+        const provider =
+          KEBAB.test(name) &&
+          name !== 'index' &&
+          !parts.length &&
+          exportedValues(node, { own: true })?.find(
+            (value) =>
+              PASCAL_VALUE.test(value) && /(?:Context|Provider)$/.test(value),
+          );
+
+        if (provider)
+          report(
+            `\`${file}\` exports \`${provider}\`, so it is named after it: \`${provider}.${extension}\`.`,
+          );
+
+        // A spec, story or fixture of the component beside it takes its
+        // name. Only a PascalCase file counts, so that `store.test.ts` beside
+        // `store.ts` passes, and `textarea` finds `TextArea.tsx`.
+        const key =
+          KEBAB.test(name) && parts.length && name.replaceAll('-', '');
+        const subject =
+          key &&
+          readdirSync(dirname(path))
+            .map((entry) => /^([A-Za-z0-9]+)\.tsx?$/.exec(entry)?.[1])
+            .find(
+              (stem) => stem && PASCAL.test(stem) && stem.toLowerCase() === key,
+            );
+
+        if (subject)
+          report(
+            `\`${file}\` covers \`${subject}\`, so it takes its name: \`${[subject, ...rest].join('.')}\`.`,
+          );
+      },
+    };
+  },
+};
+
 export default {
   meta: { name: 'repo' },
   rules: {
     'require-disable-reason': requireDisableReason,
     'no-barrel-import': noBarrelImport,
+    'filename-case': filenameCase,
   },
 };

@@ -1,7 +1,7 @@
 import { Styles, Tokens } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 
 import { Gradation } from './Gradation';
 import {

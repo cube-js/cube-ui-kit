@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
 
 /**
  * The ids `FieldWrapper` gives a control's description and message. Both are

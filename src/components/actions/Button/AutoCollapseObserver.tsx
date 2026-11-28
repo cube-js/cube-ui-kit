@@ -1,7 +1,7 @@
 import { RefObject, useEffectEvent, useRef } from 'react';
 import { flushSync } from 'react-dom';
 
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
 
 /**
  * Collapses the `Button`s with `autoCollapse` in a row while the row can't fit

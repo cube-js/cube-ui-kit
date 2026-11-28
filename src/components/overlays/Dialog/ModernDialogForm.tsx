@@ -1,8 +1,8 @@
 import { useRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { useI18n } from '../../../i18n/use-i18n';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Content } from '../../content/Content';
@@ -14,9 +14,9 @@ import { ModernFormRoot } from '../../form/Form/ModernFormRoot';
 import { SubmitButton } from '../../form/Form/SubmitButton/SubmitButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
-import { useDialogContext } from './context';
 import { withDefaultButtonText } from './default-button-text';
 import { Dialog } from './Dialog';
+import { useDialogContext } from './DialogContext';
 
 import type { FormController } from '../../form/Form/modern/controller';
 import type { ModernDialogFormProps } from './DialogForm';

@@ -32,20 +32,20 @@ import {
   useDialog,
 } from 'react-aria';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { SlotProvider } from '../../../utils/react/Slots';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { SlotProvider } from '../../../utils/react/SlotProvider';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
-import { trapsFocus, useDialogContext } from './context';
+import { trapsFocus, useDialogContext } from './DialogContext';
 import { useContentOverflow } from './use-content-overflow';
 import { useRetainedDialogFocus } from './use-retained-dialog-focus';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 const STYLES_LIST = [
   ...BASE_STYLES,

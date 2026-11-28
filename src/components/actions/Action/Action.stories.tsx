@@ -1,7 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 
 import { Action, CubeActionProps } from './Action';
 

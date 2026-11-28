@@ -726,7 +726,7 @@ describe('Select press on a list that moves', () => {
 /**
  * Above or below its trigger, the list is as wide as its content, so React
  * Aria measures its real width and a list that grows moves once (see
- * `utils/react/useOverlayPosition.browser.test.tsx`). Beside its trigger it
+ * `utils/react/use-overlay-position.browser.test.tsx`). Beside its trigger it
  * still shrinks to the room there, because React Aria never moves a list
  * along the edge it would cross.
  */

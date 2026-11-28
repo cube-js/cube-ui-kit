@@ -19,7 +19,7 @@ import {
   RefAttributes,
 } from 'react';
 
-import { useSlotProps } from '../../utils/react/Slots';
+import { useSlotProps } from '../../utils/react/SlotProvider';
 import { extractStyles } from '../../utils/styles';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;

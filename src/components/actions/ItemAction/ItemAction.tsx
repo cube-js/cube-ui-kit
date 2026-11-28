@@ -34,8 +34,8 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { getDisabledElementProps } from '../../../utils/react/disabledProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { getDisabledElementProps } from '../../../utils/react/disabled-props';
+import { mergeProps } from '../../../utils/react/merge-props';
 import { mergeTooltipFocusProps } from '../../overlays/Tooltip/split-trigger-props';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useItemActionContext } from '../ItemActionContext';

@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 import { FieldBaseProps, LabelPosition } from '../../../shared/form';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import { warn } from '../../../utils/warnings';
 import { FieldWrapper } from '../FieldWrapper/FieldWrapper';
 import { warnAboutLegacyTooltip } from '../legacy-tooltip';

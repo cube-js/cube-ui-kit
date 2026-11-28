@@ -1,8 +1,8 @@
 import { useDebugValue, useId, useState } from 'react';
 
 import { useEvent } from '../../../../_internal/hooks/use-event';
-import { useProviderProps } from '../../../../provider';
-import { mergeProps } from '../../../../utils/react/mergeProps';
+import { useProviderProps } from '../../../../Provider';
+import { mergeProps } from '../../../../utils/react/merge-props';
 import { warn } from '../../../../utils/warnings';
 import { asksForFieldChrome, withFieldChrome } from '../../field-chrome';
 import { useFieldDescribedBy } from '../../FieldWrapper/field-description';

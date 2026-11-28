@@ -3,7 +3,7 @@ import { BaseProps, Styles } from '@tenphi/tasty';
 import { ReactElement, RefObject } from 'react';
 
 import { FieldBaseProps, FormBaseProps } from '../../shared/form';
-import { mergeProps } from '../../utils/react/mergeProps';
+import { mergeProps } from '../../utils/react/merge-props';
 import { mergeStyleLayers } from '../../utils/styles';
 
 import { hasFieldContent, warnAboutForceField } from './field-chrome';

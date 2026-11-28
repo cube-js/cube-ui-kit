@@ -1,7 +1,9 @@
 {
-  "src/_internal/hooks/use-chained-callback.ts": {
+  "src/Provider.tsx": {
     "compiled": 1,
-    "diagnostics": {},
+    "diagnostics": {
+      "Refs": 1
+    },
     "optOuts": 0
   },
   "src/_internal/hooks/use-debounced-value.ts": {
@@ -10,11 +12,6 @@
     "optOuts": 0
   },
   "src/_internal/hooks/use-deprecation-warning.ts": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/_internal/hooks/use-effect-once.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -37,11 +34,6 @@
     "optOuts": 0
   },
   "src/_internal/hooks/use-timer/use-timer.ts": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/_internal/hooks/use-update-effect.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -102,7 +94,7 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/actions/ButtonSplit/context.ts": {
+  "src/components/actions/ButtonSplit/ButtonSplitContext.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -144,6 +136,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/actions/Menu/MenuContext.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/actions/Menu/MenuItem.tsx": {
     "compiled": 3,
     "diagnostics": {},
@@ -167,11 +164,6 @@
     "optOuts": 0
   },
   "src/components/actions/Menu/SubmenuTriggerContext.tsx": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/components/actions/Menu/context.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -388,7 +380,7 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/content/Layout/hooks/useTinyScrollbar.ts": {
+  "src/components/content/Layout/hooks/use-tiny-scrollbar.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -695,7 +687,7 @@
     },
     "optOuts": 0
   },
-  "src/components/fields/CommandTextArea/useCaretAnchor.ts": {
+  "src/components/fields/CommandTextArea/use-caret-anchor.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -826,12 +818,12 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/fields/ListBoxPopover/useCompositeFocus.ts": {
+  "src/components/fields/ListBoxPopover/use-composite-focus.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/fields/ListBoxPopover/useDelayedLoading.ts": {
+  "src/components/fields/ListBoxPopover/use-delayed-loading.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -863,12 +855,12 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/fields/RadioGroup/RadioGroup.tsx": {
+  "src/components/fields/RadioGroup/RadioContext.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/fields/RadioGroup/context.ts": {
+  "src/components/fields/RadioGroup/RadioGroup.tsx": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -947,12 +939,12 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/fields/TagInput/useActiveOption.ts": {
+  "src/components/fields/TagInput/use-active-option.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/fields/TagInput/useTagError.ts": {
+  "src/components/fields/TagInput/use-tag-error.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -972,7 +964,7 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/fields/TextInput/useAutoSizeTextArea.ts": {
+  "src/components/fields/TextInput/use-auto-size-text-area.ts": {
     "compiled": 0,
     "diagnostics": {
       "Hooks": 5
@@ -996,7 +988,7 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/fields/color/context.ts": {
+  "src/components/fields/color/ColorPopoverContext.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -1050,12 +1042,12 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/form/Form/modern/actions.tsx": {
+  "src/components/form/Form/modern/ModernActions.tsx": {
     "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/form/Form/modern/context.ts": {
+  "src/components/form/Form/modern/ModernControllerContext.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -1306,6 +1298,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/overlays/Dialog/DialogContext.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/overlays/Dialog/DialogForm.tsx": {
     "compiled": 1,
     "diagnostics": {},
@@ -1320,11 +1317,6 @@
     "optOuts": 0
   },
   "src/components/overlays/Dialog/ModernDialogForm.tsx": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/components/overlays/Dialog/context.tsx": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -1347,6 +1339,11 @@
     "optOuts": 0
   },
   "src/components/overlays/Modal/Modal.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Modal/ModalContainmentProvider.ts": {
     "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
@@ -1375,11 +1372,6 @@
   },
   "src/components/overlays/Modal/Underlay.tsx": {
     "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/components/overlays/Modal/modal-containment.ts": {
-    "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },
@@ -1463,24 +1455,24 @@
     },
     "optOuts": 0
   },
+  "src/components/overlays/Toast/Toast.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/overlays/Toast/ToastItem.tsx": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/overlays/Toast/index.ts": {
-    "compiled": 2,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/components/overlays/Toast/useProgressToast.tsx": {
+  "src/components/overlays/Toast/use-progress-toast.tsx": {
     "compiled": 0,
     "diagnostics": {
       "Refs": 1
     },
     "optOuts": 0
   },
-  "src/components/overlays/Toast/useToast.tsx": {
+  "src/components/overlays/Toast/use-toast.tsx": {
     "compiled": 0,
     "diagnostics": {
       "Immutability": 5
@@ -1512,6 +1504,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/portal/storybook/templates/Basic.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/portal/storybook/templates/CustomRoot.tsx": {
     "compiled": 1,
     "diagnostics": {},
@@ -1522,12 +1519,7 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/portal/storybook/templates/basic.tsx": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/components/portal/usePortal.ts": {
+  "src/components/portal/use-portal.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -1567,12 +1559,12 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/i18n/useFormatter.ts": {
+  "src/i18n/use-formatter.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/i18n/useI18n.ts": {
+  "src/i18n/use-i18n.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
@@ -1590,13 +1582,6 @@
   "src/icons/wrap-icon.tsx": {
     "compiled": 1,
     "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/provider.tsx": {
-    "compiled": 1,
-    "diagnostics": {
-      "Refs": 1
-    },
     "optOuts": 0
   },
   "src/providers/TrackingProvider.tsx": {
@@ -1628,6 +1613,13 @@
     },
     "optOuts": 0
   },
+  "src/utils/react/EventBusProvider.ts": {
+    "compiled": 2,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
   "src/utils/react/RenderCache.tsx": {
     "compiled": 0,
     "diagnostics": {
@@ -1635,7 +1627,7 @@
     },
     "optOuts": 0
   },
-  "src/utils/react/Slots.tsx": {
+  "src/utils/react/SlotProvider.tsx": {
     "compiled": 3,
     "diagnostics": {},
     "optOuts": 0
@@ -1645,85 +1637,78 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/sharedStore.ts": {
+  "src/utils/react/shared-store.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/useBufferedValue.ts": {
+  "src/utils/react/use-buffered-value.ts": {
     "compiled": 0,
     "diagnostics": {
       "Refs": 4
     },
     "optOuts": 0
   },
-  "src/utils/react/useCombinedRefs.ts": {
+  "src/utils/react/use-combined-refs.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/useControlledFocusVisible.ts": {
+  "src/utils/react/use-controlled-focus-visible.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/useEventBus.ts": {
-    "compiled": 2,
-    "diagnostics": {
-      "Refs": 1
-    },
-    "optOuts": 0
-  },
-  "src/utils/react/useId.tsx": {
+  "src/utils/react/use-id.tsx": {
     "compiled": 1,
     "diagnostics": {
       "Refs": 2
     },
     "optOuts": 0
   },
-  "src/utils/react/useIsDarwin.ts": {
+  "src/utils/react/use-is-darwin.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/useKeySymbols.ts": {
+  "src/utils/react/use-key-symbols.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/useLocalStorage.ts": {
+  "src/utils/react/use-local-storage.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/useMergeStyles.ts": {
+  "src/utils/react/use-merge-styles.ts": {
     "compiled": 0,
     "diagnostics": {
       "UseMemo": 1
     },
     "optOuts": 0
   },
-  "src/utils/react/useOpenKey.ts": {
+  "src/utils/react/use-open-key.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/useOverlayEscapeGuard.ts": {
+  "src/utils/react/use-overlay-escape-guard.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/usePopoverSync.ts": {
+  "src/utils/react/use-popover-sync.ts": {
     "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/useScheme.ts": {
+  "src/utils/react/use-scheme.ts": {
     "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/utils/react/useViewportSize.ts": {
+  "src/utils/react/use-viewport-size.ts": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0

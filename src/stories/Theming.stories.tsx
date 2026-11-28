@@ -34,7 +34,7 @@ import {
   usePaletteConfig,
   usePaletteVersion,
 } from '../tokens/palette-config';
-import { useHighContrast, useScheme } from '../utils/react/useScheme';
+import { useHighContrast, useScheme } from '../utils/react/use-scheme';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Styles, Tokens } from '@tenphi/tasty';

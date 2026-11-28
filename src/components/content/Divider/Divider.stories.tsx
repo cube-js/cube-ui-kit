@@ -1,5 +1,5 @@
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Button } from '../../actions/Button/Button';
 import { Space } from '../../layout/Space';
 import { Paragraph } from '../Paragraph';

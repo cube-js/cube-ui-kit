@@ -11,11 +11,11 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { FieldBaseProps } from '../../../shared/form';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import { Action } from '../../actions/Action/Action';
 import {
   FieldLayoutStyleProps,
@@ -34,7 +34,7 @@ import type { AriaLabelingProps, FocusableRefValue } from '@react-types/shared';
 import type { ChangeEvent } from 'react';
 import type { AriaTextFieldProps } from 'react-aria';
 import type { Props } from '../../../props';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 // The input box is the one every text field draws (`INPUT_WRAPPER_STYLES`):
 // its fill, border, radius and `$size` height per `size`, so the field lines

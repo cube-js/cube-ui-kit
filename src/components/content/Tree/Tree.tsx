@@ -5,10 +5,10 @@ import { useTree } from 'react-aria';
 import { Item, useTreeState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
 import { extractStyles } from '../../../utils/styles';
 import { getDisabledBehavior } from '../../shared/disabled-behavior';
 import { getLongestRows, rangeWithRows } from '../../shared/virtual-width';

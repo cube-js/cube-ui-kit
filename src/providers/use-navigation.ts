@@ -1,8 +1,8 @@
 import { useContext } from 'react';
 
-import { UIKitContext } from '../provider';
+import { UIKitContext } from '../Provider';
 
-import { defaultNavigationAdapter } from './navigationAdapter.default';
+import { defaultNavigationAdapter } from './navigation-adapter.default';
 
 import type { RelativeRoutingType, To } from './navigation.types';
 

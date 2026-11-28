@@ -13,6 +13,20 @@
 - Use named imports from react (like `useState`) instead of using the `React` instance. Avoid: `React.useState`.
 - Follow [React Compiler and callback rules](react-compiler.md): plain handlers and derived values by default; local Effect Events for effect-owned notifications; `useEvent` only for verified retention contracts. Keep resource dependencies reactive, manual memo dependencies complete, and per-mount lifetime in state/ref ownership. Run both diagnostics ratchets after runtime edits.
 
+# Files
+
+Name a file in `src/` by its main export:
+
+- **PascalCase** for a component, a class or a provider: `Button.tsx`, `ResizeSensor.ts`, `I18nProvider.tsx`. A context counts as a provider, since React 19 renders a context as its own provider: `MenuContext.ts`, `TabsContext.tsx`.
+- **kebab-case** for everything else: hooks (`use-toast.tsx`), helpers (`parse-date.ts`), types (`types.ts`), styles and styled elements (`styled.ts`), and specs of a behaviour rather than of one file (`disabled-press.test.tsx`).
+- **A context or provider kept with the hooks that read it** names the file, not the hooks: `TabsContext.tsx`, `EventBusProvider.ts`, `Provider.tsx`. A component file that also defines a context stays named after the component.
+- **Specs, stories and docs** take the name of what they cover, so a spec of one component is `Menu.test.tsx`, never `menu.test.tsx`. Every dotted part after the name is kebab-case: `Menu.screen-reader.test.tsx`, `ListBox.load-more.test.tsx`, `use-scheme.test.tsx`.
+- **A barrel is `index.ts`**, never `index.tsx`: it only re-exports (see [Imports](#imports)).
+
+`repo/filename-case` (`scripts/oxlint-repo-rules.mjs`) checks the files Oxlint reads (`.ts`, `.tsx`, `.jsx`): the case of every part of the name, that a barrel is `index.ts`, that a PascalCase `Name.ts(x)` exports a PascalCase value, that a kebab-case one exports no context or provider of its own, and that a kebab-case spec, story or fixture isn't named after the component beside it. Lint can't tell which export is a file's main one, or read a doc's or a data file's name, so those are for review.
+
+`scripts/move-files.json` lists the files renamed to follow these rules. A branch that started before a rename rebases and runs `node scripts/move-files.mjs`, which makes the same renames in the branch and rewrites what its own files import. The script and its ledger are temporary: they go once the open branches have caught up with the restructure.
+
 # Imports
 
 **Inside `src/`, import the file that defines the thing, not the barrel that re-exports it.** `import { ItemButton } from '../../actions'` and `import { ItemButton } from '../../actions/ItemButton/ItemButton'` compile to the same component, but the first one also puts `Menu`, `CommandMenu`, `ButtonSplit`, `Banner` and everything _they_ import into the importer's dependency graph. Barrels are the public API for consumers; within the library they are a way to accidentally depend on everything.
@@ -31,7 +45,7 @@ Lint enforces it. `repo/no-barrel-import` (`scripts/oxlint-repo-rules.mjs`) reso
 - **`index.ts` files may import barrels.** Assembling the public surface is what they are for. Specs, their `*.fixture.tsx` files, `src/test/` and the defaults-registry tooling in `src/eslint-plugin/` are exempt too: they exercise the surface the way a consumer imports it.
 - **Icons** also have their own `no-restricted-imports` entry, which applies to specs as well: the icon barrel re-exports 133 components.
 
-An `index.ts` only re-exports. A component's entry may also assemble the compound it exports, such as `Object.assign(Button, { Group, Split })` in `actions/Button/index.ts`, when the parts import the base, so assembling it in the base's own file would be a cycle. Anything else (a component, a hook, a helper, a type) goes in a named file, where runtime code can import it. Some older index files still define code: `Toast` in `overlays/Toast/index.ts`, `addUIKitLocale` in `i18n/index.ts`, the `Axis`, `PlacementAxis` and `RangeValue` types in `shared/index.ts`, and `Typography` in the package root. Runtime code can take those types with `import type`, but not the values: move one into a named file before runtime code needs it.
+An `index.ts` only re-exports. A component's entry may also assemble the compound it exports, such as `Object.assign(Button, { Group, Split })` in `actions/Button/index.ts`, when the parts import the base, so assembling it in the base's own file would be a cycle. Anything else (a component, a hook, a helper, a type) goes in a named file, where runtime code can import it.
 
 **No import cycles.** `import/no-cycle` reports one in `src/` and `.storybook/`. Break it by moving what both sides use into a file of its own: `Form/FormContext.tsx` and `Form/FormElement.tsx` hold what `Form.tsx` and `ModernFormRoot.tsx` both render. A cycle made only of types goes away with `import type`. Two components that render each other, and touch each other only inside render, may keep their cycle with a `-- reason`, as `ColorPicker` and `ColorSwatchGroup` do.
 

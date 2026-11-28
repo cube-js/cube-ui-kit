@@ -9,7 +9,7 @@ import { create, themes } from 'storybook/theming';
 import { Root } from '../src/components/Root';
 import { getI18n } from '../src/i18n/instance';
 import { LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n/locales';
-import { setToolbarScheme } from '../src/stories/decorators/colorSchemeBridge';
+import { setToolbarScheme } from '../src/stories/decorators/color-scheme-bridge';
 
 // Summarizes DOM/React events before Storybook's action spies see them. Without
 // it, serializing a focus event over the preview channel costs ~600ms per focus
@@ -138,7 +138,7 @@ export const parameters = {
   // `storybook-dark-mode` configuration. No `current` so the addon resolves
   // OS `prefers-color-scheme` on first load. `stylePreview: false` keeps the
   // addon from also injecting dark/light classes on the preview body — the
-  // `data-scheme` attribute set by `colorSchemeBridge` is the only signal
+  // `data-scheme` attribute set by `color-scheme-bridge` is the only signal
   // we care about (see `src/components/Root.tsx` and `src/tokens/palette.ts`).
   darkMode: {
     dark: darkTheme,

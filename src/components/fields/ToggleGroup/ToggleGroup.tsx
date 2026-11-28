@@ -5,8 +5,8 @@ import { useFocusWithin, useLabel, useToggleButtonGroup } from 'react-aria';
 import { useToggleGroupState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared/form';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -15,15 +15,15 @@ import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { wrapWithField } from '../../form/wrapper';
 import { JOINED_GROUP_STYLES } from '../RadioGroup/joined-styles';
 
-import { ToggleGroupContext } from './context';
+import { ToggleGroupContext } from './ToggleGroupContext';
 import { CubeToggleGroupItemProps, ToggleGroupItem } from './ToggleGroupItem';
 
 import type { AriaLabelingProps, FocusEvents, Key } from '@react-types/shared';
 import type { ReactElement, ReactNode, Ref } from 'react';
 import type { ToggleGroupState } from 'react-stately';
 import type { SizeName } from '../../../tokens/sizes';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import type { ToggleGroupType } from './context';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
+import type { ToggleGroupType } from './ToggleGroupContext';
 
 export interface CubeToggleGroupProps
   extends

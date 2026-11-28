@@ -16,7 +16,7 @@ import { Select } from '../../fields/Select/Select';
 import { Dialog } from '../Dialog/Dialog';
 import { DialogContainer } from '../Dialog/DialogContainer';
 import { DialogTrigger } from '../Dialog/DialogTrigger';
-import { useToast } from '../Toast/useToast';
+import { useToast } from '../Toast/use-toast';
 
 vi.mock('../../../_internal/hooks/use-warn');
 

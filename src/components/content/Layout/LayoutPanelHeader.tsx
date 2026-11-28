@@ -1,17 +1,17 @@
 import { CONTAINER_STYLES, ContainerStyleProps, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
-import { omitComponentOwnedProps } from '../../../utils/react/componentBaseProps';
+import { omitComponentOwnedProps } from '../../../utils/react/component-base-props';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
-import { useDialogContext } from '../../overlays/Dialog/context';
+import { useDialogContext } from '../../overlays/Dialog/DialogContext';
 import { CubeItemProps, Item } from '../Item/Item';
 
 import { useLayoutPanelContext } from './LayoutContext';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 const PanelHeaderElement = tasty(Item, {
   qa: 'PanelHeader',

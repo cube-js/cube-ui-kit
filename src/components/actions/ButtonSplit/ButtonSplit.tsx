@@ -1,14 +1,14 @@
 import { CONTAINER_STYLES, filterBaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode, useMemo, useState } from 'react';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { Button } from '../Button/Button';
 import { Menu } from '../Menu/Menu';
 
-import { ButtonSplitContext } from './context';
+import { ButtonSplitContext } from './ButtonSplitContext';
 
 import type { BaseProps, ContainerStyleProps, Styles } from '@tenphi/tasty';
 import type { CubeCollectionItemProps } from '../../CollectionItem';

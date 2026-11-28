@@ -14,8 +14,8 @@ import {
 import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
 
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import { Text } from '../../content/Text';
 import { splitFieldLayout } from '../../form/field-layout';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';

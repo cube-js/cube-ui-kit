@@ -151,7 +151,9 @@ describe('Tabs rename from the tab menu', () => {
     await user.keyboard('Renamed{Enter}');
 
     await waitFor(() => expect(renameInput()).not.toBeInTheDocument());
-    expect(onTitleChange).toHaveBeenCalledWith('tab1', 'Renamed');
+    await waitFor(() =>
+      expect(onTitleChange).toHaveBeenCalledWith('tab1', 'Renamed'),
+    );
 
     // Editing ends by handing focus back to the tab button.
     await waitFor(() =>

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 import { act, hoverWithPointer, renderWithRoot } from '../../../test';
 import { Root } from '../../Root';
-import { MenuContext } from '../Menu/context';
+import { MenuContext } from '../Menu/MenuContext';
 
 import { CommandMenu } from './CommandMenu';
 

@@ -3,14 +3,14 @@ import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
-import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
+import { useOverlayEscapeGuard } from '../../../utils/react/use-overlay-escape-guard';
 
 import {
   ModalContainmentProvider,
   useModalContainment,
-} from './modal-containment';
+} from './ModalContainmentProvider';
 import { Overlay } from './Overlay';
 import { ModalProps, TransitionState, WithCloseBehavior } from './types';
 import { Underlay } from './Underlay';

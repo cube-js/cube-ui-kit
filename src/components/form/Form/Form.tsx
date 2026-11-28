@@ -11,11 +11,11 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { Provider, useProviderProps } from '../../../provider';
+import { Provider, useProviderProps } from '../../../Provider';
 import { FormBaseProps } from '../../../shared/form';
 import { timeout } from '../../../utils/promise';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import { extractStyles } from '../../../utils/styles';
 import { useValidationProps } from '../validation/use-validation-props';
 
@@ -26,13 +26,13 @@ import {
   FormPresentationContextValue,
 } from './FormContext';
 import { FormElement, formPropNames } from './FormElement';
-import { ModernControllerContext } from './modern/context';
+import { ModernControllerContext } from './modern/ModernControllerContext';
 import { ModernFormRoot } from './ModernFormRoot';
 import { resetUnboundControls } from './reset-unbound-controls';
 import { FieldTypes } from './types';
 import { CubeFormData, CubeFormInstance, useForm } from './use-form';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 import type { ModernFormProps } from './ModernFormRoot';
 
 /** Separate overloads retain contextual callback typing for each backend. */

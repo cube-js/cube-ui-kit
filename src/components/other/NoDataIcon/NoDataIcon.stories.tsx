@@ -3,7 +3,7 @@ import { Meta, StoryObj } from '@storybook/react-vite';
 import {
   withDarkScheme,
   withHighContrast,
-} from '../../../stories/decorators/withColorScheme';
+} from '../../../stories/decorators/with-color-scheme';
 import { Text } from '../../content/Text';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';

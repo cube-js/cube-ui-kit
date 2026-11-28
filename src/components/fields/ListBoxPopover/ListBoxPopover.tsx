@@ -12,12 +12,12 @@ import React, {
 import { useInteractOutside, useOverlay } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
-import { useOverlayPosition } from '../../../utils/react/useOverlayPosition';
+import { useI18n } from '../../../i18n/use-i18n';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
+import { useOverlayPosition } from '../../../utils/react/use-overlay-position';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
-import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
+import { useModalLayerRef } from '../../overlays/Modal/ModalContainmentProvider';
 import { Portal } from '../../portal/Portal';
 import { ListBox } from '../ListBox/ListBox';
 import { FIELD_POPOVER_WIDTH } from '../popover-width';

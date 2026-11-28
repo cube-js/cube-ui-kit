@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 
 import { CopyPasteBlock, CubeCopyPasteBlockProps } from './CopyPasteBlock';
 

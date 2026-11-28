@@ -1,7 +1,7 @@
 import { useState, useSyncExternalStore } from 'react';
 
-import { useLayoutEffect } from '../utils/react/useLayoutEffect';
-import { subscribeScheme } from '../utils/react/useScheme';
+import { useLayoutEffect } from '../utils/react/use-layout-effect';
+import { subscribeScheme } from '../utils/react/use-scheme';
 import { warn } from '../utils/warnings';
 
 import { getTokens } from './all-tokens';
@@ -376,7 +376,7 @@ export function resolvePresetValues(
  * (`setPaletteConfig()`, covered by `usePaletteVersion`), or the scheme /
  * contrast tier flipped. This store covers the second.
  *
- * The watching itself belongs to `subscribeScheme()` (`src/utils/react/useScheme.ts`),
+ * The watching itself belongs to `subscribeScheme()` (`src/utils/react/use-scheme.ts`),
  * which owns the definition of both axes — the `data-scheme` / `data-contrast`
  * attributes and the media queries they fall back to are the same strings
  * `<Root>` registers `@dark` and `@hc` from. This store only counts the changes,

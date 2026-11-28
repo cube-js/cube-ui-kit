@@ -14,7 +14,7 @@ import {
 import { Placement, PositionProps, useIsSSR } from 'react-aria';
 import { flushSync } from 'react-dom';
 
-import { useLayoutEffect } from '../../utils/react/useLayoutEffect';
+import { useLayoutEffect } from '../../utils/react/use-layout-effect';
 import { CubeTooltipProps } from '../overlays/Tooltip/Tooltip';
 import {
   createProviderTooltip,

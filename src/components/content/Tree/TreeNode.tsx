@@ -2,13 +2,13 @@ import { Children, memo, useMemo, useRef, useState } from 'react';
 import { useHover, useTreeItem } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { allowOverlayKeysToPropagate } from '../../../utils/react/overlay-key-propagation';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
 import {
   CubeItemActionProps,
   ItemAction,

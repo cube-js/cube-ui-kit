@@ -17,10 +17,10 @@ import { VisuallyHidden } from 'react-aria';
 import { createPortal } from 'react-dom';
 
 import { useEvent } from '../../_internal/hooks/use-event';
-import { useI18n } from '../../i18n/useI18n';
+import { useI18n } from '../../i18n/use-i18n';
 import { generateRandomId } from '../../utils/random';
-import { mergeProps } from '../../utils/react/mergeProps';
-import { usePopoverSync } from '../../utils/react/usePopoverSync';
+import { mergeProps } from '../../utils/react/merge-props';
+import { usePopoverSync } from '../../utils/react/use-popover-sync';
 
 import { MenuTrigger } from './Menu/MenuTrigger';
 import {

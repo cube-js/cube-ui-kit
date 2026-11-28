@@ -5,7 +5,7 @@ import { Title } from '../components/content/Title';
 import { Flow } from '../components/layout/Flow';
 import { Grid } from '../components/layout/Grid';
 import { Space } from '../components/layout/Space';
-import { baseProps } from '../stories/lists/baseProps';
+import { baseProps } from '../stories/lists/base-props';
 
 import { DirectionIcon } from './DirectionIcon';
 import { Icon } from './Icon';

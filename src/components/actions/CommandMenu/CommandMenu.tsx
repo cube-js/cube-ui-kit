@@ -13,22 +13,22 @@ import React, {
 import { useFilter, useMenu } from 'react-aria';
 import { Section, useTreeState } from 'react-stately';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { mergeProps } from '../../../utils/react/merge-props';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import {
   CubeSearchInputAttributes,
   SEARCH_TEXT_SERVICES,
 } from '../../fields/search-text-services';
 import { isItemDisabled } from '../../shared/disabled-behavior';
-import { useMenuContext } from '../Menu/context';
 import { CubeMenuProps } from '../Menu/Menu';
 import {
   getMenuItemReactKey,
   MenuCollectionItem as Item,
 } from '../Menu/MenuCollectionItem';
+import { useMenuContext } from '../Menu/MenuContext';
 import { MenuItem } from '../Menu/MenuItem';
 import { MenuSection } from '../Menu/MenuSection';
 import { MenuTrigger } from '../Menu/MenuTrigger';
@@ -46,7 +46,7 @@ import {
   StyledSearchInput,
 } from './styled';
 
-import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/component-base-props';
 
 /** The keys of the items in `nodes`, in order, including those in sections. */
 function collectItemKeys(nodes: Iterable<any>, keys: Key[] = []): Key[] {

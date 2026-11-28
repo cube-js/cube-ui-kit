@@ -11,8 +11,8 @@ import {
 import { useDateFieldState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared/form';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -22,12 +22,12 @@ import { wrapWithField } from '../../form/wrapper';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
-import { parseAbsoluteDate } from './parseDate';
+import { parseAbsoluteDate } from './parse-date';
 import { DEFAULT_DATE_PROPS } from './props';
 import { formatSegments, useFocusManagerRef } from './utils';
 
 import type { ReactElement, Ref } from 'react';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 export interface CubeDateInputProps<T extends DateValue = DateValue>
   extends

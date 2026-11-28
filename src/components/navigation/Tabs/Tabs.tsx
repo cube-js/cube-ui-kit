@@ -25,12 +25,12 @@ import {
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useMergeStyles } from '../../../utils/react/useMergeStyles';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { useMergeStyles } from '../../../utils/react/use-merge-styles';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
-import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
+import { useTinyScrollbar } from '../../content/Layout/hooks/use-tiny-scrollbar';
 
 import { useBoardDragActive } from './BoardDragActiveProvider';
 import { DraggableTabList } from './DraggableTabList';

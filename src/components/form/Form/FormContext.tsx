@@ -2,7 +2,7 @@ import { ContextType, createContext, ReactNode, useContext } from 'react';
 
 import { FormBaseProps } from '../../../shared/form';
 
-import { ModernControllerContext } from './modern/context';
+import { ModernControllerContext } from './modern/ModernControllerContext';
 
 /**
  * Public legacy context. Its value is the full legacy scope (presentation

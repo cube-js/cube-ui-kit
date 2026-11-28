@@ -18,13 +18,13 @@ import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { isTextOnly } from '../../../utils/react/isTextOnly';
-import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { isTextOnly } from '../../../utils/react/is-text-only';
+import { allowOverlayKeysToPropagate } from '../../../utils/react/overlay-key-propagation';
 import { processSelectionArray } from '../../../utils/selection';
 import { mergeStyleLayers } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';

@@ -7,7 +7,7 @@ import {
   waitFor,
   within,
 } from '../../../test';
-import { getTreeRowId } from '../../content/Tree/rowId';
+import { getTreeRowId } from '../../content/Tree/row-id';
 
 import { FilterPicker } from './FilterPicker';
 

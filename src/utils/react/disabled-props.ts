@@ -1,0 +1,181 @@
+import { mergeProps } from './merge-props';
+
+import type { ChangeEvent, KeyboardEvent, SyntheticEvent } from 'react';
+import type { Props } from '../../props';
+
+/**
+ * Tags where `disabled` is a real HTML attribute. Browsers refuse to dispatch
+ * mouse events on those elements while the attribute is set, so nothing that
+ * listens for hover — a tooltip trigger above all — ever hears from them.
+ * On every other tag the attribute is invalid markup that does nothing.
+ */
+const FORM_CONTROL_TAGS = new Set([
+  'button',
+  'input',
+  'select',
+  'textarea',
+  'fieldset',
+  'option',
+  'optgroup',
+]);
+
+/**
+ * Handlers that can activate an element. They are dropped while the element is
+ * disabled (see `omitActivationEventProps`).
+ */
+const ACTIVATION_EVENT_PROPS = [
+  'onClick',
+  'onDoubleClick',
+  'onMouseDown',
+  'onMouseUp',
+  'onPointerDown',
+  'onPointerUp',
+  'onTouchStart',
+  'onTouchEnd',
+  'onKeyDown',
+  'onKeyUp',
+  'onKeyPress',
+] as const;
+
+function preventActivation(event: SyntheticEvent) {
+  // Without the native attribute a click still runs the default action and
+  // would submit the surrounding form or follow the link.
+  event.preventDefault();
+}
+
+function preventKeyActivation(event: KeyboardEvent) {
+  // Enter and Space on the focused element make the browser click it, and that
+  // click would reach the ancestors' handlers. Keys from a focused descendant
+  // are left alone.
+  if (
+    event.target === event.currentTarget &&
+    (event.key === 'Enter' || event.key === ' ')
+  ) {
+    event.preventDefault();
+  }
+}
+
+const INERT_PROPS: Props = {
+  'aria-disabled': true,
+  onClick: preventActivation,
+  onKeyDown: preventKeyActivation,
+  onKeyUp: preventKeyActivation,
+};
+
+const EMPTY_PROPS: Props = {};
+
+export interface DisabledElementOptions {
+  /** Whether the component is disabled. */
+  isDisabled?: boolean;
+  /**
+   * Whether the element has to keep receiving pointer and focus events while
+   * disabled. Set it when the element hosts a tooltip: the tooltip is there to
+   * explain why the element is unavailable, so hover has to reach it. Or when
+   * it has to keep focus, as a loading action does while a keyboard press runs.
+   */
+  keepEvents?: boolean;
+  /** The tag the component renders. */
+  as?: string;
+}
+
+export interface DisabledElementProps {
+  /** Whether the element has to carry the native `disabled` attribute. */
+  isNativelyDisabled: boolean;
+  /**
+   * Whether the element is disabled through `aria-disabled` only and therefore
+   * has to be kept inert by hand: spread `inertProps` and drop the activation
+   * handlers with `omitActivationEventProps`. A natively disabled element
+   * carrying React Aria press handlers drops them too (see there).
+   */
+  isInert: boolean;
+  /** Props that mark the element disabled and inert. Spread them last. */
+  inertProps: Props;
+}
+
+/**
+ * Decides how the disabled state reaches the DOM.
+ *
+ * The native `disabled` attribute is the strongest option, but it also makes
+ * the browser swallow the events the element needs to open a tooltip. When
+ * such an element has to stay hoverable, it is marked `aria-disabled` instead
+ * and kept inert by blocking activation — the outcome a user sees is the same,
+ * except the tooltip now opens and screen readers still announce the state.
+ */
+export function getDisabledElementProps({
+  isDisabled,
+  keepEvents,
+  as = 'div',
+}: DisabledElementOptions): DisabledElementProps {
+  if (!isDisabled) {
+    return {
+      isNativelyDisabled: false,
+      isInert: false,
+      inertProps: EMPTY_PROPS,
+    };
+  }
+
+  // The attribute only means something on form controls, and there it can be
+  // kept whenever nothing depends on the element's events.
+  if (FORM_CONTROL_TAGS.has(as) && !keepEvents) {
+    return {
+      isNativelyDisabled: true,
+      isInert: false,
+      inertProps: EMPTY_PROPS,
+    };
+  }
+
+  return { isNativelyDisabled: false, isInert: true, inertProps: INERT_PROPS };
+}
+
+/**
+ * Removes the handlers that would activate a disabled element.
+ *
+ * Needed without the native attribute, and with it wherever React Aria's
+ * `usePress` is attached. Chrome still sends pointer events to a disabled form
+ * control, though no click: `usePress` marks itself pressed on that
+ * `pointerdown` and nothing ever clears it, so the first press after the
+ * control is enabled only ends the stale one and does nothing.
+ */
+export function omitActivationEventProps<T extends Props>(props: T): T {
+  const result = { ...props };
+
+  for (const prop of ACTIVATION_EVENT_PROPS) {
+    delete result[prop];
+  }
+
+  return result;
+}
+
+/**
+ * React reports a click on an inert checkbox or radio as a change: the browser
+ * toggles it before the click is cancelled. Kept as a handler rather than
+ * dropped, or React would warn about a `checked` input without one.
+ */
+function ignoreChange(event: ChangeEvent) {
+  event.stopPropagation();
+}
+
+/**
+ * Turns the props React Aria gives a disabled checkbox, switch or radio
+ * `<input>` into those of an inert one (`isInert` from
+ * `getDisabledElementProps`): no native `disabled`, so it keeps its focus, and
+ * nothing a click, `Space` or a change could toggle it with. A text input uses
+ * it too, made read-only by its caller, so it fires no change to ignore.
+ *
+ * React Aria leaves `tabIndex` out of a disabled input's props, so a caller's
+ * `excludeFromTabOrder` has to be passed again.
+ */
+export function getInertInputProps<T extends Props>(
+  inputProps: T,
+  { excludeFromTabOrder }: { excludeFromTabOrder?: boolean } = {},
+): T {
+  return mergeProps(
+    {
+      ...omitActivationEventProps(inputProps),
+      disabled: false,
+      onChange: ignoreChange,
+      ...(excludeFromTabOrder ? { tabIndex: -1 } : null),
+    },
+    INERT_PROPS,
+  ) as T;
+}

@@ -46,17 +46,17 @@ import {
 } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { GripVerticalIcon } from '../../../icons/GripVerticalIcon';
 import { Icon } from '../../../icons/Icon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { useFocus } from '../../../utils/react/interactions';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { allowOverlayKeysToPropagate } from '../../../utils/react/overlay-key-propagation';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 // Import Menu styled components for header and footer
 import {
   StyledDivider,
@@ -106,7 +106,7 @@ import type {
   Key,
 } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
-import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/componentBaseProps';
+import type { ComponentBasePropsWithoutChildren } from '../../../utils/react/component-base-props';
 
 const ListBoxWrapperElement = tasty({
   qa: 'ListBox',

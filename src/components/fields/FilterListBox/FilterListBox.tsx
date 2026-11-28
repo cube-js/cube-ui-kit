@@ -19,12 +19,12 @@ import { useFilter, useFocusWithin, useId, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { useFocus } from '../../../utils/react/interactions';
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import {
   CubeCollectionItemProps,
   CollectionItem as Item,
@@ -35,12 +35,12 @@ import { getValidationMods } from '../../form/validation/resolve-validation-prop
 import { wrapWithField } from '../../form/wrapper';
 import { isItemDisabled } from '../../shared/disabled-behavior';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
-import { getListBoxOptionId } from '../ListBox/optionId';
+import { getListBoxOptionId } from '../ListBox/option-id';
 import {
   getEdgeVisibleKey,
   getNextVisibleKey,
   markKeyboardFocus,
-} from '../ListBoxPopover/listNavigation';
+} from '../ListBoxPopover/list-navigation';
 import {
   CubeSearchInputAttributes,
   SEARCH_TEXT_SERVICES,

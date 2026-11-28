@@ -7,19 +7,19 @@ import {
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { useI18n } from '../../i18n/useI18n';
-import { useProviderProps } from '../../provider';
+import { useI18n } from '../../i18n/use-i18n';
+import { useProviderProps } from '../../Provider';
 import {
   LabelPosition,
   NecessityIndicator,
   ValidationProps,
 } from '../../shared/form';
-import { filterComponentBaseProps } from '../../utils/react/componentBaseProps';
+import { filterComponentBaseProps } from '../../utils/react/component-base-props';
 import { extractStyles } from '../../utils/styles';
 
 import { getValidationMods } from './validation/resolve-validation-props';
 
-import type { ComponentBaseProps } from '../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../utils/react/component-base-props';
 
 const RequiredIconElement = tasty({
   as: 'svg',

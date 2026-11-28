@@ -1,4 +1,4 @@
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 
 import { Link } from './Link';
 

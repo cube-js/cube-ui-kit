@@ -1,11 +1,11 @@
 import { CONTAINER_STYLES, ContainerStyleProps, tasty } from '@tenphi/tasty';
 import { CSSProperties, forwardRef, useEffect } from 'react';
 
-import { filterComponentBaseProps } from '../../utils/react/componentBaseProps';
-import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
+import { filterComponentBaseProps } from '../../utils/react/component-base-props';
+import { useCombinedRefs } from '../../utils/react/use-combined-refs';
 import { extractStyles } from '../../utils/styles';
 
-import type { ComponentBaseProps } from '../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../utils/react/component-base-props';
 
 const SuffixElement = tasty({
   element: 'Suffix',

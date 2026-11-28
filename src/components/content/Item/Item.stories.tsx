@@ -9,7 +9,7 @@ import { Fragment, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DirectionIcon } from '../../../icons/DirectionIcon';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Button } from '../../actions/Button/Button';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Block } from '../../Block';

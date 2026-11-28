@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/form-field-args';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Button } from '../../actions/Button/Button';
 import { Paragraph } from '../../content/Paragraph';
 import { Form } from '../../form/Form';

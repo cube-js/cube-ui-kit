@@ -21,18 +21,18 @@ import {
 import { useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value';
-import { useI18n } from '../../../i18n/useI18n';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { useI18n } from '../../../i18n/use-i18n';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 
-import { useTinyScrollbar } from './hooks/useTinyScrollbar';
+import { useTinyScrollbar } from './hooks/use-tiny-scrollbar';
 import { ScrollbarType } from './LayoutContent';
 import { LayoutContextReset } from './LayoutContext';
 import { LayoutResizeHandle } from './LayoutResizeHandle';
 import { clampSize } from './utils';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 // Handler dimensions
 const HANDLER_WIDTH = 9; // Interactive area

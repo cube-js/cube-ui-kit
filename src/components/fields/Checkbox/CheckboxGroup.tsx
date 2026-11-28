@@ -4,14 +4,14 @@ import { forwardRef } from 'react';
 import { AriaCheckboxGroupProps, useCheckboxGroup } from 'react-aria';
 import { useCheckboxGroupState } from 'react-stately';
 
-import { Provider } from '../../../provider';
+import { Provider } from '../../../Provider';
 import { FieldBaseProps } from '../../../shared/form';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { mergeProps } from '../../../utils/react/merge-props';
 import {
   castNullableArrayValue,
   WithNullableValue,
-} from '../../../utils/react/nullableValue';
+} from '../../../utils/react/nullable-value';
 import {
   FieldLayoutStyleProps,
   splitFieldLayout,
@@ -20,9 +20,9 @@ import { FormScopeMask } from '../../form/Form/FormContext';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { wrapWithField } from '../../form/wrapper';
 
-import { CheckboxGroupContext } from './context';
+import { CheckboxGroupContext } from './CheckboxGroupContext';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 const CheckGroupElement = tasty({
   qa: 'CheckboxGroup',

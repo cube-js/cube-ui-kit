@@ -8,7 +8,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Button } from '../../actions/Button/Button';
 import { Checkbox } from '../../fields/Checkbox/Checkbox';
 import { Switch } from '../../fields/Switch/Switch';

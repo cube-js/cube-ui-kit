@@ -7,9 +7,9 @@ import { useMultipleSelectionState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useI18n } from '../../../i18n/useI18n';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { useI18n } from '../../../i18n/use-i18n';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import {
   clampPage,

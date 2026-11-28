@@ -15,17 +15,17 @@ import {
 } from 'react';
 import { AriaTooltipProps, useTooltip } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
 import { extractStyles } from '../../../utils/styles';
-import { useModalLayerRef } from '../Modal/modal-containment';
+import { useModalLayerRef } from '../Modal/ModalContainmentProvider';
 
-import { TooltipContext } from './context';
+import { TooltipContext } from './TooltipContext';
 
 import type { PlacementAxis } from '../../../shared';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 export type { AriaTooltipProps };
 

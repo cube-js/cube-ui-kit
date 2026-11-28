@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useEvent } from '../../../../_internal/hooks/use-event';
 import { useIsFirstRender } from '../../../../_internal/hooks/use-is-first-render';
 import { ValidateTrigger } from '../../../../shared/form';
-import { useLayoutEffect } from '../../../../utils/react/useLayoutEffect';
+import { useLayoutEffect } from '../../../../utils/react/use-layout-effect';
 import { resolveValidationProps } from '../../validation/resolve-validation-props';
 import {
   isModernFormController,

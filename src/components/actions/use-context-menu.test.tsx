@@ -10,7 +10,7 @@ import {
   userEvent,
   waitFor,
 } from '../../test';
-import { EventBusProvider } from '../../utils/react/useEventBus';
+import { EventBusProvider } from '../../utils/react/EventBusProvider';
 
 import { CommandMenu } from './CommandMenu';
 import { Menu } from './Menu';

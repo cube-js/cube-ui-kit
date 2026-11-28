@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within } from 'storybook/test';
 
-import { baseProps } from '../../../stories/lists/baseProps';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Checkbox } from '../../fields/Checkbox/Checkbox';
 import { ComboBox } from '../../fields/ComboBox/ComboBox';
 import { Input } from '../../fields/Input/Input';

@@ -1,2 +1,2 @@
-export * from './timer';
+export * from './Timer';
 export * from './use-timer';

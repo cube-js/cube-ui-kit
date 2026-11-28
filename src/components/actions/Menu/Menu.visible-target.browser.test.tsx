@@ -7,8 +7,8 @@ import { act, render, screen, waitFor } from '../../../test';
 import { Root } from '../../Root';
 import { CommandMenu } from '../CommandMenu/CommandMenu';
 
-import { MenuContext } from './context';
 import { Menu } from './Menu';
+import { MenuContext } from './MenuContext';
 
 describe('Stable visible native menu targets', () => {
   afterEach(() => {

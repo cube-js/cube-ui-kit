@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Content } from '../../content/Content';
@@ -12,9 +12,9 @@ import { Form } from '../../form/Form/Form';
 import { SubmitButton } from '../../form/Form/SubmitButton/SubmitButton';
 import { useForm } from '../../form/Form/use-form';
 
-import { useDialogContext } from './context';
 import { withDefaultButtonText } from './default-button-text';
 import { CubeDialogProps, Dialog } from './Dialog';
+import { useDialogContext } from './DialogContext';
 import { ModernDialogForm } from './ModernDialogForm';
 
 import type { ReactElement } from 'react';

@@ -2,7 +2,7 @@ import { Styles, tasty } from '@tenphi/tasty';
 import copy from 'clipboard-copy';
 import { ReactNode, useState } from 'react';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { CopyIcon } from '../../../icons/CopyIcon';
 import { EyeIcon } from '../../../icons/EyeIcon';
 import { EyeInvisibleIcon } from '../../../icons/EyeInvisibleIcon';
@@ -12,7 +12,7 @@ import {
   CubePrismCodeProps,
   PrismCode,
 } from '../../content/PrismCode/PrismCode';
-import { useToast } from '../../overlays/Toast/useToast';
+import { useToast } from '../../overlays/Toast/use-toast';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Card, CubeCardProps } from '../Card/Card';

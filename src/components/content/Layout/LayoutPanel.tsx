@@ -24,12 +24,12 @@ import {
 import { useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
-import { useI18n } from '../../../i18n/useI18n';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
-import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
-import { useLocalStorage } from '../../../utils/react/useLocalStorage';
+import { useI18n } from '../../../i18n/use-i18n';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
+import { focusProgrammatically } from '../../../utils/react/programmatic-focus';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
+import { useLocalStorage } from '../../../utils/react/use-local-storage';
 import { extractStyles } from '../../../utils/styles';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Dialog } from '../../overlays/Dialog/Dialog';
@@ -50,7 +50,7 @@ import { LayoutPanelTransition } from './LayoutPanelTransition';
 import { LayoutResizeHandle } from './LayoutResizeHandle';
 import { clampSize, getOppositeSide, resolveCssSize } from './utils';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 // Resize handler dimensions
 const HANDLER_WIDTH = 9;

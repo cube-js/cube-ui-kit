@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { VALIDATION_ARGS } from '../../../stories/form-field-args';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Flow } from '../../layout/Flow';

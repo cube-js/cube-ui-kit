@@ -1,12 +1,12 @@
 import { StoryFn } from '@storybook/react-vite';
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test';
 
-import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/form-field-args';
+import { baseProps } from '../../../stories/lists/base-props';
 import { Space } from '../../layout/Space';
 
 import { CubeDateRangePickerProps, DateRangePicker } from './DateRangePicker';
-import { parseAbsoluteDate } from './parseDate';
+import { parseAbsoluteDate } from './parse-date';
 
 export default {
   title: 'Forms/DateRangePicker',

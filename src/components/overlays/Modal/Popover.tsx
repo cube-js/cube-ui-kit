@@ -3,11 +3,11 @@ import { BaseProps, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, HTMLAttributes } from 'react';
 import { AriaOverlayProps, useModal, useOverlay } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
-import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
+import { useOverlayEscapeGuard } from '../../../utils/react/use-overlay-escape-guard';
 
-import { useModalLayerRef } from './modal-containment';
+import { useModalLayerRef } from './ModalContainmentProvider';
 import { CubeOverlayProps, Overlay } from './Overlay';
 import { TransitionState } from './types';
 

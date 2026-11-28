@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useMove } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { mergeProps } from '../../../utils/react/mergeProps';
+import { mergeProps } from '../../../utils/react/merge-props';
 
 import type { CubeResolvedColumn } from './types';
 

@@ -9,8 +9,8 @@ import { Space } from '../../layout/Space';
 import { OverlayProvider } from '../Notifications/OverlayProvider';
 
 import { ToastItem } from './ToastItem';
-import { useProgressToast } from './useProgressToast';
-import { useToast } from './useToast';
+import { useProgressToast } from './use-progress-toast';
+import { useToast } from './use-toast';
 
 import { Toast } from './index';
 

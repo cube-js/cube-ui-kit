@@ -12,12 +12,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
 
 import { I18nProvider } from '../i18n/I18nProvider';
-import { Provider } from '../provider';
+import { Provider } from '../Provider';
 import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import { PaletteConfig, setPaletteConfig } from '../tokens/palette-config';
-import { EventBusProvider } from '../utils/react/useEventBus';
-import { AMBIENT_PREDEFINED_STATES } from '../utils/react/useScheme';
+import { EventBusProvider } from '../utils/react/EventBusProvider';
+import { AMBIENT_PREDEFINED_STATES } from '../utils/react/use-scheme';
 import { extractStyles } from '../utils/styles';
 import { TASTY_VERSION, VERSION } from '../version';
 
@@ -36,7 +36,7 @@ import type { i18n as I18nInstance } from 'i18next';
 // `@reduced-motion`, registered beside them, follows `prefers-reduced-motion:
 // reduce` alone.
 //
-// The strings live in `useScheme.ts`, which also reads the same two conditions
+// The strings live in `use-scheme.ts`, which also reads the same two conditions
 // from JS (`useScheme()` / `useHighContrast()`) — one definition, so the CSS and
 // the JS answers cannot drift apart.
 setGlobalPredefinedStates({

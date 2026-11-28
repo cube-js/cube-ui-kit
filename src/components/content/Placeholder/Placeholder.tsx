@@ -7,11 +7,11 @@ import {
 } from '@tenphi/tasty';
 import { createContext, forwardRef, useContext } from 'react';
 
-import { useI18n } from '../../../i18n/useI18n';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import { useI18n } from '../../../i18n/use-i18n';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 // Create the placeholder animation using keyframes helper
 const placeholderAnimation = keyframes({

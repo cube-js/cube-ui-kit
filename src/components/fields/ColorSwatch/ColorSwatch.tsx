@@ -12,11 +12,11 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef } from 'react';
 
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import { extractStyles } from '../../../utils/styles';
 import { ColorValue, parseColor, toHex } from '../color/color';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 const STYLE_PROPS = [
   ...BASE_STYLES,

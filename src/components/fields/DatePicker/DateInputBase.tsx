@@ -9,8 +9,8 @@ import {
 import React, { useRef } from 'react';
 import { useFocusRing } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react/mergeProps';
-import { pickBaseCustomizationProps } from '../../../utils/react/pickBaseCustomizationProps';
+import { mergeProps } from '../../../utils/react/merge-props';
+import { pickBaseCustomizationProps } from '../../../utils/react/pick-base-customization-props';
 import { extractStyles } from '../../../utils/styles';
 import { getValidationMods } from '../../form/validation/resolve-validation-props';
 import {
@@ -23,7 +23,7 @@ import {
 } from '../TextInput/TextInputBase';
 
 import type { Props } from '../../../props';
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 const DateInputWrapperElement = tasty({
   qa: 'DateInputWrapper',

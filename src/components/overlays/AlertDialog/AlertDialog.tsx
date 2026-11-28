@@ -1,6 +1,6 @@
 import { forwardRef, ReactNode } from 'react';
 
-import { useI18n } from '../../../i18n/useI18n';
+import { useI18n } from '../../../i18n/use-i18n';
 import { chain } from '../../../utils/react/chain';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
@@ -9,9 +9,9 @@ import { Footer } from '../../content/Footer';
 import { Header } from '../../content/Header';
 import { Paragraph } from '../../content/Paragraph';
 import { Title } from '../../content/Title';
-import { useDialogContext } from '../Dialog/context';
 import { withDefaultButtonText } from '../Dialog/default-button-text';
 import { CubeDialogProps, Dialog } from '../Dialog/Dialog';
+import { useDialogContext } from '../Dialog/DialogContext';
 
 import type { CubeButtonProps } from '../../actions/Button/Button';
 

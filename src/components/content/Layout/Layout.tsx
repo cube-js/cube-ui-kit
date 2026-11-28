@@ -27,8 +27,8 @@ import {
 } from 'react';
 
 import { isDevEnv } from '../../../utils/is-dev-env';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { useCombinedRefs } from '../../../utils/react/useCombinedRefs';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { useCombinedRefs } from '../../../utils/react/use-combined-refs';
 import { extractStyles } from '../../../utils/styles';
 import { Alert } from '../Alert/Alert';
 
@@ -41,7 +41,7 @@ import {
   useLayoutStateContext,
 } from './LayoutContext';
 
-import type { ComponentBaseProps } from '../../../utils/react/componentBaseProps';
+import type { ComponentBaseProps } from '../../../utils/react/component-base-props';
 
 const LayoutElement = tasty({
   as: 'div',

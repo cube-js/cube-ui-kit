@@ -142,7 +142,7 @@
           {
             "name": "react-aria",
             "importNames": ["useOverlayPosition"],
-            "message": "Import `useOverlayPosition` from `utils/react/useOverlayPosition`. React Aria's re-places an overlay that changes size only when the overlay is already mounted when the hook first runs, and a trigger that outlives its overlay runs it before: the open overlay then grows past the edge of the screen."
+            "message": "Import `useOverlayPosition` from `utils/react/use-overlay-position`. React Aria's re-places an overlay that changes size only when the overlay is already mounted when the hook first runs, and a trigger that outlives its overlay runs it before: the open overlay then grows past the edge of the screen."
           }
         ],
         "patterns": [
@@ -1423,6 +1423,15 @@
       "rules": {
         "repo/no-barrel-import": "error",
         "import/no-cycle": "error"
+      }
+    },
+    {
+      // One naming rule for the library's files: PascalCase for a component,
+      // class or provider, kebab-case for the rest, `index.ts` for a barrel.
+      // See docs/rules/coding.md#files.
+      "files": ["src/**"],
+      "rules": {
+        "repo/filename-case": "error"
       }
     },
     {

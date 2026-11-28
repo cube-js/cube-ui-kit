@@ -178,7 +178,7 @@
     "shim": [
       "components/overlays/Notifications/index",
       "components/overlays/AlertDialog/AlertDialogApiProvider",
-      "utils/react/useEventBus"
+      "utils/react/EventBusProvider"
     ]
   },
   "componentSrcMap": {

@@ -2,18 +2,18 @@ import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { forwardRef, useEffect, useMemo, useRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { Provider, useProviderProps } from '../../../provider';
-import { filterComponentBaseProps } from '../../../utils/react/componentBaseProps';
-import { mergeRefs } from '../../../utils/react/useCombinedRefs';
-import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { Provider, useProviderProps } from '../../../Provider';
+import { filterComponentBaseProps } from '../../../utils/react/component-base-props';
+import { mergeRefs } from '../../../utils/react/use-combined-refs';
+import { useLayoutEffect } from '../../../utils/react/use-layout-effect';
 import { extractStyles } from '../../../utils/styles';
-import { useDialogContext } from '../../overlays/Dialog/context';
+import { useDialogContext } from '../../overlays/Dialog/DialogContext';
 import { useValidationProps } from '../validation/use-validation-props';
 
 import { FormContext, FormPresentationContext } from './FormContext';
 import { FormElement, formPropNames } from './FormElement';
-import { ModernControllerContext } from './modern/context';
 import { getControllerInternals } from './modern/controller';
+import { ModernControllerContext } from './modern/ModernControllerContext';
 import { resetUnboundControls } from './reset-unbound-controls';
 
 import type { FormEvent, ReactElement, ReactNode, Ref } from 'react';

@@ -2,7 +2,7 @@ import { StoryFn } from '@storybook/react-vite';
 
 import { CubeTextProps, Text } from '../components/content/Text';
 
-import { baseProps } from './lists/baseProps';
+import { baseProps } from './lists/base-props';
 
 export default {
   title: 'Content/Text',

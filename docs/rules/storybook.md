@@ -106,7 +106,7 @@ export const Validation: StoryFn<CubeComponentProps> = (args) => (
 );
 ```
 
-Pull the `isInvalid` / `isValid` argTypes from `VALIDATION_ARGS` in `src/stories/FormFieldArgs.ts` instead of declaring them inline.
+Pull the `isInvalid` / `isValid` argTypes from `VALIDATION_ARGS` in `src/stories/form-field-args.ts` instead of declaring them inline.
 
 ## Testing with Play Functions
 
